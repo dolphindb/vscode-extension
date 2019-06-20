@@ -1,8 +1,7 @@
-/* eslint-disable no-unused-vars */
 import axios from 'axios'
-import { getBorderCharacters, table } from 'table'
+import { getBorderCharacters, table, TableUserConfig } from 'table'
 
-const tableConfig = {
+const tableConfig: TableUserConfig = {
     border: getBorderCharacters('norc'),
 }
 
@@ -23,14 +22,18 @@ export interface IDolphindbRequest {
 export interface IDolphindbObject {
     name: string,
     form: string,
-    size?: string,
     value: any,
+    size?: string,
     type?: string,
 }
 
 type Scalar = number | string
 
-export function executeCode(host: string, port: number, code: string, sessionID: string | undefined): Thenable<any> {
+function JsonUrl(host: string, port: number): string {
+    return `http://${host}:${port}`
+}
+
+export function executeCode(host: string, port: number, code: string, sessionID: string): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,
         functionName: 'executeCode',
@@ -44,7 +47,27 @@ export function executeCode(host: string, port: number, code: string, sessionID:
 
     return axios({
         method: 'post',
-        url: `http://${host}:${port}`,
+        url: JsonUrl(host, port),
+        data,
+    })
+}
+
+// todo
+export function testCode(host: string, port: number, code: string, sessionID: string): Thenable<any> {
+    const data: IDolphindbRequest = {
+        sessionID,
+        functionName: 'executeCode',
+        params: [{
+            name: 'script',
+            form: 'scalar',
+            type: 'string',
+            value: code
+        }]
+    }
+
+    return axios({
+        method: 'post',
+        url: JsonUrl(host, port),
         data,
     })
 }
@@ -63,15 +86,11 @@ export function fetchEnv(host: string, port: number, sessionID: string): Thenabl
 
     return axios({
         method: 'post',
-        url: `http://${host}:${port}`,
+        url: JsonUrl(host, port),
         data,
     })
 }
 
-
-/**
- * DolphinJson represent a dolphindb code request result
- */
 export class DolphindbJson {
     constructor(private readonly _json: IDolphindbResponse) { }
 
@@ -279,7 +298,7 @@ export class DolphindbJson {
         return table([colName, ...tbl], tableConfig)
     }
 
-     toMatrix(): { colNum: number, matrix: any[][] } {
+    toMatrix(): { colNum: number, matrix: any[][] } {
         let val = this._json.object[0].value
         const matrix: any[][] = []
         const rowNum = +val[1].value

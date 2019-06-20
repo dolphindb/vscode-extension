@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import * as assert from 'assert';
 import * as api from '../api';
 

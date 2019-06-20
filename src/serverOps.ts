@@ -46,6 +46,11 @@ export async function dolphindbExecuteCode() {
     dolphindbOutput.show()
 }
 
+// todo
+export async function dolphindbTestCode() {
+
+}
+
 export async function dolphindbChooseServer() {
     let address = vscode.workspace.getConfiguration('dolphindb.server').get('address') as IConfig[]
 
