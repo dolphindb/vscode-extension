@@ -1,0 +1,843 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "DolphinDB",
+	"scopeName": "source.dolphindb",
+	"fileTypes": [
+		"dos",
+		"dp"
+	],
+	"patterns": [{
+			"include": "#include"
+		},
+		{
+			"begin": "'''",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.dolphindb"
+				}
+			},
+			"end": "'''",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.dolphindb"
+				}
+			},
+			"name": "string.quoted.single.heredoc.dolphindb",
+			"patterns": [{
+				"captures": {
+					"1": {
+						"name": "punctuation.definition.escape.backslash.dolphindb"
+					}
+				},
+				"match": "(\\\\).",
+				"name": "constant.character.escape.backslash.dolphindb"
+			}]
+		},
+		{
+			"begin": "\"\"\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.dolphindb"
+				}
+			},
+			"end": "\"\"\"",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.dolphindb"
+				}
+			},
+			"name": "string.quoted.double.heredoc.dolphindb",
+			"patterns": [{
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.escape.backslash.dolphindb"
+						}
+					},
+					"match": "(\\\\).",
+					"name": "constant.character.escape.backslash.dolphindb"
+				},
+				{
+					"include": "#interpolated_dolphindb"
+				}
+			]
+		},
+		{
+			"match": "`[\\w@]+",
+			"name": "string.quoted.other.dolphindb"
+		},
+		{
+			"match": "(`)(.*)(`)",
+			"name": "string.quoted.script.dolphindb",
+			"captures": {
+				"1": {
+					"name": "punctuation.definition.string.begin.dolphindb"
+				},
+				"2": {
+					"name": "source.js.embedded.dolphindb",
+					"patterns": [{
+						"include": "source.js"
+					}]
+				},
+				"3": {
+					"name": "punctuation.definition.string.end.dolphindb"
+				}
+			}
+		},
+		{
+			"begin": "(?<!#)###(?!#)",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.comment.dolphindb"
+				}
+			},
+			"end": "###",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.comment.dolphindb"
+				}
+			},
+			"name": "comment.block.dolphindb",
+			"patterns": [{
+				"match": "(?<=^|\\s)@\\w*(?=\\s)",
+				"name": "storage.type.annotation.dolphindb"
+			}]
+		},
+		{
+			"begin": "/\\*",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.comment.dolphindb"
+				}
+			},
+			"end": "\\*/",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.comment.dolphindb"
+				}
+			},
+			"name": "comment.block.dolphindb",
+			"patterns": [{
+				"match": "(?<=^|\\s|\\s\\*\\s)@\\w*(?=\\s)",
+				"name": "storage.type.annotation.dolphindb"
+			}]
+		},
+		{
+			"begin": "//",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.comment.dolphindb"
+				}
+			},
+			"end": "$",
+			"name": "comment.line.number-sign.dolphindb"
+		},
+		{
+			"begin": "(?<![\\w$])(/)(?=(?![/*+?])(.+)(/)[gimuy]*(?!\\s*[\\w$/(]))",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.begin.dolphindb"
+				}
+			},
+			"end": "(/)[gimuy]*(?!\\s*[\\w$/(])",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.end.dolphindb"
+				}
+			},
+			"name": "string.regexp.dolphindb",
+			"patterns": [{
+				"include": "source.js.regexp"
+			}]
+		},
+		{
+			"match": "(?<=^|\\s|\\s\\*\\s)@testing",
+			"name": "storage.type.annotation.dolphindb"
+		},
+		{
+			"match": "\\b(?<![\\.\\$])(as|asc|assert|break|by|catch|context|const|continue|def|delete|desc|do|else|exec|for|form|from|group|having|if|in|insert|into|mapr|module|mutable|null|order|pivot|return|select|set|throw|timer|top|try|update|use|where|while|(?<=for)\\s+own)(?!\\s*:)\\b",
+			"name": "keyword.control.dolphindb"
+		},
+		{
+			"begin": "(?x)\n(?<=\\s|^)((@)?[a-zA-Z_$][\\w$]*)\n\\s*([:=])\\s*\n(?=(\\([^\\(\\)]*\\)\\s*)?[=-]>)",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.function.dolphindb"
+				},
+				"2": {
+					"name": "variable.other.readwrite.instance.dolphindb"
+				},
+				"3": {
+					"name": "keyword.operator.assignment.dolphindb"
+				}
+			},
+			"end": "[=-]>",
+			"endCaptures": {
+				"0": {
+					"name": "storage.type.function.dolphindb"
+				}
+			},
+			"name": "meta.function.dolphindb",
+			"patterns": [{
+				"include": "#function_params"
+			}]
+		},
+		{
+			"begin": "(?x)\n(?<=\\s|^)(?:((')([^']*?)('))|((\")([^\"]*?)(\")))\n\\s*([:=])\\s*\n(?=(\\([^\\(\\)]*\\)\\s*)?[=-]>)",
+			"beginCaptures": {
+				"1": {
+					"name": "string.quoted.single.dolphindb"
+				},
+				"2": {
+					"name": "punctuation.definition.string.begin.dolphindb"
+				},
+				"3": {
+					"name": "entity.name.function.dolphindb"
+				},
+				"4": {
+					"name": "punctuation.definition.string.end.dolphindb"
+				},
+				"5": {
+					"name": "string.quoted.double.dolphindb"
+				},
+				"6": {
+					"name": "punctuation.definition.string.begin.dolphindb"
+				},
+				"7": {
+					"name": "entity.name.function.dolphindb"
+				},
+				"8": {
+					"name": "punctuation.definition.string.end.dolphindb"
+				},
+				"9": {
+					"name": "keyword.operator.assignment.dolphindb"
+				}
+			},
+			"end": "[=-]>",
+			"endCaptures": {
+				"0": {
+					"name": "storage.type.function.dolphindb"
+				}
+			},
+			"name": "meta.function.dolphindb",
+			"patterns": [{
+				"include": "#function_params"
+			}]
+		},
+		{
+			"begin": "(?=(\\([^\\(\\)]*\\)\\s*)?[=-]>)",
+			"end": "[=-]>",
+			"endCaptures": {
+				"0": {
+					"name": "storage.type.function.dolphindb"
+				}
+			},
+			"name": "meta.function.inline.dolphindb",
+			"patterns": [{
+				"include": "#function_params"
+			}]
+		},
+		{
+			"begin": "(?<=\\s|^)({)(?=[^'\"#]+?}[\\s\\]}]*=)",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.definition.destructuring.begin.bracket.curly.dolphindb"
+				}
+			},
+			"end": "}",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.destructuring.end.bracket.curly.dolphindb"
+				}
+			},
+			"name": "meta.variable.assignment.destructured.object.dolphindb",
+			"patterns": [{
+					"include": "$self"
+				},
+				{
+					"match": "[a-zA-Z$_]\\w*",
+					"name": "variable.assignment.dolphindb"
+				}
+			]
+		},
+		{
+			"match": "\\b(?<!\\.|::)(true)(?!\\s*[:=][^=])\\b",
+			"name": "constant.language.boolean.true.dolphindb"
+		},
+		{
+			"match": "\\b(?<!\\.|::)(false)(?!\\s*[:=][^=])\\b",
+			"name": "constant.language.boolean.false.dolphindb"
+		},
+		{
+			"match": "\\b(?<!\\.|::)null(?!\\s*[:=][^=])\\b",
+			"name": "constant.language.null.dolphindb"
+		},
+		{
+			"include": "#operators"
+		},
+		{
+			"include": "#method_calls"
+		},
+		{
+			"include": "#function_calls"
+		},
+		{
+			"include": "#numbers"
+		},
+		{
+			"include": "#objects"
+		},
+		{
+			"include": "#properties"
+		},
+		{
+			"match": "(?<!\\$)\\b[0-9]+[\\w$]*",
+			"name": "invalid.illegal.identifier.dolphindb"
+		},
+		{
+			"match": ";",
+			"name": "punctuation.terminator.statement.dolphindb"
+		},
+		{
+			"match": ",",
+			"name": "punctuation.separator.delimiter.dolphindb"
+		},
+		{
+			"begin": "{",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.brace.curly.dolphindb"
+				}
+			},
+			"end": "}",
+			"endCaptures": {
+				"0": {
+					"name": "meta.brace.curly.dolphindb"
+				}
+			},
+			"patterns": [{
+				"include": "$self"
+			}]
+		},
+		{
+			"begin": "\\[",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.array.begin.bracket.square.dolphindb"
+				}
+			},
+			"end": "\\]",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.array.end.bracket.square.dolphindb"
+				}
+			},
+			"patterns": [{
+					"match": "(?<!\\.)\\.{3}",
+					"name": "keyword.operator.slice.exclusive.dolphindb"
+				},
+				{
+					"match": "(?<!\\.)\\.{2}",
+					"name": "keyword.operator.slice.inclusive.dolphindb"
+				},
+				{
+					"include": "$self"
+				}
+			]
+		},
+		{
+			"begin": "\\(",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.brace.round.dolphindb"
+				}
+			},
+			"end": "\\)",
+			"endCaptures": {
+				"0": {
+					"name": "meta.brace.round.dolphindb"
+				}
+			},
+			"patterns": [{
+				"include": "$self"
+			}]
+		},
+		{
+			"include": "#instance_variable"
+		},
+		{
+			"include": "#single_quoted_string"
+		},
+		{
+			"include": "#double_quoted_string"
+		}
+	],
+	"repository": {
+		"arguments": {
+			"patterns": [{
+					"begin": "\\(",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.arguments.begin.bracket.round.dolphindb"
+						}
+					},
+					"end": "\\)",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.arguments.end.bracket.round.dolphindb"
+						}
+					},
+					"name": "meta.arguments.dolphindb",
+					"patterns": [{
+						"include": "$self"
+					}]
+				},
+				{
+					"begin": "(?=(@|@?[\\w$]+|[=-]>|\\-\\d|\\[|{|\"|'))",
+					"end": "(?=\\s*(?<![\\w$])(of|in|then|is|isnt|and|or|for|else|when|if|unless|by|instanceof)(?![\\w$]))|(?=\\s*(}|\\]|\\)|#|$))",
+					"name": "meta.arguments.dolphindb",
+					"patterns": [{
+						"include": "$self"
+					}]
+				}
+			]
+		},
+		"single_quoted_string": {
+			"patterns": [{
+				"begin": "'",
+				"beginCaptures": {
+					"0": {
+						"name": "punctuation.definition.string.begin.dolphindb"
+					}
+				},
+				"end": "'",
+				"endCaptures": {
+					"0": {
+						"name": "punctuation.definition.string.end.dolphindb"
+					}
+				},
+				"name": "string.quoted.single.dolphindb",
+				"patterns": [{
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.escape.backslash.dolphindb"
+						}
+					},
+					"match": "(\\\\)(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.)",
+					"name": "constant.character.escape.backslash.dolphindb"
+				}]
+			}]
+		},
+		"double_quoted_string": {
+			"patterns": [{
+				"begin": "\"",
+				"beginCaptures": {
+					"0": {
+						"name": "punctuation.definition.string.begin.dolphindb"
+					}
+				},
+				"end": "\"",
+				"endCaptures": {
+					"0": {
+						"name": "punctuation.definition.string.end.dolphindb"
+					}
+				},
+				"name": "string.quoted.double.dolphindb",
+				"patterns": [{
+						"captures": {
+							"1": {
+								"name": "punctuation.definition.escape.backslash.dolphindb"
+							}
+						},
+						"match": "(\\\\)(x[0-9A-Fa-f]{2}|[0-2][0-7]{0,2}|3[0-6][0-7]|37[0-7]?|[4-7][0-7]?|.)",
+						"name": "constant.character.escape.backslash.dolphindb"
+					},
+					{
+						"include": "#interpolated_dolphindb"
+					}
+				]
+			}]
+		},
+		"function_calls": {
+			"patterns": [{
+					"begin": "(@)?([\\w$]+)(?=\\()",
+					"beginCaptures": {
+						"1": {
+							"name": "variable.other.readwrite.instance.dolphindb"
+						},
+						"2": {
+							"patterns": [{
+								"include": "#function_names"
+							}]
+						}
+					},
+					"end": "(?<=\\))",
+					"name": "meta.function-call.dolphindb",
+					"patterns": [{
+						"include": "#arguments"
+					}]
+				},
+				{
+					"begin": "(?x)\n(@)?([\\w$]+)\n\\s*\n(?=\\s+(?!(?<![\\w$])(of|in|then|is|isnt|and|or|for|else|when|if|unless|by|instanceof)(?![\\w$]))(?=(@?[\\w$]+|[=-]>|\\-\\d|\\[|{|\"|')))",
+					"beginCaptures": {
+						"1": {
+							"name": "variable.other.readwrite.instance.dolphindb"
+						},
+						"2": {
+							"patterns": [{
+								"include": "#function_names"
+							}]
+						}
+					},
+					"end": "(?=\\s*(?<![\\w$])(of|in|then|is|isnt|and|or|for|else|when|if|unless|by|instanceof)(?![\\w$]))|(?=\\s*(}|\\]|\\)|#|$))",
+					"name": "meta.function-call.dolphindb",
+					"patterns": [{
+						"include": "#arguments"
+					}]
+				}
+			]
+		},
+		"function_names": {
+			"patterns": [{
+					"match": "[a-zA-Z_$][\\w$]*",
+					"name": "entity.name.function.dolphindb"
+				},
+				{
+					"match": "\\d[\\w$]*",
+					"name": "invalid.illegal.identifier.dolphindb"
+				}
+			]
+		},
+		"function_params": {
+			"patterns": [{
+				"begin": "\\(",
+				"beginCaptures": {
+					"0": {
+						"name": "punctuation.definition.parameters.begin.bracket.round.dolphindb"
+					}
+				},
+				"end": "\\)",
+				"endCaptures": {
+					"0": {
+						"name": "punctuation.definition.parameters.end.bracket.round.dolphindb"
+					}
+				},
+				"name": "meta.parameters.dolphindb",
+				"patterns": [{
+						"match": "([a-zA-Z_$][\\w$]*)(\\.\\.\\.)?",
+						"captures": {
+							"1": {
+								"name": "variable.parameter.function.dolphindb"
+							},
+							"2": {
+								"name": "keyword.operator.splat.dolphindb"
+							}
+						}
+					},
+					{
+						"match": "(@(?:[a-zA-Z_$][\\w$]*)?)(\\.\\.\\.)?",
+						"captures": {
+							"1": {
+								"name": "variable.parameter.function.readwrite.instance.dolphindb"
+							},
+							"2": {
+								"name": "keyword.operator.splat.dolphindb"
+							}
+						}
+					},
+					{
+						"include": "$self"
+					}
+				]
+			}]
+		},
+		"embedded_comment": {
+			"patterns": [{
+				"captures": {
+					"1": {
+						"name": "punctuation.definition.comment.dolphindb"
+					}
+				},
+				"match": "(?<!\\\\)(#).*$\\n?",
+				"name": "comment.line.number-sign.dolphindb"
+			}]
+		},
+		"instance_variable": {
+			"patterns": [{
+				"match": "(@)([a-zA-Z_\\$]\\w*)?",
+				"name": "variable.other.readwrite.instance.dolphindb"
+			}]
+		},
+		"interpolated_dolphindb": {
+			"patterns": [{
+				"begin": "\\#\\{",
+				"captures": {
+					"0": {
+						"name": "punctuation.section.embedded.dolphindb"
+					}
+				},
+				"end": "\\}",
+				"name": "source.dolphindb.embedded.source",
+				"patterns": [{
+					"include": "$self"
+				}]
+			}]
+		},
+		"method_calls": {
+			"patterns": [{
+				"begin": "(?:(\\.)|(::))\\s*([\\w$]+)\\s*(?=\\()",
+				"beginCaptures": {
+					"1": {
+						"name": "punctuation.separator.method.period.dolphindb"
+					},
+					"2": {
+						"name": "keyword.operator.prototype.dolphindb"
+					},
+					"3": {
+						"patterns": [{
+							"include": "#method_names"
+						}]
+					}
+				},
+				"end": "(?<=\\))",
+				"name": "meta.method-call.dolphindb",
+				"patterns": [{
+					"include": "#arguments"
+				}]
+			}]
+		},
+		"method_names": {
+			"patterns": [{
+					"match": "[a-zA-Z_$][\\w$]*",
+					"name": "entity.name.function.dolphindb"
+				},
+				{
+					"match": "\\d[\\w$]*",
+					"name": "invalid.illegal.identifier.dolphindb"
+				}
+			]
+		},
+		"numbers": {
+			"patterns": [{
+					"match": "\\b(?<!\\$)\\d{4}\\.\\d{2}\\.\\d{2}\\b(?!\\$)",
+					"name": "constant.numeric.date.dolphindb"
+				},
+				{
+					"match": "\\b(?<!\\$)0(x|X)[0-9a-fA-F]+\\b(?!\\$)",
+					"name": "constant.numeric.hex.dolphindb"
+				},
+				{
+					"match": "\\b(?<!\\$)0(b|B)[01]+\\b(?!\\$)",
+					"name": "constant.numeric.binary.dolphindb"
+				},
+				{
+					"match": "\\b(?<!\\$)0(o|O)?[0-7]+\\b(?!\\$)",
+					"name": "constant.numeric.octal.dolphindb"
+				},
+				{
+					"match": "(?x)\n(?<!\\$)(?:\n  (?:\\b[0-9]+(\\.)[0-9]+[eE][+-]?[0-9]+\\b)| # 1.1E+3\n  (?:\\b[0-9]+(\\.)[eE][+-]?[0-9]+\\b)|       # 1.E+3\n  (?:\\B(\\.)[0-9]+[eE][+-]?[0-9]+\\b)|       # .1E+3\n  (?:\\b[0-9]+[eE][+-]?[0-9]+\\b)|            # 1E+3\n  (?:\\b[0-9]+(\\.)[0-9]+\\b)|                # 1.1\n  (?:\\b[0-9]+(?=\\.{2,3}))|                  # 1 followed by a slice\n  (?:\\b[0-9]+(\\.)\\B)|                      # 1.\n  (?:\\B(\\.)[0-9]+\\b)|                      # .1\n  (?:\\b[0-9]+\\b(?!\\.))                     # 1\n)(?!\\$)",
+					"captures": {
+						"0": {
+							"name": "constant.numeric.decimal.dolphindb"
+						},
+						"1": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						},
+						"2": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						},
+						"3": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						},
+						"4": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						},
+						"5": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						},
+						"6": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						}
+					}
+				}
+			]
+		},
+		"objects": {
+			"patterns": [{
+					"match": "[A-Z][A-Z0-9_$]*(?=\\s*\\??(\\.\\s*[a-zA-Z_$]\\w*|::))",
+					"name": "constant.other.object.dolphindb"
+				},
+				{
+					"match": "[a-zA-Z_$][\\w$]*(?=\\s*\\??(\\.\\s*[a-zA-Z_$]\\w*|::))",
+					"name": "variable.other.object.dolphindb"
+				}
+			]
+		},
+		"operators": {
+			"patterns": [{
+					"match": "(?:([a-zA-Z$_][\\w$]*)?\\s+|(?<![\\w$]))(and=|or=)",
+					"captures": {
+						"1": {
+							"name": "variable.assignment.dolphindb"
+						},
+						"2": {
+							"name": "keyword.operator.assignment.compound.dolphindb"
+						}
+					}
+				},
+				{
+					"match": "([a-zA-Z$_][\\w$]*)?\\s*(%=|\\+=|-=|\\*=|&&=|\\|\\|=|\\?=|(?<!\\()/=)",
+					"captures": {
+						"1": {
+							"name": "variable.assignment.dolphindb"
+						},
+						"2": {
+							"name": "keyword.operator.assignment.compound.dolphindb"
+						}
+					}
+				},
+				{
+					"match": "([a-zA-Z$_][\\w$]*)?\\s*(&=|\\^=|\\|=)",
+					"captures": {
+						"1": {
+							"name": "variable.assignment.dolphindb"
+						},
+						"2": {
+							"name": "keyword.operator.assignment.compound.bitwise.dolphindb"
+						}
+					}
+				},
+				{
+					"match": "<<|>>",
+					"name": "keyword.operator.bitwise.shift.dolphindb"
+				},
+				{
+					"match": "!=|<=|>=|==",
+					"name": "keyword.operator.comparison.dolphindb"
+				},
+				{
+					"match": "&&|!|\\|\\|",
+					"name": "keyword.operator.logical.dolphindb"
+				},
+				{
+					"match": "&|\\||\\^",
+					"name": "keyword.operator.bitwise.dolphindb"
+				},
+				{
+					"match": "([a-zA-Z$_][\\w$]*)?\\s*(=|:(?!:))(?![>=])",
+					"captures": {
+						"1": {
+							"name": "variable.assignment.dolphindb"
+						},
+						"2": {
+							"name": "keyword.operator.assignment.dolphindb"
+						}
+					}
+				},
+				{
+					"match": "--",
+					"name": "keyword.operator.decrement.dolphindb"
+				},
+				{
+					"match": "\\+\\+",
+					"name": "keyword.operator.increment.dolphindb"
+				},
+				{
+					"match": "\\.\\.\\.",
+					"name": "keyword.operator.splat.dolphindb"
+				},
+				{
+					"match": "\\?",
+					"name": "keyword.operator.existential.dolphindb"
+				},
+				{
+					"match": "%|\\*|/|-|\\+",
+					"name": "keyword.operator.dolphindb"
+				},
+				{
+					"match": "(?x)\n\\b(?<![\\.\\$])\n(?:\n  (and|or|not) # logical\n  |\n  (is|isnt) # comparison\n)\n(?!\\s*:)\\b",
+					"captures": {
+						"1": {
+							"name": "keyword.operator.logical.dolphindb"
+						},
+						"2": {
+							"name": "keyword.operator.comparison.dolphindb"
+						}
+					}
+				}
+			]
+		},
+		"properties": {
+			"patterns": [{
+					"match": "(?:(\\.)|(::))\\s*([A-Z][A-Z0-9_$]*\\b\\$*)(?=\\s*\\??(\\.\\s*[a-zA-Z_$]\\w*|::))",
+					"captures": {
+						"1": {
+							"name": "punctuation.separator.property.period.dolphindb"
+						},
+						"2": {
+							"name": "keyword.operator.prototype.dolphindb"
+						},
+						"3": {
+							"name": "constant.other.object.property.dolphindb"
+						}
+					}
+				},
+				{
+					"match": "(?:(\\.)|(::))\\s*(\\$*[a-zA-Z_$][\\w$]*)(?=\\s*\\??(\\.\\s*[a-zA-Z_$]\\w*|::))",
+					"captures": {
+						"1": {
+							"name": "punctuation.separator.property.period.dolphindb"
+						},
+						"2": {
+							"name": "keyword.operator.prototype.dolphindb"
+						},
+						"3": {
+							"name": "variable.other.object.property.dolphindb"
+						}
+					}
+				},
+				{
+					"match": "(?:(\\.)|(::))\\s*([A-Z][A-Z0-9_$]*\\b\\$*)",
+					"captures": {
+						"1": {
+							"name": "punctuation.separator.property.period.dolphindb"
+						},
+						"2": {
+							"name": "keyword.operator.prototype.dolphindb"
+						},
+						"3": {
+							"name": "constant.other.property.dolphindb"
+						}
+					}
+				},
+				{
+					"match": "(?:(\\.)|(::))\\s*(\\$*[a-zA-Z_$][\\w$]*)",
+					"captures": {
+						"1": {
+							"name": "punctuation.separator.property.period.dolphindb"
+						},
+						"2": {
+							"name": "keyword.operator.prototype.dolphindb"
+						},
+						"3": {
+							"name": "variable.other.property.dolphindb"
+						}
+					}
+				},
+				{
+					"match": "(?:(\\.)|(::))\\s*([0-9][\\w$]*)",
+					"captures": {
+						"1": {
+							"name": "punctuation.separator.property.period.dolphindb"
+						},
+						"2": {
+							"name": "keyword.operator.prototype.dolphindb"
+						},
+						"3": {
+							"name": "invalid.illegal.identifier.dolphindb"
+						}
+					}
+				}
+			]
+		}
+	}
+}

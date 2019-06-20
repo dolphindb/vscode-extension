@@ -1,0 +1,162 @@
+{
+	"name": "dolphindb-vscode",
+	"displayName": "dolphindb-vscode",
+	"description": "",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.35.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"main": "./out/extension.js",
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"unittest": "npm run compile && mocha ./out/test",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "npm run compile && node ./node_modules/vscode/bin/test"
+	},
+	"devDependencies": {
+		"@types/lodash": "^4.14.134",
+		"@types/mocha": "^5.2.7",
+		"@types/node": "^12.0.8",
+		"@types/table": "^4.0.5",
+		"mocha": "^6.1.4",
+		"tslint": "^5.17.0",
+		"typescript": "^3.5.2",
+		"vscode": "^1.1.28"
+	},
+	"dependencies": {
+		"axios": "^0.19.0",
+		"lodash": "^4.17.11",
+		"table": "^5.4.1"
+	},
+	"activationEvents": [
+		"onCommand:dolphindb.executeCode",
+		"onCommand:dolphindb.addServer",
+		"onCommand:dolphindb.chooseServer",
+		"onCommand:dolphindb.removeServer"
+	],
+	"contributes": {
+		"commands": [
+			{
+				"command": "dolphindb.executeCode",
+				"title": "DolphinDB: executeCode"
+			},
+			{
+				"command": "dolphindb.addServer",
+				"title": "DolphinDB: addServer"
+			},
+			{
+				"command": "dolphindb.chooseServer",
+				"title": "DolphinDB: chooseServer"
+			},
+			{
+				"command": "dolphindb.removeServer",
+				"title": "DolphinDB: removeServer"
+			},
+			{
+				"command": "dolphindb.reflashEnv",
+				"title": "DolphinDB: reflash env"
+			}
+		],
+		"menus": {
+			"editor/context": [
+				{
+					"command": "dolphindb.executeCode",
+					"when": "editorHasSelection"
+				},
+				{
+					"command": "dolphindb.addServer"
+				},
+				{
+					"command": "dolphindb.chooseServer"
+				},
+				{
+					"command": "dolphindb.removeServer"
+				}
+			],
+			"view/title": []
+		},
+		"keybindings": [
+			{
+				"command": "dolphindb.executeCode",
+				"key": "ctrl+E",
+				"mac": "cmd+E",
+				"when": "editorHasSelection"
+			}
+		],
+		"languages": [
+			{
+				"id": "dolphindb",
+				"extensions": [
+					".dos",
+					".dp"
+				],
+				"aliases": [
+					"DolphinDB",
+					"dolphindb"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"configuration": [
+			{
+				"title": "dolphindb",
+				"type": "object",
+				"properties": {
+					"dolphindb.server.address": {
+						"description": "Dolphindb server hosts",
+						"scope": "resource",
+						"default": [
+							{
+								"name": "default",
+								"ip": "127.0.0.1",
+								"port": 8848
+							}
+						],
+						"type": "array"
+					}
+				}
+			}
+		],
+		"grammars": [
+			{
+				"language": "dolphindb",
+				"scopeName": "source.dolphindb",
+				"path": "./syntaxes/dolphindb.tmLanguage.json"
+			}
+		],
+		"snippets": [
+			{
+				"language": "dolphindb",
+				"path": "./snippets/dolphindb.snippets.json"
+			}
+		],
+		"breakpoints": [
+			{
+				"language": "dolphindb"
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "dolphindb-explorer",
+					"title": "Dolphindb Explorer",
+					"icon": "images/docker.svg"
+				}
+			]
+		},
+		"views": {
+			"dolphindb-explorer": [
+				{
+					"id": "dolphindb-variables",
+					"name": "dolphindb variables",
+					"when": "explorer"
+				}
+			]
+		}
+	}
+}
