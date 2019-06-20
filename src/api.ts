@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import axios from 'axios'
-import * as _ from 'lodash/fp'
-import { table, getBorderCharacters } from 'table'
+import { getBorderCharacters, table } from 'table'
 
 const tableConfig = {
     border: getBorderCharacters('norc'),
@@ -28,6 +27,8 @@ export interface IDolphindbObject {
     value: any,
     type?: string,
 }
+
+type Scalar = number | string
 
 export function executeCode(host: string, port: number, code: string, sessionID: string | undefined): Thenable<any> {
     const data: IDolphindbRequest = {
@@ -142,11 +143,11 @@ export class DolphindbJson {
         return +this._json.object[0].size
     }
 
-    toScalar(): string | number {
-        return <number> this._json.object[0].value
+    toScalar(): Scalar {
+        return this._json.object[0].value as (Scalar)
     }
 
-    static scalarFormat(dataType: string, scalar: string | number): string | number {
+    static scalarFormat(dataType: string, scalar: Scalar): Scalar {
         switch (dataType) {
             case 'string':
                 return '"' + scalar + '"'
@@ -252,7 +253,7 @@ export class DolphindbJson {
         return table([tbl], tableConfig)
     }
 
-    toTable(): {colName: string[], table: any[][]} {
+    toTable(): { colName: string[], table: any[][] } {
         let val = this._json.object[0].value
         const table = []
         const colName = []
@@ -278,7 +279,7 @@ export class DolphindbJson {
         return table([colName, ...tbl], tableConfig)
     }
 
-    toMatrix(): {colNum: number, matrix: any[][]} {
+     toMatrix(): { colNum: number, matrix: any[][] } {
         let val = this._json.object[0].value
         const matrix: any[][] = []
         const rowNum = +val[1].value
@@ -324,7 +325,3 @@ function transpose<T>(table: T[][], rowNum: number) {
     }
     return tableT
 }
-
-exports.executeCode = executeCode
-exports.DolphindbJson = DolphindbJson
-exports.fetchEnv = fetchEnv

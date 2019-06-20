@@ -27,12 +27,8 @@ export async function dolphindbExecuteCode() {
     let selected = (vscode.window.activeTextEditor as vscode.TextEditor).selection.with()
     let code = (vscode.window.activeTextEditor as vscode.TextEditor).document.getText(selected)
 
-    let {
-        data
-    } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
-    let {
-        data: env
-    } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
+    let { data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
+    let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
     let json = new api.DolphindbJson(data)
     // keep the sessionID
     context.sessionID = json.sessionID()
@@ -93,17 +89,17 @@ export async function dolphindbAddServer() {
         prompt: 'Please input the host port'
     })
 
-    if (port !== undefined && isNaN(Number.parseInt(port))) {
-        throw TypeError('port must be number')
+    let portNum = Number.parseInt(port)
+    if (port !== undefined || isNaN(portNum)) {
+        throw TypeError('port must be a number')
     }
 
-    let port2 = Number.parseInt(port as string)
     let address = vscode.workspace.getConfiguration('dolphindb.server').get('address') as IConfig[]
 
     const cfg: IConfig = {
         name: name ? name : defaultCfg.name,
         ip: ip ? ip : defaultCfg.ip,
-        port: port2 ? port2 : defaultCfg.port,
+        port: portNum ? portNum : defaultCfg.port,
     }
 
     address.push(cfg)
