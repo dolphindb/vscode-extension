@@ -22,6 +22,15 @@ const context = {
 
 const dolphindbOutput = vscode.window.createOutputChannel('dolphindbOutput')
 
+function getConfigDesc({name, ip, port}: IConfig) {
+    return `${name}: ${ip}:${port}`
+}
+
+function resultFormat(res: string): string {
+    return new Date() + ': executing code...\n' +
+        (res ? res : '') + '\n' +
+        new Date() + ': execution was completed\n'
+}
 
 export async function dolphindbExecuteCode() {
     let selected = (vscode.window.activeTextEditor as vscode.TextEditor).selection.with()
@@ -30,13 +39,9 @@ export async function dolphindbExecuteCode() {
     let { data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
     let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
     let json = new api.DolphindbJson(data)
-    // keep the sessionID
+    // todo: keep the sessionID
     context.sessionID = json.sessionID()
-    let res = json.toJsString()
-    let text = new Date() + ': executing code...\n' +
-        (res ? res : '') + '\n' +
-        new Date() + ': execution was completed\n'
-
+    let text = resultFormat(json.toJsString())
     dolphindbOutput.appendLine(text)
     dolphindbOutput.show()
 }
@@ -44,11 +49,7 @@ export async function dolphindbExecuteCode() {
 export async function dolphindbChooseServer() {
     let address = vscode.workspace.getConfiguration('dolphindb.server').get('address') as IConfig[]
 
-    let descs = address.map(({
-        name,
-        ip,
-        port
-    }) => `${name}: ${ip}:${port}`)
+    let descs = address.map(getConfigDesc)
 
     vscode.window.showQuickPick(descs)
         .then((desc) => {
@@ -56,27 +57,25 @@ export async function dolphindbChooseServer() {
                 return
             }
             currentCfg = address[_.findIndex((desc_) => desc === desc_, descs)]
+            vscode.window.showInformationMessage('Choose the ' + desc)
         })
 }
 
 export async function dolphindbRemoveServer() {
     let address = vscode.workspace.getConfiguration('dolphindb.server').get('address') as IConfig[]
-    let descs = address.map(({
-        name,
-        ip,
-        port
-    }) => `${name}: ${ip}:${port}`)
+    let descs = address.map(getConfigDesc)
 
     vscode.window.showQuickPick(descs)
         .then((desc) => {
             if(desc === undefined) {
                 return
             }
+
             address[_.findIndex((desc_) => desc === desc_, descs)] = null
             address = _.filter(elem => elem !== null, address)
             vscode.workspace.getConfiguration('dolphindb.server').update('address', address)
+            vscode.window.showInformationMessage('Remove the ' + desc)
         })
-
 }
 
 export async function dolphindbAddServer() {
@@ -108,7 +107,7 @@ export async function dolphindbAddServer() {
     }
 
     let portNum = Number.parseInt(port)
-    if (isNaN(portNum)) {
+    if (port !== '' && isNaN(portNum)) {
         vscode.window.showErrorMessage('port must be a number')
     }
 
@@ -128,4 +127,5 @@ export async function dolphindbAddServer() {
         address)
 
     vscode.workspace.getConfiguration('dolphindb.server').update('address', address, false)
+    vscode.window.showInformationMessage('Add the ' + getConfigDesc(cfg))
 }
