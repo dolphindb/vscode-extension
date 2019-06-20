@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import * as assert from 'assert';
-import * as api from '../code';
+import * as api from '../api';
 
 const ip = '127.0.0.1'
 const port = 8848

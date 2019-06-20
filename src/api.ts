@@ -3,12 +3,11 @@ import axios from 'axios'
 import * as _ from 'lodash/fp'
 import { table, getBorderCharacters } from 'table'
 
-
 const tableConfig = {
     border: getBorderCharacters('norc'),
 }
 
-export interface IDolphindbJson {
+export interface IDolphindbResponse {
     msg: string,
     object: IDolphindbObject[],
     resultCode: string,
@@ -16,16 +15,22 @@ export interface IDolphindbJson {
     userId: string,
 }
 
+export interface IDolphindbRequest {
+    sessionID: string,
+    functionName: string,
+    params: IDolphindbObject[]
+}
+
 export interface IDolphindbObject {
     name: string,
     form: string,
-    size: string,
+    size?: string,
     value: any,
     type?: string,
 }
 
 export function executeCode(host: string, port: number, code: string, sessionID: string | undefined): Thenable<any> {
-    const data = {
+    const data: IDolphindbRequest = {
         sessionID,
         functionName: 'executeCode',
         params: [{
@@ -44,7 +49,7 @@ export function executeCode(host: string, port: number, code: string, sessionID:
 }
 
 export function fetchEnv(host: string, port: number, sessionID: string): Thenable<any> {
-    const data = {
+    const data: IDolphindbRequest = {
         sessionID,
         functionName: 'executeCode',
         params: [{
@@ -67,7 +72,7 @@ export function fetchEnv(host: string, port: number, sessionID: string): Thenabl
  * DolphinJson represent a dolphindb code request result
  */
 export class DolphindbJson {
-    constructor(private readonly _json: IDolphindbJson) { }
+    constructor(private readonly _json: IDolphindbResponse) { }
 
     toJsString(): string {
         if (this._json_is_illegal()) {
