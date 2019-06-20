@@ -52,6 +52,9 @@ export async function dolphindbChooseServer() {
 
     vscode.window.showQuickPick(descs)
         .then((desc) => {
+            if(desc === undefined) {
+                return
+            }
             currentCfg = address[_.findIndex((desc_) => desc === desc_, descs)]
         })
 }
@@ -66,11 +69,14 @@ export async function dolphindbRemoveServer() {
 
     vscode.window.showQuickPick(descs)
         .then((desc) => {
+            if(desc === undefined) {
+                return
+            }
             address[_.findIndex((desc_) => desc === desc_, descs)] = null
-
             address = _.filter(elem => elem !== null, address)
             vscode.workspace.getConfiguration('dolphindb.server').update('address', address)
         })
+
 }
 
 export async function dolphindbAddServer() {
@@ -79,29 +85,39 @@ export async function dolphindbAddServer() {
         prompt: 'Please input the host name'
     })
 
+    if (name === undefined) {
+        return
+    }
+
     let ip = await vscode.window.showInputBox({
         placeHolder: defaultCfg.ip,
         prompt: 'Please input the host ip'
     })
+
+    if (ip === undefined) {
+        return
+    }
 
     let port = await vscode.window.showInputBox({
         placeHolder: defaultCfg.port.toString(),
         prompt: 'Please input the host port'
     })
 
+    if (port === undefined) {
+        return
+    }
+
     let portNum = Number.parseInt(port)
-    if (port !== undefined || isNaN(portNum)) {
-        throw TypeError('port must be a number')
+    if (isNaN(portNum)) {
+        vscode.window.showErrorMessage('port must be a number')
     }
 
     let address = vscode.workspace.getConfiguration('dolphindb.server').get('address') as IConfig[]
-
     const cfg: IConfig = {
         name: name ? name : defaultCfg.name,
         ip: ip ? ip : defaultCfg.ip,
         port: portNum ? portNum : defaultCfg.port,
     }
-
     address.push(cfg)
     address = _.uniqWith(_.isEqual, address)
     address = _.filter(
