@@ -7,7 +7,6 @@
 		"vscode": "^1.35.0"
 	},
 	"license": "SEE LICENSE IN LICENSE",
-
 	"categories": [
 		"Programming Languages",
 		"Snippets"
@@ -88,7 +87,6 @@
 				"command": "dolphindb.removeServer",
 				"title": "DolphinDB: removeServer"
 			},
-
 			{
 				"command": "dolphindb.env.refresh",
 				"title": "Refresh",
