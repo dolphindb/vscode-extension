@@ -37,8 +37,8 @@ export interface IDolphindbAttr {
 
 type Scalar = number | string
 
-function JsonUrl(host: string, port: number): string {
-    return `http://${host}:${port}`
+function JsonUrl(host: string, port: number, sessionID: string = '0'): string {
+    return `http://${host}:${port}/${sessionID}`
 }
 
 export function executeCode(host: string, port: number, code: string, sessionID: string = '0'): Thenable<any> {
@@ -52,10 +52,9 @@ export function executeCode(host: string, port: number, code: string, sessionID:
             value: code
         }]
     }
-
     return axios({
         method: 'post',
-        url: JsonUrl(host, port),
+        url: JsonUrl(host, port, sessionID),
         data,
     })
 }
@@ -75,7 +74,7 @@ export function testCode(host: string, port: number, code: string, sessionID: st
 
     return axios({
         method: 'post',
-        url: JsonUrl(host, port),
+        url: JsonUrl(host, port, sessionID),
         data,
     })
 }
@@ -94,7 +93,7 @@ export function fetchEnv(host: string, port: number, sessionID: string = '0'): T
 
     return axios({
         method: 'post',
-        url: JsonUrl(host, port),
+        url: JsonUrl(host, port, sessionID),
         data,
     })
 }

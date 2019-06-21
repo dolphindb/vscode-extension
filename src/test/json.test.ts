@@ -24,19 +24,19 @@ describe('HTTP JSON', function () {
     })
 
     it('should be same sessionID', async function () {
-        let sessionID = '0'
-        let { data } = await api.executeCode(ip, port, 'a = 1', sessionID)
-        let json = new api.DolphindbJson(data)
-        sessionID = json.sessionID()
+        let { data: data1 } = await api.executeCode(ip, port, 'a = 1')
+        let json1 = new api.DolphindbJson(data1)
+        let sessionId1 = json1.sessionID()
 
-        data = await api.executeCode(ip, port, 'a = 2', sessionID)
-        json = new api.DolphindbJson(data)
-        assert.equal(json.sessionID(), sessionID)
+        let {data: data2} = await api.executeCode(ip, port, 'a = 2', sessionId1)
+        let json2 = new api.DolphindbJson(data2)
+        let sessionId2 = json2.sessionID()
+
+        assert.equal(sessionId1, sessionId2)
     })
 
     it('should fetch env', async function () {
         let { data } = await api.fetchEnv(ip, port)
-        
     })
 })
 

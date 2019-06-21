@@ -1,30 +1,12 @@
 import * as vscode from 'vscode'
 import * as _ from 'lodash/fp'
 import * as api from './api'
+import { IConfig, context } from './context'
+import { VariableInfo } from './env'
+import { IDolphindbResponse } from './api';
 
-export interface IConfig {
-    name: string,
-    ip: string,
-    port: number
-}
 
-export interface DolphindbContext {
-    sessionID: string,
-    env: any,
-}
-
-export const context: DolphindbContext = {
-    sessionID: '0',
-    env: undefined,
-}
-
-export const defaultCfg: IConfig = {
-    name: 'default',
-    ip: '127.0.0.1',
-    port: 8848,
-}
-
-export let currentCfg = _.cloneDeep(defaultCfg)
+let currentCfg = context.currentCfg
 
 const dolphindbOutput = vscode.window.createOutputChannel('dolphindbOutput')
 
@@ -42,12 +24,15 @@ export async function dolphindbExecuteCode() {
     let selected = (vscode.window.activeTextEditor as vscode.TextEditor).selection.with()
     let code = (vscode.window.activeTextEditor as vscode.TextEditor).document.getText(selected)
 
-    let { data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
+    let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
     let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
-    context.env = env
+
+    console.log('before env', context.ENV.get('table'))
+    // every time after runing code, update ENV for variable explorer
+    context.ENV = VariableInfo.extractEnv(env.object[0])
     let json = new api.DolphindbJson(data)
-    // todo: keep the sessionID
     context.sessionID = json.sessionID()
+
     let text = resultFormat(json.toJsString())
     dolphindbOutput.appendLine(text)
     dolphindbOutput.show()
@@ -92,7 +77,7 @@ export async function dolphindbRemoveServer() {
 
 export async function dolphindbAddServer() {
     let name = await vscode.window.showInputBox({
-        placeHolder: defaultCfg.name,
+        placeHolder: context.defaultCfg.name,
         prompt: 'Please input the host name'
     })
 
@@ -101,7 +86,7 @@ export async function dolphindbAddServer() {
     }
 
     let ip = await vscode.window.showInputBox({
-        placeHolder: defaultCfg.ip,
+        placeHolder: context.defaultCfg.ip,
         prompt: 'Please input the host ip'
     })
 
@@ -110,7 +95,7 @@ export async function dolphindbAddServer() {
     }
 
     let port = await vscode.window.showInputBox({
-        placeHolder: defaultCfg.port.toString(),
+        placeHolder: context.defaultCfg.port.toString(),
         prompt: 'Please input the host port'
     })
 
@@ -125,9 +110,9 @@ export async function dolphindbAddServer() {
 
     let address = vscode.workspace.getConfiguration('dolphindb.server').get('address') as IConfig[]
     const cfg: IConfig = {
-        name: name ? name : defaultCfg.name,
-        ip: ip ? ip : defaultCfg.ip,
-        port: portNum ? portNum : defaultCfg.port,
+        name: name ? name : context.defaultCfg.name,
+        ip: ip ? ip : context.defaultCfg.ip,
+        port: portNum ? portNum : context.defaultCfg.port,
     }
     address.push(cfg)
     address = _.uniqWith(_.isEqual, address)

@@ -36,12 +36,30 @@
 		"table": "^5.4.1"
 	},
 	"activationEvents": [
+		"onView:dolphindb.env",
 		"onCommand:dolphindb.executeCode",
 		"onCommand:dolphindb.addServer",
 		"onCommand:dolphindb.chooseServer",
 		"onCommand:dolphindb.removeServer"
 	],
 	"contributes": {
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "dolphindb-env",
+					"title": "DolphinDB Env",
+					"icon": "media/dep.svg"
+				}
+			]
+		},
+		"views": {
+			"dolphindb-env": [
+				{
+					"id": "dolphindb.env",
+					"name": "DolphinDB Env"
+				}
+			]
+		},
 		"commands": [
 			{
 				"command": "dolphindb.executeCode",
@@ -59,9 +77,18 @@
 				"command": "dolphindb.removeServer",
 				"title": "DolphinDB: removeServer"
 			},
+
 			{
-				"command": "dolphindb.reflashEnv",
-				"title": "DolphinDB: reflash env"
+				"command": "dolphindb.env.refresh",
+				"title": "Refresh",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "dolphindb.env.showInfo",
+				"title": "Show"
 			}
 		],
 		"menus": {
@@ -80,7 +107,20 @@
 					"command": "dolphindb.removeServer"
 				}
 			],
-			"view/title": []
+			"view/title": [
+				{
+					"command": "dolphindb.env.refresh",
+					"when": "view == dolphindb.env",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "dolphindb.env.showInfo",
+					"when": "view == dolphindb.env && viewItem == variableType",
+					"group": "inline"
+				}
+			]
 		},
 		"keybindings": [
 			{
@@ -141,24 +181,6 @@
 			{
 				"language": "dolphindb"
 			}
-		],
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "dolphindb-explorer",
-					"title": "Dolphindb Explorer",
-					"icon": "images/docker.svg"
-				}
-			]
-		},
-		"views": {
-			"dolphindb-explorer": [
-				{
-					"id": "dolphindb-variables",
-					"name": "dolphindb variables",
-					"when": "explorer"
-				}
-			]
-		}
+		]
 	}
 }
