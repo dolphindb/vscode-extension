@@ -39,6 +39,7 @@ export class DolphindbEnvProvider implements vscode.TreeDataProvider<vscode.Tree
 
     getChildren(element?: vscode.TreeItem): vscode.ProviderResult<vscode.TreeItem[]> {
         if (element && element.contextValue === 'variableInfo') {
+            // empty
         } else if (element && element.contextValue === 'variableType') {
             return this.getVariableInfo(element)
         } else {

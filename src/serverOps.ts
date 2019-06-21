@@ -14,17 +14,18 @@ function getConfigDesc({ name, ip, port }: IConfig) {
     return `${name}: ${ip}:${port}`
 }
 
-function resultFormat(res: string): string {
+function resultFormat(res: string, start: Date, end: Date): string {
     return new Date() + ': executing code...\n' +
         (res ? res : '') + '\n' +
-        new Date() + ': execution was completed\n'
+        new Date() + ': execution was completed [' + (end.valueOf() - start.valueOf()).toString() + 'ms]\n'
 }
 
 export async function dolphindbExecuteCode() {
     let selected = (vscode.window.activeTextEditor as vscode.TextEditor).selection.with()
     let code = (vscode.window.activeTextEditor as vscode.TextEditor).document.getText(selected)
-
+    let start = new Date
     let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
+    let end = new Date
     let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
 
     console.log('before env', context.ENV.get('table'))
@@ -33,7 +34,7 @@ export async function dolphindbExecuteCode() {
     let json = new api.DolphindbJson(data)
     context.sessionID = json.sessionID()
 
-    let text = resultFormat(json.toJsString())
+    let text = resultFormat(json.toJsString(), start, end)
     dolphindbOutput.appendLine(text)
     dolphindbOutput.show()
 }

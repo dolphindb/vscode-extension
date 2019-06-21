@@ -1,14 +1,25 @@
 {
 	"name": "dolphindb-vscode",
-	"displayName": "dolphindb-vscode",
+	"displayName": "DolphinDB",
 	"description": "",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"engines": {
 		"vscode": "^1.35.0"
 	},
+	"license": "SEE LICENSE IN LICENSE",
+
 	"categories": [
-		"Other"
+		"Programming Languages",
+		"Snippets"
 	],
+	"bugs": {
+		"url": "https://github.com/yjhmelody/vscode-dolphindb-extension/issues"
+	},
+	"homepage": "https://github.com/yjhmelody/vscode-dolphindb-extension/blob/master/README.md",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/yjhmelody/vscode-dolphindb-extension.git"
+	},
 	"main": "./out/extension.js",
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
