@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode'
 import * as serverOps from './serverOps'
+import * as env from './env'
 
 
 // this method is called when your extension is activated
@@ -17,6 +18,10 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(addServer)
     context.subscriptions.push(chooseServer)
     context.subscriptions.push(removeServer)
+
+    const dolphindbEnvProvider = new env.DolphindbEnvProvider(serverOps.context)
+    vscode.window.registerTreeDataProvider('dolphindb.env', dolphindbEnvProvider)
+    vscode.commands.registerCommand('dolphindb.env.refresh', () => dolphindbEnvProvider.refresh())
 }
 
 // this method is called when your extension is deactivated

@@ -8,21 +8,27 @@ export interface IConfig {
     port: number
 }
 
-const defaultCfg: IConfig = {
+export interface DolphindbContext {
+    sessionID: string,
+    env: any,
+}
+
+export const context: DolphindbContext = {
+    sessionID: '0',
+    env: undefined,
+}
+
+export const defaultCfg: IConfig = {
     name: 'default',
     ip: '127.0.0.1',
     port: 8848,
 }
 
-let currentCfg = _.cloneDeep(defaultCfg)
-
-const context = {
-    sessionID: '0',
-}
+export let currentCfg = _.cloneDeep(defaultCfg)
 
 const dolphindbOutput = vscode.window.createOutputChannel('dolphindbOutput')
 
-function getConfigDesc({name, ip, port}: IConfig) {
+function getConfigDesc({ name, ip, port }: IConfig) {
     return `${name}: ${ip}:${port}`
 }
 
@@ -38,6 +44,7 @@ export async function dolphindbExecuteCode() {
 
     let { data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
     let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
+    context.env = env
     let json = new api.DolphindbJson(data)
     // todo: keep the sessionID
     context.sessionID = json.sessionID()
@@ -58,7 +65,7 @@ export async function dolphindbChooseServer() {
 
     vscode.window.showQuickPick(descs)
         .then((desc) => {
-            if(desc === undefined) {
+            if (desc === undefined) {
                 return
             }
             currentCfg = address[_.findIndex((desc_) => desc === desc_, descs)]
@@ -72,7 +79,7 @@ export async function dolphindbRemoveServer() {
 
     vscode.window.showQuickPick(descs)
         .then((desc) => {
-            if(desc === undefined) {
+            if (desc === undefined) {
                 return
             }
 

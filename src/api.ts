@@ -22,9 +22,17 @@ export interface IDolphindbRequest {
 export interface IDolphindbObject {
     name: string,
     form: string,
-    value: any,
+    value: Scalar | IDolphindbAttr[] | Scalar[],
     size?: string,
     type?: string,
+}
+
+export interface IDolphindbAttr {
+    name: string,
+    form: string,
+    type: string,
+    size: string,
+    value: number | string | (number | string)[]
 }
 
 type Scalar = number | string
@@ -33,7 +41,7 @@ function JsonUrl(host: string, port: number): string {
     return `http://${host}:${port}`
 }
 
-export function executeCode(host: string, port: number, code: string, sessionID: string): Thenable<any> {
+export function executeCode(host: string, port: number, code: string, sessionID: string = '0'): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,
         functionName: 'executeCode',
@@ -53,7 +61,7 @@ export function executeCode(host: string, port: number, code: string, sessionID:
 }
 
 // todo
-export function testCode(host: string, port: number, code: string, sessionID: string): Thenable<any> {
+export function testCode(host: string, port: number, code: string, sessionID: string = '0'): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,
         functionName: 'executeCode',
@@ -72,7 +80,7 @@ export function testCode(host: string, port: number, code: string, sessionID: st
     })
 }
 
-export function fetchEnv(host: string, port: number, sessionID: string): Thenable<any> {
+export function fetchEnv(host: string, port: number, sessionID: string = '0'): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,
         functionName: 'executeCode',
@@ -90,6 +98,7 @@ export function fetchEnv(host: string, port: number, sessionID: string): Thenabl
         data,
     })
 }
+
 
 export class DolphindbJson {
     constructor(private readonly _json: IDolphindbResponse) { }
@@ -194,8 +203,8 @@ export class DolphindbJson {
         return `pair(${this.toPair().join(', ')})`
     }
 
-    toVector(): any[] {
-        return this._json.object[0].value
+    toVector(): Scalar[] {
+        return this._json.object[0].value as Scalar[]
     }
 
     toVectorStyle(): string {
@@ -248,8 +257,8 @@ export class DolphindbJson {
 
     toSet(): Set<any> {
         let set = new Set()
-        let val = this._json.object[0].value
-        val.forEach((elem: any) => {
+        let val = this._json.object[0].value as []
+        val.forEach((elem) => {
             set.add(DolphindbJson.scalarFormat(this.dataType(), elem))
         })
         return set
@@ -273,7 +282,7 @@ export class DolphindbJson {
     }
 
     toTable(): { colName: string[], table: any[][] } {
-        let val = this._json.object[0].value
+        let val = this._json.object[0].value as IDolphindbAttr[]
         const table = []
         const colName = []
         let rowNum = this.getDataSize()
