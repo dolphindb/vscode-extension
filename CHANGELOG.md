@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.2.0] - 2019-06-22
 
+- Server config
+- syntaxes hightlighting
+- basic env for variables
+
 ## [Unreleased]
 
 - Initial release
