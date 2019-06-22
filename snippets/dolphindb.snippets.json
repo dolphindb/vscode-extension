@@ -1,6 +1,6 @@
 {
     "assert": {
-        "body": "assert(${1:[...]}, ${2: ...})",
+        "body": "assert(${1:[...]}, ${2:...})",
         "description": "assert([desc,] expression)",
         "prefix": "assert",
         "scope": "source.dolphindb"
@@ -12,9 +12,16 @@
         "scope": "source.dolphindb"
     },
     "ifelse": {
-        "body": "if(${1:condition}) {\n\t${2:// body}\n}\nelse\n\t${3:// body}\n}",
+        "body": "if(${1:condition}) {\n\t${2:// body}\n}\nelse {\n\t${3:// body}\n}",
         "description": "if else",
         "prefix": "if else",
+        "scope": "source.dolphindb"
+    },
+
+    "else": {
+        "body": "else {\n\t${3:// body}\n}",
+        "description": "else",
+        "prefix": "else",
         "scope": "source.dolphindb"
     },
     "def": {
@@ -30,7 +37,7 @@
         "scope": "source.dolphindb"
     },
     "doWhile": {
-        "body": "do {\n\t${1: // body }\n} while (${2: conditions})",
+        "body": "do {\n\t${1: // body }\n} while (${2:conditions})",
         "description": "do while",
         "prefix": "do while",
         "scope": "source.dolphindb"
@@ -42,7 +49,7 @@
         "scope": "source.dolphindb"
     },
     "try": {
-        "body": "try {\n\t${1:// body}\n}catch(${2:err}) {\n\t${3:// catch} \n}",
+        "body": "try {\n\t${1:// body}\n}catch(${2:err}) {\n\t${3:// body} \n}",
         "description": "try catch",
         "prefix": "try",
         "scope": "source.dolphindb"
@@ -100,7 +107,24 @@
         "prefix": "select pivot",
         "scope": "source.dolphindb"
     },
-
+    "order": {
+        "body": "order by ${1:...}",
+        "description": "order by col",
+        "prefix": "order",
+        "scope": "source.dolphindb"
+    },
+    "group": {
+        "body": "group by ${1:...}",
+        "description": "group by col",
+        "prefix": "group",
+        "scope": "source.dolphindb"
+    },
+    "having": {
+        "body": "having ${1:...} ${2:op} ${3:...}",
+        "description": "sql having",
+        "prefix": "having",
+        "scope": "source.dolphindb"
+    },
     "exec1": {
         "body": [
             "exec ${1:*} from ${2:table} where ${3:...}",
@@ -114,8 +138,8 @@
     },
     "exec2": {
         "body": "exec ${1:*} from ${2:table} where ${3:...}",
-        "description": "select where",
-        "prefix": "select where",
+        "description": "exec where",
+        "prefix": "exec where",
         "scope": "source.dolphindb"
     },
     "exec3": {
@@ -159,17 +183,16 @@
     },
     "delete": {
         "body": "delete from ${1:table} where ${2:...}",
-        "description": "update",
-        "prefix": "update",
+        "description": "delete",
+        "prefix": "delete",
         "scope": "source.dolphindb"
     },
     "lambda": {
-        "body": "def (${1:...}) -> ${2:expression}",
+        "body": "def ${1:}(${2:...}) -> ${3:expression}",
         "description": "lambda",
         "prefix": "lambda",
         "scope": "source.dolphindb"
     },
-
     "module": {
         "body": "module ${1:directory}::${2:fileName}",
         "description": "module",
