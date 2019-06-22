@@ -28,8 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider('dolphindb.env', dolphindbEnvProvider)
     vscode.commands.registerCommand('dolphindb.env.refresh', () => dolphindbEnvProvider.refresh())
     vscode.commands.registerCommand('dolphindb.env.showInfo', () => {
-        vscode.window.showInformationMessage('showInfo')
-        console.log(...dolphindbContext.ENV.get('table'))
+        vscode.window.showInformationMessage('TODO')
         dolphindbEnvProvider.refresh()
     })
 
@@ -45,7 +44,6 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(addServer)
     context.subscriptions.push(chooseServer)
     context.subscriptions.push(removeServer)
-
 }
 
 // this method is called when your extension is deactivated

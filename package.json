@@ -3,12 +3,15 @@
 	"displayName": "DolphinDB",
 	"description": "",
 	"version": "0.2.0",
+	"publisher": "yjhmelody",
 	"engines": {
 		"vscode": "^1.35.0"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"categories": [
 		"Programming Languages",
+		"Other",
+		"Linters",
 		"Snippets"
 	],
 	"bugs": {
@@ -56,14 +59,14 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "dolphindb-env",
-					"title": "DolphinDB Env",
+					"id": "dolphindb-explorer",
+					"title": "DolphinDB Explorer",
 					"icon": "media/dep.svg"
 				}
 			]
 		},
 		"views": {
-			"dolphindb-env": [
+			"dolphindb-explorer": [
 				{
 					"id": "dolphindb.env",
 					"name": "DolphinDB Env"
