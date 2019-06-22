@@ -104,16 +104,19 @@
 			"editor/context": [
 				{
 					"command": "dolphindb.executeCode",
-					"when": "editorHasSelection"
+					"when": "editorHasSelection && resourceLangId == dolphindb"
 				},
 				{
-					"command": "dolphindb.addServer"
+					"command": "dolphindb.addServer",
+					"when": "resourceLangId == dolphindb"
 				},
 				{
-					"command": "dolphindb.chooseServer"
+					"command": "dolphindb.chooseServer",
+					"when": "resourceLangId == dolphindb"
 				},
 				{
-					"command": "dolphindb.removeServer"
+					"command": "dolphindb.removeServer",
+					"when": "resourceLangId == dolphindb"
 				}
 			],
 			"view/title": [
@@ -144,7 +147,8 @@
 				"id": "dolphindb",
 				"extensions": [
 					".dos",
-					".dp"
+					".dp",
+					".txt"
 				],
 				"aliases": [
 					"DolphinDB",
