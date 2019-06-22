@@ -1,3 +1,185 @@
 {
-	
+    "assert": {
+        "body": "assert(${1:[...]}, ${2: ...})",
+        "description": "assert([desc,] expression)",
+        "prefix": "assert",
+        "scope": "source.dolphindb"
+    },
+    "if": {
+        "body": "if(${1:condition}) {\n\t${2:// body}\n}",
+        "description": "if",
+        "prefix": "if",
+        "scope": "source.dolphindb"
+    },
+    "ifelse": {
+        "body": "if(${1:condition}) {\n\t${2:// body}\n}\nelse\n\t${3:// body}\n}",
+        "description": "if else",
+        "prefix": "if else",
+        "scope": "source.dolphindb"
+    },
+    "def": {
+        "body": "def ${1:function_name}(${2:...}) {\n\t${3:// body}\n}",
+        "description": "def",
+        "prefix": "def",
+        "scope": "source.dolphindb"
+    },
+    "for": {
+        "body": "for (${1:i} in ${2:...}) {\n\t${3:// body}\n}",
+        "description": "for in",
+        "prefix": "for",
+        "scope": "source.dolphindb"
+    },
+    "doWhile": {
+        "body": "do {\n\t${1: // body }\n} while (${2: conditions})",
+        "description": "do while",
+        "prefix": "do while",
+        "scope": "source.dolphindb"
+    },
+    "@testing": {
+        "body": "@testing:case=\"${0:test}\"",
+        "description": "@testing",
+        "prefix": "@testing",
+        "scope": "source.dolphindb"
+    },
+    "try": {
+        "body": "try {\n\t${1:// body}\n}catch(${2:err}) {\n\t${3:// catch} \n}",
+        "description": "try catch",
+        "prefix": "try",
+        "scope": "source.dolphindb"
+    },
+    "#include": {
+        "body": "#include ${0:\"file path\"}",
+        "description": "include",
+        "prefix": "#include",
+        "scope": "source.dolphindb"
+    },
+    "comment": {
+        "body": "/**\n ${1:comment}\n*/",
+        "description": "comment",
+        "prefix": "/*",
+        "scope": "source.dolphindb"
+    },
+    "select": {
+        "body": [
+            "select ${1:*} from ${2:table} where ${3:...}",
+            "group by ${4:...}",
+            "having ${5:...}",
+            "order by ${6:...}"
+        ],
+        "description": "select group",
+        "prefix": "select group",
+        "scope": "source.dolphindb"
+    },
+    "select2": {
+        "body": "select ${1:*} from ${2:table} where ${3:...}",
+        "description": "select where",
+        "prefix": "select where",
+        "scope": "source.dolphindb"
+    },
+    "select3": {
+        "body": "select ${1:*} from ${2:table}",
+        "description": "select",
+        "prefix": "select",
+        "scope": "source.dolphindb"
+    },
+    "select4": {
+        "body": [
+            "select ${1:*} from ${2:table}",
+            "\tcontext by ${3:...}, ${4:...}"
+        ],
+        "description": "select context",
+        "prefix": "select context",
+        "scope": "source.dolphindb"
+    },
+    "select5": {
+        "body": [
+            "select ${1:*} from ${2:table}",
+            "\tpivot by ${3:...}, ${4:...}"
+        ],
+        "description": "select pivot",
+        "prefix": "select pivot",
+        "scope": "source.dolphindb"
+    },
+
+    "exec1": {
+        "body": [
+            "exec ${1:*} from ${2:table} where ${3:...}",
+            "group by ${4:...}",
+            "having ${5:...}",
+            "order by ${6:...}"
+        ],
+        "description": "exec group",
+        "prefix": "exec group",
+        "scope": "source.dolphindb"
+    },
+    "exec2": {
+        "body": "exec ${1:*} from ${2:table} where ${3:...}",
+        "description": "select where",
+        "prefix": "select where",
+        "scope": "source.dolphindb"
+    },
+    "exec3": {
+        "body": "exec ${1:*} from ${2:table}",
+        "description": "exec",
+        "prefix": "exec",
+        "scope": "source.dolphindb"
+    },
+    "exec4": {
+        "body": [
+            "exec ${1:*} from ${2:table}",
+            "\tcontext by ${3:...}, ${4:...}"
+        ],
+        "description": "exec context",
+        "prefix": "exec context",
+        "scope": "source.dolphindb"
+    },
+    "exec5": {
+        "body": [
+            "exec ${1:*} from ${2:table}",
+            "\tpivot by ${3:...}, ${4:...}"
+        ],
+        "description": "exec pivot",
+        "prefix": "exec pivot",
+        "scope": "source.dolphindb"
+    },
+    "insert": {
+        "body": "insert into ${1:table} values (${2:...}",
+        "description": "insert",
+        "prefix": "insert",
+        "scope": "source.dolphindb"
+    },
+    "update": {
+        "body": [
+            "update ${1:table}",
+            "\tset ${2:col} = ${3:...}"
+        ],
+        "description": "update",
+        "prefix": "update",
+        "scope": "source.dolphindb"
+    },
+    "delete": {
+        "body": "delete from ${1:table} where ${2:...}",
+        "description": "update",
+        "prefix": "update",
+        "scope": "source.dolphindb"
+    },
+    "lambda": {
+        "body": "def (${1:...}) -> ${2:expression}",
+        "description": "lambda",
+        "prefix": "lambda",
+        "scope": "source.dolphindb"
+    },
+
+    "module": {
+        "body": "module ${1:directory}::${2:fileName}",
+        "description": "module",
+        "prefix": "module",
+        "scope": "source.dolphindb"
+    },
+    "use": {
+        "body": "use ${1:directory}::${2:fileName}",
+        "description": "use module",
+        "prefix": "use",
+        "scope": "source.dolphindb"
+    }
 }

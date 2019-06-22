@@ -3,6 +3,7 @@ node_modules
 .vscode-test/
 *.vsix
 
+*.db
 # Logs
 logs
 *.log

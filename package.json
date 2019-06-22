@@ -2,7 +2,7 @@
 	"name": "dolphindb-vscode",
 	"displayName": "DolphinDB",
 	"description": "VScode plugin for DolphinDB script",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"publisher": "yjhmelody",
 	"engines": {
 		"vscode": "^1.35.0"
@@ -55,13 +55,14 @@
 		"onCommand:dolphindb.chooseServer",
 		"onCommand:dolphindb.removeServer"
 	],
+	"icon": "images/dolphindb.png",
 	"contributes": {
 		"viewsContainers": {
 			"activitybar": [
 				{
 					"id": "dolphindb-explorer",
 					"title": "DolphinDB Explorer",
-					"icon": "media/dep.svg"
+					"icon": "media/explorer.svg"
 				}
 			]
 		},
@@ -198,5 +199,14 @@
 				"language": "dolphindb"
 			}
 		]
-	}
+	},
+	"keywords": [
+		"DataBase",
+		"database",
+		"dolphindb",
+		"DolphinDB",
+		"OLAP",
+		"Stream Computition",
+		"Programing language"
+	]
 }

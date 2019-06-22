@@ -41,8 +41,6 @@ export async function dolphindbExecuteCode() {
     let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
     let end = new Date
     let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
-
-    console.log('before env', context.ENV.get('table'))
     // every time after runing code, update ENV for variable explorer
     context.ENV = VariableInfo.extractEnv(env.object[0])
     let json = new api.DolphindbJson(data)

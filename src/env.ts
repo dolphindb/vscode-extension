@@ -11,13 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 import * as vscode from 'vscode'
 import * as api from './api'
 import * as serverOps from './serverOps'
 import { IDolphindbObject, IDolphindbAttr } from './api'
 
 import { DolphindbContext } from './context';
+import * as path from 'path';
 
 const DATA_FORM = [
     'scalar',
@@ -64,8 +64,6 @@ export class DolphindbEnvProvider implements vscode.TreeDataProvider<vscode.Tree
     }
 
     private getVariableInfo(parent: vscode.TreeItem): VariableInfo[] {
-        console.log(...this.context.ENV.get('table'))
-
         return this.context.ENV.get(parent.label)
     }
 }
@@ -76,6 +74,11 @@ export class DolphindbEnvProvider implements vscode.TreeDataProvider<vscode.Tree
  */
 export class VariableType extends vscode.TreeItem {
     contextValue = 'variableType'
+
+    iconPath = {
+        light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
+		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
+    }
 
     constructor(
         public readonly label: string,
@@ -99,6 +102,11 @@ export class VariableType extends vscode.TreeItem {
  */
 export class VariableInfo extends vscode.TreeItem {
     contextValue = 'variableInfo'
+
+    iconPath = {
+        light: path.join(__filename, '..', '..', 'resources', 'light', 'number.svg'),
+		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'number.svg')
+    }
 
     constructor(
         public readonly label: string,

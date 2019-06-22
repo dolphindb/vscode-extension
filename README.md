@@ -2,9 +2,10 @@
 
 ## Features
 
-- [x] Hightlight
-- [x] Env variable
-- [x] Connect to server 
+- [x] Hightlighting
+- [x] Snippets for common patterns 
+- [x] Environment variables display
+- [x] Connection to server
 
 ## Command
 
@@ -24,6 +25,10 @@ None
 None
 
 ## Release Notes
+
+### 0.3.0
+
+Added snippets for common patterns.
 
 ### 0.2.0
 
