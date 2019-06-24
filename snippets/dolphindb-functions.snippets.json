@@ -1,0 +1,3512 @@
+{
+  "NBFit": {
+    "prefix": "NBFit",
+    "body": "NBFit(${1:model}, ${2:trainData}, ${3:labels})",
+    "scope": "source.dolphindb"
+  },
+  "NBPredict": {
+    "prefix": "NBPredict",
+    "body": "NBPredict(${1:model}, ${2:testData})",
+    "scope": "source.dolphindb"
+  },
+  "__verifyLicense__": {
+    "prefix": "__verifyLicense__",
+    "body": "__verifyLicense__(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "abs": {
+    "prefix": "abs",
+    "body": "abs(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "accumulate": {
+    "prefix": "accumulate",
+    "body": "accumulate(${1:func}, ${2:X}, ${3:[init]})",
+    "scope": "source.dolphindb"
+  },
+  "aclCheckPoint": {
+    "prefix": "aclCheckPoint",
+    "body": "aclCheckPoint(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "acos": {
+    "prefix": "acos",
+    "body": "acos(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "activeClosePublishConnection": {
+    "prefix": "activeClosePublishConnection",
+    "body": "activeClosePublishConnection(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "add": {
+    "prefix": "add",
+    "body": "add(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "addColumn": {
+    "prefix": "addColumn",
+    "body": "addColumn(${1:table}, ${2:colNames}, ${3:colTypes})",
+    "scope": "source.dolphindb"
+  },
+  "addDataNodeAgent": {
+    "prefix": "addDataNodeAgent",
+    "body": "addDataNodeAgent(${1:host}, ${2:port}, ${3:alias})",
+    "scope": "source.dolphindb"
+  },
+  "addDataNodeController": {
+    "prefix": "addDataNodeController",
+    "body": "addDataNodeController(${1:host}, ${2:port}, ${3:alias})",
+    "scope": "source.dolphindb"
+  },
+  "addDataNodeDN": {
+    "prefix": "addDataNodeDN",
+    "body": "addDataNodeDN(${1:host}, ${2:port}, ${3:alias}, ${4:maxConnections}, ${5:maxRemoteConnections})",
+    "scope": "source.dolphindb"
+  },
+  "addFunctionView": {
+    "prefix": "addFunctionView",
+    "body": "addFunctionView(${1:udf})",
+    "scope": "source.dolphindb"
+  },
+  "addGroupMember": {
+    "prefix": "addGroupMember",
+    "body": "addGroupMember(${1:userIds}, ${2:groupIds})",
+    "scope": "source.dolphindb"
+  },
+  "addMetrics": {
+    "prefix": "addMetrics",
+    "body": "addMetrics(${1:aggregator/name}, ${2:newMetrics}, ${3:newMetricsSchema})",
+    "scope": "source.dolphindb"
+  },
+  "addNode": {
+    "prefix": "addNode",
+    "body": "addNode(${1:host}, ${2:port}, ${3:alias})",
+    "scope": "source.dolphindb"
+  },
+  "addValuePartitions": {
+    "prefix": "addValuePartitions",
+    "body": "addValuePartitions(${1:dbHandle}, ${2:newValues}, ${3:[level=0]}, ${4:[locations]})",
+    "scope": "source.dolphindb"
+  },
+  "addVolumes": {
+    "prefix": "addVolumes",
+    "body": "addVolumes(${1:volumes})",
+    "scope": "source.dolphindb"
+  },
+  "adhocRemoteRun": {
+    "prefix": "adhocRemoteRun",
+    "body": "adhocRemoteRun(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "aj": {
+    "prefix": "aj",
+    "body": "aj(${1:leftTable}, ${2:rightTable}, ${3:matchingCols}, ${4:[rightMatchingCols]})",
+    "scope": "source.dolphindb"
+  },
+  "all": {
+    "prefix": "all",
+    "body": "all(${1:obj|func}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "and": {
+    "prefix": "and",
+    "body": "and(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "any": {
+    "prefix": "any",
+    "body": "any(${1:obj|func}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "append!": {
+    "prefix": "append!",
+    "body": "append!(${1:obj}, ${2:newData})",
+    "scope": "source.dolphindb"
+  },
+  "array": {
+    "prefix": "array",
+    "body": "array(${1:dataType|template}, ${2:[intialSize]}, ${3:[capacity]}, ${4:[defaultValue]})",
+    "scope": "source.dolphindb"
+  },
+  "asin": {
+    "prefix": "asin",
+    "body": "asin(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "asof": {
+    "prefix": "asof",
+    "body": "asof(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "at": {
+    "prefix": "at",
+    "body": "at(${1:X}, ${2:[index]})",
+    "scope": "source.dolphindb"
+  },
+  "atImax": {
+    "prefix": "atImax",
+    "body": "atImax(${1:location}, ${2:value})",
+    "scope": "source.dolphindb"
+  },
+  "atImin": {
+    "prefix": "atImin",
+    "body": "atImin(${1:location}, ${2:value})",
+    "scope": "source.dolphindb"
+  },
+  "atan": {
+    "prefix": "atan",
+    "body": "atan(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "authenticate": {
+    "prefix": "authenticate",
+    "body": "authenticate(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "authenticateByTicket": {
+    "prefix": "authenticateByTicket",
+    "body": "authenticateByTicket(${1:ticket})",
+    "scope": "source.dolphindb"
+  },
+  "avg": {
+    "prefix": "avg",
+    "body": "avg(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "avgreduce": {
+    "prefix": "avgreduce",
+    "body": "avgreduce(${1:mysum}, ${2:mycount})",
+    "scope": "source.dolphindb"
+  },
+  "backup": {
+    "prefix": "backup",
+    "body": "backup(${1:backupDir}, ${2:sqlObj}, ${3:[force=false]})",
+    "scope": "source.dolphindb"
+  },
+  "backupInternal": {
+    "prefix": "backupInternal",
+    "body": "backupInternal(${1:sqlObj}, ${2:tableName}, ${3:getData})",
+    "scope": "source.dolphindb"
+  },
+  "bar": {
+    "prefix": "bar",
+    "body": "bar(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "beta": {
+    "prefix": "beta",
+    "body": "beta(${1:Y}, ${2:X})",
+    "scope": "source.dolphindb"
+  },
+  "between": {
+    "prefix": "between",
+    "body": "between(${1:lowerBound}, ${2:upperBound})",
+    "scope": "source.dolphindb"
+  },
+  "bfill": {
+    "prefix": "bfill",
+    "body": "bfill(${1:obj}, ${2:[limit]})",
+    "scope": "source.dolphindb"
+  },
+  "bfill!": {
+    "prefix": "bfill!",
+    "body": "bfill!(${1:obj}, ${2:[limit]})",
+    "scope": "source.dolphindb"
+  },
+  "bigarray": {
+    "prefix": "bigarray",
+    "body": "bigarray(${1:dataType|template}, ${2:initialSize}, ${3:capacity}, ${4:defaultValue})",
+    "scope": "source.dolphindb"
+  },
+  "binsrch": {
+    "prefix": "binsrch",
+    "body": "binsrch(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "bitAnd": {
+    "prefix": "bitAnd",
+    "body": "bitAnd(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "bitOr": {
+    "prefix": "bitOr",
+    "body": "bitOr(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "bitXor": {
+    "prefix": "bitXor",
+    "body": "bitXor(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "bool": {
+    "prefix": "bool",
+    "body": "bool(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "brief": {
+    "prefix": "brief",
+    "body": "brief(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "bucket": {
+    "prefix": "bucket",
+    "body": "bucket(${1:vector}, ${2:dataRange}, ${3:bucketNum}, ${4:[includeOutbound=false]})",
+    "scope": "source.dolphindb"
+  },
+  "bucketCount": {
+    "prefix": "bucketCount",
+    "body": "bucketCount(${1:vector}, ${2:dataRange}, ${3:bucketNum}, ${4:[includeOutbound=false]})",
+    "scope": "source.dolphindb"
+  },
+  "cacheDS!": {
+    "prefix": "cacheDS!",
+    "body": "cacheDS!(${1:ds})",
+    "scope": "source.dolphindb"
+  },
+  "cacheDSNow": {
+    "prefix": "cacheDSNow",
+    "body": "cacheDSNow(${1:ds})",
+    "scope": "source.dolphindb"
+  },
+  "call": {
+    "prefix": "call",
+    "body": "call(${1:func}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "cancelConsoleJob": {
+    "prefix": "cancelConsoleJob",
+    "body": "cancelConsoleJob(${1:rootJobId})",
+    "scope": "source.dolphindb"
+  },
+  "cancelJob": {
+    "prefix": "cancelJob",
+    "body": "cancelJob(${1:jobId})",
+    "scope": "source.dolphindb"
+  },
+  "cancelRecoveryTask": {
+    "prefix": "cancelRecoveryTask",
+    "body": "cancelRecoveryTask(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "cast": {
+    "prefix": "cast",
+    "body": "cast(${1:obj}, ${2:type})",
+    "scope": "source.dolphindb"
+  },
+  "cdfBeta": {
+    "prefix": "cdfBeta",
+    "body": "cdfBeta(${1:alpha}, ${2:beta}, ${3:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfBinomial": {
+    "prefix": "cdfBinomial",
+    "body": "cdfBinomial(${1:trials}, ${2:prob}, ${3:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfChiSquare": {
+    "prefix": "cdfChiSquare",
+    "body": "cdfChiSquare(${1:df}, ${2:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfExp": {
+    "prefix": "cdfExp",
+    "body": "cdfExp(${1:mean}, ${2:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfF": {
+    "prefix": "cdfF",
+    "body": "cdfF(${1:numeratorDF}, ${2:denominatorDF}, ${3:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfGamma": {
+    "prefix": "cdfGamma",
+    "body": "cdfGamma(${1:shape}, ${2:scale}, ${3:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfKolmogorov": {
+    "prefix": "cdfKolmogorov",
+    "body": "cdfKolmogorov(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfLogistic": {
+    "prefix": "cdfLogistic",
+    "body": "cdfLogistic(${1:mean}, ${2:s}, ${3:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfNormal": {
+    "prefix": "cdfNormal",
+    "body": "cdfNormal(${1:mean}, ${2:stdev}, ${3:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfPoisson": {
+    "prefix": "cdfPoisson",
+    "body": "cdfPoisson(${1:mean}, ${2:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfStudent": {
+    "prefix": "cdfStudent",
+    "body": "cdfStudent(${1:df}, ${2:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfUniform": {
+    "prefix": "cdfUniform",
+    "body": "cdfUniform(${1:lower}, ${2:upper}, ${3:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfWeibull": {
+    "prefix": "cdfWeibull",
+    "body": "cdfWeibull(${1:alpha}, ${2:beta}, ${3:X})",
+    "scope": "source.dolphindb"
+  },
+  "cdfZipf": {
+    "prefix": "cdfZipf",
+    "body": "cdfZipf(${1:num}, ${2:exponent}, ${3:X})",
+    "scope": "source.dolphindb"
+  },
+  "ceil": {
+    "prefix": "ceil",
+    "body": "ceil(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "cell": {
+    "prefix": "cell",
+    "body": "cell(${1:obj}, ${2:row}, ${3:col})",
+    "scope": "source.dolphindb"
+  },
+  "changePwd": {
+    "prefix": "changePwd",
+    "body": "changePwd(${1:oldPwd}, ${2:newPwd})",
+    "scope": "source.dolphindb"
+  },
+  "char": {
+    "prefix": "char",
+    "body": "char(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "checksum": {
+    "prefix": "checksum",
+    "body": "checksum(${1:fileName}, ${2:[offset]}, ${3:[length]})",
+    "scope": "source.dolphindb"
+  },
+  "chunkMeta": {
+    "prefix": "chunkMeta",
+    "body": "chunkMeta(${1:url}, ${2:[id]}, ${3:[chunkType]}, ${4:[version]}, ${5:[size]}, ${6:[sites]}, ${7:[cid]})",
+    "scope": "source.dolphindb"
+  },
+  "cj": {
+    "prefix": "cj",
+    "body": "cj(${1:leftTable}, ${2:rightTable})",
+    "scope": "source.dolphindb"
+  },
+  "classifierBuildForestTerm": {
+    "prefix": "classifierBuildForestTerm",
+    "body": "classifierBuildForestTerm(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "clear!": {
+    "prefix": "clear!",
+    "body": "clear!(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "clearAllCache": {
+    "prefix": "clearAllCache",
+    "body": "clearAllCache(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "clearCache": {
+    "prefix": "clearCache",
+    "body": "clearCache(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "clearDSCache!": {
+    "prefix": "clearDSCache!",
+    "body": "clearDSCache!(${1:ds})",
+    "scope": "source.dolphindb"
+  },
+  "clearDSCacheNow": {
+    "prefix": "clearDSCacheNow",
+    "body": "clearDSCacheNow(${1:ds})",
+    "scope": "source.dolphindb"
+  },
+  "clearTablePersistence": {
+    "prefix": "clearTablePersistence",
+    "body": "clearTablePersistence(${1:table})",
+    "scope": "source.dolphindb"
+  },
+  "close": {
+    "prefix": "close",
+    "body": "close(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "col": {
+    "prefix": "col",
+    "body": "col(${1:obj}, ${2:index})",
+    "scope": "source.dolphindb"
+  },
+  "colNames": {
+    "prefix": "colNames",
+    "body": "colNames(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "cols": {
+    "prefix": "cols",
+    "body": "cols(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "column": {
+    "prefix": "column",
+    "body": "column(${1:obj}, ${2:index})",
+    "scope": "source.dolphindb"
+  },
+  "columnNames": {
+    "prefix": "columnNames",
+    "body": "columnNames(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "columns": {
+    "prefix": "columns",
+    "body": "columns(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "commit": {
+    "prefix": "commit",
+    "body": "commit(${1:trans})",
+    "scope": "source.dolphindb"
+  },
+  "commitDFSTransaction": {
+    "prefix": "commitDFSTransaction",
+    "body": "commitDFSTransaction(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "concat": {
+    "prefix": "concat",
+    "body": "concat(${1:str1|X}, ${2:str2|separator})",
+    "scope": "source.dolphindb"
+  },
+  "contextCount": {
+    "prefix": "contextCount",
+    "body": "contextCount(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "contextSum": {
+    "prefix": "contextSum",
+    "body": "contextSum(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "contextSum2": {
+    "prefix": "contextSum2",
+    "body": "contextSum2(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "contextby": {
+    "prefix": "contextby",
+    "body": "contextby(${1:func}, ${2:funcArgs}, ${3:groupingCol}, ${4:[sortingCol]})",
+    "scope": "source.dolphindb"
+  },
+  "convertTZ": {
+    "prefix": "convertTZ",
+    "body": "convertTZ(${1:obj}, ${2:srcTZ}, ${3:destTZ})",
+    "scope": "source.dolphindb"
+  },
+  "copy": {
+    "prefix": "copy",
+    "body": "copy(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "copyReplicas": {
+    "prefix": "copyReplicas",
+    "body": "copyReplicas(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "corr": {
+    "prefix": "corr",
+    "body": "corr(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "corrreduce": {
+    "prefix": "corrreduce",
+    "body": "corrreduce(${1:mysumxy}, ${2:mysumx2}, ${3:mysumx}, ${4:mysumy2}, ${5:mysumy}, ${6:mycount})",
+    "scope": "source.dolphindb"
+  },
+  "cos": {
+    "prefix": "cos",
+    "body": "cos(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "count": {
+    "prefix": "count",
+    "body": "count(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "cov": {
+    "prefix": "cov",
+    "body": "cov(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "covar": {
+    "prefix": "covar",
+    "body": "covar(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "covarreduce": {
+    "prefix": "covarreduce",
+    "body": "covarreduce(${1:mysumxy}, ${2:mysumx}, ${3:mysumy}, ${4:mycount})",
+    "scope": "source.dolphindb"
+  },
+  "crc32": {
+    "prefix": "crc32",
+    "body": "crc32(${1:str}, ${2:[cksum=0]})",
+    "scope": "source.dolphindb"
+  },
+  "createAnomalyDetectionEngine": {
+    "prefix": "createAnomalyDetectionEngine",
+    "body": "createAnomalyDetectionEngine(${1:name}, ${2:metrics}, ${3:dummyTable}, ${4:outputTable}, ${5:timeColumn}, ${6:[keyColumn]}, ${7:[windowSize]}, ${8:[step]}, ${9:[garbageSize]})",
+    "scope": "source.dolphindb"
+  },
+  "createCommitIdentifier": {
+    "prefix": "createCommitIdentifier",
+    "body": "createCommitIdentifier(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "createCrossSectionalAggregator": {
+    "prefix": "createCrossSectionalAggregator",
+    "body": "createCrossSectionalAggregator(${1:name}, ${2:[metrics]}, ${3:dummyTable}, ${4:[outputTable]}, ${5:keyColumn}, ${6:[triggeringPattern=perBatch]}, ${7:[triggeringInterval=1000]})",
+    "scope": "source.dolphindb"
+  },
+  "createGroup": {
+    "prefix": "createGroup",
+    "body": "createGroup(${1:groupId}, ${2:[userIds]})",
+    "scope": "source.dolphindb"
+  },
+  "createPartitionedTable": {
+    "prefix": "createPartitionedTable",
+    "body": "createPartitionedTable(${1:dbHandle}, ${2:table}, ${3:tableName}, ${4:[partitionColumns]})",
+    "scope": "source.dolphindb"
+  },
+  "createTimeSeriesAggregator": {
+    "prefix": "createTimeSeriesAggregator",
+    "body": "createTimeSeriesAggregator(${1:name}, ${2:windowSize}, ${3:step}, ${4:metrics}, ${5:dummyTable}, ${6:outputTable}, ${7:timeColumn}, ${8:[useSystemTime=false]}, ${9:[keyColumn]}, ${10:[garbageSize]})",
+    "scope": "source.dolphindb"
+  },
+  "createUser": {
+    "prefix": "createUser",
+    "body": "createUser(${1:userId}, ${2:password}, ${3:[groupIds]}, ${4:[isAdmin=false]})",
+    "scope": "source.dolphindb"
+  },
+  "cross": {
+    "prefix": "cross",
+    "body": "cross(${1:func}, ${2:X}, ${3:[Y]})",
+    "scope": "source.dolphindb"
+  },
+  "crossStat": {
+    "prefix": "crossStat",
+    "body": "crossStat(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "cumPositiveStreak": {
+    "prefix": "cumPositiveStreak",
+    "body": "cumPositiveStreak(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "cummax": {
+    "prefix": "cummax",
+    "body": "cummax(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "cummin": {
+    "prefix": "cummin",
+    "body": "cummin(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "cumprod": {
+    "prefix": "cumprod",
+    "body": "cumprod(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "cumsum": {
+    "prefix": "cumsum",
+    "body": "cumsum(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "cut": {
+    "prefix": "cut",
+    "body": "cut(${1:X}, ${2:size|cutPositions})",
+    "scope": "source.dolphindb"
+  },
+  "cutPoints": {
+    "prefix": "cutPoints",
+    "body": "cutPoints(${1:X}, ${2:binNum}, ${3:[freq]})",
+    "scope": "source.dolphindb"
+  },
+  "database": {
+    "prefix": "database",
+    "body": "database(${1:directory}, ${2:[partitionType]}, ${3:[partitionScheme]}, ${4:[locations]})",
+    "scope": "source.dolphindb"
+  },
+  "date": {
+    "prefix": "date",
+    "body": "date(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "datetime": {
+    "prefix": "datetime",
+    "body": "datetime(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "datetimeAdd": {
+    "prefix": "datetimeAdd",
+    "body": "datetimeAdd(${1:obj}, ${2:duration}, ${3:unit})",
+    "scope": "source.dolphindb"
+  },
+  "datetimeFormat": {
+    "prefix": "datetimeFormat",
+    "body": "datetimeFormat(${1:X}, ${2:format})",
+    "scope": "source.dolphindb"
+  },
+  "datetimeParse": {
+    "prefix": "datetimeParse",
+    "body": "datetimeParse(${1:X}, ${2:format})",
+    "scope": "source.dolphindb"
+  },
+  "debug": {
+    "prefix": "debug",
+    "body": "debug(${1:func}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "decimalFormat": {
+    "prefix": "decimalFormat",
+    "body": "decimalFormat(${1:X}, ${2:format})",
+    "scope": "source.dolphindb"
+  },
+  "defined": {
+    "prefix": "defined",
+    "body": "defined(${1:names}, ${2:[type]})",
+    "scope": "source.dolphindb"
+  },
+  "defs": {
+    "prefix": "defs",
+    "body": "defs(${1:[pattern]})",
+    "scope": "source.dolphindb"
+  },
+  "delayedCall": {
+    "prefix": "delayedCall",
+    "body": "delayedCall(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "deleteChunks": {
+    "prefix": "deleteChunks",
+    "body": "deleteChunks(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "deleteGroup": {
+    "prefix": "deleteGroup",
+    "body": "deleteGroup(${1:groupId})",
+    "scope": "source.dolphindb"
+  },
+  "deleteGroupMember": {
+    "prefix": "deleteGroupMember",
+    "body": "deleteGroupMember(${1:userIds}, ${2:groupIds})",
+    "scope": "source.dolphindb"
+  },
+  "deleteReplica": {
+    "prefix": "deleteReplica",
+    "body": "deleteReplica(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "deleteReplicas": {
+    "prefix": "deleteReplicas",
+    "body": "deleteReplicas(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "deleteScheduledJob": {
+    "prefix": "deleteScheduledJob",
+    "body": "deleteScheduledJob(${1:jobId})",
+    "scope": "source.dolphindb"
+  },
+  "deleteSubChunks": {
+    "prefix": "deleteSubChunks",
+    "body": "deleteSubChunks(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "deleteUser": {
+    "prefix": "deleteUser",
+    "body": "deleteUser(${1:userId})",
+    "scope": "source.dolphindb"
+  },
+  "deltas": {
+    "prefix": "deltas",
+    "body": "deltas(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "deny": {
+    "prefix": "deny",
+    "body": "deny(${1:userId|groupId}, ${2:accessType}, ${3:[objs]})",
+    "scope": "source.dolphindb"
+  },
+  "derivative": {
+    "prefix": "derivative",
+    "body": "derivative(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "det": {
+    "prefix": "det",
+    "body": "det(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "dfsTransactionCommit": {
+    "prefix": "dfsTransactionCommit",
+    "body": "dfsTransactionCommit(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "dict": {
+    "prefix": "dict",
+    "body": "dict(${1:keyType|keyObj}, ${2:valueType|valueObj})",
+    "scope": "source.dolphindb"
+  },
+  "dictUpdate!": {
+    "prefix": "dictUpdate!",
+    "body": "dictUpdate!(${1:dictionary}, ${2:function}, ${3:keys}, ${4:parameters})",
+    "scope": "source.dolphindb"
+  },
+  "difference": {
+    "prefix": "difference",
+    "body": "difference(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "disableActivePartition": {
+    "prefix": "disableActivePartition",
+    "body": "disableActivePartition(${1:dbHandle})",
+    "scope": "source.dolphindb"
+  },
+  "disableTablePersistence": {
+    "prefix": "disableTablePersistence",
+    "body": "disableTablePersistence(${1:table})",
+    "scope": "source.dolphindb"
+  },
+  "distinct": {
+    "prefix": "distinct",
+    "body": "distinct(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "distinctImpl": {
+    "prefix": "distinctImpl",
+    "body": "distinctImpl(${1:input})",
+    "scope": "source.dolphindb"
+  },
+  "div": {
+    "prefix": "div",
+    "body": "div(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "dot": {
+    "prefix": "dot",
+    "body": "dot(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "double": {
+    "prefix": "double",
+    "body": "double(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "drop": {
+    "prefix": "drop",
+    "body": "drop(${1:obj}, ${2:count})",
+    "scope": "source.dolphindb"
+  },
+  "drop!": {
+    "prefix": "drop!",
+    "body": "drop!(${1:table}, ${2:colNames})",
+    "scope": "source.dolphindb"
+  },
+  "dropDB": {
+    "prefix": "dropDB",
+    "body": "dropDB(${1:dbDir})",
+    "scope": "source.dolphindb"
+  },
+  "dropDatabase": {
+    "prefix": "dropDatabase",
+    "body": "dropDatabase(${1:dbDir})",
+    "scope": "source.dolphindb"
+  },
+  "dropFunctionView": {
+    "prefix": "dropFunctionView",
+    "body": "dropFunctionView(${1:name})",
+    "scope": "source.dolphindb"
+  },
+  "dropPartition": {
+    "prefix": "dropPartition",
+    "body": "dropPartition(${1:dbHandle}, ${2:partitionPaths}, ${3:[tableName]}, ${4:[forceDelete=false]})",
+    "scope": "source.dolphindb"
+  },
+  "dropTable": {
+    "prefix": "dropTable",
+    "body": "dropTable(${1:dbHandle}, ${2:tableName})",
+    "scope": "source.dolphindb"
+  },
+  "each": {
+    "prefix": "each",
+    "body": "each(${1:func}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "eachLeft": {
+    "prefix": "eachLeft",
+    "body": "eachLeft(${1:func}, ${2:X}, ${3:Y})",
+    "scope": "source.dolphindb"
+  },
+  "eachPost": {
+    "prefix": "eachPost",
+    "body": "eachPost(${1:func}, ${2:X}, ${3:[post]})",
+    "scope": "source.dolphindb"
+  },
+  "eachPre": {
+    "prefix": "eachPre",
+    "body": "eachPre(${1:func}, ${2:X}, ${3:[pre]})",
+    "scope": "source.dolphindb"
+  },
+  "eachRight": {
+    "prefix": "eachRight",
+    "body": "eachRight(${1:func}, ${2:X}, ${3:Y})",
+    "scope": "source.dolphindb"
+  },
+  "ej": {
+    "prefix": "ej",
+    "body": "ej(${1:leftTable}, ${2:rightTable}, ${3:matchingCols}, ${4:[rightMatchingCols]})",
+    "scope": "source.dolphindb"
+  },
+  "enableActivePartition": {
+    "prefix": "enableActivePartition",
+    "body": "enableActivePartition(${1:dbHandle}, ${2:activeDate}, ${3:siteAlias})",
+    "scope": "source.dolphindb"
+  },
+  "enableTablePersistence": {
+    "prefix": "enableTablePersistence",
+    "body": "enableTablePersistence(${1:table}, ${2:[asynWrite=true]}, ${3:[compress=true]}, ${4:[cacheSize=-1]}, ${5:[retentionMinutes=1440]}, ${6:[flushMode=0]})",
+    "scope": "source.dolphindb"
+  },
+  "endsWith": {
+    "prefix": "endsWith",
+    "body": "endsWith(${1:X}, ${2:str})",
+    "scope": "source.dolphindb"
+  },
+  "eq": {
+    "prefix": "eq",
+    "body": "eq(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "eqObj": {
+    "prefix": "eqObj",
+    "body": "eqObj(${1:obj1}, ${2:obj2}, ${3:[precision]})",
+    "scope": "source.dolphindb"
+  },
+  "erase!": {
+    "prefix": "erase!",
+    "body": "erase!(${1:obj}, ${2:key|filter})",
+    "scope": "source.dolphindb"
+  },
+  "esd": {
+    "prefix": "esd",
+    "body": "esd(${1:data}, ${2:[hybrid]}, ${3:[maxAnomalies]}, ${4:[alpha]})",
+    "scope": "source.dolphindb"
+  },
+  "eval": {
+    "prefix": "eval",
+    "body": "eval(${1:expr})",
+    "scope": "source.dolphindb"
+  },
+  "evaluate": {
+    "prefix": "evaluate",
+    "body": "evaluate(${1:expr})",
+    "scope": "source.dolphindb"
+  },
+  "existChunks": {
+    "prefix": "existChunks",
+    "body": "existChunks(${1:chunkPaths})",
+    "scope": "source.dolphindb"
+  },
+  "exists": {
+    "prefix": "exists",
+    "body": "exists(${1:paths})",
+    "scope": "source.dolphindb"
+  },
+  "existsDatabase": {
+    "prefix": "existsDatabase",
+    "body": "existsDatabase(${1:dbUrl})",
+    "scope": "source.dolphindb"
+  },
+  "existsPartition": {
+    "prefix": "existsPartition",
+    "body": "existsPartition(${1:partitionUrl})",
+    "scope": "source.dolphindb"
+  },
+  "existsTable": {
+    "prefix": "existsTable",
+    "body": "existsTable(${1:dbUrl}, ${2:tableName})",
+    "scope": "source.dolphindb"
+  },
+  "exp": {
+    "prefix": "exp",
+    "body": "exp(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "expr": {
+    "prefix": "expr",
+    "body": "expr(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "expression": {
+    "prefix": "expression",
+    "body": "expression(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "extractTextSchema": {
+    "prefix": "extractTextSchema",
+    "body": "extractTextSchema(${1:filename}, ${2:[delimiter='}, ${3:']})",
+    "scope": "source.dolphindb"
+  },
+  "ffill": {
+    "prefix": "ffill",
+    "body": "ffill(${1:obj}, ${2:[limit]})",
+    "scope": "source.dolphindb"
+  },
+  "ffill!": {
+    "prefix": "ffill!",
+    "body": "ffill!(${1:obj}, ${2:[limit]})",
+    "scope": "source.dolphindb"
+  },
+  "file": {
+    "prefix": "file",
+    "body": "file(${1:name}, ${2:[mode=\"r\"]}, ${3:[isLittleEndian]})",
+    "scope": "source.dolphindb"
+  },
+  "files": {
+    "prefix": "files",
+    "body": "files(${1:dir}, ${2:[pattern]})",
+    "scope": "source.dolphindb"
+  },
+  "find": {
+    "prefix": "find",
+    "body": "find(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "first": {
+    "prefix": "first",
+    "body": "first(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "firstDay": {
+    "prefix": "firstDay",
+    "body": "firstDay(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "fj": {
+    "prefix": "fj",
+    "body": "fj(${1:leftTable}, ${2:rightTable}, ${3:matchingCols}, ${4:[rightMatchingCols]})",
+    "scope": "source.dolphindb"
+  },
+  "flatten": {
+    "prefix": "flatten",
+    "body": "flatten(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "float": {
+    "prefix": "float",
+    "body": "float(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "floor": {
+    "prefix": "floor",
+    "body": "floor(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "form": {
+    "prefix": "form",
+    "body": "form(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "format": {
+    "prefix": "format",
+    "body": "format(${1:}, ${2:format})",
+    "scope": "source.dolphindb"
+  },
+  "fromJson": {
+    "prefix": "fromJson",
+    "body": "fromJson(${1:jsonStr})",
+    "scope": "source.dolphindb"
+  },
+  "gaussianNB": {
+    "prefix": "gaussianNB",
+    "body": "gaussianNB(${1:[varSmoothing=1e-9]})",
+    "scope": "source.dolphindb"
+  },
+  "ge": {
+    "prefix": "ge",
+    "body": "ge(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "genRSAKeyAndCertificate": {
+    "prefix": "genRSAKeyAndCertificate",
+    "body": "genRSAKeyAndCertificate(${1:path}, ${2:domain})",
+    "scope": "source.dolphindb"
+  },
+  "genRSAKeyPair": {
+    "prefix": "genRSAKeyPair",
+    "body": "genRSAKeyPair(${1:privateKeyPath}, ${2:publicKeyPath})",
+    "scope": "source.dolphindb"
+  },
+  "generateLicense": {
+    "prefix": "generateLicense",
+    "body": "generateLicense(${1:expiration}, ${2:maxMemory}, ${3:maxCores}, ${4:maxNodes}, ${5:clientName}, ${6:[modules=-1]}, ${7:[onlineVerify=false]}, ${8:[version]}, ${9:[licenseAllCore=false]}, ${10:[fingerprintFile]}, ${11:privateKeyFile}, ${12:licenseFile})",
+    "scope": "source.dolphindb"
+  },
+  "generateMachineFingerprint": {
+    "prefix": "generateMachineFingerprint",
+    "body": "generateMachineFingerprint(${1:outputPath})",
+    "scope": "source.dolphindb"
+  },
+  "generateTicketForLogin": {
+    "prefix": "generateTicketForLogin",
+    "body": "generateTicketForLogin(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getActiveCID": {
+    "prefix": "getActiveCID",
+    "body": "getActiveCID(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getAggregator": {
+    "prefix": "getAggregator",
+    "body": "getAggregator(${1:name})",
+    "scope": "source.dolphindb"
+  },
+  "getAggregatorStat": {
+    "prefix": "getAggregatorStat",
+    "body": "getAggregatorStat(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getAliasSignature": {
+    "prefix": "getAliasSignature",
+    "body": "getAliasSignature(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getAllChunks": {
+    "prefix": "getAllChunks",
+    "body": "getAllChunks(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getAllDBs": {
+    "prefix": "getAllDBs",
+    "body": "getAllDBs(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getAllStorages": {
+    "prefix": "getAllStorages",
+    "body": "getAllStorages(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getAllTransactions": {
+    "prefix": "getAllTransactions",
+    "body": "getAllTransactions(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getAuthenticatedUserTicket": {
+    "prefix": "getAuthenticatedUserTicket",
+    "body": "getAuthenticatedUserTicket(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getAuthenticatedUsers": {
+    "prefix": "getAuthenticatedUsers",
+    "body": "getAuthenticatedUsers(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getBackupList": {
+    "prefix": "getBackupList",
+    "body": "getBackupList(${1:backupDir}, ${2:dbPath}, ${3:tableName})",
+    "scope": "source.dolphindb"
+  },
+  "getBackupMeta": {
+    "prefix": "getBackupMeta",
+    "body": "getBackupMeta(${1:backupDir}, ${2:partitionPath}, ${3:tableName})",
+    "scope": "source.dolphindb"
+  },
+  "getChunkNodeInfo": {
+    "prefix": "getChunkNodeInfo",
+    "body": "getChunkNodeInfo(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getCidList": {
+    "prefix": "getCidList",
+    "body": "getCidList(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getClusterChunkNodesStatus": {
+    "prefix": "getClusterChunkNodesStatus",
+    "body": "getClusterChunkNodesStatus(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getClusterChunksStatus": {
+    "prefix": "getClusterChunksStatus",
+    "body": "getClusterChunksStatus(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getClusterDFSDatabases": {
+    "prefix": "getClusterDFSDatabases",
+    "body": "getClusterDFSDatabases(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getClusterDFSTables": {
+    "prefix": "getClusterDFSTables",
+    "body": "getClusterDFSTables(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getClusterLiveDataNodes": {
+    "prefix": "getClusterLiveDataNodes",
+    "body": "getClusterLiveDataNodes(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getClusterNodesCfg": {
+    "prefix": "getClusterNodesCfg",
+    "body": "getClusterNodesCfg(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getClusterPerf": {
+    "prefix": "getClusterPerf",
+    "body": "getClusterPerf(${1:[includeMaster=false]})",
+    "scope": "source.dolphindb"
+  },
+  "getCompleteChunkNodeInfo": {
+    "prefix": "getCompleteChunkNodeInfo",
+    "body": "getCompleteChunkNodeInfo(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getCompletedQueries": {
+    "prefix": "getCompletedQueries",
+    "body": "getCompletedQueries(${1:[top]})",
+    "scope": "source.dolphindb"
+  },
+  "getConsoleJobs": {
+    "prefix": "getConsoleJobs",
+    "body": "getConsoleJobs(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getControllerAlias": {
+    "prefix": "getControllerAlias",
+    "body": "getControllerAlias(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getDBIdByTabletChunk": {
+    "prefix": "getDBIdByTabletChunk",
+    "body": "getDBIdByTabletChunk(${1:chunkId})",
+    "scope": "source.dolphindb"
+  },
+  "getDFSDatabases": {
+    "prefix": "getDFSDatabases",
+    "body": "getDFSDatabases(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getDFSDirectoryContent": {
+    "prefix": "getDFSDirectoryContent",
+    "body": "getDFSDirectoryContent(${1:directory})",
+    "scope": "source.dolphindb"
+  },
+  "getDFSFileContent": {
+    "prefix": "getDFSFileContent",
+    "body": "getDFSFileContent(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getDFSTables": {
+    "prefix": "getDFSTables",
+    "body": "getDFSTables(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getDFSTablesByDatabase": {
+    "prefix": "getDFSTablesByDatabase",
+    "body": "getDFSTablesByDatabase(${1:dbId})",
+    "scope": "source.dolphindb"
+  },
+  "getDataNodeConfig": {
+    "prefix": "getDataNodeConfig",
+    "body": "getDataNodeConfig(${1:nodeAlias})",
+    "scope": "source.dolphindb"
+  },
+  "getDataNodes": {
+    "prefix": "getDataNodes",
+    "body": "getDataNodes(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getDiskIOStat": {
+    "prefix": "getDiskIOStat",
+    "body": "getDiskIOStat(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getDynamicPublicKey": {
+    "prefix": "getDynamicPublicKey",
+    "body": "getDynamicPublicKey(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getExistingTabletsMetaByPath": {
+    "prefix": "getExistingTabletsMetaByPath",
+    "body": "getExistingTabletsMetaByPath(${1:chunkPaths}, ${2:[cid]})",
+    "scope": "source.dolphindb"
+  },
+  "getFileBlocksMeta": {
+    "prefix": "getFileBlocksMeta",
+    "body": "getFileBlocksMeta(${1:path}, ${2:[cid]})",
+    "scope": "source.dolphindb"
+  },
+  "getFileList": {
+    "prefix": "getFileList",
+    "body": "getFileList(${1:path}, ${2:pattern}, ${3:folderOnly})",
+    "scope": "source.dolphindb"
+  },
+  "getFullLoggedUserAccess": {
+    "prefix": "getFullLoggedUserAccess",
+    "body": "getFullLoggedUserAccess(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getFullReportArgs": {
+    "prefix": "getFullReportArgs",
+    "body": "getFullReportArgs(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getFunctionViews": {
+    "prefix": "getFunctionViews",
+    "body": "getFunctionViews(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getFunctionViewsOnMaster": {
+    "prefix": "getFunctionViewsOnMaster",
+    "body": "getFunctionViewsOnMaster(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getGroupAccess": {
+    "prefix": "getGroupAccess",
+    "body": "getGroupAccess(${1:groupIds})",
+    "scope": "source.dolphindb"
+  },
+  "getGroupList": {
+    "prefix": "getGroupList",
+    "body": "getGroupList(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getGroupsByUserId": {
+    "prefix": "getGroupsByUserId",
+    "body": "getGroupsByUserId(${1:userId})",
+    "scope": "source.dolphindb"
+  },
+  "getHomeDir": {
+    "prefix": "getHomeDir",
+    "body": "getHomeDir(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getJobMessage": {
+    "prefix": "getJobMessage",
+    "body": "getJobMessage(${1:jobId})",
+    "scope": "source.dolphindb"
+  },
+  "getJobReturn": {
+    "prefix": "getJobReturn",
+    "body": "getJobReturn(${1:jobId}, ${2:[blocking=false]})",
+    "scope": "source.dolphindb"
+  },
+  "getJobStat": {
+    "prefix": "getJobStat",
+    "body": "getJobStat(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getJobStatus": {
+    "prefix": "getJobStatus",
+    "body": "getJobStatus(${1:jobId})",
+    "scope": "source.dolphindb"
+  },
+  "getLiveDataNodes": {
+    "prefix": "getLiveDataNodes",
+    "body": "getLiveDataNodes(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getLoginAccess": {
+    "prefix": "getLoginAccess",
+    "body": "getLoginAccess(${1:[userId]})",
+    "scope": "source.dolphindb"
+  },
+  "getMetadataForMasterReincarnation": {
+    "prefix": "getMetadataForMasterReincarnation",
+    "body": "getMetadataForMasterReincarnation(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getMetadataReduce": {
+    "prefix": "getMetadataReduce",
+    "body": "getMetadataReduce(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getNodeAlias": {
+    "prefix": "getNodeAlias",
+    "body": "getNodeAlias(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getNodeHost": {
+    "prefix": "getNodeHost",
+    "body": "getNodeHost(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getNodePort": {
+    "prefix": "getNodePort",
+    "body": "getNodePort(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getNodeType": {
+    "prefix": "getNodeType",
+    "body": "getNodeType(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getOutwardConnectionStatus": {
+    "prefix": "getOutwardConnectionStatus",
+    "body": "getOutwardConnectionStatus(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getPerf": {
+    "prefix": "getPerf",
+    "body": "getPerf(${1:nodeAlias})",
+    "scope": "source.dolphindb"
+  },
+  "getPerfLog": {
+    "prefix": "getPerfLog",
+    "body": "getPerfLog(${1:length}, ${2:offset}, ${3:fromHead}, ${4:nodeAlias})",
+    "scope": "source.dolphindb"
+  },
+  "getPerfLogLength": {
+    "prefix": "getPerfLogLength",
+    "body": "getPerfLogLength(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getPersistenceMeta": {
+    "prefix": "getPersistenceMeta",
+    "body": "getPersistenceMeta(${1:table})",
+    "scope": "source.dolphindb"
+  },
+  "getRecentJobs": {
+    "prefix": "getRecentJobs",
+    "body": "getRecentJobs(${1:[top]})",
+    "scope": "source.dolphindb"
+  },
+  "getRecoveryTaskStatus": {
+    "prefix": "getRecoveryTaskStatus",
+    "body": "getRecoveryTaskStatus(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getRedoLogStat": {
+    "prefix": "getRedoLogStat",
+    "body": "getRedoLogStat(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getRunningQueries": {
+    "prefix": "getRunningQueries",
+    "body": "getRunningQueries(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getSampleFeaturesReduce": {
+    "prefix": "getSampleFeaturesReduce",
+    "body": "getSampleFeaturesReduce(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getScheduledJobs": {
+    "prefix": "getScheduledJobs",
+    "body": "getScheduledJobs(${1:[jobIdPattern]})",
+    "scope": "source.dolphindb"
+  },
+  "getServerAddressByHost": {
+    "prefix": "getServerAddressByHost",
+    "body": "getServerAddressByHost(${1:host})",
+    "scope": "source.dolphindb"
+  },
+  "getServerLog": {
+    "prefix": "getServerLog",
+    "body": "getServerLog(${1:length}, ${2:offset}, ${3:fromHead}, ${4:nodeAlias})",
+    "scope": "source.dolphindb"
+  },
+  "getServerLogLength": {
+    "prefix": "getServerLogLength",
+    "body": "getServerLogLength(${1:nodeAlias})",
+    "scope": "source.dolphindb"
+  },
+  "getSessionMemoryStat": {
+    "prefix": "getSessionMemoryStat",
+    "body": "getSessionMemoryStat(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getSmallFileBucketMeta": {
+    "prefix": "getSmallFileBucketMeta",
+    "body": "getSmallFileBucketMeta(${1:path}, ${2:[cid]})",
+    "scope": "source.dolphindb"
+  },
+  "getSnapshotCID": {
+    "prefix": "getSnapshotCID",
+    "body": "getSnapshotCID(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getStreamingStat": {
+    "prefix": "getStreamingStat",
+    "body": "getStreamingStat(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getSubChunks": {
+    "prefix": "getSubChunks",
+    "body": "getSubChunks(${1:path}, ${2:[recursive]}, ${3:[cid]})",
+    "scope": "source.dolphindb"
+  },
+  "getSubscriptionTopic": {
+    "prefix": "getSubscriptionTopic",
+    "body": "getSubscriptionTopic(${1:tableName}, ${2:[actionName]})",
+    "scope": "source.dolphindb"
+  },
+  "getSystemCpuUsage": {
+    "prefix": "getSystemCpuUsage",
+    "body": "getSystemCpuUsage(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getSystemLoadAvg": {
+    "prefix": "getSystemLoadAvg",
+    "body": "getSystemLoadAvg(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getTableCID": {
+    "prefix": "getTableCID",
+    "body": "getTableCID(${1:chunkId}, ${2:tableName})",
+    "scope": "source.dolphindb"
+  },
+  "getTablePartitionSizeAndPath": {
+    "prefix": "getTablePartitionSizeAndPath",
+    "body": "getTablePartitionSizeAndPath(${1:chunkMeta}, ${2:dbUrl}, ${3:tableName})",
+    "scope": "source.dolphindb"
+  },
+  "getTables": {
+    "prefix": "getTables",
+    "body": "getTables(${1:dbHandle})",
+    "scope": "source.dolphindb"
+  },
+  "getTablesByTabletChunk": {
+    "prefix": "getTablesByTabletChunk",
+    "body": "getTablesByTabletChunk(${1:chunkId})",
+    "scope": "source.dolphindb"
+  },
+  "getTabletsMetaById": {
+    "prefix": "getTabletsMetaById",
+    "body": "getTabletsMetaById(${1:chunkIds}, ${2:[cid]})",
+    "scope": "source.dolphindb"
+  },
+  "getTabletsMetaByPath": {
+    "prefix": "getTabletsMetaByPath",
+    "body": "getTabletsMetaByPath(${1:chunkPaths}, ${2:[cid]})",
+    "scope": "source.dolphindb"
+  },
+  "getTopicProcessedOffset": {
+    "prefix": "getTopicProcessedOffset",
+    "body": "getTopicProcessedOffset(${1:topic})",
+    "scope": "source.dolphindb"
+  },
+  "getUserAccess": {
+    "prefix": "getUserAccess",
+    "body": "getUserAccess(${1:[userIds]})",
+    "scope": "source.dolphindb"
+  },
+  "getUserList": {
+    "prefix": "getUserList",
+    "body": "getUserList(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "getUsersByGroupId": {
+    "prefix": "getUsersByGroupId",
+    "body": "getUsersByGroupId(${1:groupId})",
+    "scope": "source.dolphindb"
+  },
+  "getWaitingRecoveryChunkCount": {
+    "prefix": "getWaitingRecoveryChunkCount",
+    "body": "getWaitingRecoveryChunkCount(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "glm": {
+    "prefix": "glm",
+    "body": "glm(${1:ds}, ${2:yColName}, ${3:xColNames}, ${4:[family]}, ${5:[link]}, ${6:[tolerance=1e-6]}, ${7:[maxIter=100]})",
+    "scope": "source.dolphindb"
+  },
+  "gmtime": {
+    "prefix": "gmtime",
+    "body": "gmtime(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "gram": {
+    "prefix": "gram",
+    "body": "gram(${1:ds}, ${2:[colNames]}, ${3:[subMean]}, ${4:[normalize]})",
+    "scope": "source.dolphindb"
+  },
+  "grant": {
+    "prefix": "grant",
+    "body": "grant(${1:userId|groupId}, ${2:accessType}, ${3:[objs]})",
+    "scope": "source.dolphindb"
+  },
+  "groupby": {
+    "prefix": "groupby",
+    "body": "groupby(${1:func}, ${2:funcArgs}, ${3:groupingCol})",
+    "scope": "source.dolphindb"
+  },
+  "gt": {
+    "prefix": "gt",
+    "body": "gt(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "handleHeartBeat": {
+    "prefix": "handleHeartBeat",
+    "body": "handleHeartBeat(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "hasNull": {
+    "prefix": "hasNull",
+    "body": "hasNull(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "head": {
+    "prefix": "head",
+    "body": "head(${1:obj}, ${2:[n=1]})",
+    "scope": "source.dolphindb"
+  },
+  "help": {
+    "prefix": "help",
+    "body": "help(${1:func})",
+    "scope": "source.dolphindb"
+  },
+  "hour": {
+    "prefix": "hour",
+    "body": "hour(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "iif": {
+    "prefix": "iif",
+    "body": "iif(${1:cond}, ${2:trueResult}, ${3:falseResult})",
+    "scope": "source.dolphindb"
+  },
+  "ilike": {
+    "prefix": "ilike",
+    "body": "ilike(${1:X}, ${2:pattern})",
+    "scope": "source.dolphindb"
+  },
+  "imax": {
+    "prefix": "imax",
+    "body": "imax(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "imin": {
+    "prefix": "imin",
+    "body": "imin(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "imr": {
+    "prefix": "imr",
+    "body": "imr(${1:ds}, ${2:initValue}, ${3:mapFunc}, ${4:[reduceFunc]}, ${5:[finalFunc]}, ${6:terminateFunc}, ${7:[carryover=false]})",
+    "scope": "source.dolphindb"
+  },
+  "in": {
+    "prefix": "in",
+    "body": "in(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "int": {
+    "prefix": "int",
+    "body": "int(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "intersection": {
+    "prefix": "intersection",
+    "body": "intersection(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "inv": {
+    "prefix": "inv",
+    "body": "inv(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "invBeta": {
+    "prefix": "invBeta",
+    "body": "invBeta(${1:alpha}, ${2:beta}, ${3:p})",
+    "scope": "source.dolphindb"
+  },
+  "invBinomial": {
+    "prefix": "invBinomial",
+    "body": "invBinomial(${1:trials}, ${2:prob}, ${3:p})",
+    "scope": "source.dolphindb"
+  },
+  "invChiSquare": {
+    "prefix": "invChiSquare",
+    "body": "invChiSquare(${1:df}, ${2:p})",
+    "scope": "source.dolphindb"
+  },
+  "invExp": {
+    "prefix": "invExp",
+    "body": "invExp(${1:mean}, ${2:p})",
+    "scope": "source.dolphindb"
+  },
+  "invF": {
+    "prefix": "invF",
+    "body": "invF(${1:numeratorDF}, ${2:denominatorDF}, ${3:p})",
+    "scope": "source.dolphindb"
+  },
+  "invGamma": {
+    "prefix": "invGamma",
+    "body": "invGamma(${1:shape}, ${2:scale}, ${3:p})",
+    "scope": "source.dolphindb"
+  },
+  "invLogistic": {
+    "prefix": "invLogistic",
+    "body": "invLogistic(${1:mean}, ${2:s}, ${3:p})",
+    "scope": "source.dolphindb"
+  },
+  "invNormal": {
+    "prefix": "invNormal",
+    "body": "invNormal(${1:mean}, ${2:stdev}, ${3:p})",
+    "scope": "source.dolphindb"
+  },
+  "invPoisson": {
+    "prefix": "invPoisson",
+    "body": "invPoisson(${1:mean}, ${2:p})",
+    "scope": "source.dolphindb"
+  },
+  "invStudent": {
+    "prefix": "invStudent",
+    "body": "invStudent(${1:df}, ${2:p})",
+    "scope": "source.dolphindb"
+  },
+  "invUniform": {
+    "prefix": "invUniform",
+    "body": "invUniform(${1:lower}, ${2:upper}, ${3:p})",
+    "scope": "source.dolphindb"
+  },
+  "invWeibull": {
+    "prefix": "invWeibull",
+    "body": "invWeibull(${1:alpha}, ${2:beta}, ${3:p})",
+    "scope": "source.dolphindb"
+  },
+  "inverse": {
+    "prefix": "inverse",
+    "body": "inverse(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "isHttpsOn": {
+    "prefix": "isHttpsOn",
+    "body": "isHttpsOn(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "isLoggedIn": {
+    "prefix": "isLoggedIn",
+    "body": "isLoggedIn(${1:userId})",
+    "scope": "source.dolphindb"
+  },
+  "isNothing": {
+    "prefix": "isNothing",
+    "body": "isNothing(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "isNull": {
+    "prefix": "isNull",
+    "body": "isNull(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "isSorted": {
+    "prefix": "isSorted",
+    "body": "isSorted(${1:X}, ${2:[ascending=true]})",
+    "scope": "source.dolphindb"
+  },
+  "isValid": {
+    "prefix": "isValid",
+    "body": "isValid(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "isVoid": {
+    "prefix": "isVoid",
+    "body": "isVoid(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "isort": {
+    "prefix": "isort",
+    "body": "isort(${1:X}, ${2:[ascending=true]})",
+    "scope": "source.dolphindb"
+  },
+  "isort!": {
+    "prefix": "isort!",
+    "body": "isort!(${1:X}, ${2:[ascending=true]}, ${3:indices})",
+    "scope": "source.dolphindb"
+  },
+  "isortTop": {
+    "prefix": "isortTop",
+    "body": "isortTop(${1:X}, ${2:top}, ${3:[ascending=true]})",
+    "scope": "source.dolphindb"
+  },
+  "iterate": {
+    "prefix": "iterate",
+    "body": "iterate(${1:init}, ${2:coeffs}, ${3:input})",
+    "scope": "source.dolphindb"
+  },
+  "join": {
+    "prefix": "join",
+    "body": "join(${1:obj1}, ${2:obj2})",
+    "scope": "source.dolphindb"
+  },
+  "join!": {
+    "prefix": "join!",
+    "body": "join!(${1:obj}, ${2:newData})",
+    "scope": "source.dolphindb"
+  },
+  "keys": {
+    "prefix": "keys",
+    "body": "keys(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "knnFit": {
+    "prefix": "knnFit",
+    "body": "knnFit(${1:knnModel}, ${2:trainData}, ${3:labels})",
+    "scope": "source.dolphindb"
+  },
+  "knnModel": {
+    "prefix": "knnModel",
+    "body": "knnModel(${1:type}, ${2:n_neighbor}, ${3:[power=2]})",
+    "scope": "source.dolphindb"
+  },
+  "knnPredict": {
+    "prefix": "knnPredict",
+    "body": "knnPredict(${1:knnModel}, ${2:testData})",
+    "scope": "source.dolphindb"
+  },
+  "kurtosis": {
+    "prefix": "kurtosis",
+    "body": "kurtosis(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "kurtosisreduce": {
+    "prefix": "kurtosisreduce",
+    "body": "kurtosisreduce(${1:mysum}, ${2:mysum2}, ${3:mysum3}, ${4:mysum4}, ${5:mycount})",
+    "scope": "source.dolphindb"
+  },
+  "lag": {
+    "prefix": "lag",
+    "body": "lag(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "last": {
+    "prefix": "last",
+    "body": "last(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "lastDay": {
+    "prefix": "lastDay",
+    "body": "lastDay(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "lastNot": {
+    "prefix": "lastNot",
+    "body": "lastNot(${1:X}, ${2:[k]})",
+    "scope": "source.dolphindb"
+  },
+  "le": {
+    "prefix": "le",
+    "body": "le(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "lead": {
+    "prefix": "lead",
+    "body": "lead(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "left": {
+    "prefix": "left",
+    "body": "left(${1:X}, ${2:n})",
+    "scope": "source.dolphindb"
+  },
+  "lfill": {
+    "prefix": "lfill",
+    "body": "lfill(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "lfill!": {
+    "prefix": "lfill!",
+    "body": "lfill!(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "license": {
+    "prefix": "license",
+    "body": "license(${1:[fileName]}, ${2:[pubKeyFile]})",
+    "scope": "source.dolphindb"
+  },
+  "like": {
+    "prefix": "like",
+    "body": "like(${1:X}, ${2:pattern})",
+    "scope": "source.dolphindb"
+  },
+  "lj": {
+    "prefix": "lj",
+    "body": "lj(${1:leftTable}, ${2:rightTable}, ${3:matchingCols}, ${4:[rightMatchingCols]})",
+    "scope": "source.dolphindb"
+  },
+  "loadBackup": {
+    "prefix": "loadBackup",
+    "body": "loadBackup(${1:backupDir}, ${2:partitionPath}, ${3:tableName})",
+    "scope": "source.dolphindb"
+  },
+  "loadClusterNodesConfigs": {
+    "prefix": "loadClusterNodesConfigs",
+    "body": "loadClusterNodesConfigs(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "loadColumn": {
+    "prefix": "loadColumn",
+    "body": "loadColumn(${1:dbHandle}, ${2:tableName}, ${3:path})",
+    "scope": "source.dolphindb"
+  },
+  "loadControllerConfigs": {
+    "prefix": "loadControllerConfigs",
+    "body": "loadControllerConfigs(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "loadFileBlock": {
+    "prefix": "loadFileBlock",
+    "body": "loadFileBlock(${1:chunkMeta})",
+    "scope": "source.dolphindb"
+  },
+  "loadModel": {
+    "prefix": "loadModel",
+    "body": "loadModel(${1:file})",
+    "scope": "source.dolphindb"
+  },
+  "loadMvccTable": {
+    "prefix": "loadMvccTable",
+    "body": "loadMvccTable(${1:database}, ${2:tableName})",
+    "scope": "source.dolphindb"
+  },
+  "loadPlugin": {
+    "prefix": "loadPlugin",
+    "body": "loadPlugin(${1:metaFile})",
+    "scope": "source.dolphindb"
+  },
+  "loadStreamTable": {
+    "prefix": "loadStreamTable",
+    "body": "loadStreamTable(${1:database}, ${2:tableName})",
+    "scope": "source.dolphindb"
+  },
+  "loadTable": {
+    "prefix": "loadTable",
+    "body": "loadTable(${1:database}, ${2:tableName}, ${3:[partitions]}, ${4:[memoryMode=false]})",
+    "scope": "source.dolphindb"
+  },
+  "loadTableBySQL": {
+    "prefix": "loadTableBySQL",
+    "body": "loadTableBySQL(${1:sql})",
+    "scope": "source.dolphindb"
+  },
+  "loadText": {
+    "prefix": "loadText",
+    "body": "loadText(${1:filename}, ${2:[delimiter='}, ${3:']}, ${4:[schema]})",
+    "scope": "source.dolphindb"
+  },
+  "loadTextEx": {
+    "prefix": "loadTextEx",
+    "body": "loadTextEx(${1:dbHandle}, ${2:tableName}, ${3:partitionColumns}, ${4:filename}, ${5:[delimiter='}, ${6:']}, ${7:[schema]})",
+    "scope": "source.dolphindb"
+  },
+  "localtime": {
+    "prefix": "localtime",
+    "body": "localtime(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "log": {
+    "prefix": "log",
+    "body": "log(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "login": {
+    "prefix": "login",
+    "body": "login(${1:userId}, ${2:password}, ${3:[encrypted=false]})",
+    "scope": "source.dolphindb"
+  },
+  "logisticRegression": {
+    "prefix": "logisticRegression",
+    "body": "logisticRegression(${1:ds}, ${2:yColName}, ${3:xColNames}, ${4:[intercept=true]}, ${5:[initTheta]}, ${6:[tolerance=1e-3]}, ${7:[maxIter=500]})",
+    "scope": "source.dolphindb"
+  },
+  "logout": {
+    "prefix": "logout",
+    "body": "logout(${1:[userId]}, ${2:[sessionOnly=true]})",
+    "scope": "source.dolphindb"
+  },
+  "long": {
+    "prefix": "long",
+    "body": "long(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "loop": {
+    "prefix": "loop",
+    "body": "loop(${1:func}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "lower": {
+    "prefix": "lower",
+    "body": "lower(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "lpad": {
+    "prefix": "lpad",
+    "body": "lpad(${1:str}, ${2:length}, ${3:[pattern]})",
+    "scope": "source.dolphindb"
+  },
+  "lrFinal": {
+    "prefix": "lrFinal",
+    "body": "lrFinal(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "lrReduce": {
+    "prefix": "lrReduce",
+    "body": "lrReduce(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "lshift": {
+    "prefix": "lshift",
+    "body": "lshift(${1:X}, ${2:bits})",
+    "scope": "source.dolphindb"
+  },
+  "lsj": {
+    "prefix": "lsj",
+    "body": "lsj(${1:leftTable}, ${2:rightTable}, ${3:matchingCols}, ${4:[rightMatchingCols]})",
+    "scope": "source.dolphindb"
+  },
+  "lt": {
+    "prefix": "lt",
+    "body": "lt(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "ltrim": {
+    "prefix": "ltrim",
+    "body": "ltrim(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "makeCall": {
+    "prefix": "makeCall",
+    "body": "makeCall(${1:func}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "matrix": {
+    "prefix": "matrix",
+    "body": "matrix(${1:dataType}, ${2:rows}, ${3:cols}, ${4:[columnsCapacity]}, ${5:[defaultValue]})",
+    "scope": "source.dolphindb"
+  },
+  "mavg": {
+    "prefix": "mavg",
+    "body": "mavg(${1:X}, ${2:window|weights})",
+    "scope": "source.dolphindb"
+  },
+  "max": {
+    "prefix": "max",
+    "body": "max(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "maxPositiveStreak": {
+    "prefix": "maxPositiveStreak",
+    "body": "maxPositiveStreak(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "mbeta": {
+    "prefix": "mbeta",
+    "body": "mbeta(${1:Y}, ${2:X}, ${3:window})",
+    "scope": "source.dolphindb"
+  },
+  "mcorr": {
+    "prefix": "mcorr",
+    "body": "mcorr(${1:X}, ${2:Y}, ${3:window})",
+    "scope": "source.dolphindb"
+  },
+  "mcount": {
+    "prefix": "mcount",
+    "body": "mcount(${1:X}, ${2:window})",
+    "scope": "source.dolphindb"
+  },
+  "mcovar": {
+    "prefix": "mcovar",
+    "body": "mcovar(${1:X}, ${2:Y}, ${3:window})",
+    "scope": "source.dolphindb"
+  },
+  "mean": {
+    "prefix": "mean",
+    "body": "mean(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "med": {
+    "prefix": "med",
+    "body": "med(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "median": {
+    "prefix": "median",
+    "body": "median(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "mem": {
+    "prefix": "mem",
+    "body": "mem(${1:[freeUnusedBlocks=false]})",
+    "scope": "source.dolphindb"
+  },
+  "member": {
+    "prefix": "member",
+    "body": "member(${1:obj}, ${2:keys})",
+    "scope": "source.dolphindb"
+  },
+  "mimax": {
+    "prefix": "mimax",
+    "body": "mimax(${1:X}, ${2:window})",
+    "scope": "source.dolphindb"
+  },
+  "mimin": {
+    "prefix": "mimin",
+    "body": "mimin(${1:X}, ${2:window})",
+    "scope": "source.dolphindb"
+  },
+  "min": {
+    "prefix": "min",
+    "body": "min(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "minute": {
+    "prefix": "minute",
+    "body": "minute(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "mkdir": {
+    "prefix": "mkdir",
+    "body": "mkdir(${1:dir})",
+    "scope": "source.dolphindb"
+  },
+  "mmax": {
+    "prefix": "mmax",
+    "body": "mmax(${1:X}, ${2:window})",
+    "scope": "source.dolphindb"
+  },
+  "mmed": {
+    "prefix": "mmed",
+    "body": "mmed(${1:X}, ${2:window})",
+    "scope": "source.dolphindb"
+  },
+  "mmin": {
+    "prefix": "mmin",
+    "body": "mmin(${1:X}, ${2:window})",
+    "scope": "source.dolphindb"
+  },
+  "mod": {
+    "prefix": "mod",
+    "body": "mod(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "mode": {
+    "prefix": "mode",
+    "body": "mode(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "month": {
+    "prefix": "month",
+    "body": "month(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "monthEnd": {
+    "prefix": "monthEnd",
+    "body": "monthEnd(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "monthStart": {
+    "prefix": "monthStart",
+    "body": "monthStart(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "move": {
+    "prefix": "move",
+    "body": "move(${1:X}, ${2:steps})",
+    "scope": "source.dolphindb"
+  },
+  "moveReplicas": {
+    "prefix": "moveReplicas",
+    "body": "moveReplicas(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "moving": {
+    "prefix": "moving",
+    "body": "moving(${1:func}, ${2:funcArgs}, ${3:window})",
+    "scope": "source.dolphindb"
+  },
+  "mpercentile": {
+    "prefix": "mpercentile",
+    "body": "mpercentile(${1:X}, ${2:percent}, ${3:window})",
+    "scope": "source.dolphindb"
+  },
+  "mr": {
+    "prefix": "mr",
+    "body": "mr(${1:ds}, ${2:mapFunc}, ${3:[reduceFunc]}, ${4:[finalFunc]}, ${5:[parallel=true]})",
+    "scope": "source.dolphindb"
+  },
+  "mrank": {
+    "prefix": "mrank",
+    "body": "mrank(${1:X}, ${2:[ascending=true]}, ${3:window})",
+    "scope": "source.dolphindb"
+  },
+  "mstd": {
+    "prefix": "mstd",
+    "body": "mstd(${1:X}, ${2:window})",
+    "scope": "source.dolphindb"
+  },
+  "msum": {
+    "prefix": "msum",
+    "body": "msum(${1:X}, ${2:window})",
+    "scope": "source.dolphindb"
+  },
+  "mul": {
+    "prefix": "mul",
+    "body": "mul(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "multinomialNB": {
+    "prefix": "multinomialNB",
+    "body": "multinomialNB(${1:[varSmoothing=1]})",
+    "scope": "source.dolphindb"
+  },
+  "mvar": {
+    "prefix": "mvar",
+    "body": "mvar(${1:X}, ${2:window})",
+    "scope": "source.dolphindb"
+  },
+  "mvccTable": {
+    "prefix": "mvccTable",
+    "body": "mvccTable(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "naiveMulti": {
+    "prefix": "naiveMulti",
+    "body": "naiveMulti(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "namespace": {
+    "prefix": "namespace",
+    "body": "namespace(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "nanotime": {
+    "prefix": "nanotime",
+    "body": "nanotime(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "nanotimestamp": {
+    "prefix": "nanotimestamp",
+    "body": "nanotimestamp(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "ne": {
+    "prefix": "ne",
+    "body": "ne(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "neg": {
+    "prefix": "neg",
+    "body": "neg(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "next": {
+    "prefix": "next",
+    "body": "next(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "norm": {
+    "prefix": "norm",
+    "body": "norm(${1:mean}, ${2:std}, ${3:count})",
+    "scope": "source.dolphindb"
+  },
+  "normal": {
+    "prefix": "normal",
+    "body": "normal(${1:mean}, ${2:std}, ${3:count})",
+    "scope": "source.dolphindb"
+  },
+  "not": {
+    "prefix": "not",
+    "body": "not(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "now": {
+    "prefix": "now",
+    "body": "now(${1:[nanoSecond=false]})",
+    "scope": "source.dolphindb"
+  },
+  "nullFill": {
+    "prefix": "nullFill",
+    "body": "nullFill(${1:X}, ${2:newValue})",
+    "scope": "source.dolphindb"
+  },
+  "nullFill!": {
+    "prefix": "nullFill!",
+    "body": "nullFill!(${1:obj}, ${2:newValue})",
+    "scope": "source.dolphindb"
+  },
+  "objByName": {
+    "prefix": "objByName",
+    "body": "objByName(${1:name})",
+    "scope": "source.dolphindb"
+  },
+  "objs": {
+    "prefix": "objs",
+    "body": "objs(${1:[shared=false]})",
+    "scope": "source.dolphindb"
+  },
+  "ols": {
+    "prefix": "ols",
+    "body": "ols(${1:Y}, ${2:X}, ${3:[intercept=true]}, ${4:[mode=0]})",
+    "scope": "source.dolphindb"
+  },
+  "olsEx": {
+    "prefix": "olsEx",
+    "body": "olsEx(${1:ds}, ${2:Y}, ${3:X}, ${4:[intercept=true]}, ${5:[mode=0]})",
+    "scope": "source.dolphindb"
+  },
+  "olsMeasureMap": {
+    "prefix": "olsMeasureMap",
+    "body": "olsMeasureMap(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "olsTrainMap": {
+    "prefix": "olsTrainMap",
+    "body": "olsTrainMap(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "olsTrainReduce": {
+    "prefix": "olsTrainReduce",
+    "body": "olsTrainReduce(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "openChunks": {
+    "prefix": "openChunks",
+    "body": "openChunks(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "or": {
+    "prefix": "or",
+    "body": "or(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "pair": {
+    "prefix": "pair",
+    "body": "pair(${1:first}, ${2:second})",
+    "scope": "source.dolphindb"
+  },
+  "partial": {
+    "prefix": "partial",
+    "body": "partial(${1:func}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "partitionCall": {
+    "prefix": "partitionCall",
+    "body": "partitionCall(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "pca": {
+    "prefix": "pca",
+    "body": "pca(${1:ds}, ${2:[colNames]}, ${3:k}, ${4:[normalize]}, ${5:[maxIter]})",
+    "scope": "source.dolphindb"
+  },
+  "pcall": {
+    "prefix": "pcall",
+    "body": "pcall(${1:func}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "pcross": {
+    "prefix": "pcross",
+    "body": "pcross(${1:func}, ${2:X}, ${3:[Y]})",
+    "scope": "source.dolphindb"
+  },
+  "peach": {
+    "prefix": "peach",
+    "body": "peach(${1:func}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "percentile": {
+    "prefix": "percentile",
+    "body": "percentile(${1:X}, ${2:percent})",
+    "scope": "source.dolphindb"
+  },
+  "piecewise": {
+    "prefix": "piecewise",
+    "body": "piecewise(${1:funcs}, ${2:ranges}, ${3:[positionBased=false]})",
+    "scope": "source.dolphindb"
+  },
+  "pipeline": {
+    "prefix": "pipeline",
+    "body": "pipeline(${1:initTasks}, ${2:followers}, ${3:[queueDepth=2]})",
+    "scope": "source.dolphindb"
+  },
+  "pivot": {
+    "prefix": "pivot",
+    "body": "pivot(${1:func}, ${2:funcArgs}, ${3:rowAlignCol}, ${4:colAlignCol})",
+    "scope": "source.dolphindb"
+  },
+  "ploadText": {
+    "prefix": "ploadText",
+    "body": "ploadText(${1:filename}, ${2:[delimiter='}, ${3:']}, ${4:[schema]})",
+    "scope": "source.dolphindb"
+  },
+  "ploop": {
+    "prefix": "ploop",
+    "body": "ploop(${1:func}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "plot": {
+    "prefix": "plot",
+    "body": "plot(${1:data}, ${2:[labels]}, ${3:[title]}, ${4:[chartType=LINE]})",
+    "scope": "source.dolphindb"
+  },
+  "plotHist": {
+    "prefix": "plotHist",
+    "body": "plotHist(${1:data}, ${2:[binNum]}, ${3:[range]}, ${4:[title]})",
+    "scope": "source.dolphindb"
+  },
+  "pnodeRun": {
+    "prefix": "pnodeRun",
+    "body": "pnodeRun(${1:function}, ${2:[nodes]}, ${3:[addNodeAlias=true]})",
+    "scope": "source.dolphindb"
+  },
+  "polynomial": {
+    "prefix": "polynomial",
+    "body": "polynomial(${1:X}, ${2:coeffs})",
+    "scope": "source.dolphindb"
+  },
+  "pop!": {
+    "prefix": "pop!",
+    "body": "pop!(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "pow": {
+    "prefix": "pow",
+    "body": "pow(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "power": {
+    "prefix": "power",
+    "body": "power(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "predict": {
+    "prefix": "predict",
+    "body": "predict(${1:model}, ${2:X})",
+    "scope": "source.dolphindb"
+  },
+  "prev": {
+    "prefix": "prev",
+    "body": "prev(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "print": {
+    "prefix": "print",
+    "body": "print(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "prod": {
+    "prefix": "prod",
+    "body": "prod(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "ptableCall": {
+    "prefix": "ptableCall",
+    "body": "ptableCall(${1:func}, ${2:tables}, ${3:hashColumn})",
+    "scope": "source.dolphindb"
+  },
+  "publishTable": {
+    "prefix": "publishTable",
+    "body": "publishTable(${1:host}, ${2:port}, ${3:tableName}, ${4:[actionName]}, ${5:[offset=-1]}, ${6:[filter]})",
+    "scope": "source.dolphindb"
+  },
+  "push!": {
+    "prefix": "push!",
+    "body": "push!(${1:obj}, ${2:newData})",
+    "scope": "source.dolphindb"
+  },
+  "pwj": {
+    "prefix": "pwj",
+    "body": "pwj(${1:leftTable}, ${2:rightTable}, ${3:window}, ${4:aggs}, ${5:matchingCols}, ${6:[rightMatchingCols]})",
+    "scope": "source.dolphindb"
+  },
+  "quadprog": {
+    "prefix": "quadprog",
+    "body": "quadprog(${1:H}, ${2:f}, ${3:[A]}, ${4:[b]}, ${5:[Aeq]}, ${6:[beq]})",
+    "scope": "source.dolphindb"
+  },
+  "queryTransactionStatus": {
+    "prefix": "queryTransactionStatus",
+    "body": "queryTransactionStatus(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "rand": {
+    "prefix": "rand",
+    "body": "rand(${1:X}, ${2:count})",
+    "scope": "source.dolphindb"
+  },
+  "randBeta": {
+    "prefix": "randBeta",
+    "body": "randBeta(${1:alpha}, ${2:beta}, ${3:count})",
+    "scope": "source.dolphindb"
+  },
+  "randBinomial": {
+    "prefix": "randBinomial",
+    "body": "randBinomial(${1:trials}, ${2:prob}, ${3:count})",
+    "scope": "source.dolphindb"
+  },
+  "randChiSquare": {
+    "prefix": "randChiSquare",
+    "body": "randChiSquare(${1:df}, ${2:count})",
+    "scope": "source.dolphindb"
+  },
+  "randExp": {
+    "prefix": "randExp",
+    "body": "randExp(${1:mean}, ${2:count})",
+    "scope": "source.dolphindb"
+  },
+  "randF": {
+    "prefix": "randF",
+    "body": "randF(${1:numeratorDF}, ${2:denominatorDF}, ${3:count})",
+    "scope": "source.dolphindb"
+  },
+  "randGamma": {
+    "prefix": "randGamma",
+    "body": "randGamma(${1:shape}, ${2:scale}, ${3:count})",
+    "scope": "source.dolphindb"
+  },
+  "randLogistic": {
+    "prefix": "randLogistic",
+    "body": "randLogistic(${1:mean}, ${2:s}, ${3:count})",
+    "scope": "source.dolphindb"
+  },
+  "randNormal": {
+    "prefix": "randNormal",
+    "body": "randNormal(${1:mean}, ${2:stdev}, ${3:count})",
+    "scope": "source.dolphindb"
+  },
+  "randPoisson": {
+    "prefix": "randPoisson",
+    "body": "randPoisson(${1:mean}, ${2:count})",
+    "scope": "source.dolphindb"
+  },
+  "randStudent": {
+    "prefix": "randStudent",
+    "body": "randStudent(${1:df}, ${2:count})",
+    "scope": "source.dolphindb"
+  },
+  "randUniform": {
+    "prefix": "randUniform",
+    "body": "randUniform(${1:lower}, ${2:upper}, ${3:count})",
+    "scope": "source.dolphindb"
+  },
+  "randWeibull": {
+    "prefix": "randWeibull",
+    "body": "randWeibull(${1:alpha}, ${2:beta}, ${3:count})",
+    "scope": "source.dolphindb"
+  },
+  "randZipf": {
+    "prefix": "randZipf",
+    "body": "randZipf(${1:num}, ${2:exponent}, ${3:count})",
+    "scope": "source.dolphindb"
+  },
+  "randomForestClassifier": {
+    "prefix": "randomForestClassifier",
+    "body": "randomForestClassifier(${1:ds}, ${2:yColName}, ${3:xColNames}, ${4:numClasses}, ${5:[maxFeatures=0]}, ${6:[numTrees=10]}, ${7:[numBins=32]}, ${8:[maxDepth=32]}, ${9:[minImpurityDecrease=0.0]}, ${10:[numJobs=-1]}, ${11:[randomSeed]})",
+    "scope": "source.dolphindb"
+  },
+  "randomForestRegressor": {
+    "prefix": "randomForestRegressor",
+    "body": "randomForestRegressor(${1:ds}, ${2:yColName}, ${3:xColNames}, ${4:[maxFeatures=0]}, ${5:[numTrees=10]}, ${6:[numBins=32]}, ${7:[maxDepth=32]}, ${8:[minImpurityDecrease=0.0]}, ${9:[numJobs=-1]}, ${10:[randomSeed]})",
+    "scope": "source.dolphindb"
+  },
+  "rank": {
+    "prefix": "rank",
+    "body": "rank(${1:X}, ${2:[ascending=true]}, ${3:[groupNum]})",
+    "scope": "source.dolphindb"
+  },
+  "ratio": {
+    "prefix": "ratio",
+    "body": "ratio(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "ratios": {
+    "prefix": "ratios",
+    "body": "ratios(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "read!": {
+    "prefix": "read!",
+    "body": "read!(${1:handle}, ${2:holder}, ${3:[offset=0]}, ${4:[length=1]})",
+    "scope": "source.dolphindb"
+  },
+  "readBytes": {
+    "prefix": "readBytes",
+    "body": "readBytes(${1:fileHandle}, ${2:sizeInByte})",
+    "scope": "source.dolphindb"
+  },
+  "readLine": {
+    "prefix": "readLine",
+    "body": "readLine(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "readLines": {
+    "prefix": "readLines",
+    "body": "readLines(${1:handle}, ${2:[length=1024]})",
+    "scope": "source.dolphindb"
+  },
+  "readLines!": {
+    "prefix": "readLines!",
+    "body": "readLines!(${1:handle}, ${2:holder}, ${3:[offset=0]}, ${4:[length=1]})",
+    "scope": "source.dolphindb"
+  },
+  "readObject": {
+    "prefix": "readObject",
+    "body": "readObject(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "readRecord!": {
+    "prefix": "readRecord!",
+    "body": "readRecord!(${1:handle}, ${2:holder}, ${3:[offset=0]}, ${4:[length]})",
+    "scope": "source.dolphindb"
+  },
+  "readTabletChunk": {
+    "prefix": "readTabletChunk",
+    "body": "readTabletChunk(${1:chunkId}, ${2:dbUrl}, ${3:chunkPath}, ${4:tableName}, ${5:offset}, ${6:length}, ${7:[cid=-1]})",
+    "scope": "source.dolphindb"
+  },
+  "reciprocal": {
+    "prefix": "reciprocal",
+    "body": "reciprocal(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "reduce": {
+    "prefix": "reduce",
+    "body": "reduce(${1:func}, ${2:X}, ${3:[init]})",
+    "scope": "source.dolphindb"
+  },
+  "refCount": {
+    "prefix": "refCount",
+    "body": "refCount(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "regexCount": {
+    "prefix": "regexCount",
+    "body": "regexCount(${1:str}, ${2:pattern}, ${3:[offset]})",
+    "scope": "source.dolphindb"
+  },
+  "regexFind": {
+    "prefix": "regexFind",
+    "body": "regexFind(${1:str}, ${2:pattern}, ${3:[offset]})",
+    "scope": "source.dolphindb"
+  },
+  "regexReplace": {
+    "prefix": "regexReplace",
+    "body": "regexReplace(${1:str}, ${2:pattern}, ${3:replacement}, ${4:[offset]})",
+    "scope": "source.dolphindb"
+  },
+  "regressorBuildForestTerm": {
+    "prefix": "regressorBuildForestTerm",
+    "body": "regressorBuildForestTerm(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "reloadClusterConfig": {
+    "prefix": "reloadClusterConfig",
+    "body": "reloadClusterConfig(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "remoteRun": {
+    "prefix": "remoteRun",
+    "body": "remoteRun(${1:conn}, ${2:script}, ${3:args...})",
+    "scope": "source.dolphindb"
+  },
+  "removeAggregator": {
+    "prefix": "removeAggregator",
+    "body": "removeAggregator(${1:name})",
+    "scope": "source.dolphindb"
+  },
+  "removeHead!": {
+    "prefix": "removeHead!",
+    "body": "removeHead!(${1:obj}, ${2:n})",
+    "scope": "source.dolphindb"
+  },
+  "removeTail!": {
+    "prefix": "removeTail!",
+    "body": "removeTail!(${1:obj}, ${2:n})",
+    "scope": "source.dolphindb"
+  },
+  "rename!": {
+    "prefix": "rename!",
+    "body": "rename!(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "renewTransactions": {
+    "prefix": "renewTransactions",
+    "body": "renewTransactions(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "repartitionDS": {
+    "prefix": "repartitionDS",
+    "body": "repartitionDS(${1:query}, ${2:[column]}, ${3:[partitionType]}, ${4:[partitionScheme]}, ${5:[local]})",
+    "scope": "source.dolphindb"
+  },
+  "repeat": {
+    "prefix": "repeat",
+    "body": "repeat(${1:X}, ${2:n})",
+    "scope": "source.dolphindb"
+  },
+  "replace": {
+    "prefix": "replace",
+    "body": "replace(${1:X}, ${2:oldValue}, ${3:newValue})",
+    "scope": "source.dolphindb"
+  },
+  "replace!": {
+    "prefix": "replace!",
+    "body": "replace!(${1:obj}, ${2:oldValue}, ${3:newValue})",
+    "scope": "source.dolphindb"
+  },
+  "replay": {
+    "prefix": "replay",
+    "body": "replay(${1:inputTables}, ${2:outputTables}, ${3:[dateColumn]}, ${4:[timeColumn]}, ${5:[replayRate]}, ${6:[parallelLevel=1]})",
+    "scope": "source.dolphindb"
+  },
+  "replayDS": {
+    "prefix": "replayDS",
+    "body": "replayDS(${1:sqlObj}, ${2:[dateColumn]}, ${3:[timeColumn]}, ${4:[timeRepartitionSchema]})",
+    "scope": "source.dolphindb"
+  },
+  "replayOutput": {
+    "prefix": "replayOutput",
+    "body": "replayOutput(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "replayRetrieve": {
+    "prefix": "replayRetrieve",
+    "body": "replayRetrieve(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "reportDFSChunkNodeStatus": {
+    "prefix": "reportDFSChunkNodeStatus",
+    "body": "reportDFSChunkNodeStatus(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "requestTransactionStateResolution": {
+    "prefix": "requestTransactionStateResolution",
+    "body": "requestTransactionStateResolution(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "resetPwd": {
+    "prefix": "resetPwd",
+    "body": "resetPwd(${1:userId}, ${2:newPwd})",
+    "scope": "source.dolphindb"
+  },
+  "reshape": {
+    "prefix": "reshape",
+    "body": "reshape(${1:obj}, ${2:[dim]})",
+    "scope": "source.dolphindb"
+  },
+  "restore": {
+    "prefix": "restore",
+    "body": "restore(${1:backupDir}, ${2:dbPath}, ${3:tableName}, ${4:partition}, ${5:[force=false]}, ${6:[outputTable]})",
+    "scope": "source.dolphindb"
+  },
+  "reverse": {
+    "prefix": "reverse",
+    "body": "reverse(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "revoke": {
+    "prefix": "revoke",
+    "body": "revoke(${1:userId|groupId}, ${2:accessType}, ${3:[objs]})",
+    "scope": "source.dolphindb"
+  },
+  "right": {
+    "prefix": "right",
+    "body": "right(${1:X}, ${2:n})",
+    "scope": "source.dolphindb"
+  },
+  "rm": {
+    "prefix": "rm",
+    "body": "rm(${1:file|dir})",
+    "scope": "source.dolphindb"
+  },
+  "rmdir": {
+    "prefix": "rmdir",
+    "body": "rmdir(${1:dir}, ${2:[recursive=false]})",
+    "scope": "source.dolphindb"
+  },
+  "rollback": {
+    "prefix": "rollback",
+    "body": "rollback(${1:trans})",
+    "scope": "source.dolphindb"
+  },
+  "rollbackDatabase": {
+    "prefix": "rollbackDatabase",
+    "body": "rollbackDatabase(${1:dbPath})",
+    "scope": "source.dolphindb"
+  },
+  "rolling": {
+    "prefix": "rolling",
+    "body": "rolling(${1:func}, ${2:funcArgs}, ${3:window}, ${4:[step]})",
+    "scope": "source.dolphindb"
+  },
+  "round": {
+    "prefix": "round",
+    "body": "round(${1:X}, ${2:[precision]})",
+    "scope": "source.dolphindb"
+  },
+  "row": {
+    "prefix": "row",
+    "body": "row(${1:obj}, ${2:index})",
+    "scope": "source.dolphindb"
+  },
+  "rowAvg": {
+    "prefix": "rowAvg",
+    "body": "rowAvg(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "rowCount": {
+    "prefix": "rowCount",
+    "body": "rowCount(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "rowMax": {
+    "prefix": "rowMax",
+    "body": "rowMax(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "rowMin": {
+    "prefix": "rowMin",
+    "body": "rowMin(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "rowNames": {
+    "prefix": "rowNames",
+    "body": "rowNames(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "rowNo": {
+    "prefix": "rowNo",
+    "body": "rowNo(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "rowStd": {
+    "prefix": "rowStd",
+    "body": "rowStd(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "rowSum": {
+    "prefix": "rowSum",
+    "body": "rowSum(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "rowSum2": {
+    "prefix": "rowSum2",
+    "body": "rowSum2(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "rowVar": {
+    "prefix": "rowVar",
+    "body": "rowVar(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "rows": {
+    "prefix": "rows",
+    "body": "rows(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "rpad": {
+    "prefix": "rpad",
+    "body": "rpad(${1:str}, ${2:length}, ${3:[pattern]})",
+    "scope": "source.dolphindb"
+  },
+  "rpc": {
+    "prefix": "rpc",
+    "body": "rpc(${1:nodeAlias}, ${2:func}, ${3:args...})",
+    "scope": "source.dolphindb"
+  },
+  "rshift": {
+    "prefix": "rshift",
+    "body": "rshift(${1:X}, ${2:bits})",
+    "scope": "source.dolphindb"
+  },
+  "rtrim": {
+    "prefix": "rtrim",
+    "body": "rtrim(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "run": {
+    "prefix": "run",
+    "body": "run(${1:scriptFile})",
+    "scope": "source.dolphindb"
+  },
+  "sample": {
+    "prefix": "sample",
+    "body": "sample(${1:partitionCol}, ${2:size})",
+    "scope": "source.dolphindb"
+  },
+  "saveAclPubKey": {
+    "prefix": "saveAclPubKey",
+    "body": "saveAclPubKey(${1:pubKeyContent})",
+    "scope": "source.dolphindb"
+  },
+  "saveClusterNodes": {
+    "prefix": "saveClusterNodes",
+    "body": "saveClusterNodes(${1:sites})",
+    "scope": "source.dolphindb"
+  },
+  "saveClusterNodesConfigs": {
+    "prefix": "saveClusterNodesConfigs",
+    "body": "saveClusterNodesConfigs(${1:configs})",
+    "scope": "source.dolphindb"
+  },
+  "saveControllerConfigs": {
+    "prefix": "saveControllerConfigs",
+    "body": "saveControllerConfigs(${1:configs})",
+    "scope": "source.dolphindb"
+  },
+  "saveDB": {
+    "prefix": "saveDB",
+    "body": "saveDB(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "saveDatabase": {
+    "prefix": "saveDatabase",
+    "body": "saveDatabase(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "saveDualPartition": {
+    "prefix": "saveDualPartition",
+    "body": "saveDualPartition(${1:dbHandle1}, ${2:dbHandle2}, ${3:table}, ${4:tableName}, ${5:partitionColumn1}, ${6:partitionColumn2}, ${7:[compression=false]})",
+    "scope": "source.dolphindb"
+  },
+  "saveModel": {
+    "prefix": "saveModel",
+    "body": "saveModel(${1:model}, ${2:file})",
+    "scope": "source.dolphindb"
+  },
+  "savePartition": {
+    "prefix": "savePartition",
+    "body": "savePartition(${1:dbHandle}, ${2:table}, ${3:tableName}, ${4:[compression=true]}, ${5:[trans]})",
+    "scope": "source.dolphindb"
+  },
+  "saveTable": {
+    "prefix": "saveTable",
+    "body": "saveTable(${1:dbHandle}, ${2:table}, ${3:[tableName]}, ${4:[append=false]}, ${5:[compression=false]}, ${6:[trans]})",
+    "scope": "source.dolphindb"
+  },
+  "saveText": {
+    "prefix": "saveText",
+    "body": "saveText(${1:obj}, ${2:filename}, ${3:[delimiter='}, ${4:']}, ${5:[append=false]})",
+    "scope": "source.dolphindb"
+  },
+  "saveTextFile": {
+    "prefix": "saveTextFile",
+    "body": "saveTextFile(${1:content}, ${2:filename}, ${3:[append=false]}, ${4:[lastModified]})",
+    "scope": "source.dolphindb"
+  },
+  "scheduleJob": {
+    "prefix": "scheduleJob",
+    "body": "scheduleJob(${1:jobId}, ${2:jobDesc}, ${3:jobFunc}, ${4:scheduleTime}, ${5:startDate}, ${6:endDate}, ${7:frequency}, ${8:[days]})",
+    "scope": "source.dolphindb"
+  },
+  "schema": {
+    "prefix": "schema",
+    "body": "schema(${1:table})",
+    "scope": "source.dolphindb"
+  },
+  "searchK": {
+    "prefix": "searchK",
+    "body": "searchK(${1:X}, ${2:k})",
+    "scope": "source.dolphindb"
+  },
+  "seasonalEsd": {
+    "prefix": "seasonalEsd",
+    "body": "seasonalEsd(${1:data}, ${2:period}, ${3:[hybrid]}, ${4:[maxAnomalies]}, ${5:[alpha]})",
+    "scope": "source.dolphindb"
+  },
+  "second": {
+    "prefix": "second",
+    "body": "second(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "seek": {
+    "prefix": "seek",
+    "body": "seek(${1:handle}, ${2:offset}, ${3:[mode=1]})",
+    "scope": "source.dolphindb"
+  },
+  "segmentby": {
+    "prefix": "segmentby",
+    "body": "segmentby(${1:func}, ${2:funcArgs}, ${3:segment})",
+    "scope": "source.dolphindb"
+  },
+  "sej": {
+    "prefix": "sej",
+    "body": "sej(${1:leftTable}, ${2:rightTable}, ${3:matchingCols}, ${4:[rightMatchingCols]})",
+    "scope": "source.dolphindb"
+  },
+  "seq": {
+    "prefix": "seq",
+    "body": "seq(${1:start}, ${2:end})",
+    "scope": "source.dolphindb"
+  },
+  "set": {
+    "prefix": "set",
+    "body": "set(${1:keyType|keyObj}, ${2:[capacity]})",
+    "scope": "source.dolphindb"
+  },
+  "setMaxJobParallelism": {
+    "prefix": "setMaxJobParallelism",
+    "body": "setMaxJobParallelism(${1:userId}, ${2:maxParallelism})",
+    "scope": "source.dolphindb"
+  },
+  "setMaxJobPriority": {
+    "prefix": "setMaxJobPriority",
+    "body": "setMaxJobPriority(${1:userId}, ${2:maxPriority})",
+    "scope": "source.dolphindb"
+  },
+  "setStreamTableFilterColumn": {
+    "prefix": "setStreamTableFilterColumn",
+    "body": "setStreamTableFilterColumn(${1:streamTable}, ${2:columnName})",
+    "scope": "source.dolphindb"
+  },
+  "setSystem": {
+    "prefix": "setSystem",
+    "body": "setSystem(${1:key}, ${2:value})",
+    "scope": "source.dolphindb"
+  },
+  "shape": {
+    "prefix": "shape",
+    "body": "shape(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "share": {
+    "prefix": "share",
+    "body": "share(${1:table}, ${2:sharedName}, ${3:[database]}, ${4:[dbName]}, ${5:[partitionColumn]})",
+    "scope": "source.dolphindb"
+  },
+  "shell": {
+    "prefix": "shell",
+    "body": "shell(${1:cmd})",
+    "scope": "source.dolphindb"
+  },
+  "short": {
+    "prefix": "short",
+    "body": "short(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "shuffle": {
+    "prefix": "shuffle",
+    "body": "shuffle(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "shuffle!": {
+    "prefix": "shuffle!",
+    "body": "shuffle!(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "shutDownNode": {
+    "prefix": "shutDownNode",
+    "body": "shutDownNode(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "sin": {
+    "prefix": "sin",
+    "body": "sin(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "size": {
+    "prefix": "size",
+    "body": "size(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "skew": {
+    "prefix": "skew",
+    "body": "skew(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "skewreduce": {
+    "prefix": "skewreduce",
+    "body": "skewreduce(${1:mysum}, ${2:mysum2}, ${3:mysum3}, ${4:mycount})",
+    "scope": "source.dolphindb"
+  },
+  "sleep": {
+    "prefix": "sleep",
+    "body": "sleep(${1:milliseconds})",
+    "scope": "source.dolphindb"
+  },
+  "slice": {
+    "prefix": "slice",
+    "body": "slice(${1:obj}, ${2:index|rowIndex}, ${3:[colIndex]})",
+    "scope": "source.dolphindb"
+  },
+  "slsj": {
+    "prefix": "slsj",
+    "body": "slsj(${1:leftTable}, ${2:rightTable}, ${3:matchingCols}, ${4:[rightMatchingCols]})",
+    "scope": "source.dolphindb"
+  },
+  "solve": {
+    "prefix": "solve",
+    "body": "solve(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "sort": {
+    "prefix": "sort",
+    "body": "sort(${1:X}, ${2:[ascending=true]})",
+    "scope": "source.dolphindb"
+  },
+  "sort!": {
+    "prefix": "sort!",
+    "body": "sort!(${1:obj}, ${2:[ascending=true]})",
+    "scope": "source.dolphindb"
+  },
+  "sortBy!": {
+    "prefix": "sortBy!",
+    "body": "sortBy!(${1:table}, ${2:sortColumns}, ${3:[sortDirections]})",
+    "scope": "source.dolphindb"
+  },
+  "split": {
+    "prefix": "split",
+    "body": "split(${1:str}, ${2:[delimiter]})",
+    "scope": "source.dolphindb"
+  },
+  "sql": {
+    "prefix": "sql",
+    "body": "sql(${1:select}, ${2:from}, ${3:[where]}, ${4:[groupBy]}, ${5:[groupFlag]}, ${6:[csort]}, ${7:[ascSort]}, ${8:[having]}, ${9:[orderBy]}, ${10:[ascOrder]}, ${11:[limit]})",
+    "scope": "source.dolphindb"
+  },
+  "sqlCol": {
+    "prefix": "sqlCol",
+    "body": "sqlCol(${1:colName}, ${2:[func]})",
+    "scope": "source.dolphindb"
+  },
+  "sqlColAlias": {
+    "prefix": "sqlColAlias",
+    "body": "sqlColAlias(${1:colDefs}, ${2:[colNames]})",
+    "scope": "source.dolphindb"
+  },
+  "sqlDS": {
+    "prefix": "sqlDS",
+    "body": "sqlDS(${1:sqlObj}, ${2:[forcePartition=false]})",
+    "scope": "source.dolphindb"
+  },
+  "sqrt": {
+    "prefix": "sqrt",
+    "body": "sqrt(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "startDataNode": {
+    "prefix": "startDataNode",
+    "body": "startDataNode(${1:nodes})",
+    "scope": "source.dolphindb"
+  },
+  "startDataNodeAgent": {
+    "prefix": "startDataNodeAgent",
+    "body": "startDataNodeAgent(${1:sites}, ${2:configs}, ${3:[commonConfig]})",
+    "scope": "source.dolphindb"
+  },
+  "startsWith": {
+    "prefix": "startsWith",
+    "body": "startsWith(${1:X}, ${2:str})",
+    "scope": "source.dolphindb"
+  },
+  "stat": {
+    "prefix": "stat",
+    "body": "stat(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "std": {
+    "prefix": "std",
+    "body": "std(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "stdreduce": {
+    "prefix": "stdreduce",
+    "body": "stdreduce(${1:mysum}, ${2:mysum2}, ${3:mycount})",
+    "scope": "source.dolphindb"
+  },
+  "stl": {
+    "prefix": "stl",
+    "body": "stl(${1:data}, ${2:period}, ${3:sWindow}, ${4:[sDegree]}, ${5:[sJump]}, ${6:[tWindow]}, ${7:[tDegree]}, ${8:[tJump]}, ${9:[lWindow]}, ${10:[lDegree]}, ${11:[lJump]}, ${12:[robust]}, ${13:[inner]}, ${14:[outer]})",
+    "scope": "source.dolphindb"
+  },
+  "stopDataNode": {
+    "prefix": "stopDataNode",
+    "body": "stopDataNode(${1:nodes})",
+    "scope": "source.dolphindb"
+  },
+  "stopPublishTable": {
+    "prefix": "stopPublishTable",
+    "body": "stopPublishTable(${1:host}, ${2:port}, ${3:tableName}, ${4:[actionName]})",
+    "scope": "source.dolphindb"
+  },
+  "strFind": {
+    "prefix": "strFind",
+    "body": "strFind(${1:X}, ${2:str})",
+    "scope": "source.dolphindb"
+  },
+  "strReplace": {
+    "prefix": "strReplace",
+    "body": "strReplace(${1:str}, ${2:pattern}, ${3:replacement})",
+    "scope": "source.dolphindb"
+  },
+  "strassenMulti": {
+    "prefix": "strassenMulti",
+    "body": "strassenMulti(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "streamTable": {
+    "prefix": "streamTable",
+    "body": "streamTable(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "string": {
+    "prefix": "string",
+    "body": "string(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "strip": {
+    "prefix": "strip",
+    "body": "strip(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "strlen": {
+    "prefix": "strlen",
+    "body": "strlen(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "strlenu": {
+    "prefix": "strlenu",
+    "body": "strlenu(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "strpos": {
+    "prefix": "strpos",
+    "body": "strpos(${1:X}, ${2:str})",
+    "scope": "source.dolphindb"
+  },
+  "sub": {
+    "prefix": "sub",
+    "body": "sub(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "subarray": {
+    "prefix": "subarray",
+    "body": "subarray(${1:X}, ${2:range})",
+    "scope": "source.dolphindb"
+  },
+  "submitJob": {
+    "prefix": "submitJob",
+    "body": "submitJob(${1:jobId}, ${2:jobDesc}, ${3:jobDef}, ${4:args...})",
+    "scope": "source.dolphindb"
+  },
+  "submitJobEx": {
+    "prefix": "submitJobEx",
+    "body": "submitJobEx(${1:jobId}, ${2:jobDesc}, ${3:priority}, ${4:parallelism}, ${5:jobDef}, ${6:args...})",
+    "scope": "source.dolphindb"
+  },
+  "subscribeTable": {
+    "prefix": "subscribeTable",
+    "body": "subscribeTable(${1:[server]}, ${2:tableName}, ${3:[actionName]}, ${4:[offset=-1]}, ${5:handler}, ${6:[msgAsTable=false]}, ${7:[batchSize=0]}, ${8:[throttle=1]}, ${9:[hash=-1]}, ${10:[reconnect=false]}, ${11:[filter]}, ${12:[persisOffset=false]})",
+    "scope": "source.dolphindb"
+  },
+  "substr": {
+    "prefix": "substr",
+    "body": "substr(${1:str}, ${2:offset}, ${3:[length]})",
+    "scope": "source.dolphindb"
+  },
+  "substru": {
+    "prefix": "substru",
+    "body": "substru(${1:str}, ${2:offset}, ${3:[length]})",
+    "scope": "source.dolphindb"
+  },
+  "subtuple": {
+    "prefix": "subtuple",
+    "body": "subtuple(${1:X}, ${2:range})",
+    "scope": "source.dolphindb"
+  },
+  "sum": {
+    "prefix": "sum",
+    "body": "sum(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "sum2": {
+    "prefix": "sum2",
+    "body": "sum2(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "sum3": {
+    "prefix": "sum3",
+    "body": "sum3(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "sum4": {
+    "prefix": "sum4",
+    "body": "sum4(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "symbol": {
+    "prefix": "symbol",
+    "body": "symbol(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "symmetricDifference": {
+    "prefix": "symmetricDifference",
+    "body": "symmetricDifference(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "syncDict": {
+    "prefix": "syncDict",
+    "body": "syncDict(${1:keyType|keyObj}, ${2:valueType|valueObj})",
+    "scope": "source.dolphindb"
+  },
+  "syntax": {
+    "prefix": "syntax",
+    "body": "syntax(${1:func})",
+    "scope": "source.dolphindb"
+  },
+  "table": {
+    "prefix": "table",
+    "body": "table(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "tableInsert": {
+    "prefix": "tableInsert",
+    "body": "tableInsert(${1:table}, ${2:args...})",
+    "scope": "source.dolphindb"
+  },
+  "tail": {
+    "prefix": "tail",
+    "body": "tail(${1:obj}, ${2:[n=1]})",
+    "scope": "source.dolphindb"
+  },
+  "take": {
+    "prefix": "take",
+    "body": "take(${1:X}, ${2:n})",
+    "scope": "source.dolphindb"
+  },
+  "tan": {
+    "prefix": "tan",
+    "body": "tan(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "temporalAdd": {
+    "prefix": "temporalAdd",
+    "body": "temporalAdd(${1:obj}, ${2:duration}, ${3:unit})",
+    "scope": "source.dolphindb"
+  },
+  "temporalFormat": {
+    "prefix": "temporalFormat",
+    "body": "temporalFormat(${1:X}, ${2:format})",
+    "scope": "source.dolphindb"
+  },
+  "temporalParse": {
+    "prefix": "temporalParse",
+    "body": "temporalParse(${1:X}, ${2:format})",
+    "scope": "source.dolphindb"
+  },
+  "test": {
+    "prefix": "test",
+    "body": "test(${1:scriptFile}, ${2:[outFile]}, ${3:[testMemLeaking=false]})",
+    "scope": "source.dolphindb"
+  },
+  "textFilesDS": {
+    "prefix": "textFilesDS",
+    "body": "textFilesDS(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "time": {
+    "prefix": "time",
+    "body": "time(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "timestamp": {
+    "prefix": "timestamp",
+    "body": "timestamp(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "toJson": {
+    "prefix": "toJson",
+    "body": "toJson(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "toStdJson": {
+    "prefix": "toStdJson",
+    "body": "toStdJson(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "today": {
+    "prefix": "today",
+    "body": "today(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "transDS!": {
+    "prefix": "transDS!",
+    "body": "transDS!(${1:ds}, ${2:transFunc})",
+    "scope": "source.dolphindb"
+  },
+  "transaction": {
+    "prefix": "transaction",
+    "body": "transaction(${1:dbHandle})",
+    "scope": "source.dolphindb"
+  },
+  "transpose": {
+    "prefix": "transpose",
+    "body": "transpose(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "trim": {
+    "prefix": "trim",
+    "body": "trim(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "tupleSum": {
+    "prefix": "tupleSum",
+    "body": "tupleSum(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "type": {
+    "prefix": "type",
+    "body": "type(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "typestr": {
+    "prefix": "typestr",
+    "body": "typestr(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "undef": {
+    "prefix": "undef",
+    "body": "undef(${1:obj}, ${2:[objType=VAR]})",
+    "scope": "source.dolphindb"
+  },
+  "union": {
+    "prefix": "union",
+    "body": "union(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "unionAll": {
+    "prefix": "unionAll",
+    "body": "unionAll(${1:tableA|tables}, ${2:tableB|[partition=true]})",
+    "scope": "source.dolphindb"
+  },
+  "unpivot": {
+    "prefix": "unpivot",
+    "body": "unpivot(${1:obj}, ${2:keyColNames}, ${3:valueColNames}, ${4:[func]})",
+    "scope": "source.dolphindb"
+  },
+  "unsubscribeTable": {
+    "prefix": "unsubscribeTable",
+    "body": "unsubscribeTable(${1:server}, ${2:tableName}, ${3:[actionName]})",
+    "scope": "source.dolphindb"
+  },
+  "update!": {
+    "prefix": "update!",
+    "body": "update!(${1:table}, ${2:colNames}, ${3:newValues}, ${4:[filter]})",
+    "scope": "source.dolphindb"
+  },
+  "upper": {
+    "prefix": "upper",
+    "body": "upper(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "values": {
+    "prefix": "values",
+    "body": "values(${1:obj})",
+    "scope": "source.dolphindb"
+  },
+  "var": {
+    "prefix": "var",
+    "body": "var(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "varreduce": {
+    "prefix": "varreduce",
+    "body": "varreduce(${1:mysum}, ${2:mysum2}, ${3:mycount})",
+    "scope": "source.dolphindb"
+  },
+  "version": {
+    "prefix": "version",
+    "body": "version(${1:})",
+    "scope": "source.dolphindb"
+  },
+  "wavg": {
+    "prefix": "wavg",
+    "body": "wavg(${1:value}, ${2:weight})",
+    "scope": "source.dolphindb"
+  },
+  "wc": {
+    "prefix": "wc",
+    "body": "wc(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "wcovar": {
+    "prefix": "wcovar",
+    "body": "wcovar(${1:X}, ${2:Y}, ${3:weights})",
+    "scope": "source.dolphindb"
+  },
+  "weekday": {
+    "prefix": "weekday",
+    "body": "weekday(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "wj": {
+    "prefix": "wj",
+    "body": "wj(${1:leftTable}, ${2:rightTable}, ${3:window}, ${4:aggs}, ${5:matchingCols}, ${6:[rightMatchingCols]})",
+    "scope": "source.dolphindb"
+  },
+  "write": {
+    "prefix": "write",
+    "body": "write(${1:handle}, ${2:object}, ${3:[offset=0]}, ${4:[length]})",
+    "scope": "source.dolphindb"
+  },
+  "writeBytes": {
+    "prefix": "writeBytes",
+    "body": "writeBytes(${1:fileHandle}, ${2:charObj})",
+    "scope": "source.dolphindb"
+  },
+  "writeLine": {
+    "prefix": "writeLine",
+    "body": "writeLine(${1:handle}, ${2:line}, ${3:[windowsLineEnding]})",
+    "scope": "source.dolphindb"
+  },
+  "writeLines": {
+    "prefix": "writeLines",
+    "body": "writeLines(${1:handle}, ${2:object}, ${3:[offset=0]}, ${4:[length]}, ${5:[windowsLineEnding]})",
+    "scope": "source.dolphindb"
+  },
+  "writeLog": {
+    "prefix": "writeLog",
+    "body": "writeLog(${1:args...})",
+    "scope": "source.dolphindb"
+  },
+  "writeObject": {
+    "prefix": "writeObject",
+    "body": "writeObject(${1:ileHandle|fileName}, ${2:object})",
+    "scope": "source.dolphindb"
+  },
+  "writeRecord": {
+    "prefix": "writeRecord",
+    "body": "writeRecord(${1:handle}, ${2:object}, ${3:[offset=0]}, ${4:[length]})",
+    "scope": "source.dolphindb"
+  },
+  "wsum": {
+    "prefix": "wsum",
+    "body": "wsum(${1:X}, ${2:Y})",
+    "scope": "source.dolphindb"
+  },
+  "xdb": {
+    "prefix": "xdb",
+    "body": "xdb(${1:host}, ${2:port}, ${3:[userId]}, ${4:[password]})",
+    "scope": "source.dolphindb"
+  },
+  "year": {
+    "prefix": "year",
+    "body": "year(${1:X})",
+    "scope": "source.dolphindb"
+  },
+  "zscore": {
+    "prefix": "zscore",
+    "body": "zscore(${1:X})",
+    "scope": "source.dolphindb"
+  }
+}

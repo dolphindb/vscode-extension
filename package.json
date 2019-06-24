@@ -2,10 +2,10 @@
 	"name": "dolphindb-vscode",
 	"displayName": "DolphinDB",
 	"description": "VScode plugin for DolphinDB script",
-	"version": "0.3.2",
+	"version": "0.4.0",
 	"publisher": "yjhmelody",
 	"engines": {
-		"vscode": "^1.35.0"
+		"vscode": "^1.25.0"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"categories": [
@@ -192,6 +192,10 @@
 			{
 				"language": "dolphindb",
 				"path": "./snippets/dolphindb.snippets.json"
+			},
+			{
+				"language": "dolphindb",
+				"path": "snippets/dolphindb-functions.snippets.json"
 			}
 		],
 		"breakpoints": [

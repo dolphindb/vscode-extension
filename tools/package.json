@@ -1,0 +1,28 @@
+{
+  "name": "tools",
+  "version": "0.1.0",
+  "description": "",
+  "main": "out/index.js",
+  "keywords": [
+    "gen",
+    "snippets"
+  ],
+  "author": "yjhmelody",
+  "license": "ISC",
+  "scripts": {
+		"compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "start": "npm run compile && node ./out/index"
+	},
+  "devDependencies": {
+    "@types/lodash": "^4.14.134",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.0.8",
+    "typescript": "^3.5.2"
+  },
+  "dependencies": {
+    "axios": "^0.19.0",
+    "csv-parse": "^4.4.3",
+    "lodash": "^4.17.11"
+  }
+}
