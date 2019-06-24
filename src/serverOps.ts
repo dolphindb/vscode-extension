@@ -36,6 +36,7 @@ function resultFormat(res: string, start: Date, end: Date): string {
 
 export async function dolphindbExecuteCode() {
     let selected = (vscode.window.activeTextEditor as vscode.TextEditor).selection.with()
+    console.log( (vscode.window.activeTextEditor as vscode.TextEditor).document.uri)
     let code = (vscode.window.activeTextEditor as vscode.TextEditor).document.getText(selected)
     let start = new Date
     let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
