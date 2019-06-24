@@ -10,7 +10,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 Added native function code completion.
 Fixed some hightlighting errors.
 
-
 ## [0.3.0] - 2019-06-23
 
 Added snippets for common patterns.

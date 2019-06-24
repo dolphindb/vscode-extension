@@ -17,6 +17,7 @@
 import * as vscode from 'vscode'
 import * as serverOps from './serverOps'
 import * as env from './env'
+import {dolphindbHelper} from './helper'
 import {context as dolphindbContext, DolphindbContext} from './context'
 
 
@@ -28,7 +29,8 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider('dolphindb.env', dolphindbEnvProvider)
     vscode.commands.registerCommand('dolphindb.env.refresh', () => dolphindbEnvProvider.refresh())
     vscode.commands.registerCommand('dolphindb.env.showInfo', () => {
-        vscode.window.showInformationMessage('TODO')
+        vscode.window.showInformationMessage('todo')
+        // vscode.commands.executeCommand('dolphindb.executeCode')
         dolphindbEnvProvider.refresh()
     })
 
@@ -39,11 +41,13 @@ export function activate(context: vscode.ExtensionContext) {
     const addServer = vscode.commands.registerCommand('dolphindb.addServer', serverOps.dolphindbAddServer)
     const chooseServer = vscode.commands.registerCommand('dolphindb.chooseServer', serverOps.dolphindbChooseServer)
     const removeServer = vscode.commands.registerCommand('dolphindb.removeServer', serverOps.dolphindbRemoveServer)
+    const helper = vscode.commands.registerCommand('dolphindb.helper', dolphindbHelper)
 
     context.subscriptions.push(executeCode)
     context.subscriptions.push(addServer)
     context.subscriptions.push(chooseServer)
     context.subscriptions.push(removeServer)
+    context.subscriptions.push(helper)
 }
 
 // this method is called when your extension is deactivated

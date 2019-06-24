@@ -136,7 +136,6 @@ export class DolphindbJson {
                 return this.toPairStyle()
 
             case 'matrix':
-                // todo
                 return this.toMatrixStyle()
 
             case 'set':

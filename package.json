@@ -36,6 +36,7 @@
 		"@types/lodash": "^4.14.134",
 		"@types/mocha": "^5.2.7",
 		"@types/node": "^12.0.8",
+		"@types/open": "^6.1.0",
 		"@types/table": "^4.0.5",
 		"mocha": "^6.1.4",
 		"ts-mocha": "^6.0.0",
@@ -54,7 +55,8 @@
 		"onCommand:dolphindb.executeCode",
 		"onCommand:dolphindb.addServer",
 		"onCommand:dolphindb.chooseServer",
-		"onCommand:dolphindb.removeServer"
+		"onCommand:dolphindb.removeServer",
+		"onCommand:dolphindb.helper"
 	],
 	"icon": "images/dolphindb.png",
 	"contributes": {
@@ -91,6 +93,10 @@
 			{
 				"command": "dolphindb.removeServer",
 				"title": "DolphinDB: removeServer"
+			},
+			{
+				"command": "dolphindb.helper",
+				"title": "DolphinDB: Helper"
 			},
 			{
 				"command": "dolphindb.env.refresh",
