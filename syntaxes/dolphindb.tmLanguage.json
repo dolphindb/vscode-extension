@@ -4,7 +4,8 @@
 	"scopeName": "source.dolphindb",
 	"fileTypes": [
 		"dos",
-		"dp"
+		"dp",
+		"txt"
 	],
 	"patterns": [
 		{

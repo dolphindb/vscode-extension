@@ -6,6 +6,7 @@
 - [x] Snippets for common patterns 
 - [x] Environment variables display
 - [x] Connection to server
+- [x] Native Functions code completion
 
 ## Command
 
@@ -26,11 +27,5 @@ None
 
 ## Release Notes
 
-### 0.3.0
-
-Added snippets for common patterns.
-
-### 0.2.0
-
-Added features syntaxes hightlighting, server config, and dolphindb environment variable.
+See [CHANGELOG.md](CHANGELOG.md)
 
