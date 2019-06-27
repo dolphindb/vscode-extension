@@ -17,7 +17,6 @@ import * as _ from 'lodash/fp'
 import * as api from './api'
 import { IConfig, context } from './context'
 import { VariableInfo } from './env'
-import { IDolphindbResponse } from './api';
 
 
 let currentCfg = context.currentCfg

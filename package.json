@@ -32,6 +32,7 @@
 		"test": "npm run compile && node ./node_modules/vscode/bin/test"
 	},
 	"devDependencies": {
+		"@types/chalk": "^2.2.0",
 		"@types/expect": "^1.20.4",
 		"@types/lodash": "^4.14.134",
 		"@types/mocha": "^5.2.7",
@@ -46,6 +47,7 @@
 	},
 	"dependencies": {
 		"axios": "^0.19.0",
+		"chalk": "^2.4.2",
 		"lodash": "^4.17.11",
 		"open": "^6.3.0",
 		"table": "^5.4.1"

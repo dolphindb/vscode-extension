@@ -14,9 +14,12 @@
 
 import axios from 'axios'
 import { getBorderCharacters, table, TableUserConfig } from 'table'
+import chalk from 'chalk'
+
 
 const tableConfig: TableUserConfig = {
     border: getBorderCharacters('norc'),
+    columns: []
 }
 
 const MAX_VALUE_LEN: number = 1024
@@ -48,9 +51,8 @@ export interface IDolphindbAttr {
     form: string,
     type: string,
     size: string,
-    value: number | string | (number | string)[]
+    value: Scalar | Scalar[]
 }
-
 
 type Scalar = number | string
 
@@ -121,13 +123,13 @@ export class DolphindbJson {
 
     toJsString(): string {
         if (this._json_is_illegal()) {
-            return this.errorMessage()
+            return chalk.red(this.errorMessage())
         }
         switch (this.dataForm()) {
             case 'scalar':
                 switch (this.dataType()) {
                     case 'void':
-                        return 'null'
+                        return chalk.bold.blue('NULL')
                     default:
                         return this.toScalarStyle()
                 }
@@ -150,7 +152,7 @@ export class DolphindbJson {
                 return this.toTableStyle()
 
             default:
-                throw TypeError('illegal json type')
+                throw TypeError('Illegal json type')
         }
     }
 
@@ -207,7 +209,7 @@ export class DolphindbJson {
     }
 
     toPair(): [string, string] {
-        let pair = this._json.object[0].value
+        let pair = this._json.object[0].value as Scalar[]
         return [
             DolphindbJson.scalarFormat(this.dataType(), pair[0]).toString(),
             DolphindbJson.scalarFormat(this.dataType(), pair[1]).toString(),
@@ -235,12 +237,12 @@ export class DolphindbJson {
     }
 
     toDict(): Map<string, string> {
-        let dict = this._json.object[0].value
+        let dict = this._json.object[0].value as IDolphindbAttr[]
         let map = new Map()
         let size = this.getDataSize()
         for (let i = 0; i < size; i++) {
-            let key = DolphindbJson.scalarFormat(dict[0].type, dict[0].value[i])
-            let val = DolphindbJson.scalarFormat(dict[1].type, dict[1].value[i])
+            let key = DolphindbJson.scalarFormat(dict[0].type, (dict[0].value as Scalar[])[i])
+            let val = DolphindbJson.scalarFormat(dict[1].type, (dict[1].value as Scalar[])[i])
             map.set(key, val)
         }
         return map
@@ -298,12 +300,12 @@ export class DolphindbJson {
 
     toTable(): { colName: string[], table: any[][] } {
         let val = this._json.object[0].value as IDolphindbAttr[]
-        const table = []
+        const table: Scalar[][] = []
         const colName = []
         let rowNum = this.getDataSize() > MAX_VALUE_LEN ? MAX_VALUE_LEN : this.getDataSize()
         let _colNum = +val[0].size
         for (let i = 0; i < val.length; i++) {
-            table.push(val[i].value)
+            table.push(val[i].value as Scalar[])
             colName.push(val[i].name)
         }
 
@@ -323,14 +325,14 @@ export class DolphindbJson {
     }
 
     toMatrix(): { colNum: number, matrix: any[][] } {
-        let val = this._json.object[0].value
+        let val = this._json.object[0].value as IDolphindbAttr[]
         const matrix: any[][] = []
         let rowNum = +val[1].value
         const colNum = +val[2].value
         for (let i = 0; i < rowNum; i++) {
             matrix.push([])
             for (let j = 0; j < colNum; j++) {
-                matrix[i][j] = val[0].value[rowNum * j + i]
+                matrix[i][j] = (val[0].value as Scalar[])[rowNum * j + i]
             }
         }
 
