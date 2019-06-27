@@ -253,7 +253,7 @@ export class DolphindbJson {
         }
         let res = 'dict(\n'
         for (let [key, val] of map) {
-            res += '  ' + key + '->' + val + ',\n'
+            res += '  ' + key + ' -> ' + val + ',\n'
         }
         res += ')\n'
         return res

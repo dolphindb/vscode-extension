@@ -28,11 +28,7 @@ export function activate(context: vscode.ExtensionContext) {
     // onView:dolphindb.env
     vscode.window.registerTreeDataProvider('dolphindb.env', dolphindbEnvProvider)
     vscode.commands.registerCommand('dolphindb.env.refresh', () => dolphindbEnvProvider.refresh())
-    vscode.commands.registerCommand('dolphindb.env.showInfo', () => {
-        vscode.window.showInformationMessage('todo')
-        // vscode.commands.executeCommand('dolphindb.executeCode')
-        dolphindbEnvProvider.refresh()
-    })
+    vscode.commands.registerCommand('dolphindb.env.showInfo', serverOps.dolphindbShowInfo)
 
     const executeCode = vscode.commands.registerCommand('dolphindb.executeCode', async () => {
         await serverOps.dolphindbExecuteCode()

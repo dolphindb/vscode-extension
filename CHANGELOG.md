@@ -4,16 +4,19 @@ All notable changes to the "dolphindb-vscode" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.5.0] - 2019-06-27
+
+- Add `Show` cmd for Environment variables display. 
+- Fix Some bugs.
 
 ## [0.4.0] - 2019-06-23
 
-Added native function code completion.
-Fixed some hightlighting errors.
+- Added native function code completion.
+- Fixed some hightlighting errors.
 
 ## [0.3.0] - 2019-06-23
 
 Added snippets for common patterns.
-
 
 ## [0.2.0] - 2019-06-22
 
