@@ -25,8 +25,8 @@ function csvToFnInfos(data: string[][]): FnInfo[] {
     }
     return data2.map(info => ({
         name: info[0],
-        isCommand: info[1] == '1' ? true : false,
-        userDefined: info[2] == '1' ? true : false,
+        isCommand: info[1] === '1' ? true : false,
+        userDefined: info[2] === '1' ? true : false,
         minParamCount: +info[3],
         maxParamCount: +info[4],
         syntax: info[5],

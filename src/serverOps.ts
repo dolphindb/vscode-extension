@@ -35,7 +35,7 @@ function resultFormat(res: string, start: Date, end: Date): string {
 
 export async function dolphindbExecuteCode() {
     let selected = (vscode.window.activeTextEditor as vscode.TextEditor).selection.with()
-    console.log((vscode.window.activeTextEditor as vscode.TextEditor).document.uri)
+    // console.log((vscode.window.activeTextEditor as vscode.TextEditor).document.uri)
     let code = (vscode.window.activeTextEditor as vscode.TextEditor).document.getText(selected)
     let start = new Date
     let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
@@ -74,9 +74,7 @@ export async function dolphindbTestCode() {
 
 export async function dolphindbChooseServer() {
     let address = vscode.workspace.getConfiguration('dolphindb.server').get('address') as IConfig[]
-
     let descs = address.map(getConfigDesc)
-
     vscode.window.showQuickPick(descs)
         .then((desc) => {
             if (desc === undefined) {
@@ -90,7 +88,6 @@ export async function dolphindbChooseServer() {
 export async function dolphindbRemoveServer() {
     let address = vscode.workspace.getConfiguration('dolphindb.server').get('address') as IConfig[]
     let descs = address.map(getConfigDesc)
-
     vscode.window.showQuickPick(descs)
         .then((desc) => {
             if (desc === undefined) {
