@@ -325,19 +325,18 @@ export class DolphindbJson {
     toMatrix(): { colNum: number, matrix: any[][] } {
         let val = this._json.object[0].value
         const matrix: any[][] = []
-        const rowNum = +val[1].value
+        let rowNum = +val[1].value
         const colNum = +val[2].value
-
-        for (let i = 0; i < colNum; i++) {
+        for (let i = 0; i < rowNum; i++) {
             matrix.push([])
-            for (let j = 0; j < rowNum; j++) {
-                matrix[i][j] = val[0].value[i * colNum + j]
+            for (let j = 0; j < colNum; j++) {
+                matrix[i][j] = val[0].value[rowNum * j + i]
             }
         }
 
         return {
             colNum,
-            matrix: transpose(matrix, rowNum),
+            matrix,
         }
     }
 
