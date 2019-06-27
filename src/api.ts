@@ -19,6 +19,8 @@ const tableConfig: TableUserConfig = {
     border: getBorderCharacters('norc'),
 }
 
+const MAX_VALUE_LEN: number = 1024
+
 export interface IDolphindbResponse {
     msg: string,
     object: IDolphindbObject[],
@@ -64,7 +66,7 @@ export function executeCode(host: string, port: number, code: string, sessionID:
             name: 'script',
             form: 'scalar',
             type: 'string',
-            value: code
+            value: encodeURIComponent(code)
         }]
     }
     return axios({
@@ -83,7 +85,7 @@ export function testCode(host: string, port: number, code: string, sessionID: st
             name: 'script',
             form: 'scalar',
             type: 'string',
-            value: code
+            value: encodeURIComponent(code)
         }]
     }
 
@@ -298,9 +300,8 @@ export class DolphindbJson {
         let val = this._json.object[0].value as IDolphindbAttr[]
         const table = []
         const colName = []
-        let rowNum = this.getDataSize()
+        let rowNum = this.getDataSize() > MAX_VALUE_LEN ? MAX_VALUE_LEN : this.getDataSize()
         let _colNum = +val[0].size
-
         for (let i = 0; i < val.length; i++) {
             table.push(val[i].value)
             colName.push(val[i].name)
@@ -317,7 +318,8 @@ export class DolphindbJson {
             colName,
             table: tbl
         } = this.toTable()
-        return table([colName, ...tbl], tableConfig)
+        let res = `Only display ${colName.length} columns, ${tbl.length} rows`
+        return table([colName, ...tbl], tableConfig) + res
     }
 
     toMatrix(): { colNum: number, matrix: any[][] } {
@@ -348,7 +350,8 @@ export class DolphindbJson {
         for (let i = 0; i < colNum; i++) {
             colName.push('#' + i)
         }
-        return table([colName, ...matrix], tableConfig)
+        let res = `Only display ${colName.length} columns, ${matrix.length} rows`
+        return table([colName, ...matrix], tableConfig) + res
     }
 }
 
