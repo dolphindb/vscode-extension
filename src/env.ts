@@ -163,7 +163,7 @@ export class VariableInfo extends vscode.TreeItem {
                     varCols[i], 
                     varByteSizes[i],
                     varIsShared[i] !== 0,
-                    vscode.TreeItemCollapsibleState.Expanded,
+                    vscode.TreeItemCollapsibleState.None,
                     )
                 )
         }
