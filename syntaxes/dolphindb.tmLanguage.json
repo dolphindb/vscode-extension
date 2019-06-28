@@ -25,12 +25,6 @@
 			"include": "#variable"
 		},
 		{
-			"include": "#single_quoted_string"
-		},
-		{
-			"include": "#double_quoted_string"
-		},
-		{
 			"include": "#operators"
 		},
 		{
@@ -38,9 +32,6 @@
 		},
 		{
 			"include": "#function_calls"
-		},
-		{
-			"include": "#numbers"
 		},
 		{
 			"include": "#objects"
@@ -83,6 +74,9 @@
 				},
 				{
 					"include": "#stringLiterals"
+				},
+				{
+					"include": "#numberLiterals"
 				}
 			]
 		},
@@ -132,6 +126,12 @@
 		},
 		"stringLiterals": {
 			"patterns": [
+				{
+					"include": "#single_quoted_string"
+				},
+				{
+					"include": "#double_quoted_string"
+				},
 				{
 					"begin": "'''",
 					"beginCaptures": {
@@ -213,71 +213,6 @@
 				}
 			]
 		},
-		"comment": {
-			"patterns": [
-				{
-					"begin": "/\\*",
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.definition.comment.dolphindb"
-						}
-					},
-					"end": "\\*/",
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.definition.comment.dolphindb"
-						}
-					},
-					"name": "comment.block.dolphindb",
-					"patterns": [
-						{
-							"match": "(?<=^|\\s|\\s\\*\\s)@\\w*(?=\\s)",
-							"name": "storage.type.annotation.dolphindb"
-						}
-					]
-				},
-				{
-					"begin": "//",
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.definition.comment.dolphindb"
-						}
-					},
-					"end": "$",
-					"name": "comment.line.number-sign.dolphindb"
-				}
-			]
-		},
-		"arguments": {
-			"patterns": [
-				{
-					"begin": "\\(",
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.definition.arguments.begin.bracket.round.dolphindb"
-						}
-					},
-					"end": "\\)",
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.definition.arguments.end.bracket.round.dolphindb"
-						}
-					},
-					"name": "meta.arguments.dolphindb",
-					"patterns": [
-						{
-							"include": "$self"
-						},
-						{
-							"include": "#literals"
-						},
-						{
-							"include": "#variable"
-						}
-					]
-				}
-			]
-		},
 		"single_quoted_string": {
 			"patterns": [
 				{
@@ -338,6 +273,48 @@
 							"include": "#interpolated_dolphindb"
 						}
 					]
+				}
+			]
+		},
+		"numberLiterals": {
+			"patterns": [
+				{
+					"match": "\\b0(x|X)[0-9a-fA-F]+\\b",
+					"name": "constant.numeric.hex.dolphindb"
+				},
+				{
+					"match": "\\b0(b|B)[01]+\\b",
+					"name": "constant.numeric.binary.dolphindb"
+				},
+				{
+					"match": "\\b0(o|O)?[0-7]+\\b",
+					"name": "constant.numeric.octal.dolphindb"
+				},
+				{
+					"match": "(?x)\n(?:\n  (?:\\b[0-9]+(\\.)[0-9]+[eE][+-]?[0-9]+\\b)| # 1.1E+3\n  (?:\\b[0-9]+(\\.)[eE][+-]?[0-9]+\\b)|       # 1.E+3\n  (?:\\B(\\.)[0-9]+[eE][+-]?[0-9]+\\b)|       # .1E+3\n  (?:\\b[0-9]+[eE][+-]?[0-9]+\\b)|            # 1E+3\n  (?:\\b[0-9]+(\\.)[0-9]+\\b)|                # 1.1\n  (?:\\b[0-9]+(?=\\.{2,3}))|                  # 1 followed by a slice\n  (?:\\b[0-9]+(\\.)\\B)|                      # 1.\n  (?:\\B(\\.)[0-9]+\\b)|                      # .1\n  (?:\\b[0-9]+\\b(?!\\.))                     # 1\n)",
+					"captures": {
+						"0": {
+							"name": "constant.numeric.decimal.dolphindb"
+						},
+						"1": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						},
+						"2": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						},
+						"3": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						},
+						"4": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						},
+						"5": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						},
+						"6": {
+							"name": "punctuation.separator.decimal.period.dolphindb"
+						}
+					}
 				}
 			]
 		},
@@ -417,6 +394,71 @@
 				}
 			]
 		},
+		"comment": {
+			"patterns": [
+				{
+					"begin": "/\\*",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.dolphindb"
+						}
+					},
+					"end": "\\*/",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.dolphindb"
+						}
+					},
+					"name": "comment.block.dolphindb",
+					"patterns": [
+						{
+							"match": "(?<=^|\\s|\\s\\*\\s)@\\w*(?=\\s)",
+							"name": "storage.type.annotation.dolphindb"
+						}
+					]
+				},
+				{
+					"begin": "//",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.comment.dolphindb"
+						}
+					},
+					"end": "$",
+					"name": "comment.line.number-sign.dolphindb"
+				}
+			]
+		},
+		"arguments": {
+			"patterns": [
+				{
+					"begin": "\\(",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.arguments.begin.bracket.round.dolphindb"
+						}
+					},
+					"end": "\\)",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.arguments.end.bracket.round.dolphindb"
+						}
+					},
+					"name": "meta.arguments.dolphindb",
+					"patterns": [
+						{
+							"include": "$self"
+						},
+						{
+							"include": "#literals"
+						},
+						{
+							"include": "#variable"
+						}
+					]
+				}
+			]
+		},
 		"variable": {
 			"patterns": [
 				{
@@ -482,48 +524,6 @@
 				{
 					"match": "\\d[\\w$]*",
 					"name": "invalid.illegal.identifier.dolphindb"
-				}
-			]
-		},
-		"numbers": {
-			"patterns": [
-				{
-					"match": "\\b0(x|X)[0-9a-fA-F]+\\b",
-					"name": "constant.numeric.hex.dolphindb"
-				},
-				{
-					"match": "\\b0(b|B)[01]+\\b",
-					"name": "constant.numeric.binary.dolphindb"
-				},
-				{
-					"match": "\\b0(o|O)?[0-7]+\\b",
-					"name": "constant.numeric.octal.dolphindb"
-				},
-				{
-					"match": "(?x)\n(?:\n  (?:\\b[0-9]+(\\.)[0-9]+[eE][+-]?[0-9]+\\b)| # 1.1E+3\n  (?:\\b[0-9]+(\\.)[eE][+-]?[0-9]+\\b)|       # 1.E+3\n  (?:\\B(\\.)[0-9]+[eE][+-]?[0-9]+\\b)|       # .1E+3\n  (?:\\b[0-9]+[eE][+-]?[0-9]+\\b)|            # 1E+3\n  (?:\\b[0-9]+(\\.)[0-9]+\\b)|                # 1.1\n  (?:\\b[0-9]+(?=\\.{2,3}))|                  # 1 followed by a slice\n  (?:\\b[0-9]+(\\.)\\B)|                      # 1.\n  (?:\\B(\\.)[0-9]+\\b)|                      # .1\n  (?:\\b[0-9]+\\b(?!\\.))                     # 1\n)",
-					"captures": {
-						"0": {
-							"name": "constant.numeric.decimal.dolphindb"
-						},
-						"1": {
-							"name": "punctuation.separator.decimal.period.dolphindb"
-						},
-						"2": {
-							"name": "punctuation.separator.decimal.period.dolphindb"
-						},
-						"3": {
-							"name": "punctuation.separator.decimal.period.dolphindb"
-						},
-						"4": {
-							"name": "punctuation.separator.decimal.period.dolphindb"
-						},
-						"5": {
-							"name": "punctuation.separator.decimal.period.dolphindb"
-						},
-						"6": {
-							"name": "punctuation.separator.decimal.period.dolphindb"
-						}
-					}
 				}
 			]
 		},
