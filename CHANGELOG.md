@@ -4,8 +4,8 @@ All notable changes to the "dolphindb-vscode" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [0.6.0] - 2019-06-27
-- Added `test` cmd for unit test.
+## [0.6.0] - 2019-06-28
+- Added `testCurrentFile` and `testCurrentDir` cmd for unit test.
 - Execute current line when not selected text.
 
 ## [0.5.5] - 2019-06-28
