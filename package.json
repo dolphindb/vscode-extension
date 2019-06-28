@@ -2,7 +2,7 @@
 	"name": "dolphindb-vscode",
 	"displayName": "DolphinDB",
 	"description": "VScode plugin for DolphinDB script",
-	"version": "0.5.0",
+	"version": "0.5.1",
 	"publisher": "yjhmelody",
 	"engines": {
 		"vscode": "^1.25.0"
