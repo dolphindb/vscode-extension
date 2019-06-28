@@ -153,6 +153,10 @@
 				"key": "ctrl+E",
 				"mac": "cmd+E",
 				"when": "editorHasSelection"
+			},
+			{
+				"key": "ctrl+i",
+				"command": "editor.action.inspectTMScopes"
 			}
 		],
 		"languages": [

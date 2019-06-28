@@ -196,7 +196,7 @@
         "scope": "source.dolphindb"
     },
     "insert": {
-        "body": "insert into ${1:tbl} values (${2:...}",
+        "body": "insert into ${1:tbl} values (${2:...})",
         "description": "insert",
         "prefix": "insert",
         "scope": "source.dolphindb"
