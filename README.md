@@ -15,6 +15,10 @@
 - Enter `ctrl+shift+p` to choose `DolphinDB: Helper` for some useful documents.
 
 ## Requirements
+```dos
+a = 1
+0x1111
+```
 
 None
 

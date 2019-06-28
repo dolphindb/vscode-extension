@@ -34,12 +34,21 @@ function resultFormat(res: string, start: Date, end: Date): string {
 }
 
 export async function dolphindbExecuteCode() {
-    let selected = (vscode.window.activeTextEditor as vscode.TextEditor).selection.with()
-    // console.log((vscode.window.activeTextEditor as vscode.TextEditor).document.uri)
-    let code = (vscode.window.activeTextEditor as vscode.TextEditor).document.getText(selected)
-    let start = new Date
+    let textEditor = vscode.window.activeTextEditor as vscode.TextEditor
+    let selected = textEditor.selection.with()
+    let currentLine = textEditor.selection.start.line
+    let code = textEditor.document.getText(selected)
+    if (code.length === 0) {
+        code = textEditor.document.getText(
+            new vscode.Range(
+                new vscode.Position(currentLine, 0),
+                new vscode.Position(currentLine+1, 0),
+            )
+        )
+    }
+    let start = new Date()
     let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
-    let end = new Date
+    let end = new Date()
     let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
     // every time after runing code, update ENV for variable explorer
     context.ENV = VariableInfo.extractEnv(env.object[0])
@@ -50,6 +59,7 @@ export async function dolphindbExecuteCode() {
     dolphindbOutput.appendLine(text)
     dolphindbOutput.show()
 }
+
 
 export async function dolphindbShowInfo(node: vscode.TreeItem) {
     let code = node.label 
