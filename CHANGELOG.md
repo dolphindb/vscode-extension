@@ -4,15 +4,18 @@ All notable changes to the "dolphindb-vscode" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [0.5.5] - 2019-06-28
-- Improve hightlighting.
+## [0.6.0] - 2019-06-27
+- Added `test` cmd for unit test.
 - Execute current line when not selected text.
 
+## [0.5.5] - 2019-06-28
+- Improved hightlighting.
+- Execute current line when not selected text.
 
 ## [0.5.0] - 2019-06-27
 
-- Add `Show` cmd for Environment variables display. 
-- Fix Some bugs.
+- Added `Show` cmd for Environment variables display. 
+- Fixed Some bugs.
 
 ## [0.4.0] - 2019-06-23
 

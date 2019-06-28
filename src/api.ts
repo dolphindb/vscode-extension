@@ -78,26 +78,6 @@ export function executeCode(host: string, port: number, code: string, sessionID:
     })
 }
 
-// todo
-export function testCode(host: string, port: number, code: string, sessionID: string = '0'): Thenable<any> {
-    const data: IDolphindbRequest = {
-        sessionID,
-        functionName: 'executeCode',
-        params: [{
-            name: 'script',
-            form: 'scalar',
-            type: 'string',
-            value: encodeURIComponent(code)
-        }]
-    }
-
-    return axios({
-        method: 'post',
-        url: JsonUrl(host, port, sessionID),
-        data,
-    })
-}
-
 export function fetchEnv(host: string, port: number, sessionID: string = '0'): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,

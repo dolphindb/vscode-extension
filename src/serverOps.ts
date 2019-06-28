@@ -17,6 +17,7 @@ import * as _ from 'lodash/fp'
 import * as api from './api'
 import { IConfig, context } from './context'
 import { VariableInfo } from './env'
+import * as path from 'path'
 
 
 let currentCfg = context.currentCfg
@@ -63,9 +64,9 @@ export async function dolphindbExecuteCode() {
 
 export async function dolphindbShowInfo(node: vscode.TreeItem) {
     let code = node.label 
-    let start = new Date
+    let start = new Date()
     let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
-    let end = new Date
+    let end = new Date()
     let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
     // every time after runing code, update ENV for variable explorer
     context.ENV = VariableInfo.extractEnv(env.object[0])
@@ -77,10 +78,32 @@ export async function dolphindbShowInfo(node: vscode.TreeItem) {
     dolphindbOutput.show()
 }
 
-// todo
-export async function dolphindbTestCode() {
-
+export async function dolphindbTestCurrentFile() {
+    let textEditor = vscode.window.activeTextEditor as vscode.TextEditor
+    let uri = textEditor.document.uri
+    let code = `test("${uri.fsPath}")`
+    let start = new Date()
+    let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, '0')
+    let end = new Date()
+    let json = new api.DolphindbJson(data)
+    let text = resultFormat(json.toScalar().toString(), start, end)
+    dolphindbOutput.appendLine(text)
+    dolphindbOutput.show()
 }
+
+export async function dolphindbTestCurrentDir() {
+    let textEditor = vscode.window.activeTextEditor as vscode.TextEditor
+    let uri = textEditor.document.uri
+    let code = `test("${path.dirname(uri.fsPath)}")`
+    let start = new Date()
+    let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, '0')
+    let end = new Date()
+    let json = new api.DolphindbJson(data)
+    let text = resultFormat(json.toScalar().toString(), start, end)
+    dolphindbOutput.appendLine(text)
+    dolphindbOutput.show()
+}
+
 
 export async function dolphindbChooseServer() {
     let address = vscode.workspace.getConfiguration('dolphindb.server').get('address') as IConfig[]

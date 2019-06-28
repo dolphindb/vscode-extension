@@ -34,6 +34,9 @@ export function activate(context: vscode.ExtensionContext) {
         await serverOps.dolphindbExecuteCode()
         await dolphindbEnvProvider.refresh()
     })
+
+    const testCurrentDir = vscode.commands.registerCommand('dolphindb.testCurrentDir',  serverOps.dolphindbTestCurrentDir)
+    const testCurrentFile = vscode.commands.registerCommand('dolphindb.testCurrentFile',  serverOps.dolphindbTestCurrentFile)
     const addServer = vscode.commands.registerCommand('dolphindb.addServer', serverOps.dolphindbAddServer)
     const chooseServer = vscode.commands.registerCommand('dolphindb.chooseServer', serverOps.dolphindbChooseServer)
     const removeServer = vscode.commands.registerCommand('dolphindb.removeServer', serverOps.dolphindbRemoveServer)
@@ -44,6 +47,8 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(chooseServer)
     context.subscriptions.push(removeServer)
     context.subscriptions.push(helper)
+    context.subscriptions.push(testCurrentDir)
+    context.subscriptions.push(testCurrentFile)
 }
 
 // this method is called when your extension is deactivated
