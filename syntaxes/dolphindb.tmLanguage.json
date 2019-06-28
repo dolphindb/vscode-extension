@@ -34,9 +34,6 @@
 			"include": "#function_calls"
 		},
 		{
-			"include": "#objects"
-		},
-		{
 			"include": "#properties"
 		},
 		{
@@ -67,9 +64,6 @@
 					"include": "#constLiterals"
 				},
 				{
-					"include": "#BoolLiterals"
-				},
-				{
 					"include": "#DateLiterals"
 				},
 				{
@@ -80,26 +74,10 @@
 				}
 			]
 		},
-		"BoolLiterals": {
-			"patterns": [
-				{
-					"match": "\\b(?<!\\.|::)(true)(?!\\s*[:=][^=])\\b",
-					"name": "constant.language.boolean.true.dolphindb"
-				},
-				{
-					"match": "\\b(?<!\\.|::)(false)(?!\\s*[:=][^=])\\b",
-					"name": "constant.language.boolean.false.dolphindb"
-				},
-				{
-					"match": "\\b(?<!\\.|::)NULL(?!\\s*[:=][^=])\\b",
-					"name": "constant.language.null.dolphindb"
-				}
-			]
-		},
 		"constLiterals": {
 			"patterns": [
 				{
-					"match": "VAR|GLOBAL|DEF|HEAD|CURRENT|TAIL|LINE|PIE|COLUMN|BAR|AREA|HISTOGRAM|SCATTER|SCALAR|PAIR|VECTOR|MATRIX|SET|DICT|TABLE|VOID|BOOL|CHAR|SHORT|OBJECT|DICTIONARY|INT|INDEX|LONG|DATE|MONTH|TIME|MINUTE|FUNCTIONDEF|STRING|SYMBOL|DOUBLE|FLOAT|TIMESTAMP|DATETIME|ANY|HANDLE|SHARED|NANOTIME|NANOTIMESTAMP|SECOND|TABLE_READ|TABLE_WRITE|DBOBJ_CREATE|DBOBJ_DELETE|DB_MANAGE|VIEW_EXEC|SCRIPT_EXEC|TEST_EXEC|HASH|HASH_PTN|COMPO",
+					"match": "\\b(true|false|NULL|VAR|GLOBAL|DEF|HEAD|CURRENT|TAIL|LINE|PIE|COLUMN|BAR|AREA|HISTOGRAM|SCATTER|SCALAR|PAIR|VECTOR|MATRIX|SET|DICT|TABLE|VOID|BOOL|CHAR|SHORT|OBJECT|DICTIONARY|INT|INDEX|LONG|DATE|MONTH|TIME|MINUTE|FUNCTIONDEF|STRING|SYMBOL|DOUBLE|FLOAT|TIMESTAMP|DATETIME|ANY|HANDLE|SHARED|NANOTIME|NANOTIMESTAMP|SECOND|TABLE_READ|TABLE_WRITE|DBOBJ_CREATE|DBOBJ_DELETE|DB_MANAGE|VIEW_EXEC|SCRIPT_EXEC|TEST_EXEC|HASH|HASH_PTN|COMPO)\\b",
 					"name": "constant.language.int.dolphindb"
 				}
 			]
@@ -524,18 +502,6 @@
 				{
 					"match": "\\d[\\w$]*",
 					"name": "invalid.illegal.identifier.dolphindb"
-				}
-			]
-		},
-		"objects": {
-			"patterns": [
-				{
-					"match": "[A-Z][A-Z0-9_$]*(?=\\s*\\??(\\.\\s*[a-zA-Z_$]\\w*|::))",
-					"name": "constant.other.object.dolphindb"
-				},
-				{
-					"match": "[a-zA-Z_$][\\w$]*(?=\\s*\\??(\\.\\s*[a-zA-Z_$]\\w*|::))",
-					"name": "variable.other.object.dolphindb"
 				}
 			]
 		},
