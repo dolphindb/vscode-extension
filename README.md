@@ -10,15 +10,11 @@
 
 ## Command
 
-- `ctrl+E` to run selected dolphindb code
-- click right to `choose/add/remove` server config which is store in current `workspace's setting.json`
+- When selected text, enter `ctrl+E` to run selected dolphindb code. When not selected text, it runs current line code.
+- Click right to `choose/add/remove` server config which is store in current `workspace's setting.json`
 - Enter `ctrl+shift+p` to choose `DolphinDB: Helper` for some useful documents.
 
 ## Requirements
-```dos
-a = 1
-0x1111
-```
 
 None
 
