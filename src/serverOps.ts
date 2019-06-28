@@ -83,10 +83,12 @@ export async function dolphindbTestCurrentFile() {
     let uri = textEditor.document.uri
     let code = `test("${uri.fsPath}")`
     let start = new Date()
+    console.log('code ', code)
     let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, '0')
     let end = new Date()
     let json = new api.DolphindbJson(data)
     let text = resultFormat(json.toScalar().toString(), start, end)
+    console.log('res ', text)
     dolphindbOutput.appendLine(text)
     dolphindbOutput.show()
 }
@@ -95,11 +97,13 @@ export async function dolphindbTestCurrentDir() {
     let textEditor = vscode.window.activeTextEditor as vscode.TextEditor
     let uri = textEditor.document.uri
     let code = `test("${path.dirname(uri.fsPath)}")`
+    console.log('code ', code)
     let start = new Date()
     let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, '0')
     let end = new Date()
     let json = new api.DolphindbJson(data)
     let text = resultFormat(json.toScalar().toString(), start, end)
+    console.log('res ', text)
     dolphindbOutput.appendLine(text)
     dolphindbOutput.show()
 }
