@@ -80,8 +80,8 @@ export async function dolphindbShowInfo(node: vscode.TreeItem) {
 
 export async function dolphindbTestCurrentFile() {
     let textEditor = vscode.window.activeTextEditor as vscode.TextEditor
-    let uri = textEditor.document.uri
-    let code = `test("${uri.fsPath}")`
+    let fsPath = textEditor.document.uri.fsPath.split(/[/\\]/).join('/')
+    let code = `test("${fsPath}")`
     let start = new Date()
     console.log('code ', code)
     let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, '0')
@@ -95,8 +95,8 @@ export async function dolphindbTestCurrentFile() {
 
 export async function dolphindbTestCurrentDir() {
     let textEditor = vscode.window.activeTextEditor as vscode.TextEditor
-    let uri = textEditor.document.uri
-    let code = `test("${path.dirname(uri.fsPath)}")`
+    let fsPath = textEditor.document.uri.fsPath.split(/[/\\]/).join('/')
+    let code = `test("${path.dirname(fsPath)}")`
     console.log('code ', code)
     let start = new Date()
     let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, '0')
