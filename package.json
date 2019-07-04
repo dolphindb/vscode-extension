@@ -15,12 +15,12 @@
 		"Snippets"
 	],
 	"bugs": {
-		"url": "https://github.com/yjhmelody/vscode-dolphindb-extension/issues"
+		"url": "https://github.com/dolphindb/vscode-dolphindb-extension/issues"
 	},
-	"homepage": "https://github.com/yjhmelody/vscode-dolphindb-extension/blob/master/README.md",
+	"homepage": "https://github.com/dolphindb/vscode-dolphindb-extension/blob/master/README.md",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/yjhmelody/vscode-dolphindb-extension.git"
+		"url": "https://github.com/dolphindb/vscode-dolphindb-extension.git"
 	},
 	"main": "./out/extension.js",
 	"scripts": {
@@ -235,7 +235,8 @@
 		"database",
 		"dolphindb",
 		"DolphinDB",
-		"OLAP",
+		"Time Series",
+		"timeseries",
 		"Stream Computition",
 		"Programing language"
 	]

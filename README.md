@@ -1,34 +1,34 @@
-# dolphindb-vscode README
+# DolphinDB Support for VS Code
+
+The DolpinDB extension makes it easy to work with DolphinDB statements. With this extension, you can:
+
+* Connect to local or remote servers
+* Execute scripts and see results directly in VS Code
+* Create and view basic data forms in the DolphinDB Explorer 
+
+## Prerequisites
+
+[Install DolphinDB](https://www.dolphindb.cn/downloads.html) and [deploy a cluster](https://github.com/dolphindb/Tutorials_CN/blob/master/dolphindb_user_guide.md).
 
 ## Features
 
-- [x] Hightlighting
-- [x] Snippets for common patterns 
-- [x] Environment variables display
-- [x] Connection to server
-- [x] Native Functions code completion
-- [x] native unit test
+* Highlight key words, functions names, commands etc. of DolphinDB
+* Autocomplete suggestions
+* DolphinDB scripts running
 
-## Command
+## Usages
 
-- When selected text, enter `ctrl+E` to run selected dolphindb code. When not selected text, it runs current line code.
-- Click right to `choose/add/remove` server config which is store in current `workspace's setting.json`
-- Enter `ctrl+shift+p` to choose `DolphinDB: Helper` for some useful documents.
-- Click right to `test` unit test: current file or current dir.
+* Create a txt file and right click on blank areas to add, remove or choose a server.
+  * Typical connection string for instance:
+  `local8920:192.168.1.103:8920`
 
-## Requirements
+* Press `CTRL+E` to execute a single line of code by locating the cursor or multiple lines of code by selecting the lines.
 
-None
+* Press `CTRL+SHIFT+P` and select the option 'DolphinDB: Helper' for links of more useful documentations.
 
-## Extension Settings
+* Open the DolphinDB ENV window and expand the data forms (eg. scalar, pair, set) to see the variables defined in the database.
 
-None
+## Issues
 
-## Known Issues
-
-None
-
-## Release Notes
-
-See [CHANGELOG.md](CHANGELOG.md)
+We are open to all ideas and we want to get rid of bugs! Use the [Issues](https://github.com/dolphindb/vscode-extension/issues) section to either report a new issue, provide your ideas or contribute to existing threads.
 
