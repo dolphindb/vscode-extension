@@ -4,7 +4,7 @@ The DolpinDB extension makes it easy to work with DolphinDB statements. With thi
 
 * Connect to local or remote servers
 * Execute scripts and see results directly in VS Code
-* Create and view basic data forms in the DolphinDB Explorer 
+* Create and view basic data forms in the DolphinDB ENV window
 
 ## Prerequisites
 
@@ -12,9 +12,10 @@ The DolpinDB extension makes it easy to work with DolphinDB statements. With thi
 
 ## Features
 
-* Highlight key words, functions names, commands etc. of DolphinDB
+* Highlight keywords, functions names, commands etc.
 * Autocomplete suggestions
-* DolphinDB scripts running
+* Code snippets of common programming constructs
+* Run DolphinDB script
 
 ## Usages
 
@@ -26,9 +27,10 @@ The DolpinDB extension makes it easy to work with DolphinDB statements. With thi
 
 * Press `CTRL+SHIFT+P` and select the option 'DolphinDB: Helper' for links of more useful documentations.
 
-* Open the DolphinDB ENV window and expand the data forms (eg. scalar, pair, set) to see the variables defined in the database.
+* Open the DolphinDB ENV window and expand the data forms (eg. scalar, pair, set) to see the variables defined in the datanode.
+
+* Click the button `Show` on the right side of a variable to check its value in the OUTPUT window.
 
 ## Issues
 
-We are open to all ideas and we want to get rid of bugs! Use the [Issues](https://github.com/dolphindb/vscode-extension/issues) section to either report a new issue, provide your ideas or contribute to existing threads.
-
+We are open to all ideas and we want to get rid of bugs! Use the [Issues](https://github.com/yjhmelody/vscode-dolphindb-extension/issues) section to either report a new issue, provide your ideas or contribute to existing threads.

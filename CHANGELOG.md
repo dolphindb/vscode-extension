@@ -5,33 +5,34 @@ All notable changes to the "dolphindb-vscode" extension will be documented in th
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 ## [0.6.0] - 2019-06-28
-- Added `testCurrentFile` and `testCurrentDir` cmd for unit test.
-- Execute current line when not selected text.
-
+* Fix bugs
 ## [0.5.5] - 2019-06-28
-- Improved hightlighting.
-- Execute current line when not selected text.
-
+### Inprovement
+* Improvement of code highlight
+### New features
+* Support execution of a line by locating the cursor
 ## [0.5.0] - 2019-06-27
-
-- Added `Show` cmd for Environment variables display. 
-- Fixed Some bugs.
+### New features
+* Add a 'Show' button for checking values of variables in the DolphinDB ENV window  
 
 ## [0.4.0] - 2019-06-23
-
-- Added native function code completion.
-- Fixed some hightlighting errors.
+###New features
+* Enable autocomplete suggestions 
+###Bug fixes
+* Fix some code highlight errors
 
 ## [0.3.0] - 2019-06-23
-
-Added snippets for common patterns.
+### New features
+* Support code snippets of common programming constructs
 
 ## [0.2.0] - 2019-06-22
-
-- Server config
-- syntaxes hightlighting
-- basic env for variables
+### New features
+* Enable connections to DolphinDB servers and running DolphinDB script
+* Support code highlight
+* Support DolphinDB ENV window for the visualization of variables defined
 
 ## [Unreleased]
 
 - Initial release
+
+### Features
