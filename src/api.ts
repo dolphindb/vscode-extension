@@ -300,7 +300,7 @@ export class DolphindbJson {
             colName,
             table: tbl
         } = this.toTable()
-        let res = `Only display ${colName.length} columns, ${tbl.length} rows`
+        let res = `${colName.length} columns, ${tbl.length} rows`
         return table([colName, ...tbl], tableConfig) + res
     }
 
