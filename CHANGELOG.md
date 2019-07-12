@@ -7,7 +7,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [0.6.0] - 2019-06-28
 * Fix bugs
 ## [0.5.5] - 2019-06-28
-### Inprovement
+### Improvement
 * Improvement of code highlight
 ### New features
 * Support execution of a line by locating the cursor
