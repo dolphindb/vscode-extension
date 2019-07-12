@@ -2,7 +2,7 @@
 	"name": "dolphindb-vscode",
 	"displayName": "DolphinDB",
 	"description": "VScode extension for DolphinDB",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"publisher": "dolphindb",
 	"engines": {
 		"vscode": "^1.25.0"
@@ -55,8 +55,6 @@
 	"activationEvents": [
 		"onView:dolphindb.env",
 		"onCommand:dolphindb.executeCode",
-		"onCommand:dolphindb.testCurrentFile",
-		"onCommand:dolphindb.testCurrentDir",
 		"onCommand:dolphindb.addServer",
 		"onCommand:dolphindb.chooseServer",
 		"onCommand:dolphindb.removeServer",
@@ -85,14 +83,6 @@
 			{
 				"command": "dolphindb.executeCode",
 				"title": "DolphinDB: executeCode"
-			},
-			{
-				"command": "dolphindb.testCurrentFile",
-				"title": "DolphinDB: testCurrentFile"
-			},
-			{
-				"command": "dolphindb.testCurrentDir",
-				"title": "DolphinDB: testCurrentDir"
 			},
 			{
 				"command": "dolphindb.addServer",
@@ -127,14 +117,6 @@
 			"editor/context": [
 				{
 					"command": "dolphindb.executeCode",
-					"when": "resourceLangId == dolphindb"
-				},
-				{
-					"command": "dolphindb.testCurrentFile",
-					"when": "resourceLangId == dolphindb"
-				},
-				{
-					"command": "dolphindb.testCurrentDir",
 					"when": "resourceLangId == dolphindb"
 				},
 				{
@@ -177,7 +159,6 @@
 				"id": "dolphindb",
 				"extensions": [
 					".dos",
-					".dp",
 					".txt"
 				],
 				"aliases": [
