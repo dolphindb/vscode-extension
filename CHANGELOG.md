@@ -13,12 +13,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * Support execution of a line by locating the cursor
 ## [0.5.0] - 2019-06-27
 ### New features
-* Add a 'Show' button for checking values of variables in the DolphinDB ENV window  
+* Add a `Show` button for checking values of variables in the DolphinDB ENV window  
 
 ## [0.4.0] - 2019-06-23
-###New features
+### New features
 * Enable autocomplete suggestions 
-###Bug fixes
+### Bug fixes
 * Fix some code highlight errors
 
 ## [0.3.0] - 2019-06-23
@@ -34,5 +34,3 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [Unreleased]
 
 - Initial release
-
-### Features
