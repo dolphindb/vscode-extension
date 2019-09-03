@@ -60,6 +60,31 @@ function JsonUrl(host: string, port: number, sessionID: string = '0'): string {
     return `http://${host}:${port}/${sessionID}`
 }
 
+export function login(host: string, port: number, username: string, password: string, sessionID: string = '0'): Thenable<any> {
+    const data: IDolphindbRequest = {
+        sessionID,
+        functionName: 'login',
+        params: [{
+            "name": "userId",
+            "form": "scalar",
+            "type": "string",
+            "value": username
+        }, {
+            "name": "password",
+            "form": "scalar",
+            "type": "string",
+            "value": password
+        }
+        ]
+    }
+    return axios({
+        method: 'post',
+        url: JsonUrl(host, port, sessionID),
+        data,
+    })
+}
+
+
 export function executeCode(host: string, port: number, code: string, sessionID: string = '0'): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,

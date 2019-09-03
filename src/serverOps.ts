@@ -18,6 +18,7 @@ import * as api from './api'
 import { IConfig, context } from './context'
 import { VariableInfo } from './env'
 import * as path from 'path'
+import { isNull } from 'util';
 
 
 let currentCfg = context.currentCfg
@@ -50,9 +51,12 @@ export async function dolphindbExecuteCode() {
     let start = new Date()
     let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
     let end = new Date()
+
     let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
     // every time after runing code, update ENV for variable explorer
-    context.ENV = VariableInfo.extractEnv(env.object[0])
+    if(isNull(env.object)===false&&env.object.length>0) {
+        context.ENV = VariableInfo.extractEnv(env.object[0])
+    }
     let json = new api.DolphindbJson(data)
     context.sessionID = json.sessionID()
 
@@ -184,4 +188,28 @@ export async function dolphindbAddServer() {
 
     vscode.workspace.getConfiguration('dolphindb.server').update('address', address, false)
     vscode.window.showInformationMessage('Add the ' + getConfigDesc(cfg))
+}
+
+
+export async function dolphindbLogin() {
+    let userName = await vscode.window.showInputBox({
+        placeHolder: "username",
+        prompt: 'Please input the username'
+    })
+
+    if (userName === undefined) {
+        return
+    }
+
+    let password = await vscode.window.showInputBox({
+        password:true,
+        placeHolder: "password",
+        prompt: 'Please input the password'
+    })
+
+    if (password === undefined) {
+        return
+    }
+    let isLoginSucc = await api.login(currentCfg.ip, currentCfg.port, userName, password, "0")
+    context.sessionID = isLoginSucc.data.sessionID
 }

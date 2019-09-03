@@ -19,6 +19,7 @@ import * as serverOps from './serverOps'
 import * as env from './env'
 import {dolphindbHelper} from './helper'
 import {context as dolphindbContext, DolphindbContext} from './context'
+import { login } from './api';
 
 
 // this method is called when your extension is activated
@@ -35,20 +36,22 @@ export function activate(context: vscode.ExtensionContext) {
         await dolphindbEnvProvider.refresh()
     })
 
-    const testCurrentDir = vscode.commands.registerCommand('dolphindb.testCurrentDir',  serverOps.dolphindbTestCurrentDir)
-    const testCurrentFile = vscode.commands.registerCommand('dolphindb.testCurrentFile',  serverOps.dolphindbTestCurrentFile)
+    // const testCurrentDir = vscode.commands.registerCommand('dolphindb.testCurrentDir',  serverOps.dolphindbTestCurrentDir)
+    // const testCurrentFile = vscode.commands.registerCommand('dolphindb.testCurrentFile',  serverOps.dolphindbTestCurrentFile)
     const addServer = vscode.commands.registerCommand('dolphindb.addServer', serverOps.dolphindbAddServer)
     const chooseServer = vscode.commands.registerCommand('dolphindb.chooseServer', serverOps.dolphindbChooseServer)
     const removeServer = vscode.commands.registerCommand('dolphindb.removeServer', serverOps.dolphindbRemoveServer)
     const helper = vscode.commands.registerCommand('dolphindb.helper', dolphindbHelper)
+    const login = vscode.commands.registerCommand('dolphindb.login', serverOps.dolphindbLogin)
 
     context.subscriptions.push(executeCode)
     context.subscriptions.push(addServer)
     context.subscriptions.push(chooseServer)
     context.subscriptions.push(removeServer)
     context.subscriptions.push(helper)
-    context.subscriptions.push(testCurrentDir)
-    context.subscriptions.push(testCurrentFile)
+    context.subscriptions.push(login)
+    // context.subscriptions.push(testCurrentDir)
+    // context.subscriptions.push(testCurrentFile)
 }
 
 // this method is called when your extension is deactivated
