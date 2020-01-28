@@ -4,6 +4,9 @@ All notable changes to the "dolphindb-vscode" extension will be documented in th
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.6.6] - 2019-09-07
+* Add right-click menu "Login"
+
 ## [0.6.0] - 2019-06-28
 * Fix bugs
 

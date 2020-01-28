@@ -20,7 +20,6 @@ import { VariableInfo } from './env'
 import * as path from 'path'
 import { isNull } from 'util';
 
-
 let currentCfg = context.currentCfg
 
 const dolphindbOutput = vscode.window.createOutputChannel('dolphindbOutput')
@@ -59,7 +58,7 @@ export async function dolphindbExecuteCode() {
     }
     let json = new api.DolphindbJson(data)
     context.sessionID = json.sessionID()
-
+   
     let text = resultFormat(json.toJsString(), start, end)
     dolphindbOutput.appendLine(text)
     dolphindbOutput.show()

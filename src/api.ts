@@ -106,12 +106,12 @@ export function executeCode(host: string, port: number, code: string, sessionID:
 export function fetchEnv(host: string, port: number, sessionID: string = '0'): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,
-        functionName: 'executeCode',
+        functionName: 'objs',
         params: [{
-            name: 'script',
+            name: 'shared',
             form: 'scalar',
-            type: 'string',
-            value: 'objs(true)',
+            type: 'bool',
+            value: 'true',
         }]
     }
 
