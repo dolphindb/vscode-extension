@@ -21,6 +21,7 @@ import * as path from 'path'
 import { isNull } from 'util';
 
 let currentCfg = context.currentCfg
+let enableSSL = false;
 
 const dolphindbOutput = vscode.window.createOutputChannel('dolphindbOutput')
 
@@ -48,10 +49,10 @@ export async function dolphindbExecuteCode() {
         )
     }
     let start = new Date()
-    let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
+    let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID, enableSSL)
     let end = new Date()
 
-    let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
+    let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID, enableSSL)
     // every time after runing code, update ENV for variable explorer
     if(isNull(env.object)===false&&env.object.length>0) {
         context.ENV = VariableInfo.extractEnv(env.object[0])
@@ -68,9 +69,9 @@ export async function dolphindbExecuteCode() {
 export async function dolphindbShowInfo(node: vscode.TreeItem) {
     let code = node.label 
     let start = new Date()
-    let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID)
+    let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, context.sessionID, enableSSL)
     let end = new Date()
-    let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID)
+    let { data: env } = await api.fetchEnv(currentCfg.ip, currentCfg.port, context.sessionID, enableSSL)
     // every time after runing code, update ENV for variable explorer
     context.ENV = VariableInfo.extractEnv(env.object[0])
     let json = new api.DolphindbJson(data)
@@ -86,7 +87,7 @@ export async function dolphindbTestCurrentFile() {
     let fsPath = textEditor.document.uri.fsPath.split(/[/\\]/).join('/')
     let code = `test("${fsPath}")`
     let start = new Date()
-    let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, '0')
+    let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, '0', enableSSL)
     let end = new Date()
     let json = new api.DolphindbJson(data)
     let text = resultFormat(json.toScalar().toString(), start, end)
@@ -99,7 +100,7 @@ export async function dolphindbTestCurrentDir() {
     let fsPath = textEditor.document.uri.fsPath.split(/[/\\]/).join('/')
     let code = `test("${path.dirname(fsPath)}")`
     let start = new Date()
-    let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, '0')
+    let { data: data } = await api.executeCode(currentCfg.ip, currentCfg.port, code, '0', enableSSL)
     let end = new Date()
     let json = new api.DolphindbJson(data)
     let text = resultFormat(json.toScalar().toString(), start, end)
@@ -209,6 +210,20 @@ export async function dolphindbLogin() {
     if (password === undefined) {
         return
     }
-    let isLoginSucc = await api.login(currentCfg.ip, currentCfg.port, userName, password, "0")
+    let isLoginSucc = await api.login(currentCfg.ip, currentCfg.port, userName, password, "0", enableSSL)
     context.sessionID = isLoginSucc.data.sessionID
+}
+
+export async function dolphindbSSL() {
+    let sslOptions = ["Enable", "Disable"]
+    vscode.window.showQuickPick(sslOptions)
+    .then((ssl) => {
+        if (ssl === undefined) {
+            return
+        }
+        if (ssl == "Enable") {
+            enableSSL = true;
+        }
+        vscode.window.showInformationMessage('SSL ' + ssl + 'd')
+    })
 }

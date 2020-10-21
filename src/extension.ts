@@ -25,6 +25,7 @@ import { login } from './api';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+    console.log('dolphindb-vscode extension is now active!');
     const dolphindbEnvProvider = new env.DolphindbEnvProvider(dolphindbContext)
     // onView:dolphindb.env
     vscode.window.registerTreeDataProvider('dolphindb.env', dolphindbEnvProvider)
@@ -43,6 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
     const removeServer = vscode.commands.registerCommand('dolphindb.removeServer', serverOps.dolphindbRemoveServer)
     const helper = vscode.commands.registerCommand('dolphindb.helper', dolphindbHelper)
     const login = vscode.commands.registerCommand('dolphindb.login', serverOps.dolphindbLogin)
+    const ssl = vscode.commands.registerCommand('dolphindb.ssl', serverOps.dolphindbSSL)
 
     context.subscriptions.push(executeCode)
     context.subscriptions.push(addServer)
@@ -50,6 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(removeServer)
     context.subscriptions.push(helper)
     context.subscriptions.push(login)
+    context.subscriptions.push(ssl)
     // context.subscriptions.push(testCurrentDir)
     // context.subscriptions.push(testCurrentFile)
 }

@@ -16,6 +16,8 @@ import axios from 'axios'
 import { getBorderCharacters, table, TableUserConfig } from 'table'
 import chalk from 'chalk'
 
+// resolve issue with ssl when making https request
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';　
 
 const tableConfig: TableUserConfig = {
     border: getBorderCharacters('norc'),
@@ -56,11 +58,15 @@ export interface IDolphindbAttr {
 
 type Scalar = number | string
 
-function JsonUrl(host: string, port: number, sessionID: string = '0'): string {
-    return `http://${host}:${port}/${sessionID}`
+function JsonUrl(host: string, port: number, sessionID: string = '0', enableSSL: boolean): string {
+    if (enableSSL) {
+        return `https://${host}:${port}/${sessionID}`
+    } else {
+        return `http://${host}:${port}/${sessionID}`
+    }
 }
 
-export function login(host: string, port: number, username: string, password: string, sessionID: string = '0'): Thenable<any> {
+export function login(host: string, port: number, username: string, password: string, sessionID: string = '0', enableSSL: boolean): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,
         functionName: 'login',
@@ -79,13 +85,13 @@ export function login(host: string, port: number, username: string, password: st
     }
     return axios({
         method: 'post',
-        url: JsonUrl(host, port, sessionID),
+        url: JsonUrl(host, port, sessionID, enableSSL),
         data,
     })
 }
 
 
-export function executeCode(host: string, port: number, code: string, sessionID: string = '0'): Thenable<any> {
+export function executeCode(host: string, port: number, code: string, sessionID: string = '0', enableSSL: boolean): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,
         functionName: 'executeCode',
@@ -98,12 +104,12 @@ export function executeCode(host: string, port: number, code: string, sessionID:
     }
     return axios({
         method: 'post',
-        url: JsonUrl(host, port, sessionID),
+        url: JsonUrl(host, port, sessionID, enableSSL),
         data,
     })
 }
 
-export function fetchEnv(host: string, port: number, sessionID: string = '0'): Thenable<any> {
+export function fetchEnv(host: string, port: number, sessionID: string = '0', enableSSL: boolean): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,
         functionName: 'objs',
@@ -117,7 +123,7 @@ export function fetchEnv(host: string, port: number, sessionID: string = '0'): T
 
     return axios({
         method: 'post',
-        url: JsonUrl(host, port, sessionID),
+        url: JsonUrl(host, port, sessionID, enableSSL),
         data,
     })
 }

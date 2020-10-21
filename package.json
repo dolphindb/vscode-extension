@@ -60,7 +60,8 @@
 		"onCommand:dolphindb.chooseServer",
 		"onCommand:dolphindb.removeServer",
 		"onCommand:dolphindb.helper",
-		"onCommand:dolphindb.login"
+		"onCommand:dolphindb.login",
+		"onCommand:dolphindb.ssl"
 	],
 	"icon": "images/dolphindb.png",
 	"contributes": {
@@ -117,6 +118,10 @@
 			{
 				"command": "dolphindb.login",
 				"title": "DolphinDB: login"
+			},
+			{
+				"command": "dolphindb.ssl",
+				"title": "DolphinDB: SSL"
 			}
 		],
 		"menus": {
@@ -139,6 +144,10 @@
 				},
 				{
 					"command": "dolphindb.login",
+					"when": "resourceLangId == dolphindb"
+				},
+				{
+					"command": "dolphindb.ssl",
 					"when": "resourceLangId == dolphindb"
 				}
 			],
