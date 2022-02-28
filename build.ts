@@ -39,7 +39,7 @@ async function build_package_json () {
             key: 'ctrl+e',
             when: "!editorReadonly && editorTextFocus && editorLangId == 'dolphindb'"
         }
-    ] as const
+    ]
     
     
     const package_json = {
