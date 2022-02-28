@@ -1,10 +1,12 @@
-import { to_json, fwrite, fcopy } from 'xshell'
+import { to_json, fwrite, fcopy, fmkdir } from 'xshell'
 
 import { fpd_ext_out, fpd_ext_root } from './config.js'
 import { ddb_tm_language } from './dolphindb.language.js'
 
 
 ;(async function build () {
+    await fmkdir(fpd_ext_out)
+    
     await Promise.all([
         fcopy(`${fpd_ext_root}dolphindb.png`, `${fpd_ext_out}dolphindb.png`),
         fcopy(`${fpd_ext_root}docs.json`, `${fpd_ext_out}docs.json`),
