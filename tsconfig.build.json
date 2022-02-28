@@ -1,0 +1,13 @@
+{
+    "extends": "./tsconfig.json",
+    
+    "files": [
+        "./build.ts"
+    ],
+    
+    "compilerOptions": {
+        "outDir": "./",
+        "target": "ESNext",
+        "tsBuildInfoFile": "./node_modules/.build.tsbuildinfo",
+    }
+}

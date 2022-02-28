@@ -1,107 +1,112 @@
 {
-	"name": "dolphindb-vscode",
-	"displayName": "DolphinDB",
-	"description": "VSCode extension for DolphinDB",
-	"version": "0.7.0",
-	"main": "./index.js",
-	"icon": "dolphindb.png",
-	"engines": {
-		"vscode": ">=1.64.0"
-	},
-	"dependencies": {
-		"dolphindb": "^0.0.7",
-		"ws": "^8.5.0",
-		"xshell": "^0.0.31"
-	},
-	"devDependencies": {
-		"@types/node": "^17.0.21",
-		"@types/vscode": "^1.64.0",
-		"@types/ws": "^8.5.1",
-		"source-map-loader": "^3.0.1",
-		"ts-loader": "^9.2.6",
-		"typescript": "^4.5.5",
-		"webpack": "^5.69.1"
-	},
-	"publisher": "dolphindb",
-	"license": "SEE LICENSE IN LICENSE",
-	"categories": [
-		"Programming Languages",
-		"Other",
-		"Linters",
-		"Snippets"
-	],
-	"keywords": [
-		"DataBase",
-		"database",
-		"dolphindb",
-		"DolphinDB",
-		"Time Series",
-		"timeseries",
-		"Stream Computition",
-		"Programing language"
-	],
-	"homepage": "https://github.com/dolphindb/vscode-extension/",
-	"bugs": {
-		"url": "https://github.com/dolphindb/vscode-extension/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/dolphindb/vscode-extension.git"
-	},
-	"activationEvents": [
-		"onStartupFinished"
-	],
-	"contributes": {
-		"languages": [
-			{
-				"id": "dolphindb",
-				"extensions": [
-					".dos"
-				],
-				"aliases": [
-					"DolphinDB",
-					"dolphindb"
-				],
-				"configuration": "./dolphindb.language-configuration.json"
-			}
-		],
-		"grammars": [
-			{
-				"language": "dolphindb",
-				"scopeName": "source.dolphindb",
-				"path": "./dolphindb.tmLanguage.json"
-			}
-		],
-		"configuration": {
-			"title": "DolphinDB",
-			"properties": {
-				"dolphindb.servers": {
-					"type": "array",
-					"scope": "resource",
-					"default": [
-						{
-							"name": "local8848",
-							"url": "ws://127.0.0.1:8848"
-						}
-					]
-				}
-			}
-		},
-		"commands": [
-			{
-				"command": "dolphindb.execute",
-				"title": "DolphinDB: execute"
-			}
-		],
-		"keybindings": [
-			{
-				"command": "dolphindb.execute",
-				"key": "ctrl+e",
-				"when": "!editorReadonly && editorTextFocus && editorLangId == 'dolphindb'"
-			}
-		]
-	},
-	"__metadata": {
-		"installedTimestamp": 1645977185017
-	}
+    "name": "dolphindb-vscode",
+    "displayName": "DolphinDB",
+    "description": "VSCode extension for DolphinDB",
+    "version": "0.7.0",
+    "main": "./index.js",
+    "icon": "dolphindb.png",
+    "engines": {
+        "vscode": ">=1.64.0"
+    },
+    "scripts": {
+        "dev": "tsc --project ./tsconfig.build.json && node ./build.js && tsc --project ./tsconfig.json --watch"
+    },
+    "dependencies": {
+        "dolphindb": "^0.0.7",
+        "ws": "^8.5.0",
+        "xshell": "^0.0.31"
+    },
+    "devDependencies": {
+        "@types/node": "^17.0.21",
+        "@types/vscode": "^1.64.0",
+        "@types/ws": "^8.5.1",
+        "source-map-loader": "^3.0.1",
+        "ts-loader": "^9.2.6",
+        "typescript": "^4.5.5",
+        "webpack": "^5.69.1"
+    },
+    "publisher": "dolphindb",
+    "license": "SEE LICENSE IN LICENSE",
+    "categories": [
+        "Programming Languages",
+        "Other",
+        "Linters",
+        "Snippets"
+    ],
+    "keywords": [
+        "DataBase",
+        "database",
+        "dolphindb",
+        "DolphinDB",
+        "Time Series",
+        "timeseries",
+        "Stream Computition",
+        "Programing language"
+    ],
+    "homepage": "https://github.com/dolphindb/vscode-extension/",
+    "bugs": {
+        "url": "https://github.com/dolphindb/vscode-extension/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dolphindb/vscode-extension.git"
+    },
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "dolphindb",
+                "extensions": [
+                    ".dos"
+                ],
+                "aliases": [
+                    "DolphinDB",
+                    "dolphindb"
+                ],
+                "configuration": "./dolphindb.language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "dolphindb",
+                "scopeName": "source.dolphindb",
+                "path": "./dolphindb.tmLanguage.json"
+            }
+        ],
+        "configuration": {
+            "title": "DolphinDB",
+            "properties": {
+                "dolphindb.servers": {
+                    "type": "array",
+                    "scope": "resource",
+                    "default": [
+                        {
+                            "name": "local8848",
+                            "url": "ws://127.0.0.1:8848"
+                        }
+                    ]
+                }
+            }
+        },
+        "commands": [
+            {
+                "command": "dolphindb.execute",
+                "title": "DolphinDB: execute"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "dolphindb.execute",
+                "key": "ctrl+e",
+                "when": "!editorReadonly && editorTextFocus && editorLangId == 'dolphindb'"
+            }
+        ]
+    },
+    "__metadata": {
+        "id": "53e5c11c-2f9e-4967-bf71-fcd0dd8da101",
+        "publisherDisplayName": "dolphindb",
+        "publisherId": "a58599f6-e41d-4aa3-b98b-cf99544a76cf"
+    }
 }

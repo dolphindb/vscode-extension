@@ -26,6 +26,7 @@
         // "watch": false
         "incremental": true,
         "tsBuildInfoFile": "./node_modules/.tsbuildinfo",
+        "preserveWatchOutput": true,
         
         
         // --- emit

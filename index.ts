@@ -72,7 +72,7 @@ set_inspect_options()
 
 
 export function activate (ctx: ExtensionContext) {
-    for (const { func } of ext_commands)
+    for (const func of ext_commands)
         ctx.subscriptions.push(
             commands.registerCommand(`dolphindb.${func.name}`, func)
         )
@@ -227,64 +227,59 @@ export function activate (ctx: ExtensionContext) {
 }
 
 
-export const ext_commands = [
-    {
-        func: async function execute () {
-            const [{ url, name }] = workspace.getConfiguration('dolphindb').get<{ url: string, name: string }[]>('servers')
-            
-            if (!ddbext.ddb || ddbext.ddb.url !== url || ddbext.ddb.websocket.readyState !== WebSocket.OPEN) {
-                ddbext.ddb?.disconnect()
-                let ddb = ddbext.ddb = new DDB(url)
-                
-                ddb.printer = (message) => {
-                    ddbext.emitter.fire(message + '\r\n')
-                }
-                
-                await ddb.connect()
-                
-                let emitter = ddbext.emitter = new EventEmitter<string>()
-                await new Promise<void>(resolve => {
-                    ddbext.shell = window.createTerminal({
-                        name: 'DolphinDB',
-                        
-                        pty: {
-                            open (init_dimensions: TerminalDimensions | undefined) {
-                                emitter.fire(
-                                    'DolphinDB Shell\r\n'
-                                )
-                                resolve()
-                            },
-                            
-                            close () {
-                                ddbext.ddb.disconnect()
-                                emitter.dispose()
-                            },
-                            
-                            onDidWrite: emitter.event,
-                        },
-                    })
-                    
-                    ddbext.shell.show(true)
-                })
-            }
-            
-            try {
-                const obj = await ddbext.ddb.eval(
-                    get_text('selection or line')
-                )
-                
-                ddbext.emitter.fire(
-                    inspect(obj).replaceAll('\n', '\r\n') + '\r\n'
-                )
-            } catch (error) {
-                ddbext.emitter.fire(
-                    error.message.red + '\r\n'
-                )
-            }
-        },
+const ext_commands = [
+    async function execute () {
+        const [{ url, name }] = workspace.getConfiguration('dolphindb').get<{ url: string, name: string }[]>('servers')
         
-        key: 'ctrl+e',
-        when: "!editorReadonly && editorTextFocus && editorLangId == 'dolphindb'"
+        if (!ddbext.ddb || ddbext.ddb.url !== url || ddbext.ddb.websocket.readyState !== WebSocket.OPEN) {
+            ddbext.ddb?.disconnect()
+            let ddb = ddbext.ddb = new DDB(url)
+            
+            ddb.printer = message => {
+                ddbext.emitter.fire(message + '\r\n')
+            }
+            
+            await ddb.connect()
+            
+            let emitter = ddbext.emitter = new EventEmitter<string>()
+            await new Promise<void>(resolve => {
+                ddbext.shell = window.createTerminal({
+                    name: 'DolphinDB',
+                    
+                    pty: {
+                        open (init_dimensions: TerminalDimensions | undefined) {
+                            emitter.fire(
+                                'DolphinDB Shell\r\n'
+                            )
+                            resolve()
+                        },
+                        
+                        close () {
+                            ddbext.ddb.disconnect()
+                            emitter.dispose()
+                        },
+                        
+                        onDidWrite: emitter.event,
+                    },
+                })
+                
+                ddbext.shell.show(true)
+            })
+        }
+        
+        try {
+            const obj = await ddbext.ddb.eval(
+                get_text('selection or line')
+            )
+            
+            ddbext.emitter.fire(
+                inspect(obj).replaceAll('\n', '\r\n') + '\r\n'
+            )
+        } catch (error) {
+            ddbext.emitter.fire(
+                error.message.red + '\r\n'
+            )
+        }
     }
 ]
 

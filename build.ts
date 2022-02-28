@@ -2,9 +2,6 @@ import { to_json, fwrite, fcopy } from 'xshell'
 
 import { fpd_ext_out, fpd_ext_root } from './config.js'
 import { ddb_tm_language } from './dolphindb.language.js'
-import { ext_commands } from './index.js'
-
-// eval my_commands
 
 
 ;(async function build () {
@@ -34,6 +31,15 @@ async function build_tm_language () {
 async function build_package_json () {
     const { dependencies, devDependencies, version } = await import(`${fpd_ext_root}package.json`)
     
+    const ext_commands = [
+        {
+            command: 'execute',
+            key: 'ctrl+e',
+            when: "!editorReadonly && editorTextFocus && editorLangId == 'dolphindb'"
+        }
+    ] as const
+    
+    
     const package_json = {
         name: 'dolphindb-vscode',
         displayName: 'DolphinDB',
@@ -47,6 +53,10 @@ async function build_package_json () {
         
         engines: {
             vscode: '>=1.64.0'
+        },
+        
+        scripts: {
+            dev: 'tsc --project ./tsconfig.build.json && node ./build.js && tsc --project ./tsconfig.json --watch'
         },
         
         dependencies,
@@ -116,13 +126,13 @@ async function build_package_json () {
                 }
             },
             
-            commands: ext_commands.map(({ func }) => ({
-                command: `dolphindb.${func.name}`,
-                title: `DolphinDB: ${func.name}`
+            commands: ext_commands.map(({ command }) => ({
+                command: `dolphindb.${command}`,
+                title: `DolphinDB: ${command}`
             })),
             
-            keybindings: ext_commands.map( ({ func, key, when, /* args */ }) => ({
-                command: `dolphindb.${func.name}`,
+            keybindings: ext_commands.map( ({ command, key, when, /* args */ }) => ({
+                command: `dolphindb.${command}`,
                 ... key ?  { key }  : { },
                 ... when ?  { when }  : { },
                 // ... args  ?  { arguments: args }  :  { },
