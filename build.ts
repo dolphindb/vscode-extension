@@ -1,4 +1,4 @@
-import { to_json, fwrite, fcopy, fmkdir } from 'xshell'
+import { fwrite, fcopy, fmkdir } from 'xshell'
 
 import { fpd_ext_out, fpd_ext_root } from './config.js'
 import { ddb_tm_language } from './dolphindb.language.js'
@@ -31,7 +31,7 @@ async function build_tm_language () {
 
 
 async function build_package_json () {
-    const { dependencies, devDependencies, version } = await import(`${fpd_ext_root}package.json`)
+    const { name, version, engines, scripts, dependencies, devDependencies,  } = await import(`${fpd_ext_root}package.json`)
     
     const ext_commands = [
         {
@@ -43,7 +43,7 @@ async function build_package_json () {
     
     
     const package_json = {
-        name: 'dolphindb-vscode',
+        name,
         displayName: 'DolphinDB',
         description: 'VSCode extension for DolphinDB',
         
@@ -53,13 +53,9 @@ async function build_package_json () {
         
         icon: 'dolphindb.png',
         
-        engines: {
-            vscode: '>=1.64.0'
-        },
+        engines,
         
-        scripts: {
-            dev: 'tsc --project ./tsconfig.build.json && node ./build.js && tsc --project ./tsconfig.json --watch'
-        },
+        scripts,
         
         dependencies,
         
@@ -281,20 +277,9 @@ async function build_package_json () {
             //         language: 'dolphindb'
             //     }
             // ]
-        },
-        
-        __metadata: {
-            id: '53e5c11c-2f9e-4967-bf71-fcd0dd8da101',
-            publisherDisplayName: 'dolphindb',
-            publisherId: 'a58599f6-e41d-4aa3-b98b-cf99544a76cf'
         }
     }
     
-    const package_json_str = to_json(package_json)
-    
-    await Promise.all([
-        fwrite(`${fpd_ext_root}package.json`, package_json_str),
-        fwrite(`${fpd_ext_out}package.json`, package_json_str),
-    ])
+    await fwrite(`${fpd_ext_out}package.json`, package_json)
 }
 
