@@ -1,12 +1,25 @@
 {
 	"name": "dolphindb-vscode",
 	"displayName": "DolphinDB",
-	"description": "VScode extension for DolphinDB",
-	"version": "0.6.7",
-	"publisher": "dolphindb",
+	"description": "VSCode extension for DolphinDB",
+	"version": "0.7.0",
+	"main": "./index.js",
+	"icon": "dolphindb.png",
 	"engines": {
-		"vscode": "^1.25.0"
+		"vscode": ">=1.64.0"
 	},
+	"dependencies": {
+		"xshell": "^0.0.31"
+	},
+	"devDependencies": {
+		"@types/node": "^17.0.21",
+		"@types/vscode": "^1.64.0",
+		"source-map-loader": "^3.0.1",
+		"ts-loader": "^9.2.6",
+		"typescript": "^4.5.5",
+		"webpack": "^5.69.1"
+	},
+	"publisher": "dolphindb",
 	"license": "SEE LICENSE IN LICENSE",
 	"categories": [
 		"Programming Languages",
@@ -14,222 +27,6 @@
 		"Linters",
 		"Snippets"
 	],
-	"bugs": {
-		"url": "https://github.com/dolphindb/vscode-extension/issues"
-	},
-	"homepage": "https://github.com/dolphindb/vscode-extension/blob/master/README.md",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/dolphindb/vscode-extension.git"
-	},
-	"main": "./out/extension.js",
-	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"unittest": "ts-mocha ./src/test/*",
-		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
-		"postinstall": "node ./node_modules/vscode/bin/install",
-		"test": "npm run compile && node ./node_modules/vscode/bin/test"
-	},
-	"devDependencies": {
-		"@types/chalk": "^2.2.0",
-		"@types/expect": "^1.20.4",
-		"@types/lodash": "^4.14.134",
-		"@types/mocha": "^5.2.7",
-		"@types/node": "^12.0.8",
-		"@types/open": "^6.1.0",
-		"@types/table": "^4.0.5",
-		"mocha": "^6.1.4",
-		"ts-mocha": "^6.0.0",
-		"tslint": "^5.17.0",
-		"typescript": "^3.5.2",
-		"vscode": "^1.1.28"
-	},
-	"dependencies": {
-		"axios": "^0.19.0",
-		"chalk": "^2.4.2",
-		"java": "^0.12.0",
-		"lodash": "^4.17.15",
-		"open": "^6.3.0",
-		"table": "^5.4.1"
-	},
-	"activationEvents": [
-		"onView:dolphindb.env",
-		"onCommand:dolphindb.executeCode",
-		"onCommand:dolphindb.addServer",
-		"onCommand:dolphindb.chooseServer",
-		"onCommand:dolphindb.removeServer",
-		"onCommand:dolphindb.helper",
-		"onCommand:dolphindb.login",
-		"onCommand:dolphindb.ssl"
-	],
-	"icon": "images/dolphindb.png",
-	"contributes": {
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "dolphindb-explorer",
-					"title": "DolphinDB Explorer",
-					"icon": "media/explorer.svg"
-				}
-			]
-		},
-		"views": {
-			"dolphindb-explorer": [
-				{
-					"id": "dolphindb.env",
-					"name": "DolphinDB Env"
-				}
-			]
-		},
-		"commands": [
-			{
-				"command": "dolphindb.executeCode",
-				"title": "DolphinDB: executeCode"
-			},
-			{
-				"command": "dolphindb.addServer",
-				"title": "DolphinDB: addServer"
-			},
-			{
-				"command": "dolphindb.chooseServer",
-				"title": "DolphinDB: chooseServer"
-			},
-			{
-				"command": "dolphindb.removeServer",
-				"title": "DolphinDB: removeServer"
-			},
-			{
-				"command": "dolphindb.helper",
-				"title": "DolphinDB: Helper"
-			},
-			{
-				"command": "dolphindb.env.refresh",
-				"title": "Refresh",
-				"icon": {
-					"light": "resources/light/refresh.svg",
-					"dark": "resources/dark/refresh.svg"
-				}
-			},
-			{
-				"command": "dolphindb.env.showInfo",
-				"title": "Show"
-			},
-			{
-				"command": "dolphindb.login",
-				"title": "DolphinDB: login"
-			},
-			{
-				"command": "dolphindb.ssl",
-				"title": "DolphinDB: SSL"
-			}
-		],
-		"menus": {
-			"editor/context": [
-				{
-					"command": "dolphindb.executeCode",
-					"when": "resourceLangId == dolphindb"
-				},
-				{
-					"command": "dolphindb.addServer",
-					"when": "resourceLangId == dolphindb"
-				},
-				{
-					"command": "dolphindb.chooseServer",
-					"when": "resourceLangId == dolphindb"
-				},
-				{
-					"command": "dolphindb.removeServer",
-					"when": "resourceLangId == dolphindb"
-				},
-				{
-					"command": "dolphindb.login",
-					"when": "resourceLangId == dolphindb"
-				},
-				{
-					"command": "dolphindb.ssl",
-					"when": "resourceLangId == dolphindb"
-				}
-			],
-			"view/title": [
-				{
-					"command": "dolphindb.env.refresh",
-					"when": "view == dolphindb.env",
-					"group": "navigation"
-				}
-			],
-			"view/item/context": [
-				{
-					"command": "dolphindb.env.showInfo",
-					"when": "view == dolphindb.env && viewItem == variableInfo",
-					"group": "inline"
-				}
-			]
-		},
-		"keybindings": [
-			{
-				"command": "dolphindb.executeCode",
-				"key": "ctrl+E",
-				"mac": "cmd+E"
-			}
-		],
-		"languages": [
-			{
-				"id": "dolphindb",
-				"extensions": [
-					".dos",
-					".txt"
-				],
-				"aliases": [
-					"DolphinDB",
-					"dolphindb"
-				],
-				"configuration": "./language-configuration.json"
-			}
-		],
-		"configuration": [
-			{
-				"title": "dolphindb",
-				"type": "object",
-				"properties": {
-					"dolphindb.server.address": {
-						"description": "Dolphindb server hosts",
-						"scope": "resource",
-						"default": [
-							{
-								"name": "default",
-								"ip": "127.0.0.1",
-								"port": 8848
-							}
-						],
-						"type": "array"
-					}
-				}
-			}
-		],
-		"grammars": [
-			{
-				"language": "dolphindb",
-				"scopeName": "source.dolphindb",
-				"path": "./syntaxes/dolphindb.tmLanguage.json"
-			}
-		],
-		"snippets": [
-			{
-				"language": "dolphindb",
-				"path": "./snippets/dolphindb.snippets.json"
-			},
-			{
-				"language": "dolphindb",
-				"path": "snippets/dolphindb-functions.snippets.json"
-			}
-		],
-		"breakpoints": [
-			{
-				"language": "dolphindb"
-			}
-		]
-	},
 	"keywords": [
 		"DataBase",
 		"database",
@@ -239,5 +36,69 @@
 		"timeseries",
 		"Stream Computition",
 		"Programing language"
-	]
+	],
+	"homepage": "https://github.com/dolphindb/vscode-extension/",
+	"bugs": {
+		"url": "https://github.com/dolphindb/vscode-extension/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/dolphindb/vscode-extension.git"
+	},
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"contributes": {
+		"languages": [
+			{
+				"id": "dolphindb",
+				"extensions": [
+					".dos"
+				],
+				"aliases": [
+					"DolphinDB",
+					"dolphindb"
+				],
+				"configuration": "./dolphindb.language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "dolphindb",
+				"scopeName": "source.dolphindb",
+				"path": "./dolphindb.tmLanguage.json"
+			}
+		],
+		"configuration": {
+			"title": "DolphinDB",
+			"properties": {
+				"dolphindb.servers": {
+					"type": "array",
+					"scope": "resource",
+					"default": [
+						{
+							"name": "local8848",
+							"url": "ws://127.0.0.1:8848"
+						}
+					]
+				}
+			}
+		},
+		"commands": [
+			{
+				"command": "dolphindb.execute",
+				"title": "DolphinDB: execute"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "dolphindb.execute",
+				"key": "ctrl+e",
+				"when": "!editorReadonly && editorTextFocus && editorLangId == 'dolphindb'"
+			}
+		]
+	},
+	"__metadata": {
+		"installedTimestamp": 1645977185017
+	}
 }

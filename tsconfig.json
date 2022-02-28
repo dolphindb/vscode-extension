@@ -1,23 +1,75 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "es6",
-		"outDir": "out",
-		"lib": [
-			"es6"
-		],
-		"sourceMap": true,
-		"rootDir": "src",
-		"strictNullChecks": false,
-		"strict": true,   /* enable all strict type-checking options */
-		/* Additional Checks */
-		"noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
-		"noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
-		"noUnusedParameters": true,  /* Report errors on unused parameters. */
-	},
-	"exclude": [
-		"node_modules",
-		".vscode-test",
-		"tools"
-	]
+    "files": [
+        "./index.ts"
+    ],
+    
+    "compilerOptions": {
+        "outDir": "./out/",
+        
+        
+        // --- module
+        "module": "CommonJS", // none, CommonJS, amd, system, umd, es6, es2015, ESNext
+        "moduleResolution": "Node",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        
+        // --- build
+        "target": "ES2020",
+        "allowJs": false,
+        "checkJs": false,
+        "pretty": true,
+        "newLine": "lf",
+        "lib": ["ESNext", "DOM"],
+        "importHelpers": true,
+        // "watch": false
+        "incremental": true,
+        "tsBuildInfoFile": "./node_modules/.tsbuildinfo",
+        
+        
+        // --- emit
+        "declaration": false,
+        "emitDeclarationOnly": false,
+        "noEmitOnError": false,
+        "listEmittedFiles": true,
+        
+        // --- source maps
+        "sourceMap": true,
+        "inlineSourceMap": false,
+        "inlineSources": true,
+        
+        // --- features
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "preserveSymlinks": true,
+        "jsx": "react",
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "forceConsistentCasingInFileNames": true,
+        
+        
+        // --- type checking
+        "strict": false,
+        "alwaysStrict": false,
+        "noImplicitAny": false,
+        "noImplicitReturns": false,
+        "noImplicitThis": true,
+        "noImplicitOverride": true,
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "skipLibCheck": true,
+    },
+    
+    "watchOptions": {
+        "excludeDirectories": [
+            "**/node_modules",
+        ],
+        
+        "watchFile": "useFsEvents",
+        "watchDirectory": "useFsEvents",
+        
+        "fallbackPolling": "dynamicPriority"
+    }
 }
+

@@ -1,24 +1,9 @@
-// Copyright 2019 dolphindb
-// author : yjhmelody
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-// 
-//     http://www.apache.org/licenses/LICENSE-2.0
-// 
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 import axios from 'axios'
 import { getBorderCharacters, table, TableUserConfig } from 'table'
 import chalk from 'chalk'
 
 // resolve issue with ssl when making https request
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';　
-
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 const tableConfig: TableUserConfig = {
     border: getBorderCharacters('norc'),
     columns: []
@@ -27,115 +12,134 @@ const tableConfig: TableUserConfig = {
 const MAX_VALUE_LEN: number = 1024
 
 export interface IDolphindbResponse {
-    msg: string,
-    object: IDolphindbObject[],
-    resultCode: string,
-    sessionID: string,
-    userId: string,
+    msg: string
+    object: IDolphindbObject[]
+    resultCode: string
+    sessionID: string
+    userId: string
 }
 
 export interface IDolphindbRequest {
-    sessionID: string,
-    functionName: string,
+    sessionID: string
+    functionName: string
     params: IDolphindbObject[]
 }
 
 export interface IDolphindbObject {
-    name: string,
-    form: string,
-    value: Scalar | IDolphindbAttr[] | Scalar[],
-    size?: string,
-    type?: string,
+    name: string
+    form: string
+    value: Scalar | IDolphindbAttr[] | Scalar[]
+    size?: string
+    type?: string
 }
 
 export interface IDolphindbAttr {
-    name: string,
-    form: string,
-    type: string,
-    size: string,
+    name: string
+    form: string
+    type: string
+    size: string
     value: Scalar | Scalar[]
 }
 
 type Scalar = number | string
 
-function JsonUrl(host: string, port: number, sessionID: string = '0', enableSSL: boolean): string {
-    if (enableSSL) {
+function JsonUrl (host: string, port: number, sessionID: string = '0', enableSSL: boolean): string {
+    if (enableSSL) 
         return `https://${host}:${port}/${sessionID}`
-    } else {
+     else 
         return `http://${host}:${port}/${sessionID}`
-    }
+    
 }
 
-export function login(host: string, port: number, username: string, password: string, sessionID: string = '0', enableSSL: boolean): Thenable<any> {
+export function login (host: string, port: number, username: string, password: string, sessionID: string = '0', enableSSL: boolean): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,
         functionName: 'login',
-        params: [{
-            "name": "userId",
-            "form": "scalar",
-            "type": "string",
-            "value": username
-        }, {
-            "name": "password",
-            "form": "scalar",
-            "type": "string",
-            "value": password
-        }
+        params: [
+            {
+                name: 'userId',
+                form: 'scalar',
+                type: 'string',
+                value: username
+            },
+            {
+                name: 'password',
+                form: 'scalar',
+                type: 'string',
+                value: password
+            }
         ]
     }
     return axios({
         method: 'post',
         url: JsonUrl(host, port, sessionID, enableSSL),
         data,
+        // LOCAL
+        proxy: {
+            host: 'localhost',
+            port: 8899,
+        }
     })
 }
 
-
-export function executeCode(host: string, port: number, code: string, sessionID: string = '0', enableSSL: boolean): Thenable<any> {
+export function executeCode (host: string, port: number, code: string, sessionID: string = '0', enableSSL: boolean): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,
         functionName: 'executeCode',
-        params: [{
-            name: 'script',
-            form: 'scalar',
-            type: 'string',
-            value: encodeURIComponent(code)
-        }]
+        params: [
+            {
+                name: 'script',
+                form: 'scalar',
+                type: 'string',
+                value: encodeURIComponent(code)
+            }
+        ]
     }
     return axios({
         method: 'post',
         url: JsonUrl(host, port, sessionID, enableSSL),
         data,
+        // LOCAL
+        proxy: {
+            host: 'localhost',
+            port: 8899,
+        }
     })
 }
 
-export function fetchEnv(host: string, port: number, sessionID: string = '0', enableSSL: boolean): Thenable<any> {
+export function fetchEnv (host: string, port: number, sessionID: string = '0', enableSSL: boolean): Thenable<any> {
     const data: IDolphindbRequest = {
         sessionID,
         functionName: 'objs',
-        params: [{
-            name: 'shared',
-            form: 'scalar',
-            type: 'bool',
-            value: 'true',
-        }]
+        params: [
+            {
+                name: 'shared',
+                form: 'scalar',
+                type: 'bool',
+                value: 'true'
+            }
+        ]
     }
-
+    
     return axios({
         method: 'post',
         url: JsonUrl(host, port, sessionID, enableSSL),
         data,
+        // LOCAL
+        proxy: {
+            host: 'localhost',
+            port: 8899,
+        }
     })
 }
 
-
 export class DolphindbJson {
-    constructor(private readonly _json: IDolphindbResponse) { }
-
-    toJsString(): string {
-        if (this._json_is_illegal()) {
+    constructor (private readonly _json: IDolphindbResponse) { }
+    
+    toJsString (): string {
+        if (this._json_is_illegal()) 
             return chalk.red(this.errorMessage())
-        }
+        
         switch (this.dataForm()) {
             case 'scalar':
                 switch (this.dataType()) {
@@ -146,108 +150,104 @@ export class DolphindbJson {
                 }
             case 'vector':
                 return this.toVectorStyle()
-
+                
             case 'pair':
                 return this.toPairStyle()
-
+                
             case 'matrix':
                 return this.toMatrixStyle()
-
+                
             case 'set':
                 return this.toSetStyle()
-
+                
             case 'dictionary':
                 return this.toDictStyle()
-
+                
             case 'table':
                 return this.toTableStyle()
-
+                
             default:
                 throw TypeError('Illegal json type')
         }
     }
-
-    errorMessage(): string {
+    
+    errorMessage (): string {
         return this._json.msg === '' ? '' : 'Execution was completed with exception\n' + this._json.msg
     }
-
-    dataForm(): string {
+    
+    dataForm (): string {
         return this._json.object[0].form
     }
-
-    dataType(): string {
+    
+    dataType (): string {
         return this._json.object[0].type ? this._json.object[0].type : ''
     }
-
-    userId(): string {
+    
+    userId (): string {
         return this._json.userId
     }
-
-    sessionID(): string {
+    
+    sessionID (): string {
         return this._json.sessionID
     }
-
-    _json_is_illegal(): boolean {
-        if (typeof this._json !== 'object' || this._json.resultCode !== '0' || this._json.object.length <= 0) {
+    
+    _json_is_illegal (): boolean {
+        if (typeof this._json !== 'object' || this._json.resultCode !== '0' || this._json.object.length <= 0) 
             return true
-        }
+        
         return false
-
     }
-
-    getDataSize(): number {
+    
+    getDataSize (): number {
         return +this._json.object[0].size
     }
-
-    toScalar(): Scalar {
-        return this._json.object[0].value as (Scalar)
+    
+    toScalar (): Scalar {
+        return this._json.object[0].value as Scalar
     }
-
-    static scalarFormat(dataType: string, scalar: Scalar): Scalar {
+    
+    static scalarFormat (dataType: string, scalar: Scalar): Scalar {
         switch (dataType) {
             case 'string':
                 return '"' + scalar + '"'
             case 'char':
-                return '\'' + scalar + '\''
+                return "'" + scalar + "'"
             default:
                 return scalar
         }
     }
-
-    toScalarStyle(): string {
+    
+    toScalarStyle (): string {
         let json = this.toScalar()
         return DolphindbJson.scalarFormat(this.dataType(), json).toString()
     }
-
-    toPair(): [string, string] {
+    
+    toPair (): [string, string] {
         let pair = this._json.object[0].value as Scalar[]
-        return [
-            DolphindbJson.scalarFormat(this.dataType(), pair[0]).toString(),
-            DolphindbJson.scalarFormat(this.dataType(), pair[1]).toString(),
-        ]
+        return [DolphindbJson.scalarFormat(this.dataType(), pair[0]).toString(), DolphindbJson.scalarFormat(this.dataType(), pair[1]).toString()]
     }
-
-    toPairStyle(): string {
+    
+    toPairStyle (): string {
         return `pair(${this.toPair().join(', ')})`
     }
-
-    toVector(): Scalar[] {
+    
+    toVector (): Scalar[] {
         return this._json.object[0].value as Scalar[]
     }
-
-    toVectorStyle(): string {
+    
+    toVectorStyle (): string {
         let vec = this.toVector()
-        let res = vec.map((elem) => DolphindbJson.scalarFormat(this.dataType(), elem))
+        let res = vec.map(elem => DolphindbJson.scalarFormat(this.dataType(), elem))
         return '[' + res.join(', ') + ']'
     }
-
-    toVectorTableStyle(): string {
+    
+    toVectorTableStyle (): string {
         let vec = this.toVector()
-        let res = vec.map((elem) => DolphindbJson.scalarFormat(this.dataType(), elem))
+        let res = vec.map(elem => DolphindbJson.scalarFormat(this.dataType(), elem))
         return table([res], tableConfig)
     }
-
-    toDict(): Map<string, string> {
+    
+    toDict (): Map<string, string> {
         let dict = this._json.object[0].value as IDolphindbAttr[]
         let map = new Map()
         let size = this.getDataSize()
@@ -258,23 +258,23 @@ export class DolphindbJson {
         }
         return map
     }
-
-    toDictStyle(): string {
+    
+    toDictStyle (): string {
         let map = this.toDict()
-        if (map.size === 0) {
+        if (map.size === 0) 
             return 'dict()'
-        }
+        
         let res = 'dict(\n'
-        for (let [key, val] of map) {
+        for (let [key, val] of map) 
             res += '  ' + key + ' -> ' + val + ',\n'
-        }
+        
         res += ')\n'
         return res
     }
-
-    toDictTableStyle(): string {
+    
+    toDictTableStyle (): string {
         let tbl = [['#key'], ['#value']]
-
+        
         let map = this.toDict()
         for (let [k, v] of map) {
             tbl[0].push(k)
@@ -282,34 +282,34 @@ export class DolphindbJson {
         }
         return table(tbl, tableConfig)
     }
-
-    toSet(): Set<any> {
+    
+    toSet (): Set<any> {
         let set = new Set()
         let val = this._json.object[0].value as []
-        val.forEach((elem) => {
+        val.forEach(elem => {
             set.add(DolphindbJson.scalarFormat(this.dataType(), elem))
         })
         return set
     }
-
-    toSetStyle(): string {
+    
+    toSetStyle (): string {
         let set = this.toSet()
         let res = 'set('
-        for (let val of set) {
+        for (let val of set) 
             res += val + ','
-        }
+        
         res = res.slice(0, res.length - 1) + ')'
         return res
     }
-
-    toSetTableStyle(): string {
+    
+    toSetTableStyle (): string {
         let set = this.toSet()
         let tbl = ['#value']
         tbl.push(...set)
         return table([tbl], tableConfig)
     }
-
-    toTable(): { colName: string[], table: any[][] } {
+    
+    toTable (): { colName: string[], table: any[][] } {
         let val = this._json.object[0].value as IDolphindbAttr[]
         const table: Scalar[][] = []
         const colName = []
@@ -319,65 +319,58 @@ export class DolphindbJson {
             table.push(val[i].value as Scalar[])
             colName.push(val[i].name)
         }
-
+        
         return {
             table: transpose(table, rowNum),
-            colName,
+            colName
         }
     }
-
-    toTableStyle(): string {
-        let {
-            colName,
-            table: tbl
-        } = this.toTable()
+    
+    toTableStyle (): string {
+        let { colName, table: tbl } = this.toTable()
         let res = `${colName.length} columns, ${tbl.length} rows`
         return table([colName, ...tbl], tableConfig) + res
     }
-
-    toMatrix(): { colNum: number, matrix: any[][] } {
+    
+    toMatrix (): { colNum: number, matrix: any[][] } {
         let val = this._json.object[0].value as IDolphindbAttr[]
         const matrix: any[][] = []
         let rowNum = +val[1].value
         const colNum = +val[2].value
         for (let i = 0; i < rowNum; i++) {
             matrix.push([])
-            for (let j = 0; j < colNum; j++) {
+            for (let j = 0; j < colNum; j++) 
                 matrix[i][j] = (val[0].value as Scalar[])[rowNum * j + i]
-            }
+            
         }
-
+        
         return {
             colNum,
-            matrix,
+            matrix
         }
     }
-
-    toMatrixStyle(): string {
-        let {
-            colNum,
-            matrix
-        } = this.toMatrix()
+    
+    toMatrixStyle (): string {
+        let { colNum, matrix } = this.toMatrix()
         let colName = []
-        for (let i = 0; i < colNum; i++) {
+        for (let i = 0; i < colNum; i++) 
             colName.push('#' + i)
-        }
+        
         let res = `Only display ${colName.length} columns, ${matrix.length} rows`
         return table([colName, ...matrix], tableConfig) + res
     }
 }
 
-
-function transpose<T>(table: T[][], rowNum: number) {
+function transpose<T> (table: T[][], rowNum: number) {
     const tableT: T[][] = []
-    for (let i = 0; i < rowNum; i++) {
+    for (let i = 0; i < rowNum; i++) 
         tableT[i] = []
-    }
-
-    for (let i = 0; i < table.length; i++) {
-        for (let j = 0; j < table[i].length; j++) {
+    
+    
+    for (let i = 0; i < table.length; i++) 
+        for (let j = 0; j < table[i].length; j++) 
             tableT[j][i] = table[i][j]
-        }
-    }
+        
+    
     return tableT
 }
