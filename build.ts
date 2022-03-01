@@ -44,6 +44,9 @@ async function build_package_json () {
                 zh: '执行代码',
                 en: 'Execute Code'
             },
+        },
+        {
+            command: 'set_ddb_connection',
         }
     ]
     

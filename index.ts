@@ -19,6 +19,11 @@ import {
     type TerminalDimensions,
     commands,
     window,
+    ThemeIcon,
+    TreeDataProvider,
+    TreeItem,
+    TreeItemCollapsibleState,
+    type Event,
 } from 'vscode'
 
 
@@ -44,6 +49,7 @@ const funcs_lower = funcs.map(func =>
 
 
 let ddbext = {
+    node: 'd',
     ddb: null as DDB,
     shell: null as Terminal,
     emitter: null as EventEmitter<string>,
@@ -72,12 +78,71 @@ function set_inspect_options () {
 set_inspect_options()
 
 
+class DdbConnectionsProvider implements TreeDataProvider<TreeItem> {
+    private emitter: EventEmitter<TreeItem | undefined | void> = new EventEmitter<TreeItem | undefined | void>()
+    
+    onDidChangeTreeData: Event<void | TreeItem> = this.emitter.event
+    
+    connections = [
+        new DdbConnection('d', 'ws://127.0.0.1:8848'),
+        new DdbConnection('c0', 'ws://127.0.0.1:8850'),
+        new DdbConnection('d0', 'ws://127.0.0.1:8870'),
+        new DdbConnection('d1', 'ws://127.0.0.1:8871'),
+    ]
+    
+    refresh () {
+        this.emitter.fire()
+    }
+    
+    getTreeItem (element: TreeItem): TreeItem | Thenable<TreeItem> {
+        console.log(element.label)
+        return element
+    }
+    
+    getChildren (element?: TreeItem) {
+        if (element)
+            return [ ]
+        
+        for (let conn of this.connections)
+            conn.iconPath = new ThemeIcon(
+                conn.name === ddbext.node ?
+                    'pass-filled'
+                :
+                    'circle-large-outline'
+            )
+        
+        return this.connections
+    }
+}
+
+
+class DdbConnection extends TreeItem {
+    name: string
+    ws_url: string
+    
+    constructor (name: string, ws_url: string) {
+        super(`${name} (${ws_url})`, TreeItemCollapsibleState.None)
+        this.name = name
+        this.ws_url = ws_url
+        this.command = {
+            command: 'set_ddb_connection',
+            title: 'set_ddb_connection',
+            arguments: [name],
+        }
+    }
+}
+
+
+let ddb_connections_provider = new DdbConnectionsProvider()
+
+
 export function activate (ctx: ExtensionContext) {
     for (const func of ext_commands)
         ctx.subscriptions.push(
             commands.registerCommand(`dolphindb.${func.name}`, func)
         )
     
+    window.registerTreeDataProvider('ddb.connections', ddb_connections_provider)
     
     
     // 函数补全
@@ -283,7 +348,13 @@ const ext_commands = [
                 error.message.red + '\r\n'
             )
         }
-    }
+    },
+    
+    async function set_ddb_connection (node: string) {
+        console.log('set_ddb_connection:', node)
+        ddbext.node = node
+        ddb_connections_provider.refresh()
+    },
 ]
 
 
