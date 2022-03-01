@@ -1,0 +1,9 @@
+*.js
+*.js.map
+*.vsix
+
+!index.js
+!index.js.map
+
+docs.json
+i18n/

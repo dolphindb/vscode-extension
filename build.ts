@@ -9,8 +9,9 @@ import { r } from './i18n/index.js'
     await fmkdir(fpd_ext_out)
     
     await Promise.all([
-        fcopy(`${fpd_ext_root}dolphindb.png`, `${fpd_ext_out}dolphindb.png`),
-        fcopy(`${fpd_ext_root}docs.json`, `${fpd_ext_out}docs.json`),
+        ...['dolphindb.png', 'docs.json', '.vscodeignore'].map(fname => 
+            fcopy(`${fpd_ext_root}${fname}`, `${fpd_ext_out}${fname}`)
+        ),
         build_package_json(),
         build_tm_language(),
     ])
@@ -32,7 +33,7 @@ async function build_tm_language () {
 
 
 async function build_package_json () {
-    const { name, version, engines, scripts, dependencies, devDependencies,  } = await import(`${fpd_ext_root}package.json`)
+    const { name, version, engines, scripts, devDependencies } = await import(`${fpd_ext_root}package.json`)
     
     const ext_commands = [
         {
@@ -62,12 +63,10 @@ async function build_package_json () {
         
         scripts,
         
-        dependencies,
-        
         devDependencies,
         
         publisher: 'dolphindb',
-        license: 'SEE LICENSE IN LICENSE',
+        
         categories: ['Programming Languages', 'Other', 'Linters', 'Snippets'],
         keywords: ['DataBase', 'database', 'dolphindb', 'DolphinDB', 'Time Series', 'timeseries', 'Stream Computition', 'Programing language'],
         homepage: 'https://github.com/dolphindb/vscode-extension/',
