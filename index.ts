@@ -27,6 +27,7 @@ import WebSocket from 'ws'
 import { inspect, chalk } from 'xshell'
 
 
+import { t } from './i18n'
 import { ddb_constants, ddb_keywords } from './dolphindb.language'
 
 import docs from './docs.json'
@@ -223,7 +224,9 @@ export function activate (ctx: ExtensionContext) {
     )
     
     
-    console.log('DolphinDB extension activated')
+    console.log(
+        t('DolphinDB 插件已初始化')
+    )
 }
 
 

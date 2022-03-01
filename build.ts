@@ -2,6 +2,7 @@ import { fwrite, fcopy, fmkdir } from 'xshell'
 
 import { fpd_ext_out, fpd_ext_root } from './config.js'
 import { ddb_tm_language } from './dolphindb.language.js'
+import { r } from './i18n/index.js'
 
 
 ;(async function build () {
@@ -37,7 +38,11 @@ async function build_package_json () {
         {
             command: 'execute',
             key: 'ctrl+e',
-            when: "!editorReadonly && editorTextFocus && editorLangId == 'dolphindb'"
+            when: "!editorReadonly && editorTextFocus && editorLangId == 'dolphindb'",
+            title: {
+                zh: '执行代码',
+                en: 'Execute Code'
+            },
         }
     ]
     
@@ -126,7 +131,7 @@ async function build_package_json () {
             
             commands: ext_commands.map(({ command }) => ({
                 command: `dolphindb.${command}`,
-                title: `DolphinDB: ${command}`
+                title: `%commands.${command}%`
             })),
             
             keybindings: ext_commands.map( ({ command, key, when, /* args */ }) => ({
@@ -280,6 +285,19 @@ async function build_package_json () {
         }
     }
     
-    await fwrite(`${fpd_ext_out}package.json`, package_json)
+    await Promise.all([
+        ...(['zh', 'en'] as const).map(async language => {
+            await fwrite(
+                `${fpd_ext_out}package.nls${ language === 'zh' ? '.zh' : '' }.json`,
+                Object.fromEntries(
+                    ext_commands.map(({ command, title }) => [
+                        `commands.${command}`,
+                        `DolphinDB: ${r(title, language)}`
+                    ])
+                )
+            )
+        }),
+        fwrite(`${fpd_ext_out}package.json`, package_json)
+    ])
 }
 
