@@ -162,7 +162,7 @@ async function build_package_json () {
             // },
             
             views: {
-                'dolphindb-explorer': [
+                explorer: [
                     {
                         id: 'dolphindb',
                         name: 'DolphinDB'
@@ -172,7 +172,7 @@ async function build_package_json () {
             
             viewsWelcome: [
                 {
-                    view: 'dolphindb-explorer',
+                    view: 'dolphindb',
                     contents: '增加 DolphinDB 连接配置\n[增加 ddb 连接](command:ddb.add_connection)'
                 }
             ],
