@@ -161,27 +161,21 @@ async function build_package_json () {
             //     ]
             // },
             
-            // views: {
-            //     'dolphindb-explorer': [
-            //         {
-            //             id: 'dolphindb.env',
-            //             name: 'DolphinDB Env'
-            //         }
-            //     ]
-                    // explorer: [
-                    //     {
-                    //         id: 'dolphindb',
-                    //         name: 'DolphinDB',
-                    //     }
-                    // ]
-            // },
+            views: {
+                'dolphindb-explorer': [
+                    {
+                        id: 'dolphindb',
+                        name: 'DolphinDB'
+                    }
+                ]
+            },
             
-            // viewsWelcome: [
-            //     {
-            //         view: 'ddb.connections',
-            //         contents: '增加 DolphinDB 连接配置\n[增加 ddb 连接](command:ddb.add_connection)'
-            //     }
-            // ],
+            viewsWelcome: [
+                {
+                    view: 'dolphindb-explorer',
+                    contents: '增加 DolphinDB 连接配置\n[增加 ddb 连接](command:ddb.add_connection)'
+                }
+            ],
             
             // commands: [
             //     {

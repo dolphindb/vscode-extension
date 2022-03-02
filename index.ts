@@ -142,7 +142,7 @@ export function activate (ctx: ExtensionContext) {
             commands.registerCommand(`dolphindb.${func.name}`, func)
         )
     
-    window.registerTreeDataProvider('ddb.connections', ddb_connections_provider)
+    window.registerTreeDataProvider('dolphindb-explorer', ddb_connections_provider)
     
     
     // 函数补全
