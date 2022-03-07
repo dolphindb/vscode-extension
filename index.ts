@@ -272,7 +272,7 @@ const ext_commands = [
             await connection.connect()
             
             connection.ddb.printer = message => {
-                printer.fire(`${message.replaceAll('\n', '\r\n')}\r\n`)
+                printer.fire(`${message.replace(/\n/g, '\r\n')}\r\n`)
             }
         }
         
@@ -284,11 +284,11 @@ const ext_commands = [
             )
             
             const obj = await ddb.eval(
-                get_text('selection or line').replaceAll('\r\n', '\n')
+                get_text('selection or line').replace(/\r\n/g, '\n')
             )
             
             printer.fire(
-                `${inspect(obj).replaceAll('\n', '\r\n')}\r\n`
+                `${inspect(obj).replace(/\n/g, '\r\n')}\r\n`
             )
         } catch (error) {
             printer.fire(
