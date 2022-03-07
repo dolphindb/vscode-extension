@@ -1,4 +1,5 @@
 import { fwrite, fcopy, fmkdir } from 'xshell'
+import type { Item } from 'xshell/i18n'
 
 import { fpd_ext_out, fpd_ext_root } from './config.js'
 import { ddb_tm_language } from './dolphindb.language.js'
@@ -46,8 +47,70 @@ async function build_package_json () {
             },
         },
         {
-            command: 'set_ddb_connection',
+            command: 'set_connection',
         }
+    ]
+    
+    const connection_properties: Schema[] = [
+        {
+            name: 'name',
+            type: 'string',
+            default: 'local8848',
+            description: {
+                zh: '连接名称，如 local8848, controller, datanode0',
+                en: 'Connection name, e.g. local8848, controller, datanode0'
+            },
+        },
+        {
+            name: 'url',
+            type: 'string',
+            default: 'ws://127.0.0.1:8848',
+            markdownDescription: {
+                zh: '数据库连接地址 (WebSocket URL), 如:  \n' +
+                    '- `ws://127.0.0.1:8848`\n' +
+                    '- `wss://dolphindb.com` (HTTPS 加密)\n',
+                en: 'Database connection URL (WebSocket URL), e.g.  \n' +
+                    '- `ws://127.0.0.1:8848`\n' +
+                    '- `wss://dolphindb.com` (HTTPS encrypted)\n',
+            },
+            format: 'uri',
+        },
+        {
+            name: 'login',
+            type: 'boolean',
+            default: true,
+            description: {
+                zh: '是否在建立连接后自动登录，默认 true',
+                en: 'Whether to automatically log in after the connection is established, the default is true'
+            },
+        },
+        {
+            name: 'username',
+            type: 'string',
+            default: 'admin',
+            description: {
+                zh: 'DolphinDB 登录用户名',
+                en: 'DolphinDB username'
+            },
+        },
+        {
+            name: 'password',
+            type: 'string',
+            default: '123456',
+            description: {
+                zh: 'DolphinDB 登录密码',
+                en: 'DolphinDB password'
+            },
+        },
+        {
+            name: 'python',
+            type: 'boolean',
+            default: false,
+            description: {
+                zh: '使用 Python 语言',
+                en: 'Use Python language'
+            },
+        },
     ]
     
     
@@ -82,7 +145,7 @@ async function build_package_json () {
         },
         
         activationEvents: [
-            "onStartupFinished",
+            'onStartupFinished',
             
             // 'onView:dolphindb.env',
             // 'onCommand:dolphindb.executeCode',
@@ -118,16 +181,38 @@ async function build_package_json () {
             configuration: {
                 title: 'DolphinDB',
                 properties: {
-                    'dolphindb.servers': {
+                    'dolphindb.connections': {
                         type: 'array',
-                        scope: 'resource',
                         default: [
                             {
                                 name: 'local8848',
                                 url: 'ws://127.0.0.1:8848',
+                                login: true,
+                                username: 'admin',
+                                password: '123456',
+                                python: false,
                             }
-                        ]
-                    },
+                        ],
+                        description: '%configs.connections.description%',
+                        items: {
+                            type: 'object',
+                            required: ['url'],
+                            properties: Object.fromEntries(
+                                connection_properties.map(prop => [
+                                    prop.name,
+                                    {
+                                        ...prop,
+                                        ... prop.description ? {
+                                            description: `%configs.connections.${prop.name}.description%`
+                                        } : { },
+                                        ... prop.markdownDescription ? {
+                                            markdownDescription: `%configs.connections.${prop.name}.markdownDescription%`
+                                        } : { },
+                                    }
+                                ])
+                            ),
+                        }
+                    }
                 }
             },
             
@@ -164,8 +249,8 @@ async function build_package_json () {
             views: {
                 explorer: [
                     {
-                        id: 'dolphindb',
-                        name: 'DolphinDB'
+                        id: 'dolphindb.explorer',
+                        name: 'dolphindb',
                     }
                 ]
             },
@@ -285,15 +370,81 @@ async function build_package_json () {
         ...(['zh', 'en'] as const).map(async language => {
             await fwrite(
                 `${fpd_ext_out}package.nls${ language === 'zh' ? '.zh' : '' }.json`,
-                Object.fromEntries(
-                    ext_commands.map(({ command, title }) => [
-                        `commands.${command}`,
-                        `DolphinDB: ${r(title, language)}`
-                    ])
-                )
+                {
+                    'configs.connections.description': {
+                        zh: '展示在左侧边栏的 DolphinDB 面板中的连接配置',
+                        en: 'Connection configuration shown in the DolphinDB panel on the left sidebar',
+                    }[language],
+                    
+                    ... Object.fromEntries(
+                        connection_properties.map(({ name, description, markdownDescription }) => [
+                            `configs.connections.${name}.${ markdownDescription ? 'markdownDescription' : 'description' }`,
+                            r(
+                                (markdownDescription ? markdownDescription : description) as Item,
+                                language
+                            )
+                        ])
+                    ),
+                    
+                    ... Object.fromEntries(
+                        ext_commands.map(({ command, title }) => [
+                            `commands.${command}`,
+                            `DolphinDB: ${r(title, language)}`
+                        ])
+                    ),
+                },
             )
         }),
+        
         fwrite(`${fpd_ext_out}package.json`, package_json)
     ])
 }
 
+
+interface Configuration {
+    title: string
+    order?: number
+    properties: Record<string, Schema>
+}
+
+interface Schema {
+    /** 内部使用 */
+    name?: string
+    
+    type: 'boolean' | 'number' | 'string' | 'object' | 'array'
+    default?: any
+    
+    items?: Schema
+    
+    properties?: Record<string, Schema>
+    
+    required?: string[]
+    
+    minimum?: number
+    maximum?: number
+    
+    /** restricting string length */
+    maxLength?: number
+    minLength?: number
+    
+    /** regexp pattern */
+    pattern?: string
+    patternErrorMessage?: string
+    
+    format?: 'date' | 'time' | 'ipv4' | 'email' | 'uri'
+    
+    maxItems?: number
+    minItems?: number
+    
+    description?: string | Item
+    markdownDescription?: string | Item
+    
+    editPresentation?: 'multilineText'
+    
+    additionalProperties?: false | Record<string, 'boolean' | 'number' | 'string' | 'object' | 'array'>
+    
+    order?: number
+    
+    enum?: string[]
+    enumDescriptions?: string[]
+}

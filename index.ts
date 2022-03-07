@@ -1,5 +1,3 @@
-import util from 'util'
-
 import {
     type ExtensionContext,
     languages,
@@ -17,19 +15,25 @@ import {
     workspace,
     EventEmitter,
     type TerminalDimensions,
+    
     commands,
     window,
+    
     ThemeIcon,
-    TreeDataProvider,
+    
+    type Event,
+    
+    type TreeView,
+    type TreeDataProvider,
     TreeItem,
     TreeItemCollapsibleState,
-    type Event,
 } from 'vscode'
 
 
-import { DDB } from 'dolphindb'
+import dayjs from 'dayjs'
+import { DDB, DdbForm, DdbObj, DdbType } from 'dolphindb'
 import WebSocket from 'ws'
-import { inspect, chalk } from 'xshell'
+import { inspect, set_inspect_options } from 'xshell'
 
 
 import { t } from './i18n'
@@ -37,7 +41,8 @@ import { ddb_constants, ddb_keywords } from './dolphindb.language'
 
 import docs from './docs.json'
 
-chalk.level = 2
+
+set_inspect_options()
 
 
 const ddb_constants_lower = ddb_constants.map(constant => 
@@ -48,92 +53,12 @@ const funcs_lower = funcs.map(func =>
     func.toLowerCase())
 
 
+type DdbTerminal = Terminal & { printer: EventEmitter<string> }
+
 let ddbext = {
-    node: 'd',
-    ddb: null as DDB,
-    shell: null as Terminal,
-    emitter: null as EventEmitter<string>,
+    explorer: null as DdbExplorer,
+    shell: null as DdbTerminal,
 }
-
-
-function set_inspect_options () {
-    util.inspect.defaultOptions.maxArrayLength  = 40
-    util.inspect.defaultOptions.maxStringLength = 10000
-    util.inspect.defaultOptions.breakLength     = 230
-    util.inspect.defaultOptions.colors          = true
-    util.inspect.defaultOptions.compact         = false
-    util.inspect.defaultOptions.getters         = true
-    util.inspect.defaultOptions.depth           = 2
-    util.inspect.defaultOptions.sorted          = false
-    util.inspect.defaultOptions.showProxy       = true
-    
-    util.inspect.styles.number  = 'green'
-    util.inspect.styles.string  = 'cyan'
-    util.inspect.styles.boolean = 'blue'
-    util.inspect.styles.date    = 'magenta'
-    util.inspect.styles.special = 'white'
-}
-
-
-set_inspect_options()
-
-
-class DdbConnectionsProvider implements TreeDataProvider<TreeItem> {
-    private emitter: EventEmitter<TreeItem | undefined | void> = new EventEmitter<TreeItem | undefined | void>()
-    
-    onDidChangeTreeData: Event<void | TreeItem> = this.emitter.event
-    
-    connections = [
-        new DdbConnection('d', 'ws://127.0.0.1:8848'),
-        new DdbConnection('c0', 'ws://127.0.0.1:8850'),
-        new DdbConnection('d0', 'ws://127.0.0.1:8870'),
-        new DdbConnection('d1', 'ws://127.0.0.1:8871'),
-    ]
-    
-    refresh () {
-        this.emitter.fire()
-    }
-    
-    getTreeItem (element: TreeItem): TreeItem | Thenable<TreeItem> {
-        console.log(element.label)
-        return element
-    }
-    
-    getChildren (element?: TreeItem) {
-        if (element)
-            return [ ]
-        
-        for (let conn of this.connections)
-            conn.iconPath = new ThemeIcon(
-                conn.name === ddbext.node ?
-                    'pass-filled'
-                :
-                    'circle-large-outline'
-            )
-        
-        return this.connections
-    }
-}
-
-
-class DdbConnection extends TreeItem {
-    name: string
-    ws_url: string
-    
-    constructor (name: string, ws_url: string) {
-        super(`${name} (${ws_url})`, TreeItemCollapsibleState.None)
-        this.name = name
-        this.ws_url = ws_url
-        this.command = {
-            command: 'set_ddb_connection',
-            title: 'set_ddb_connection',
-            arguments: [name],
-        }
-    }
-}
-
-
-let ddb_connections_provider = new DdbConnectionsProvider()
 
 
 export function activate (ctx: ExtensionContext) {
@@ -142,7 +67,18 @@ export function activate (ctx: ExtensionContext) {
             commands.registerCommand(`dolphindb.${func.name}`, func)
         )
     
-    window.registerTreeDataProvider('dolphindb', ddb_connections_provider)
+    let explorer = ddbext.explorer = new DdbExplorer()
+    
+    explorer.view = window.createTreeView('dolphindb.explorer', {
+        treeDataProvider: explorer
+    })
+    
+    workspace.onDidChangeConfiguration(event => {
+        if (event.affectsConfiguration('dolphindb.connections')) {
+            explorer.load_connections()
+            explorer.refresher.fire()
+        }
+    })
     
     
     // 函数补全
@@ -297,63 +233,74 @@ export function activate (ctx: ExtensionContext) {
 
 const ext_commands = [
     async function execute () {
-        const [{ url, name }] = workspace.getConfiguration('dolphindb').get<{ url: string, name: string }[]>('servers')
-        
-        if (!ddbext.ddb || ddbext.ddb.url !== url || ddbext.ddb.websocket.readyState !== WebSocket.OPEN) {
-            ddbext.ddb?.disconnect()
-            let ddb = ddbext.ddb = new DDB(url)
+        if (!ddbext.shell || ddbext.shell.exitStatus) {
+            let printer = new EventEmitter<string>()
             
-            ddb.printer = message => {
-                ddbext.emitter.fire(message + '\r\n')
-            }
-            
-            await ddb.connect()
-            
-            let emitter = ddbext.emitter = new EventEmitter<string>()
             await new Promise<void>(resolve => {
-                ddbext.shell = window.createTerminal({
+                let shell = ddbext.shell = window.createTerminal({
                     name: 'DolphinDB',
                     
                     pty: {
                         open (init_dimensions: TerminalDimensions | undefined) {
-                            emitter.fire(
-                                'DolphinDB Shell\r\n'
+                            printer.fire(
+                                `DolphinDB Shell\r\n\r\n`
                             )
                             resolve()
                         },
                         
                         close () {
-                            ddbext.ddb.disconnect()
-                            emitter.dispose()
+                            console.log('ddbext.shell.close()')
                         },
                         
-                        onDidWrite: emitter.event,
+                        onDidWrite: printer.event,
                     },
-                })
+                }) as DdbTerminal
+                
+                shell.printer = printer
                 
                 ddbext.shell.show(true)
             })
         }
         
+        let {
+            shell: { printer },
+            explorer: { connection },
+        } = ddbext
+        
+        if (!connection.connected) {
+            connection.disconnect()
+            await connection.connect()
+            
+            connection.ddb.printer = message => {
+                printer.fire(`${message.replaceAll('\n', '\r\n')}\r\n`)
+            }
+        }
+        
+        let { ddb } = connection
+        
         try {
-            const obj = await ddbext.ddb.eval(
-                get_text('selection or line')
+            printer.fire(
+                `\r\n${dayjs().format('YYYY.MM.DD HH:mm:ss.SSS')}  ${connection.name}\r\n`
             )
             
-            ddbext.emitter.fire(
-                inspect(obj).replaceAll('\n', '\r\n') + '\r\n'
+            const obj = await ddb.eval(
+                get_text('selection or line').replaceAll('\r\n', '\n')
+            )
+            
+            printer.fire(
+                `${inspect(obj).replaceAll('\n', '\r\n')}\r\n`
             )
         } catch (error) {
-            ddbext.emitter.fire(
-                error.message.red + '\r\n'
+            printer.fire(
+                `${error.message.red}\r\n`
             )
         }
+        
+        await connection.update()
     },
     
-    async function set_ddb_connection (node: string) {
-        console.log('set_ddb_connection:', node)
-        ddbext.node = node
-        ddb_connections_provider.refresh()
+    async function set_connection (name: string) {
+        ddbext.explorer.set_connection(name)
     },
 ]
 
@@ -640,5 +587,427 @@ function get_signature_and_params (func_name: string): {
     const signature = matched[0]
     const params = matched[1].split(',').map(s => s.trim())
     return { signature, params }
+}
+
+
+class DdbExplorer implements TreeDataProvider<TreeItem> {
+    view: TreeView<TreeItem>
+    
+    refresher: EventEmitter<TreeItem | undefined | void> = new EventEmitter<TreeItem | undefined | void>()
+    
+    onDidChangeTreeData: Event<void | TreeItem> = this.refresher.event
+    
+    connections: DdbConnection[]
+    
+    connection: DdbConnection
+    
+    constructor () {
+        this.load_connections()
+    }
+    
+    load_connections () {
+        if (this.connections)
+            for (const connection of this.connections)
+                connection.disconnect()
+        
+        this.connections = workspace.getConfiguration('dolphindb')
+            .get<Partial<DdbConnection>[]>('connections')
+            .map(conn => 
+                new DdbConnection(conn)
+            )
+        
+        this.connection = this.connections[0]
+        this.connection.iconPath = new ThemeIcon('pass-filled')
+    }
+    
+    set_connection (name: string) {
+        for (let connection of this.connections)
+            if (connection.name === name) {
+                connection.iconPath = new ThemeIcon('pass-filled')
+                this.connection = connection
+            } else
+                connection.iconPath = new ThemeIcon('circle-large-outline')
+        
+        console.log('ddb_explorer.set_connection', this.connection)
+        this.refresher.fire()
+    }
+    
+    getTreeItem (node: TreeItem): TreeItem | Thenable<TreeItem> {
+        return node
+    }
+    
+    getChildren (node?: TreeItem) {
+        switch (true) {
+            case !node:
+                return this.connections
+                
+            case node instanceof DdbConnection: {
+                const { local, shared } = node as DdbConnection
+                const locations = [local, shared].filter(node => 
+                    node.vars.length
+                )
+                return locations.length === 1?
+                        this.getChildren(locations[0])
+                    :
+                        locations
+            }
+            
+            case node instanceof DdbVarLocation: {
+                const { scalar, vector, pair, matrix, set, dict, table, chart, chunk } = node as DdbVarLocation
+                return [scalar, vector, pair, matrix, set, dict, table, chart, chunk].filter(node => 
+                    node.vars.length
+                )
+            }
+            
+            case node instanceof DdbVarForm:
+                return (node as DdbVarForm).vars
+        }
+    }
+}
+
+
+class DdbConnection extends TreeItem {
+    /** 连接名称 (连接 id)，如 local8848, controller, datanode0 */
+    name: string
+    
+    /** 参考 DDB.connect 方法 */
+    url: string
+    
+    login: boolean
+    
+    username: string
+    
+    password: string
+    
+    python: boolean
+    // ---
+    
+    
+    ddb: DDB
+    
+    vars: DdbVar[]
+    
+    varsmap: Record<string, DdbVar>
+    
+    local: DdbVarLocation
+    
+    shared: DdbVarLocation
+    
+    
+    get connected () {
+        return this.ddb?.websocket?.readyState === WebSocket.OPEN
+    }
+    
+    
+    constructor (data: Partial<DdbConnection>) {
+        super(`${data.name} `, TreeItemCollapsibleState.None)
+        
+        Object.assign(this, data)
+        
+        this.description = this.url
+        this.iconPath = new ThemeIcon('circle-large-outline')
+        
+        this.ddb = new DDB(this.url)
+        
+        this.command = {
+            command: 'dolphindb.set_connection',
+            title: 'dolphindb.set_connection',
+            arguments: [this.name],
+        }
+        
+        this.local = new DdbVarLocation(this, false)
+        this.shared = new DdbVarLocation(this, true)
+    }
+    
+    
+    async connect () {
+        await this.ddb.connect(this)
+        console.log(`${this.name} ${t('成功连接到 DolphinDB')}`)
+        this.collapsibleState = TreeItemCollapsibleState.Expanded
+        ddbext.explorer.refresher.fire(this)
+    }
+    
+    
+    disconnect () {
+        this.ddb?.disconnect()
+        this.collapsibleState = TreeItemCollapsibleState.None
+        ddbext.explorer.refresher.fire(this)
+    }
+    
+    
+    async update () {
+        const objs = this.python ?
+            await this.ddb.eval('objs(True)')
+        :
+            await this.ddb.call('objs', [true])
+        
+        if (this.ddb?.websocket.readyState === WebSocket.OPEN && this.collapsibleState === TreeItemCollapsibleState.None)
+            this.collapsibleState = TreeItemCollapsibleState.Expanded
+        
+        let rows = objs.to_rows()
+            .map(row => {
+                const _type = (row.type as string).toLowerCase()
+                row.type = DdbType[_type] ?? _type
+                
+                let _form = (row.form as string).toLowerCase()
+                if (_form === 'dictionary')
+                    _form = 'dict'
+                row.form = DdbForm[_form] ?? _form
+                
+                row.cols = row.columns
+                delete row.columns
+                
+                return row
+            })
+        
+        let light_rows = rows.filter(row =>
+            row.bytes < 4096n)
+        
+        if (light_rows.length) {
+            const { value: values } = await this.ddb.eval<DdbObj<DdbObj[]>>(
+                '(' +
+                    light_rows.map(row => 
+                        row.name
+                    ).join(', ') + 
+                `, 0)`
+            )
+            
+            for (let i = 0;  i < values.length - 1;  i++)
+                light_rows[i].value = values[i]
+        }
+        
+        this.vars = rows.map(row => 
+            new DdbVar(row)
+        )
+        
+        this.varsmap = this.vars.reduce<Record<string, any>>((acc, row) => {
+                acc[row.name] = row
+                return acc
+            }, { })
+        
+        // console.log(this.varsmap)
+        
+        let locals : DdbVar[] = [ ]
+        let shareds: DdbVar[] = [ ]
+        for (const v of this.vars)
+            if (v.shared)
+                shareds.push(v)
+            else
+                locals.push(v)
+        this.local.update(locals)
+        this.shared.update(shareds)
+        
+        ddbext.explorer.refresher.fire(this)
+    }
+}
+
+
+class DdbVarLocation extends TreeItem {
+    connection: DdbConnection
+    
+    shared: boolean
+    
+    vars: DdbVar[] = [ ]
+    
+    // ---
+    scalar: DdbVarForm
+    
+    vector: DdbVarForm
+    
+    pair: DdbVarForm
+    
+    matrix: DdbVarForm
+    
+    set: DdbVarForm
+    
+    dict: DdbVarForm
+    
+    table: DdbVarForm
+    
+    chart: DdbVarForm
+    
+    chunk: DdbVarForm
+    
+    
+    constructor (connection: DdbConnection, shared: boolean) {
+        super(
+            shared ? '共享变量' : '本地变量',
+            TreeItemCollapsibleState.Expanded
+        )
+        this.connection = connection
+        this.shared = shared
+        
+        this.scalar = new DdbVarForm(connection, this.shared, DdbForm.scalar)
+        this.vector = new DdbVarForm(connection, this.shared, DdbForm.vector)
+        this.pair   = new DdbVarForm(connection, this.shared, DdbForm.pair)
+        this.matrix = new DdbVarForm(connection, this.shared, DdbForm.matrix)
+        this.set    = new DdbVarForm(connection, this.shared, DdbForm.set)
+        this.dict   = new DdbVarForm(connection, this.shared, DdbForm.dict)
+        this.table  = new DdbVarForm(connection, this.shared, DdbForm.table)
+        this.chart  = new DdbVarForm(connection, this.shared, DdbForm.chart)
+        this.chunk  = new DdbVarForm(connection, this.shared, DdbForm.chunk)
+    }
+    
+    
+    update (vars: DdbVar[]) {
+        this.vars = vars
+        
+        if (!vars.length)
+            return
+        
+        let scalars: DdbVar[] = [ ]
+        let vectors: DdbVar[] = [ ]
+        let pairs:   DdbVar[] = [ ]
+        let matrixs: DdbVar[] = [ ]
+        let sets:    DdbVar[] = [ ]
+        let dicts:   DdbVar[] = [ ]
+        let tables:  DdbVar[] = [ ]
+        let charts:  DdbVar[] = [ ]
+        let chunks:  DdbVar[] = [ ]
+        
+        for (const v of this.vars)
+            switch (v.form) {
+                case DdbForm.scalar:
+                    scalars.push(v)
+                    break
+                    
+                case DdbForm.vector:
+                    vectors.push(v)
+                    break
+                    
+                case DdbForm.pair:
+                    pairs.push(v)
+                    break
+                    
+                case DdbForm.matrix:
+                    matrixs.push(v)
+                    break
+                    
+                case DdbForm.set:
+                    sets.push(v)
+                    break
+                    
+                case DdbForm.dict:
+                    dicts.push(v)
+                    break
+                    
+                case DdbForm.table:
+                    tables.push(v)
+                    break
+                    
+                case DdbForm.chart:
+                    charts.push(v)
+                    break
+                    
+                case DdbForm.chunk:
+                    chunks.push(v)
+                    break
+            }
+        
+        this.scalar.update(scalars)
+        this.vector.update(vectors)
+        this.pair.update(pairs)
+        this.matrix.update(matrixs)
+        this.set.update(sets)
+        this.dict.update(dicts)
+        this.table.update(tables)
+        this.chart.update(charts)
+        this.chunk.update(chunks)
+    }
+}
+
+
+class DdbVarForm extends TreeItem {
+    connection: DdbConnection
+    
+    shared: boolean
+    
+    form: DdbForm
+    
+    vars: DdbVar[]
+    
+    constructor (connection: DdbConnection, shared: boolean, form: DdbForm) {
+        super(DdbForm[form], TreeItemCollapsibleState.Expanded)
+        this.connection = connection
+        this.shared = shared
+        this.form = form
+    }
+    
+    update (vars: DdbVar[]) {
+        this.vars = vars
+    }
+}
+
+
+class DdbVar<T extends DdbObj = DdbObj> extends TreeItem {
+    name: string
+    
+    form: DdbForm
+    
+    type: DdbType
+    
+    rows: number
+    
+    cols: number
+    
+    bytes: bigint
+    
+    shared: boolean
+    
+    extra: string
+    
+    value?: T
+    
+    
+    constructor (data: Partial<DdbVar>) {
+        super(data.name, TreeItemCollapsibleState.None)
+        
+        Object.assign(this, data)
+        
+        this.label = 
+            this.name +
+            ' = ' +
+            (this.value ? 
+                inspect(this.value, { colors: false, compact: true })
+            :
+                `${this.get_value_type()}(${Number(this.bytes).to_fsize_str()})`
+            )
+        
+        this.tooltip = inspect(this.value, { colors: false })
+    }
+    
+    
+    /** 类似 DDB.[inspect.custom], 对于 bytes 大的对象不获取值 */
+    get_value_type () {
+        const tname = DdbType[this.type]
+        
+        switch (this.form) {
+            case DdbForm.scalar:
+                return tname
+            
+            case DdbForm.vector:
+                if (64 <= this.type && this.type < 128)
+                    return `${DdbType[this.type - 64]}[][${this.rows}]`
+                return `${tname}[${this.rows}]`
+            
+            case DdbForm.pair:
+                return `pair<${tname}>`
+            
+            case DdbForm.set:
+                return `set<${tname}>[${this.rows}]`
+            
+            case DdbForm.table:
+                return `table[${this.rows} rows][${this.cols} cols]`
+            
+            case DdbForm.dict:
+                return `dict[${this.rows}]`
+            
+            case DdbForm.matrix:
+                return `matrix[${this.rows} rows][${this.cols} cols]`
+            
+            default:
+                return `${DdbForm[this.form]} ${tname}`
+        }
+    }
 }
 

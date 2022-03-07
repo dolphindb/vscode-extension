@@ -43,6 +43,7 @@ export const ddb_keywords = [
     'inner join',
     'full join',
     'left join',
+    'left semijoin',
     
     'context by',
     'partitioned by',
