@@ -1,4 +1,4 @@
-export const ddb_keywords = [
+export const keywords = [
     'assert',
     
     'const',
@@ -29,6 +29,29 @@ export const ddb_keywords = [
     // 模块
     'use',
     'module',
+    
+    
+    // 仅 Python 有的
+    'and',
+    'async',
+    'await',
+    'class',
+    'del',
+    'elif',
+    'except',
+    'finally',
+    'global',
+    'import',
+    'is',
+    'lambda',
+    'nonlocal',
+    'not',
+    'or',
+    'pass',
+    'raise',
+    'with',
+    'yield',
+    
     
     
     // SQL
@@ -70,7 +93,7 @@ export const ddb_keywords = [
 ] as const
 
 
-export const ddb_constants = [
+export const constants = [
     'NULL',
     'true',
     'false',
@@ -194,11 +217,17 @@ export const ddb_constants = [
     'DICT',
     
     'HASH_PTN',
+    
+    // 仅 Python 有的
+    'True',
+    'False',
+    'None',
+    
 ] as const
 
 
 
-export const ddb_tm_language = {
+export const tm_language = {
     '$schema': 'https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json',
     
     name: 'DolphinDB',
@@ -253,7 +282,7 @@ export const ddb_tm_language = {
             // \b: word boundary
             // (?<![.$]): boundary 不是 . 或 $
             // ?!\s*: 不是 label
-            match: `\\b(?<![.$])(${ddb_keywords.join('|')})(?!\\s*:)\\b`,
+            match: `\\b(?<![.$])(${keywords.join('|')})(?!\\s*:)\\b`,
             name: 'keyword.control.dolphindb'
         },
         
@@ -267,7 +296,7 @@ export const ddb_tm_language = {
         },
         
         constant: {
-            match: `\\b(?<![.$])(${ddb_constants.join('|')})(?!\\s*:)\\b`,
+            match: `\\b(?<![.$])(${constants.join('|')})(?!\\s*:)\\b`,
             name: 'constant.language.int.dolphindb'
         },
         
@@ -612,6 +641,16 @@ export const ddb_tm_language = {
                 },
                 {
                     begin: '//',
+                    beginCaptures: {
+                        0: {
+                            name: 'punctuation.definition.comment.dolphindb'
+                        }
+                    },
+                    end: '$',
+                    name: 'comment.line.number-sign.dolphindb'
+                },
+                {
+                    begin: '#',
                     beginCaptures: {
                         0: {
                             name: 'punctuation.definition.comment.dolphindb'

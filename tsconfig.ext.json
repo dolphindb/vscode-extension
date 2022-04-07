@@ -1,0 +1,12 @@
+{
+    "extends": "./tsconfig.json",
+    
+    "files": [
+        "./index.ts"
+    ],
+    
+    "compilerOptions": {
+        "outDir": "./out/",
+        "tsBuildInfoFile": "./node_modules/.ext.tsbuildinfo",
+    }
+}

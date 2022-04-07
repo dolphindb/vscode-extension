@@ -1,0 +1,702 @@
+import './obj.sass'
+
+import { default as React, useEffect, useState } from 'react'
+import {
+    Pagination,
+    Table as AntTable,
+    type TableColumnType,
+} from 'antd'
+import {
+    default as Icon,
+} from '@ant-design/icons'
+
+
+import {
+    DdbObj,
+    DdbForm,
+    DdbType,
+    format,
+    type DdbValue,
+    type DdbVectorValue,
+    type DdbMatrixValue,
+    type DdbSymbolExtendedValue,
+    type DdbArrayVectorBlock,
+} from 'dolphindb/browser'
+import {
+    Remote,
+} from 'xshell/net.browser'
+
+
+import SvgLink from './link.icon.svg'
+import { type WindowModel } from './window'
+
+
+const views = {
+    [DdbForm.vector]: Vector,
+    [DdbForm.set]: Vector,
+    [DdbForm.table]: Table,
+    [DdbForm.matrix]: Matrix,
+}
+
+
+export function Obj ({
+    obj,
+    objref,
+    win = false,
+    remote,
+}: {
+    obj?: DdbObj
+    objref?: DdbObjRef
+    win?: boolean
+    remote: Remote
+}) {
+    const info = obj || objref
+    
+    const View = views[info.form] || Default
+    
+    return <View obj={obj} objref={objref} win={win} remote={remote} />
+}
+
+
+/** 对应 ddb.ext 中的 DdbVar, 是从 objs(true) 中获取到的变量信息 */
+export class DdbObjRef <T extends DdbValue = DdbValue> {
+    static size_limit = 10240n
+    
+    node: string
+    
+    // --- by objs(true)
+    name: string
+    
+    form: DdbForm
+    
+    type: DdbType
+    
+    rows: number
+    
+    cols: number
+    
+    bytes: bigint
+    
+    shared: boolean
+    
+    extra: string
+    
+    /** this.bytes <= DdbVar.size_limit */
+    obj: DdbObj<T>
+    
+    
+    constructor (data: Partial<DdbObjRef>) {
+        Object.assign(this, data)
+    }
+}
+
+
+export async function open_obj ({
+    obj,
+    objref,
+    remote
+}: {
+    obj: DdbObj
+    objref: DdbObjRef
+    remote: Remote
+}) {
+    let win = window.open('./window', new Date().toString(), 'left=100,top=100,width=1000,height=640,popup')
+    
+    await new Promise<void>(resolve => {
+        (win as any).resolve = resolve
+    })
+    
+    ;(win.model as WindowModel).set({
+        obj,
+        objref,
+        remote,
+    })
+}
+
+
+function Default ({ obj }: { obj: DdbObj }) {
+    return <div>{obj.toString()}</div>
+}
+
+
+function Vector ({
+    obj,
+    objref,
+    win,
+    remote,
+}: {
+    obj: DdbObj<DdbVectorValue>
+    objref: DdbObjRef<DdbVectorValue>
+    win: boolean
+    remote: Remote
+}) {
+    const info = obj || objref
+    
+    const ncols = Math.min(
+        win ? 10 : 20,
+        info.rows
+    )
+    
+    const [page_size, set_page_size] = useState(win ? 200 : 100)
+    
+    const nrows = Math.min(
+        Math.ceil(info.rows / ncols),
+        page_size / ncols
+    )
+    
+    const [page_index, set_page_index] = useState(0)
+    
+    const render = useState({ })[1]
+    
+    useEffect(() => {
+        (async () => {
+            if (obj)
+                return
+            
+            const { node, name, rows } = objref
+            
+            const offset = page_size * page_index
+            
+            const script = `${name}[${offset}:${Math.min(offset + page_size, rows)}]`
+            
+            console.log('vector.fetch:', script)
+            
+            objref.obj = DdbObj.parse(
+                ... await remote.call<[Uint8Array, boolean]>({
+                    func: 'eval',
+                    args: [node, script]
+                })
+                
+            ) as DdbObj<DdbObj[]>
+            
+            render({ })
+        })()
+    }, [obj, objref, page_index, page_size])
+    
+    
+    let rows = new Array(nrows)
+    for (let i = 0;  i < nrows;  i++)
+        rows[i] = i
+    
+    let cols = new Array(ncols)
+    for (let i = 0;  i < ncols;  i++)
+        cols[i] = new VectorColumn({
+            obj,
+            objref,
+            index: i,
+            ncols,
+            page_index,
+            page_size,
+        })
+    
+    return <div className='vector'>
+        <AntTable
+            className='table'
+            dataSource={rows}
+            rowKey={x => x}
+            bordered
+            columns={[
+                {
+                    title: '',
+                    key: 'index',
+                    className: 'row-head',
+                    fixed: 'left',
+                    render (value, row, index) {
+                        return page_size * page_index + index * ncols
+                    }
+                },
+                ... cols
+            ]}
+            pagination={false}
+        />
+        
+        <div className='bottom-bar'>
+            <Pagination
+                className='pagination'
+                total={info.rows}
+                current={page_index + 1}
+                pageSize={page_size}
+                pageSizeOptions={
+                    win ?
+                        [10, 50, 100, 200, 500, 1000, 10000, 100000]
+                    :
+                        [20, 100, 200, 400, 1000, 10000, 100000]
+                }
+                
+                size='small'
+                showSizeChanger
+                showQuickJumper
+                hideOnSinglePage={page_size <= 200}
+                
+                onChange={(page_index, page_size) => {
+                    set_page_size(page_size)
+                    set_page_index(page_index - 1)
+                }}
+            />
+            
+            <div className='actions'>
+                {!win && <Icon
+                    className='icon-link'
+                    component={SvgLink}
+                    onClick={async () => {
+                        await open_obj({ obj, objref, remote })
+                    }}
+                />}
+            </div>
+        </div>
+    </div>
+}
+
+class VectorColumn implements TableColumnType <number> {
+    index: number
+    
+    obj?: DdbObj<DdbVectorValue>
+    objref?: DdbObjRef<DdbVectorValue>
+    
+    ncols: number
+    
+    page_index: number
+    page_size: number
+    
+    title: number
+    key: number
+    
+    constructor (data: Partial<VectorColumn>) {
+        Object.assign(this, data)
+        this.title = this.index
+        this.key = this.index
+    }
+    
+    render = (value: any, row: number, index: number) => 
+        <Cell
+            obj={this.obj || this.objref.obj}
+            index={
+                (this.obj ? 
+                    this.page_size * this.page_index
+                :
+                    0
+                ) + this.ncols * index + this.index
+            }
+        />
+}
+
+
+function Cell ({
+    obj,
+    index
+}: {
+    obj: DdbObj<DdbVectorValue>
+    index: number
+}) {
+    if (!obj || index >= obj.rows)
+        return null
+    
+    const str = (() => {
+        // 逻辑类似 ddb.browser.ts 中的 DdbObj.toString(), 但是只返回一项
+        // case DdbForm.vector:
+        // case DdbForm.pair:
+        // case DdbForm.set:
+        
+        if (64 <= obj.type && obj.type < 128) {  // array vector
+            // 因为 array vector 目前只支持：Logical, Integral（不包括 INT128, COMPRESS 类型）, Floating, Temporal
+            // 都对应 TypedArray 中的一格，所以 lengths.length 等于 block 中的 row 的个数
+            // av = array(INT[], 0, 5)
+            // append!(av, [1..1])
+            // append!(av, [1..70000])
+            // append!(av, [1..1])
+            // append!(av, [1..500])
+            // ...
+            // av
+            
+            const _type = obj.type - 64
+            
+            let offset = 0
+            
+            for (const { lengths, data, rows } of obj.value as DdbArrayVectorBlock[]) {
+                let acc_len = 0
+                
+                if (offset + rows <= index) {
+                    offset += rows
+                    continue  // 跳过这个 block
+                }
+                
+                for (const length of lengths) {
+                    if (offset < index) {
+                        offset++
+                        acc_len += length
+                        continue
+                    }
+                    
+                    const limit = 10
+                    
+                    let items = new Array(
+                        Math.min(limit, length)
+                    )
+                    
+                    for (let i = 0;  i < items.length;  i++)
+                        items[i] = format(_type, data[acc_len + i], obj.le)
+                    
+                    return (
+                        items.join(', ') + (length > limit ? ', ...' : '')
+                    ).bracket('square')
+                }
+            }
+        }
+        
+        switch (obj.type) {
+            case DdbType.symbol_extended: {
+                const { base, data } = obj.value as DdbSymbolExtendedValue
+                return base[data[index]].quote('single')
+            }
+            
+            case DdbType.uuid:
+            case DdbType.int128: 
+            case DdbType.ipaddr: {
+                return format(
+                    obj.type,
+                    (obj.value as Uint8Array).subarray(16 * index, 16 * (index + 1)),
+                    obj.le
+                )
+            }
+            
+            case DdbType.complex:
+            case DdbType.point: {
+                return format(
+                    obj.type,
+                    (obj.value as Float64Array).subarray(2 * index, 2 * (index + 1)),
+                    obj.le
+                )
+            }
+            
+            default:
+                return format(obj.type, obj.value[index], obj.le)
+        }
+    })()
+    
+    return <>{str}</>
+}
+
+
+function Table ({
+    obj,
+    objref,
+    win,
+    remote,
+}: {
+    obj?: DdbObj<DdbObj<DdbVectorValue>[]>
+    objref?: DdbObjRef<DdbObj<DdbVectorValue>[]>
+    win?: boolean
+    remote: Remote
+}) {
+    const info = obj || objref
+    
+    const ncols = info.cols
+    
+    const [page_size, set_page_size] = useState(win ? 20 : 10)
+    
+    const nrows = Math.min(page_size, info.rows)
+    
+    const [page_index, set_page_index] = useState(0)
+    
+    const render = useState({ })[1]
+    
+    useEffect(() => {
+        (async () => {
+            if (obj)
+                return
+            
+            const { node, name, rows } = objref
+            
+            const offset = page_size * page_index
+            
+            const script = `${name}[${offset}:${Math.min(offset + page_size, rows)}]`
+            
+            console.log(`table.fetch:`, script)
+            
+            objref.obj = DdbObj.parse(
+                ... await remote.call<[Uint8Array, boolean]>({
+                    func: 'eval',
+                    args: [node, script]
+                })
+            ) as DdbObj<DdbObj<DdbVectorValue>[]>
+            
+            render({ })
+        })()
+    }, [obj, objref, page_index, page_size])
+    
+    
+    let rows = new Array(nrows)
+    for (let i = 0;  i < nrows;  i++)
+        rows[i] = i
+    
+    let cols = new Array(ncols)
+    for (let i = 0;  i < ncols;  i++)
+        cols[i] = new TableColumn({
+            obj,
+            objref,
+            index: i,
+            page_index,
+            page_size,
+        })
+        
+    
+    return <div className='table'>
+        <AntTable
+            className='table'
+            dataSource={rows}
+            rowKey={x => x}
+            bordered
+            columns={[
+                {
+                    title: '',
+                    key: 'index',
+                    className: 'row-head',
+                    fixed: 'left',
+                    render: irow =>
+                        page_size * page_index + irow
+                },
+                ... cols
+            ]}
+            pagination={false}
+        />
+        
+        <div className='bottom-bar'>
+            <Pagination
+                className='pagination'
+                total={info.rows}
+                current={page_index + 1}
+                pageSize={page_size}
+                pageSizeOptions={[5, 10, 20, 50, 100, 200, 500, 1000, 10000, 100000]}
+                size='small'
+                showSizeChanger
+                showQuickJumper
+                hideOnSinglePage={page_size <= 50}
+                
+                onChange={(page_index, page_size) => {
+                    set_page_size(page_size)
+                    set_page_index(page_index - 1)
+                }}
+            />
+            
+            <div className='actions'>
+                {!win && <Icon
+                    className='icon-link'
+                    component={SvgLink}
+                    onClick={async () => {
+                        await open_obj({ obj, objref, remote })
+                    }}
+                />}
+            </div>
+        </div>
+    </div>
+}
+
+
+class TableColumn implements TableColumnType <number> {
+    index: number
+    
+    obj?: DdbObj<DdbObj<DdbVectorValue>[]>
+    objref?: DdbObjRef<DdbObj<DdbVectorValue>[]>
+    
+    col?: DdbObj<DdbVectorValue>
+    
+    page_index: number
+    page_size: number
+    
+    title: React.ReactNode
+    key: number
+    
+    constructor (data: Partial<TableColumn>) {
+        Object.assign(this, data)
+        this.key = this.index
+        let obj = this.obj || this.objref.obj
+        if (!obj)
+            return
+        
+        this.col = obj.value[this.index]
+        
+        this.title = <>
+            <span className='type'>{DdbType[this.col.type]}</span><br/>
+            {this.col.name}
+        </>
+    }
+    
+    render = (irow: number) => 
+        <Cell
+            obj={this.col}
+            index={
+                (this.obj ?
+                    this.page_size * this.page_index
+                :
+                    0
+                ) + irow
+            }
+        />
+}
+
+
+function Matrix ({
+    obj,
+    objref,
+    win,
+    remote,
+}: {
+    obj?: DdbObj<DdbMatrixValue>
+    objref?: DdbObjRef<DdbMatrixValue>
+    win?: boolean
+    remote: Remote
+}) {
+    const info = obj || objref
+    
+    const ncols = Math.min(info.cols, 50)
+    
+    const [page_size, set_page_size] = useState(win ? 20 : 10)
+    
+    const nrows = Math.min(page_size, info.rows)
+    
+    const [page_index, set_page_index] = useState(0)
+    
+    const render = useState({ })[1]
+    
+    useEffect(() => {
+        (async () => {
+            if (obj)
+                return
+            
+            const { node, name, rows } = objref
+            
+            const offset = page_size * page_index
+            
+            const script = `${name}[${offset}:${Math.min(offset + page_size, rows)},]`
+            
+            console.log('matrix.fetch', script)
+            
+            objref.obj = DdbObj.parse(
+                ... await remote.call<[Uint8Array, boolean]>({
+                    func: 'eval',
+                    args: [node, script]
+                })
+            ) as DdbObj<DdbMatrixValue>
+            
+            render({ })
+        })()
+    }, [obj, objref, page_index, page_size])
+    
+    
+    let rows = new Array(nrows)
+    for (let i = 0;  i < nrows;  i++)
+        rows[i] = i
+    
+    let cols = new Array(ncols)
+    for (let i = 0;  i < ncols;  i++)
+        cols[i] = new MatrixColumn({
+            obj,
+            objref,
+            index: i,
+            page_index,
+            page_size,
+        })
+    
+    return <div className='matrix'>
+        <AntTable
+            className='table'
+            dataSource={rows}
+            rowKey={x => x}
+            bordered
+            columns={[
+                {
+                    title: '',
+                    key: 'index',
+                    className: 'row-head',
+                    fixed: 'left',
+                    render (irow) {
+                        const i = obj ? 
+                                page_size * page_index + irow
+                            :
+                                irow
+                        
+                        return (obj || objref.obj)?.value.rows?.value[i] || i
+                    }
+                },
+                ... cols
+            ]}
+            pagination={false}
+        />
+        
+        <div className='bottom-bar'>
+            <Pagination
+                className='pagination'
+                total={info.rows}
+                current={page_index + 1}
+                pageSize={page_size}
+                pageSizeOptions={[5, 10, 20, 50, 100, 200, 500, 1000, 10000, 100000]}
+                size='small'
+                showSizeChanger
+                showQuickJumper
+                hideOnSinglePage={page_size <= 50}
+                
+                onChange={(page_index, page_size) => {
+                    set_page_size(page_size)
+                    set_page_index(page_index - 1)
+                }}
+            />
+            
+            <div className='actions'>
+                {!win && <Icon
+                    className='icon-link'
+                    component={SvgLink}
+                    onClick={async () => {
+                        await open_obj({ obj, objref, remote })
+                    }}
+                />}
+            </div>
+        </div>
+    </div>
+}
+
+class MatrixColumn implements TableColumnType <number> {
+    index: number
+    
+    obj?: DdbObj<DdbMatrixValue>
+    objref?: DdbObjRef<DdbMatrixValue>
+    
+    page_index: number
+    page_size: number
+    
+    title: number
+    key: number
+    
+    constructor (data: Partial<MatrixColumn>) {
+        Object.assign(this, data)
+        this.title = this.index
+        this.key = this.index
+        let obj = this.obj || this.objref.obj
+        if (!obj)
+            return
+        this.title = obj.value.cols?.value[this.index] || this.index
+    }
+    
+    render = (irow: number) => {
+        const obj = this.obj || this.objref.obj
+        
+        if (!obj)
+            return null
+        
+        return <Cell
+            obj={
+                new DdbObj({
+                    form: obj.form,
+                    type: obj.type,
+                    rows: obj.cols * obj.rows,
+                    value: obj.value.data
+                })
+            }
+            index={
+                this.obj ?
+                    obj.rows * this.index + this.page_size * this.page_index + irow
+                :
+                    obj.rows * this.index + irow
+            }
+        />
+    }
+}

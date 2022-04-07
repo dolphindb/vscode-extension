@@ -1,12 +1,12 @@
 {
     "files": [
-        "./index.ts"
+        "./index.ts",
+        "./build.ts",
+        "./dataview/index.tsx",
+        "./dataview/window.tsx",
     ],
     
     "compilerOptions": {
-        "outDir": "./out/",
-        
-        
         // --- module
         "module": "CommonJS", // none, CommonJS, amd, system, umd, es6, es2015, ESNext
         "moduleResolution": "Node",
@@ -25,7 +25,6 @@
         "importHelpers": true,
         // "watch": false
         "incremental": true,
-        "tsBuildInfoFile": "./node_modules/.tsbuildinfo",
         "preserveWatchOutput": true,
         
         

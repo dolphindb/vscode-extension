@@ -1,20 +1,29 @@
-import { fwrite, fcopy, fmkdir } from 'xshell'
+import Webpack from 'webpack'
+
+import type { Options as TSLoaderOptions } from 'ts-loader'
+import type { Options as SassOptions } from 'sass-loader'
+import sass from 'sass'
+
+import { fwrite, fcopy, fmkdir, request } from 'xshell'
 import type { Item } from 'xshell/i18n'
 
-import { fpd_ext_out, fpd_ext_root } from './config.js'
-import { ddb_tm_language } from './dolphindb.language.js'
+import { fpd_out, fpd_ext, vendors } from './config.js'
+import { tm_language } from './dolphindb.language.js'
 import { r } from './i18n/index.js'
 
 
+
 ;(async function build () {
-    await fmkdir(fpd_ext_out)
+    await fmkdir(fpd_out)
     
     await Promise.all([
-        ...['dolphindb.png', 'docs.json', '.vscodeignore'].map(fname => 
-            fcopy(`${fpd_ext_root}${fname}`, `${fpd_ext_out}${fname}`)
+        ...['dolphindb.png', 'docs.json', '.vscodeignore', 'icons/'].map(fname => 
+            fcopy(`${fpd_ext}${fname}`, `${fpd_out}${fname}`)
         ),
+        get_vendors(`${fpd_ext}out/dataview/`),
         build_package_json(),
         build_tm_language(),
+        build_dataview(),
     ])
 })()
 
@@ -22,33 +31,61 @@ import { r } from './i18n/index.js'
 async function build_tm_language () {
     await Promise.all([
         fwrite(
-            `${fpd_ext_out}dolphindb.tmLanguage.json`,
-            ddb_tm_language
+            `${fpd_out}dolphindb.tmLanguage.json`,
+            tm_language
         ),
         fcopy(
-            `${fpd_ext_root}dolphindb.language-configuration.json`,
-            `${fpd_ext_out}dolphindb.language-configuration.json`
+            `${fpd_ext}dolphindb.language-configuration.json`,
+            `${fpd_out}dolphindb.language-configuration.json`
         )
     ])
 }
 
 
 async function build_package_json () {
-    const { name, version, engines, scripts, devDependencies } = await import(`${fpd_ext_root}package.json`)
+    const { name, version, engines, scripts, devDependencies } = await import(`${fpd_ext}package.json`)
     
     const ext_commands = [
         {
             command: 'execute',
             key: 'ctrl+e',
-            when: "!editorReadonly && editorTextFocus && editorLangId == 'dolphindb'",
+            when: "editorTextFocus && editorLangId == 'dolphindb'",
             title: {
-                zh: '执行代码',
-                en: 'Execute Code'
+                zh: 'DolphinDB: 执行代码',
+                en: 'DolphinDB: Execute Code'
             },
         },
         {
             command: 'set_connection',
-        }
+            title: {
+                zh: '选择连接',
+                en: 'Select Connection'
+            }
+        },
+        {
+            command: 'disconnect_connection',
+            title: {
+                zh: '断开连接',
+                en: 'Disconnect'
+            },
+            icon: './icons/disconnect.svg'
+        },
+        {
+            command: 'inspect_variable',
+            title: {
+                zh: '查看变量',
+                en: 'Inspect Variable'
+            },
+            icon: '$(browser)',
+        },
+        {
+            command: 'open_variable',
+            title: {
+                zh: '在新窗口中查看变量',
+                en: 'Inspect Variable in New Window'
+            },
+            icon: '$(multiple-windows)',
+        },
     ]
     
     const connection_properties: Schema[] = [
@@ -76,7 +113,7 @@ async function build_package_json () {
             format: 'uri',
         },
         {
-            name: 'login',
+            name: 'autologin',
             type: 'boolean',
             default: true,
             description: {
@@ -187,7 +224,7 @@ async function build_package_json () {
                             {
                                 name: 'local8848',
                                 url: 'ws://127.0.0.1:8848',
-                                login: true,
+                                autologin: true,
                                 username: 'admin',
                                 password: '123456',
                                 python: false,
@@ -216,9 +253,10 @@ async function build_package_json () {
                 }
             },
             
-            commands: ext_commands.map(({ command }) => ({
+            commands: ext_commands.map(({ command, icon }) => ({
                 command: `dolphindb.${command}`,
-                title: `%commands.${command}%`
+                title: `%commands.${command}%`,
+                icon
             })),
             
             keybindings: ext_commands.map( ({ command, key, when, /* args */ }) => ({
@@ -261,6 +299,26 @@ async function build_package_json () {
                     contents: '增加 DolphinDB 连接配置\n[增加 ddb 连接](command:ddb.add_connection)'
                 }
             ],
+            
+            menus: {
+                'view/item/context': [
+                    {
+                        command: 'dolphindb.disconnect_connection',
+                        when: "view == dolphindb.explorer && viewItem == 'connected'",
+                        group: 'inline',
+                    },
+                    {
+                        command: 'dolphindb.inspect_variable',
+                        when: "view == dolphindb.explorer && viewItem == 'var'",
+                        group: 'inline',
+                    },
+                    {
+                        command: 'dolphindb.open_variable',
+                        when: "view == dolphindb.explorer && viewItem == 'var'",
+                        group: 'inline',
+                    },
+                ]
+            }
             
             // commands: [
             //     {
@@ -369,7 +427,7 @@ async function build_package_json () {
     await Promise.all([
         ...(['zh', 'en'] as const).map(async language => {
             await fwrite(
-                `${fpd_ext_out}package.nls${ language === 'zh' ? '.zh' : '' }.json`,
+                `${fpd_out}package.nls${ language === 'zh' ? '.zh' : '' }.json`,
                 {
                     'configs.connections.description': {
                         zh: '展示在左侧边栏的 DolphinDB 面板中的连接配置',
@@ -389,16 +447,271 @@ async function build_package_json () {
                     ... Object.fromEntries(
                         ext_commands.map(({ command, title }) => [
                             `commands.${command}`,
-                            `DolphinDB: ${r(title, language)}`
+                            r(title, language)
                         ])
                     ),
                 },
             )
         }),
         
-        fwrite(`${fpd_ext_out}package.json`, package_json)
+        fwrite(`${fpd_out}package.json`, package_json)
     ])
 }
+
+
+async function build_dataview () {
+    await Promise.all([
+        (async () => {
+            let compiler = Webpack(dataview_config)
+            
+            await new Promise<void>((resolve, reject) => {
+                compiler.run((error, stats) => {
+                    if (error || stats.hasErrors()) {
+                        console.log(stats.toString(dataview_config.stats))
+                        reject(error || stats)
+                        return
+                    }
+                    
+                    console.log(stats.toString(dataview_config.stats))
+                    resolve()
+                })
+            })
+            
+            await new Promise(resolve => {
+                compiler.close(resolve)
+            })
+        })(),
+        
+        fcopy(
+            `${fpd_ext}dataview/index.html`,
+            `${fpd_out}dataview/index.html`,
+        ),
+        
+        fcopy(
+            `${fpd_ext}dataview/window.html`,
+            `${fpd_out}dataview/window.html`,
+        ),
+        
+        fcopy(
+            `${fpd_ext}dataview/logo.png`,
+            `${fpd_out}dataview/logo.png`,
+        ),
+    ])
+}
+
+async function get_vendors (fpd: string, update = false) {
+    await Promise.all(
+        Object.entries(vendors)
+            .map(async ([name, fp]) => {
+                const fp_full = `${fpd}${name}`
+                
+                if (update || !fp_full.fexists)
+                    await fwrite(
+                        fp_full,
+                        await request(`https://cdn.jsdelivr.net/npm/${fp}`, { retries: 5 })
+                    )
+            }
+        )
+    )
+}
+
+
+const dataview_config: Webpack.Configuration = {
+    name: 'DdbDataviewWebpackCompiler',
+    
+    mode: 'production',
+    
+    devtool: 'source-map',
+    
+    entry: {
+        'index.js': './dataview/index.tsx',
+        'window.js': './dataview/window.tsx',
+    },
+    
+    
+    experiments: {
+        // outputModule: true,
+        topLevelAwait: true,
+    },
+    
+    output: {
+        path: `${fpd_ext}out/dataview/`,
+        filename: '[name]',
+        publicPath: '/',
+        pathinfo: true,
+        globalObject: 'globalThis',
+        
+        // 在 bundle 中导出 entry 文件的 export
+        // library: {
+        //     type: 'commonjs2',
+        // }
+        
+        // module: true,
+        
+        // 解决 'ERR_OSSL_EVP_UNSUPPORTED' 错误问题 for nodejs 17
+        // https://stackoverflow.com/questions/69394632/webpack-build-failing-with-err-ossl-evp-unsupported
+        hashFunction: 'sha256',
+    },
+    
+    target: ['web', 'es2020'],
+    
+    
+    resolve: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+        symlinks: false,
+        
+        // modules: [
+        //     'd:/1/i18n/node_modules/',
+        // ],
+        
+        fallback: {
+            process: false,
+        }
+    },
+    
+    
+    externals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
+        jquery: '$',
+        lodash: '_',
+        antd: 'antd',
+    },
+    
+    
+    module: {
+        rules: [
+            {
+                test: /\.js$/,
+                enforce: 'pre',
+                use: ['source-map-loader'],
+            },
+            {
+                test: /\.tsx?$/,
+                exclude: /node_modules/,
+                loader: 'ts-loader',
+                // https://github.com/TypeStrong/ts-loader
+                options: {
+                    configFile: `${fpd_ext}tsconfig.json`,
+                    onlyCompileBundledFiles: true,
+                    transpileOnly: true,
+                } as Partial<TSLoaderOptions>
+            },
+            {
+                test: /\.s[ac]ss$/,
+                use: [
+                    'style-loader',
+                    {
+                        // https://github.com/webpack-contrib/css-loader
+                        loader: 'css-loader',
+                        options: {
+                            url: false,
+                        }
+                    },
+                    {
+                        // https://webpack.js.org/loaders/sass-loader
+                        loader: 'sass-loader',
+                        options: {
+                            implementation: sass,
+                            // 解决 url(search.png) 打包出错的问题
+                            webpackImporter: false,
+                            sassOptions: {
+                                indentWidth: 4,
+                            },
+                        } as SassOptions,
+                    }
+                ]
+            },
+            {
+                test: /\.css$/,
+                use: [
+                    'style-loader',
+                    'css-loader',
+                ]
+            },
+            {
+                oneOf: [
+                    {
+                        test: /\.icon\.svg$/,
+                        issuer: /\.[jt]sx?$/,
+                        loader: '@svgr/webpack',
+                        options: {
+                            icon: true,
+                        }
+                    },
+                    {
+                        test: /\.(svg|ico|png|jpe?g|gif|woff2?|ttf|eot|otf|mp4|webm|ogg|mp3|wav|flac|aac)$/,
+                        type: 'asset/inline',
+                    },
+                ]
+            },
+            {
+                test: /\.txt$/,
+                type: 'asset/source',
+            }
+        ],
+    },
+    
+    
+    plugins: [
+        // new Webpack.HotModuleReplacementPlugin(),
+        
+        // new Webpack.DefinePlugin({
+        //     process: { env: { }, argv: [] }
+        // })
+        
+        // 需要分析 bundle 大小时开启
+        // new BundleAnalyzerPlugin({ analyzerPort: 8880, openAnalyzer: false }),
+    ],
+    
+    
+    optimization: {
+        minimize: false,
+    },
+    
+    performance: {
+        hints: false,
+    },
+    
+    cache: {
+        type: 'filesystem',
+        compression: false,
+    },
+    
+    ignoreWarnings: [
+        /Failed to parse source map/
+    ],
+    
+    stats: {
+        colors: true,
+        
+        context: fpd_ext,
+        
+        entrypoints: false,
+        
+        errors: true,
+        errorDetails: true,
+        
+        hash: false,
+        
+        version: false,
+        
+        timings: true,
+        
+        children: true,
+        
+        assets: false,
+        assetsSpace: 100,
+        
+        cachedAssets: false,
+        cachedModules: false,
+        
+        modules: false,
+        // modulesSpace: 30
+    },
+    
+} as Webpack.Configuration
+
 
 
 interface Configuration {

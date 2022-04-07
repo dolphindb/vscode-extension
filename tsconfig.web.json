@@ -1,0 +1,14 @@
+{
+    "extends": "./tsconfig.json",
+    
+    "files": [
+        "./dataview/index.tsx",
+        "./dataview/window.tsx"
+    ],
+    
+    "compilerOptions": {
+        "outDir": "./out",
+        "module": "ESNext",
+        "tsBuildInfoFile": "./node_modules/.web.tsbuildinfo",
+    }
+}
