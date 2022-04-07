@@ -17,7 +17,13 @@ import { r } from './i18n/index.js'
     await fmkdir(fpd_out)
     
     await Promise.all([
-        ...['dolphindb.png', 'docs.json', '.vscodeignore', 'icons/'].map(fname => 
+        ...[
+            'README.md',
+            'README.zh.md',
+            'docs.json',
+            '.vscodeignore',
+            'icons/',
+        ].map(fname => 
             fcopy(`${fpd_ext}${fname}`, `${fpd_out}${fname}`)
         ),
         get_vendors(`${fpd_ext}out/dataview/`),
@@ -160,7 +166,7 @@ async function build_package_json () {
         
         main: './index.js',
         
-        icon: 'dolphindb.png',
+        icon: 'icons/logo.png',
         
         engines,
         

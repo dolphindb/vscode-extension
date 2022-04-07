@@ -1,36 +1,67 @@
-# DolphinDB Support for VS Code
+# DolphinDB VSCode Extension
 
-The DolpinDB extension makes it easy to work with DolphinDB statements. With this extension, you can:
+<p align='center'>
+    <img src='./images/ddb.png' alt='DolphinDB VSCode Extension' width='256'>
+</p>
 
-* Connect to local or remote servers
-* Execute scripts and see results directly in VS Code
-* Create and view basic data forms in the DolphinDB ENV window
+<p align='center'>
+    <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode' target='_blank'>
+        <img alt='vscode extension version' src='https://vsmarketplacebadge.apphb.com/version/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
+    </a>
+    <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb-vscode' target='_blank'>
+        <img alt='vscode extension installs' src='https://vsmarketplacebadge.apphb.com/installs/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
+    </a>
+</p>
 
-## Prerequisites
+## English | [中文](./README.zh.md)
 
-[Install DolphinDB](https://www.dolphindb.cn/downloads.html) and [deploy a cluster](https://github.com/dolphindb/Tutorials_CN/blob/master/dolphindb_user_guide.md).
+## Getting Started
+#### 1. Upgrade VSCode to the latest version (above v1.66.0)
+https://code.visualstudio.com/
 
-## Features
 
-* Highlight keywords, functions names, commands etc.
-* Autocomplete suggestions
-* Code snippets of common programming constructs
-* Run DolphinDB script
+#### 2. Install this extension
 
-## Usages
+#### 3. Edit server connection configuration
+Click `File > Preferences > Settings` in the menu bar or press the shortcut `ctrl + ,` to open the VSCode settings  
+Enter dolphindb in the search box, click `edit in settings.json` below, and edit the `dolphindb.connections` configuration item in the `settings.json` configuration file jumped to  
+The `dolphindb.connections` configuration item is an array of objects. There is a `local8848` connection configuration by default. You can modify or add connection objects according to the situation. Different connection objects must have different `name`  
 
-* Create a txt file and right click on blank areas to add, remove or choose a server.
-  * Typical connection string for instance:
-  `local8920:192.168.1.103:8920`
+#### 4. Open or create a DolphinDB script file
+- If the script file name is suffixed with `.dos`, the plugin will automatically recognize the DolphinDB language, and automatically enable syntax highlighting, code completion, and prompts
+- If the script file name is suffixed with `.txt`, you need to manually associate the DolphinDB language, the method is as follows:
 
-* Press `CTRL+E` to execute a single line of code by locating the cursor or multiple lines of code by selecting the lines.
+Click the language selection button in the status bar in the lower right corner of the VSCode editor, as shown below
+![](./images/language-mode.png)
 
-* Press `CTRL+SHIFT+P` and select the option 'DolphinDB: Helper' for links of more useful documentations.
+Enter `dolphindb` in the language selection pop-up box and press Enter to switch the language associated with the current file to the DolphinDB language
+![](./images/select-language.png)
 
-* Open the DolphinDB ENV window and expand the data forms (eg. scalar, pair, set) to see the variables defined in the datanode.
+#### 5. Press the shortcut key `ctrl + e` to execute the code
+- If there is currently selected code, the selected code will be sent to DolphinDB Server for execution
+- If there is no currently selected code, the line where the current cursor is will be sent to DolphinDB Server for execution
 
-* Click the button `Show` on the right side of a variable to check its value in the OUTPUT window.
+(If you need to customize the shortcut keys, you can also modify them in `File > Preferences > Keyboard Shortcuts` in VSCode, enter dolphindb, find `execute`, double-click, and enter the shortcut key you want)
 
-## Issues
+After executing the code, extension will automatically open the page (http://localhost:8321/) in the browser and display the execution result  
+There will also be text-based output in the Terminal below the VSCode editor
 
-We are open to all ideas and we want to get rid of bugs! Use the [Issues](https://github.com/yjhmelody/vscode-dolphindb-extension/issues) section to either report a new issue, provide your ideas or contribute to existing threads.
+If you can't connect to the server with an error, please check:
+- DolphinDB Server version cannot be lower than `1.30.16` or `2.00.4`
+- Whether the system proxy is turned on, some proxies do not support WebSocket connection, please close it in the system, or exclude the corresponding IP, and then restart VSCode)
+
+#### 6. Switch connections and view session variables in the DOLPHINDB area of ​​the left panel of the VSCode editor
+
+As shown in the figure below, it has the following functions:
+- Switch the connection used to execute the code (the original connection will not be disconnected)
+- Click the button to the right of the connection to manually disconnect
+- View the value of the session variable
+- There are two icons on the right side of the variable, click the icon on the left to view the variable in the browser page http://localhost:8321/, click the icon on the right to directly open a browser pop-up window, and view the variable in the pop-up window
+
+![](./images/explorer.png)
+
+Please configure your browser to allow this website to display pop-ups
+![](./images/allow-browser-popup.png)
+
+#### 7. Expand function documentation
+![](./images/expand-doc.png)
