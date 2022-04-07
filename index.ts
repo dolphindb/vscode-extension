@@ -254,14 +254,14 @@ export async function activate (ctx: ExtensionContext) {
                 )
                 
                 let fns: string[]
-                let constants: string[]
+                let _constants: string[]
                 
                 if (keyword.length === 1) {
                     const c = keyword[0].toLowerCase()
                     fns = funcs.filter((func, i) => 
                         funcs_lower[i].startsWith(c)
                     )
-                    constants = constants.filter((constant, i) => 
+                    _constants = constants.filter((constant, i) => 
                         constants_lower[i].startsWith(c)
                     )
                 } else {
@@ -279,7 +279,7 @@ export async function activate (ctx: ExtensionContext) {
                         return true
                     })
                     
-                    constants = constants.filter((constant, i) => {
+                    _constants = constants.filter((constant, i) => {
                         const constant_lower = constants_lower[i]
                         let j = 0
                         for (const c of keyword_lower) {
@@ -299,7 +299,7 @@ export async function activate (ctx: ExtensionContext) {
                         label: kw,
                         kind: CompletionItemKind.Keyword
                     })),
-                    ... constants.map(constant => ({
+                    ... _constants.map(constant => ({
                         label: constant,
                         kind: CompletionItemKind.Constant
                     })),
