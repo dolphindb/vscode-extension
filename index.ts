@@ -183,8 +183,13 @@ const ddb_commands = [
                 }
             )
             
+            const str_result = obj.form === DdbForm.scalar && obj.type === DdbType.void ?
+                    ''
+                :
+                    inspect(obj).replace(/\n/g, '\r\n') + '\r\n'
+            
             printer?.fire(
-                inspect(obj).replace(/\n/g, '\r\n') + '\r\n' +
+                 str_result +
                 `(${delta2str(
                     dayjs().diff(time_start)
                 )})\r\n` +
@@ -887,7 +892,7 @@ class DdbVarLocation extends TreeItem {
     
     constructor (connection: DdbConnection, shared: boolean) {
         super(
-            shared ? '共享变量' : '本地变量',
+            shared ? t('共享变量') : t('本地变量'),
             TreeItemCollapsibleState.Expanded
         )
         this.connection = connection
@@ -1001,6 +1006,11 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
     
     static icon = new ThemeIcon('symbol-variable')
     
+    static contexts = {
+        [DdbForm.scalar]: 'scalar',
+        [DdbForm.pair]: 'pair',
+    } as const
+    
     node: string
     
     // --- by objs(true)
@@ -1044,7 +1054,8 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
             :
                 `${this.get_value_type()}(${Number(this.bytes).to_fsize_str()})`
         
-        this.contextValue = 'var'
+        // scalar, pair 不显示 inspect actions, 作特殊区分
+        this.contextValue = DdbVar.contexts[this.form] || 'var'
         
         this.iconPath = DdbVar.icon
     }

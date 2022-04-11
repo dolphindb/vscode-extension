@@ -1,8 +1,13 @@
 # Change Log
 
-All notable changes to the "dolphindb-vscode" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## [2.0.500] - 2022.04.07
+- Better code highlighting (更好的代码高亮)
+- Function, keyword, constant code completion (函数、关键字、常量代码补全)
+- Function documentation hints, parameter hints (函数文档提示，参数提示)
+- Code execution supports print messages (代码执行支持 print 消息)
+- Optimized connection management, supports multiple connections at the same time (优化连接管理、同时支持多个连接)
+- Sidebar session variable explorer refactoring (侧边栏会话变量 explorer 重构)
+- Display the execution results in the browser, and support multi-window display of data tables and vectors (在浏览器中展示执行结果，并支持数据表、向量的多窗口展示)
 
 ## [0.6.6] - 2019-09-07
 * Add right-click menu "Login"

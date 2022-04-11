@@ -1,5 +1,14 @@
 {
     "DolphinDB 插件已初始化": {
         "en": "DolphinDB extension initialized"
+    },
+    "成功连接到 DolphinDB": {
+        "en": "Connected to DolphinDB"
+    },
+    "共享变量": {
+        "en": "Shared Variables"
+    },
+    "本地变量": {
+        "en": "Local Variables"
     }
 }

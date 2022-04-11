@@ -4,6 +4,7 @@ import { default as React, useEffect, useState } from 'react'
 import {
     Pagination,
     Table as AntTable,
+    Tooltip,
     type TableColumnType,
 } from 'antd'
 import {
@@ -515,10 +516,9 @@ class TableColumn implements TableColumnType <number> {
         
         this.col = obj.value[this.index]
         
-        this.title = <>
-            <span className='type'>{DdbType[this.col.type]}</span><br/>
-            {this.col.name}
-        </>
+        this.title = <Tooltip title={DdbType[this.col.type]}>{
+            this.col.name
+        }</Tooltip>
     }
     
     render = (irow: number) => 

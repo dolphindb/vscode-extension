@@ -2,7 +2,7 @@ import './window.sass'
 import 'xshell/scroll-bar.sass'
 import 'xshell/myfont.sass'
 
-import { default as React, useEffect, useState } from 'react'
+import { default as React, useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import { ConfigProvider } from 'antd'
 import zh from 'antd/lib/locale/zh_CN'
@@ -13,8 +13,8 @@ import ko from 'antd/lib/locale/ko_KR'
 
 import { Model } from 'react-object-model'
 
-import { language, t } from '../i18n'
-import { type DdbObj } from 'dolphindb/browser'
+import { language } from '../i18n'
+import { DdbForm, type DdbObj } from 'dolphindb/browser'
 import { type Remote } from 'xshell/net.browser'
 import { delay } from 'xshell/utils.browser'
 
@@ -42,11 +42,37 @@ function DdbObjWindow () {
     
     useEffect(() => {
         (async () => {
-            while (!(window as any).resolve)
-                await delay(100)
+            let i = 0
+            while (!(window as any).resolve) {
+                if (i >= 10)
+                    return
+                await delay(200)
+                i++
+            }
+            
             ;(window as any).resolve()
         })()
     }, [ ])
+    
+    useEffect(() => {
+        if (!obj && !objref)
+            return
+        
+        const { name, form } = obj || objref
+        
+        document.title = `${ name || DdbForm[form] } - DolphinDB`
+        
+        ;(async () => {
+            await delay(200)
+            const $obj = document.querySelector<HTMLElement>('.root > div')
+            if (!$obj)
+                return
+            window.resizeTo(
+                Math.min($obj.offsetWidth + 100, screen.width - 100),
+                Math.min($obj.offsetHeight + 80,  screen.height - 100),
+            )
+        })()
+    }, [obj, objref])
     
     if (!obj && !objref)
         return <div>DolphinDB Window</div>

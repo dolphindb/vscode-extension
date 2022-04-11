@@ -31,10 +31,10 @@ The `dolphindb.connections` configuration item is an array of objects. There is 
 - If the script file name is suffixed with `.dos`, the plugin will automatically recognize the DolphinDB language, and automatically enable syntax highlighting, code completion, and prompts
 - If the script file name is suffixed with `.txt`, you need to manually associate the DolphinDB language, the method is as follows:
 
-Click the language selection button in the status bar in the lower right corner of the VSCode editor, as shown below
+Click the language selection button in the status bar in the lower right corner of the VSCode editor, as shown below  
 ![](./images/language-mode.png)
 
-Enter `dolphindb` in the language selection pop-up box and press Enter to switch the language associated with the current file to the DolphinDB language
+Enter `dolphindb` in the language selection pop-up box and press Enter to switch the language associated with the current file to the DolphinDB language  
 ![](./images/select-language.png)
 
 #### 5. Press the shortcut key `ctrl + e` to execute the code
@@ -60,7 +60,7 @@ As shown in the figure below, it has the following functions:
 
 ![](./images/explorer.png)
 
-Please configure your browser to allow this website to display pop-ups
+Please configure your browser to allow this website to display pop-ups  
 ![](./images/allow-browser-popup.png)
 
 #### 7. Expand function documentation

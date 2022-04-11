@@ -31,10 +31,10 @@ https://code.visualstudio.com/
 - 如果脚本文件名是 `.dos` 后缀，插件会自动识别为 DolphinDB 语言，自动启用语法高亮及代码补全、提示
 - 如果脚本文件名是 `.txt` 后缀，则需要手动关联 DolphinDB 语言，方法如下：
 
-点击 VSCode 编辑器右下角状态栏的语言选择按钮，如下图
+点击 VSCode 编辑器右下角状态栏的语言选择按钮，如下图  
 ![](./images/language-mode.png)
 
-在语言选择弹框中输入 `dolphindb`, 回车，即可切换当前文件关联的语言为 DolphinDB 语言
+在语言选择弹框中输入 `dolphindb`, 回车，即可切换当前文件关联的语言为 DolphinDB 语言  
 ![](./images/select-language.png)
 
 #### 5. 按快捷键 `ctrl + e` 执行代码
@@ -43,7 +43,7 @@ https://code.visualstudio.com/
 
 (如需自定义快捷键也可以到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，输入 dolphindb, 找到 execute 后，双击，输入你想要的快捷键)
 
-执行代码后会自动在浏览器中打开页面并展示执行结果 (http://localhost:8321/)
+执行代码后会自动在浏览器中打开页面并展示执行结果 (http://localhost:8321/)  
 VSCode 编辑器下方的 Terminal 中也会有基于文本的输出
 
 如果报错连接不上服务器，请检查:
@@ -60,7 +60,7 @@ VSCode 编辑器下方的 Terminal 中也会有基于文本的输出
 
 ![](./images/explorer.png)
 
-请配置浏览器允许该网站弹窗显示
+请配置浏览器允许该网站弹窗显示  
 ![](./images/allow-browser-popup.png)
 
 #### 7. 展开函数文档

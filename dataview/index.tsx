@@ -15,14 +15,13 @@ import ko from 'antd/lib/locale/ko_KR'
 
 import { Model } from 'react-object-model'
 
-import { delay } from 'xshell/utils.browser'
 import {
     Remote,
     type Message,
 } from 'xshell/net.browser'
 import {
     DdbObj,
-    type DdbMessage,
+    DdbForm,
 } from 'dolphindb/browser'
 
 import { language } from '../i18n'
@@ -32,19 +31,17 @@ import { Obj, DdbObjRef, open_obj } from './obj'
 
 const locales = { zh, en, ja, ko }
 
-export type Result = DdbMessage | { type: 'objref', data: DdbObjRef }
+export type Result = { type: 'object', data: DdbObj } | { type: 'objref', data: DdbObjRef }
 
 export class DataViewModel extends Model<DataViewModel> {
     remote = new Remote({
         url: 'ws://localhost:8321/',
     })
     
-    results: Result[] = [ ]
+    result: Result
     
     
     async init () {
-        await this.remote.connect()
-        
         this.remote.call(
             { func: 'subscribe_repl' },
             async ({
@@ -57,7 +54,17 @@ export class DataViewModel extends Model<DataViewModel> {
                 if (type === 'object')
                     data = DdbObj.parse(data, le)
                 
-                await this.append_result({ type, data })
+                if (
+                    type === 'object' && 
+                    (data as DdbObj).form !== DdbForm.scalar && 
+                    (data as DdbObj).form !== DdbForm.pair
+                )
+                    this.set({
+                        result: {
+                            type,
+                            data
+                        }
+                    })
             }
         )
         
@@ -79,7 +86,12 @@ export class DataViewModel extends Model<DataViewModel> {
                             remote: this.remote
                         })
                     else
-                        await this.append_result({ type: 'object', data: ddbvar.obj })
+                        this.set({
+                            result: {
+                                type: 'object',
+                                data: ddbvar.obj,
+                            }
+                        })
                 else {
                     const objref = new DdbObjRef(ddbvar)
                     if (open)
@@ -89,21 +101,15 @@ export class DataViewModel extends Model<DataViewModel> {
                             remote: this.remote
                         })
                     else
-                        await this.append_result({ type: 'objref', data: objref })
+                        this.set({
+                            result: {
+                                type: 'objref',
+                                data: objref
+                            }
+                        })
                 }
             }
         )
-    }
-    
-    
-    async append_result (result: Result) {
-        console.log('append', result)
-        this.results.push(result)
-        
-        this.render(['results'])
-        
-        await delay(100)
-        window.scrollTo(0, document.body.scrollHeight)
     }
 }
 
@@ -111,35 +117,24 @@ let model = window.model = new DataViewModel()
 
 
 function DataView () {
-    const { results, remote } = model.use(['results', 'remote'])
+    const { result, remote } = model.use(['result', 'remote'])
     
     useEffect(() => {
         model.init()
     }, [ ])
     
-    if (!results.length || !remote)
-        return <div>DolphinDB DataView</div>
+    if (!result || !remote)
+        return <div>DolphinDB Data Browser</div>
+    
+    const { type, data } = result
     
     return <ConfigProvider locale={locales[language]} autoInsertSpaceInButton={false}>{
-        results.map(({ type, data }, i) =>
-            <div key={i} className='result'>{
-                (() => {
-                    switch (type) {
-                        case 'print':
-                            return <div className='print'>{data}</div>
-                            
-                        case 'error':
-                            return <div className='error'>{data.message}</div>
-                        
-                        case 'object':
-                            return <Obj obj={data} remote={remote} />
-                            
-                        case 'objref':
-                            return <Obj objref={data} remote={remote} />
-                    }
-                })()
-            }</div>
-        )
+        <div className='result'>{
+            type === 'object' ?
+                <Obj obj={data} remote={remote} />
+            :
+                <Obj objref={data} remote={remote} />
+        }</div>
     }</ConfigProvider>
 }
 
