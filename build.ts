@@ -234,7 +234,19 @@ async function build_package_json () {
                                 username: 'admin',
                                 password: '123456',
                                 python: false,
-                            }
+                            },
+                            {
+                                name: 'controller1',
+                                url: 'ws://127.0.0.1:22210/',
+                            },
+                            {
+                                name: 'datanode1',
+                                url: 'ws://127.0.0.1:22214/',
+                            },
+                            {
+                                name: 'datanode2',
+                                url: 'ws://127.0.0.1:22215/',
+                            },
                         ],
                         description: '%configs.connections.description%',
                         items: {
