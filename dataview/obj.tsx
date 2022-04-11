@@ -134,11 +134,11 @@ function Vector ({
     const info = obj || objref
     
     const ncols = Math.min(
-        win ? 10 : 20,
+        10,
         info.rows
     )
     
-    const [page_size, set_page_size] = useState(win ? 200 : 100)
+    const [page_size, set_page_size] = useState(200)
     
     const nrows = Math.min(
         Math.ceil(info.rows / ncols),
@@ -192,7 +192,6 @@ function Vector ({
     
     return <div className='vector'>
         <AntTable
-            className='table'
             dataSource={rows}
             rowKey={x => x}
             bordered
@@ -212,6 +211,16 @@ function Vector ({
         />
         
         <div className='bottom-bar'>
+            <div className='actions'>
+                {!win && <Icon
+                    className='icon-link'
+                    component={SvgLink}
+                    onClick={async () => {
+                        await open_obj({ obj, objref, remote })
+                    }}
+                />}
+            </div>
+            
             <Pagination
                 className='pagination'
                 total={info.rows}
@@ -234,16 +243,6 @@ function Vector ({
                     set_page_index(page_index - 1)
                 }}
             />
-            
-            <div className='actions'>
-                {!win && <Icon
-                    className='icon-link'
-                    component={SvgLink}
-                    onClick={async () => {
-                        await open_obj({ obj, objref, remote })
-                    }}
-                />}
-            </div>
         </div>
     </div>
 }
@@ -345,9 +344,13 @@ function Cell ({
         }
         
         switch (obj.type) {
+            case DdbType.string:
+            case DdbType.symbol:
+                return obj.value[index]
+            
             case DdbType.symbol_extended: {
                 const { base, data } = obj.value as DdbSymbolExtendedValue
-                return base[data[index]].quote('single')
+                return base[data[index]]
             }
             
             case DdbType.uuid:
@@ -374,7 +377,7 @@ function Cell ({
         }
     })()
     
-    return <>{str}</>
+    return str === 'null' ? null : <>{str}</>
 }
 
 
@@ -393,7 +396,7 @@ function Table ({
     
     const ncols = info.cols
     
-    const [page_size, set_page_size] = useState(win ? 20 : 10)
+    const [page_size, set_page_size] = useState(20)
     
     const nrows = Math.min(page_size, info.rows)
     
@@ -442,8 +445,12 @@ function Table ({
         
     
     return <div className='table'>
+        <div className='top'>
+            <span className='name'>{info.name || 'table'}</span>
+            <span className='desc'>{info.rows}r × {info.cols}c  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+        </div>
+        
         <AntTable
-            className='table'
             dataSource={rows}
             rowKey={x => x}
             bordered
@@ -462,6 +469,16 @@ function Table ({
         />
         
         <div className='bottom-bar'>
+            <div className='actions'>
+                {!win && <Icon
+                    className='icon-link'
+                    component={SvgLink}
+                    onClick={async () => {
+                        await open_obj({ obj, objref, remote })
+                    }}
+                />}
+            </div>
+            
             <Pagination
                 className='pagination'
                 total={info.rows}
@@ -478,22 +495,23 @@ function Table ({
                     set_page_index(page_index - 1)
                 }}
             />
-            
-            <div className='actions'>
-                {!win && <Icon
-                    className='icon-link'
-                    component={SvgLink}
-                    onClick={async () => {
-                        await open_obj({ obj, objref, remote })
-                    }}
-                />}
-            </div>
         </div>
     </div>
 }
 
 
 class TableColumn implements TableColumnType <number> {
+    static left_align_types = new Set([
+        DdbType.symbol,
+        DdbType.symbol_extended,
+        DdbType.string,
+        DdbType.functiondef,
+        DdbType.handle,
+        DdbType.code,
+        DdbType.datasource,
+        DdbType.resource,
+    ])
+    
     index: number
     
     obj?: DdbObj<DdbObj<DdbVectorValue>[]>
@@ -507,6 +525,8 @@ class TableColumn implements TableColumnType <number> {
     title: React.ReactNode
     key: number
     
+    align: 'left' | 'center' | 'right'
+    
     constructor (data: Partial<TableColumn>) {
         Object.assign(this, data)
         this.key = this.index
@@ -516,9 +536,16 @@ class TableColumn implements TableColumnType <number> {
         
         this.col = obj.value[this.index]
         
-        this.title = <Tooltip title={DdbType[this.col.type]}>{
+        this.title = <Tooltip
+            title={
+                DdbType[
+                    this.col.type === DdbType.symbol_extended ? DdbType.symbol : this.col.type
+                ]}
+        >{
             this.col.name
         }</Tooltip>
+        
+        this.align = TableColumn.left_align_types.has(this.col.type) ? 'left' : 'right'
     }
     
     render = (irow: number) => 
@@ -548,9 +575,9 @@ function Matrix ({
 }) {
     const info = obj || objref
     
-    const ncols = Math.min(info.cols, 50)
+    const ncols = info.cols
     
-    const [page_size, set_page_size] = useState(win ? 20 : 10)
+    const [page_size, set_page_size] = useState(20)
     
     const nrows = Math.min(page_size, info.rows)
     
@@ -599,7 +626,6 @@ function Matrix ({
     
     return <div className='matrix'>
         <AntTable
-            className='table'
             dataSource={rows}
             rowKey={x => x}
             bordered
@@ -624,6 +650,16 @@ function Matrix ({
         />
         
         <div className='bottom-bar'>
+            <div className='actions'>
+                {!win && <Icon
+                    className='icon-link'
+                    component={SvgLink}
+                    onClick={async () => {
+                        await open_obj({ obj, objref, remote })
+                    }}
+                />}
+            </div>
+            
             <Pagination
                 className='pagination'
                 total={info.rows}
@@ -640,16 +676,6 @@ function Matrix ({
                     set_page_index(page_index - 1)
                 }}
             />
-            
-            <div className='actions'>
-                {!win && <Icon
-                    className='icon-link'
-                    component={SvgLink}
-                    onClick={async () => {
-                        await open_obj({ obj, objref, remote })
-                    }}
-                />}
-            </div>
         </div>
     </div>
 }

@@ -1,9 +1,17 @@
 .vector, .table, .matrix
-    .table
+    .ant-table-wrapper
         overflow-x: auto
     
     .pagination
         margin: 8px 0px
+    
+    .top
+        font-size: 16px
+        margin-bottom: 8px
+        
+        .name
+            font-weight: bold
+            margin-right: 20px
     
     table
         text-align: right
@@ -13,7 +21,7 @@
         white-space: nowrap
     
     .row-head
-        background-color: #fafafa
+        background-color: #eeeeee
         font-weight: bold
     
     thead
@@ -34,21 +42,20 @@
         
         display: flex
         
-        justify-content: space-between
-        
         align-items: center
         
         .actions
-            flex: 1
-            
             display: flex
             
             align-items: center
             
-            justify-content: flex-end
+            .icon-link
+                margin-right: 10px
+            
+            margin-left: -4px
             
             .icon-link
-                color: #444444
+                color: #888888
                 font-size: 28px
 
 
@@ -56,8 +63,30 @@
 .ant-table-tbody > tr > td,
 .ant-table tfoot > tr > th,
 .ant-table tfoot > tr > td
-    padding: 2px 8px
+    padding: 1px 8px
+    color: #000000
+    border-color: #cccccc !important
 
-.ant-pagination-options-quick-jumper
-    margin-left: 20px
+.ant-table-thead > tr > th
+    text-align: center !important
     
+
+.ant-table.ant-table-bordered > .ant-table-container > .ant-table-content > table,
+.ant-table.ant-table-bordered > .ant-table-container > .ant-table-header > table
+    border-color: #cccccc !important
+    
+.ant-table.ant-table-bordered > .ant-table-container
+    border-color: #cccccc !important
+
+.ant-table-tbody > tr.ant-table-row:hover > td,
+.ant-table-tbody > tr > td.ant-table-cell-row-hover
+    background-color: #eeeeee
+    
+.ant-table-tbody > tr > td
+    transition: none
+
+.ant-table-thead > tr > th
+    background-color: #eeeeee
+    
+.ant-table table
+    width: unset

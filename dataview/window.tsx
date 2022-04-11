@@ -65,10 +65,11 @@ function DdbObjWindow () {
         ;(async () => {
             await delay(200)
             const $obj = document.querySelector<HTMLElement>('.root > div')
-            if (!$obj)
+            const $table = document.querySelector<HTMLTableElement>('table')
+            if (!$obj || !$table)
                 return
             window.resizeTo(
-                Math.min($obj.offsetWidth + 100, screen.width - 100),
+                Math.min($table.offsetWidth + 40, screen.width - 100),
                 Math.min($obj.offsetHeight + 80,  screen.height - 100),
             )
         })()
