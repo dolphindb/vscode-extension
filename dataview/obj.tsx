@@ -150,6 +150,10 @@ function Vector ({
     const render = useState({ })[1]
     
     useEffect(() => {
+        set_page_index(0)
+    }, [obj, objref])
+    
+    useEffect(() => {
         (async () => {
             if (obj)
                 return
@@ -157,6 +161,9 @@ function Vector ({
             const { node, name, rows } = objref
             
             const offset = page_size * page_index
+            
+            if (offset >= rows)
+                return
             
             const script = `${name}[${offset}:${Math.min(offset + page_size, rows)}]`
             
@@ -281,6 +288,8 @@ class VectorColumn implements TableColumnType <number> {
 }
 
 
+let decoder = new TextDecoder()
+
 function Cell ({
     obj,
     index
@@ -355,22 +364,31 @@ function Cell ({
             
             case DdbType.uuid:
             case DdbType.int128: 
-            case DdbType.ipaddr: {
+            case DdbType.ipaddr:
                 return format(
                     obj.type,
                     (obj.value as Uint8Array).subarray(16 * index, 16 * (index + 1)),
                     obj.le
                 )
+            
+            case DdbType.blob: {
+                const value = obj.value[index] as Uint8Array
+                return value.length > 100 ?
+                        decoder.decode(
+                            value.subarray(0, 98)
+                        ) + '…'
+                    :
+                        decoder.decode(value)
             }
             
             case DdbType.complex:
-            case DdbType.point: {
+            case DdbType.point:
                 return format(
                     obj.type,
                     (obj.value as Float64Array).subarray(2 * index, 2 * (index + 1)),
                     obj.le
                 )
-            }
+            
             
             default:
                 return format(obj.type, obj.value[index], obj.le)
@@ -405,6 +423,10 @@ function Table ({
     const render = useState({ })[1]
     
     useEffect(() => {
+        set_page_index(0)
+    }, [obj, objref])
+    
+    useEffect(() => {
         (async () => {
             if (obj)
                 return
@@ -412,6 +434,9 @@ function Table ({
             const { node, name, rows } = objref
             
             const offset = page_size * page_index
+            
+            if (offset >= rows)
+                return
             
             const script = `${name}[${offset}:${Math.min(offset + page_size, rows)}]`
             
@@ -447,7 +472,7 @@ function Table ({
     return <div className='table'>
         <div className='top'>
             <span className='name'>{info.name || 'table'}</span>
-            <span className='desc'>{info.rows}r × {info.cols}c  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+            <span className='desc'>{info.rows} × {info.cols}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
         </div>
         
         <AntTable
@@ -586,6 +611,10 @@ function Matrix ({
     const render = useState({ })[1]
     
     useEffect(() => {
+        set_page_index(0)
+    }, [obj, objref])
+    
+    useEffect(() => {
         (async () => {
             if (obj)
                 return
@@ -593,6 +622,9 @@ function Matrix ({
             const { node, name, rows } = objref
             
             const offset = page_size * page_index
+            
+            if (offset >= rows)
+                return
             
             const script = `${name}[${offset}:${Math.min(offset + page_size, rows)},]`
             

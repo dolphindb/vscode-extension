@@ -70,8 +70,11 @@ import {
     DdbForm,
     DdbObj,
     DdbType,
+    DdbFunctionType,
+    format,
     type DdbMessage,
     type DdbMessageListener,
+    type DdbFunctionDefValue,
 } from 'dolphindb'
 
 
@@ -1039,15 +1042,134 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
         
         Object.assign(this, data)
         
-        this.label = (
-            this.name +
-            ' = ' +
-            (this.obj ? 
-                    inspect(this.obj, { colors: false, compact: true })
-                :
-                    `${this.get_value_type()}(${Number(this.bytes).to_fsize_str()})`
-            )
-        ).truncate(50)
+        this.label = (() => {
+            const tname = DdbType[this.type]
+            
+            const type = (() => {
+                switch (this.form) {
+                    case DdbForm.scalar:
+                        if (this.type === DdbType.functiondef)
+                            return `<functiondef<${DdbFunctionType[(this.obj.value as DdbFunctionDefValue).type]}>>`
+                        
+                        return `<${tname}>`
+                    
+                    case DdbForm.pair:
+                        return `<${tname}>`
+                    
+                    case DdbForm.vector:
+                        if (64 <= this.type && this.type < 128)
+                            return `${DdbType[this.type - 64]}[][${this.rows}]`
+                        return `<${tname}> ${this.rows} rows`
+                    
+                    case DdbForm.set:
+                        return `<${tname}> ${this.rows} keys`
+                    
+                    case DdbForm.table:
+                        return ` ${this.rows} × ${this.cols}`
+                    
+                    case DdbForm.dict:
+                        return ` ${this.rows} keys`
+                    
+                    case DdbForm.matrix:
+                        return `<${tname}> ${this.rows} × ${this.cols}`
+                    
+                    default:
+                        return ` ${DdbForm[this.form]} ${tname}`
+                }
+            })()
+            
+            const value = (() => {
+                switch (this.form) {
+                    case DdbForm.scalar:
+                        return ' = ' + format(this.type, this.obj.value, this.obj.le, { colors: false })
+                    
+                    // 类似 DdbObj[inspect.custom] 中 format data 的逻辑
+                    case DdbForm.pair: {
+                        function format_array (items: string[], ellipsis: boolean) {
+                            const str_items = items.join(', ') + (ellipsis ? ', ...' : '')
+                            
+                            return str_items.bracket('square')
+                        }
+                        
+                        switch (this.type) {
+                            case DdbType.uuid: 
+                            case DdbType.int128: 
+                            case DdbType.ipaddr: {
+                                const limit = 10 as const
+                                
+                                const value = this.obj.value as Uint8Array
+                                
+                                const len_data = value.length / 16
+                                
+                                let items = new Array(
+                                    Math.min(limit, len_data)
+                                )
+                                
+                                for (let i = 0;  i < items.length;  i++)
+                                    items[i] = format(
+                                        this.type,
+                                        value.subarray(16 * i, 16 * (i + 1)),
+                                        this.obj.le,
+                                        { colors: false }
+                                    )
+                                
+                                return ' = ' + format_array(
+                                    items,
+                                    len_data > limit
+                                )
+                            }
+                            
+                            case DdbType.complex:
+                            case DdbType.point: {
+                                const limit = 20 as const
+                                
+                                const value = this.obj.value as Float64Array
+                                
+                                const len_data = value.length / 2
+                                
+                                let items = new Array(
+                                    Math.min(limit, len_data)
+                                )
+                                
+                                for (let i = 0;  i < items.length;  i++)
+                                    items[i] = format(
+                                        this.type,
+                                        value.subarray(2 * i, 2 * (i + 1)),
+                                        this.obj.le,
+                                        { colors: false }
+                                    )
+                                
+                                return ' = ' + format_array(
+                                    items,
+                                    len_data > limit
+                                )
+                            }
+                            
+                            default: {
+                                const limit = 50 as const
+                                
+                                let items = new Array(
+                                    Math.min(limit, (this.obj.value as any[]).length)
+                                )
+                                
+                                for (let i = 0;  i < items.length;  i++)
+                                    items[i] = format(this.type, this.obj.value[i], this.obj.le, { colors: false })
+                                
+                                return ' = ' + format_array(
+                                    items,
+                                    (this.obj.value as any[]).length > limit
+                                )
+                            }
+                        }
+                    }
+                    
+                    default:
+                        return ` [${Number(this.bytes).to_fsize_str().replace(' ', '')}]`
+                }
+            })()
+            
+            return this.name + type + value
+        })()
         
         this.tooltip = this.obj ?
                 inspect(this.obj, { colors: false })
@@ -1081,13 +1203,13 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
                 return `set<${tname}>[${this.rows}]`
             
             case DdbForm.table:
-                return `table[${this.rows} rows][${this.cols} cols]`
+                return `table[${this.rows}r][${this.cols}c]`
             
             case DdbForm.dict:
                 return `dict[${this.rows}]`
             
             case DdbForm.matrix:
-                return `matrix[${this.rows} rows][${this.cols} cols]`
+                return `matrix[${this.rows}r][${this.cols}c]`
             
             default:
                 return `${DdbForm[this.form]} ${tname}`

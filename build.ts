@@ -24,9 +24,10 @@ import { r } from './i18n/index.js'
             '.vscodeignore',
             'icons/',
         ].map(fname => 
-            fcopy(`${fpd_ext}${fname}`, `${fpd_out}${fname}`)
+            fcopy(fpd_ext + fname, fpd_out + fname)
         ),
-        get_vendors(`${fpd_ext}out/dataview/`),
+        fcopy(`${fpd_ext}fonts/`, `${fpd_out}dataview/fonts/`),
+        get_vendors(`${fpd_out}dataview/`),
         build_package_json(),
         build_tm_language(),
         build_dataview(),

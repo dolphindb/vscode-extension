@@ -1,6 +1,7 @@
-import './index.sass'
 import 'xshell/scroll-bar.sass'
-import 'xshell/myfont.sass'
+
+import '../fonts/myfont.sass'
+import './index.sass'
 
 import { default as React, useEffect } from 'react'
 import ReactDOM from 'react-dom'
