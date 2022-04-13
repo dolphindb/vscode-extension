@@ -2,7 +2,8 @@ node_modules/
 
 /out/
 /test/
-/docs.json
+/docs.zh.json
+/docs.en.json
 /*.js
 /*.js.map
 /i18n/*.js

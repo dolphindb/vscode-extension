@@ -20,7 +20,8 @@ import { r } from './i18n/index.js'
         ...[
             'README.md',
             'README.zh.md',
-            'docs.json',
+            'docs.zh.json',
+            'docs.en.json',
             '.vscodeignore',
             'icons/',
         ].map(fname => 

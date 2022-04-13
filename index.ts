@@ -79,14 +79,16 @@ import {
 
 
 import { fpd_ext } from './config'
-import { t } from './i18n'
+import { language, t } from './i18n'
 import { constants, keywords } from './dolphindb.language'
 import { get_text } from './utils'
 
-import docs from './docs.json'
+import docs_zh from './docs.zh.json'
+import docs_en from './docs.en.json'
 
 set_inspect_options()
 
+const docs = language === 'zh' ? docs_zh : docs_en
 
 const constants_lower = constants.map(constant => 
     constant.toLowerCase())
