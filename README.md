@@ -21,6 +21,13 @@ https://code.visualstudio.com/
 
 
 #### 2. Install this extension
+Search for dolphindb in the VSCode plugin panel, click install
+
+If the installation fails due to network reasons, you can go to the page below to manually download the plugin with the suffix `.vsix`, and drag it to the VSCode plugin panel after downloading.  
+https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode&refresh
+
+Click on Version History to download the latest version locally
+
 
 #### 3. Edit server connection configuration
 Click `File > Preferences > Settings` in the menu bar or press the shortcut `ctrl + ,` to open the VSCode settings  

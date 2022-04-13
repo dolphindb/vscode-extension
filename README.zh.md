@@ -21,6 +21,12 @@ https://code.visualstudio.com/
 
 
 #### 2. 安装插件
+在 VSCode 插件面板中搜索 dolphindb, 点击 install
+
+如果因为网络原因安装失败，可以前往下方的网页手动下载后缀为 `.vsix` 的插件，下载后拖到 VSCode 插件面板中  
+https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode&refresh
+
+点击 Version History 下载最新的版本到本地
 
 #### 3. 编辑服务器连接配置
 点击菜单栏中的 `文件 > 首选项 > 设置` (`File > Preferences > Settings`) 或者按快捷键 `ctrl + ,` 打开 VSCode 设置  
