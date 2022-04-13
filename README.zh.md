@@ -6,7 +6,7 @@
 
 <p align='center'>
     <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode' target='_blank'>
-        <img alt='vscode extension version' src='https://vsmarketplacebadge.apphb.com/version/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
+        <img alt='vscode extension version' src='https://vsmarketplacebadge.apphb.com/version/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2&refresh' />
     </a>
     <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb-vscode' target='_blank'>
         <img alt='vscode extension installs' src='https://vsmarketplacebadge.apphb.com/installs/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
@@ -24,7 +24,7 @@ https://code.visualstudio.com/
 在 VSCode 插件面板中搜索 dolphindb, 点击 install
 
 如果因为网络原因安装失败，可以前往下方的网页手动下载后缀为 `.vsix` 的插件，下载后拖到 VSCode 插件面板中  
-https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode&refresh
+https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 
 点击 Version History 下载最新的版本到本地
 

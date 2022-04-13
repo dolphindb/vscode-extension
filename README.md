@@ -6,7 +6,7 @@
 
 <p align='center'>
     <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode' target='_blank'>
-        <img alt='vscode extension version' src='https://vsmarketplacebadge.apphb.com/version/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
+        <img alt='vscode extension version' src='https://vsmarketplacebadge.apphb.com/version/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2&refresh' />
     </a>
     <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb-vscode' target='_blank'>
         <img alt='vscode extension installs' src='https://vsmarketplacebadge.apphb.com/installs/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
@@ -24,7 +24,7 @@ https://code.visualstudio.com/
 Search for dolphindb in the VSCode plugin panel, click install
 
 If the installation fails due to network reasons, you can go to the page below to manually download the plugin with the suffix `.vsix`, and drag it to the VSCode plugin panel after downloading.  
-https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode&refresh
+https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 
 Click on Version History to download the latest version locally
 
