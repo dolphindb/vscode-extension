@@ -6,9 +6,9 @@
 
 <p align='center'>
     <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode' target='_blank'>
-        <img alt='vscode extension version' src='https://vsmarketplacebadge.apphb.com/version/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2&refresh' />
+        <img alt='vscode extension version' src='https://vsmarketplacebadge.apphb.com/version/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
     </a>
-    <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb-vscode' target='_blank'>
+    <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode' target='_blank'>
         <img alt='vscode extension installs' src='https://vsmarketplacebadge.apphb.com/installs/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
     </a>
 </p>
@@ -28,21 +28,24 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 
 Click on Version History to download the latest version locally
 
+After installing the plugin, please completely quit all windows of VSCode and reopen VSCode, otherwise you may not be able to view the variables in the browser (see below)
 
 #### 3. Edit server connection configuration
-Click `File > Preferences > Settings` in the menu bar or press the shortcut `ctrl + ,` to open the VSCode settings  
-Enter dolphindb in the search box, click `edit in settings.json` below, and edit the `dolphindb.connections` configuration item in the `settings.json` configuration file jumped to  
-The `dolphindb.connections` configuration item is an array of objects. There is a `local8848` connection configuration by default. You can modify or add connection objects according to the situation. Different connection objects must have different `name`  
+Click `File > Preferences > Settings` in the menu bar or press the shortcut `ctrl + comma` to open the VSCode settings  
+Enter dolphindb in the search box, click `edit in settings.json` below, and edit the `dolphindb.connections` configuration item in the `settings.json` configuration file jumped to.  
+The `dolphindb.connections` configuration item is an array of objects.  
+There are four connection configurations by default. You can modify or add connection objects according to the situation.
+`name` and `url` attributes are required (different connection objects must have different `name`), by default the admin account is automatically logged in.  
+Move the mouse over an attribute to view the description of the corresponding attribute.
 
 #### 4. Open or create a DolphinDB script file
 - If the script file name is suffixed with `.dos`, the plugin will automatically recognize the DolphinDB language, and automatically enable syntax highlighting, code completion, and prompts
 - If the script file name is suffixed with `.txt`, you need to manually associate the DolphinDB language, the method is as follows:
 
 Click the language selection button in the status bar in the lower right corner of the VSCode editor, as shown below  
-![](./images/language-mode.png)
-
+<img src='./images/language-mode.png' width='600'>
 Enter `dolphindb` in the language selection pop-up box and press Enter to switch the language associated with the current file to the DolphinDB language  
-![](./images/select-language.png)
+<img src='./images/select-language.png' width='600'>
 
 #### 5. Press the shortcut key `ctrl + e` to execute the code
 - If there is currently selected code, the selected code will be sent to DolphinDB Server for execution
@@ -57,18 +60,22 @@ If you can't connect to the server with an error, please check:
 - DolphinDB Server version cannot be lower than `1.30.16` or `2.00.4`
 - Whether the system proxy is turned on, some proxies do not support WebSocket connection, please close it in the system, or exclude the corresponding IP, and then restart VSCode)
 
-#### 6. Switch connections and view session variables in the DOLPHINDB area of ​​the left panel of the VSCode editor
+#### 6. Switch connections and view session variables for connections in the DOLPHIDB area of the EXPLORER panel on the left side of the VSCode editor
 
 As shown in the figure below, it has the following functions:
 - Switch the connection used to execute the code (the original connection will not be disconnected)
 - Click the button to the right of the connection to manually disconnect
 - View the value of the session variable
-- There are two icons on the right side of the variable, click the icon on the left to view the variable in the browser page http://localhost:8321/, click the icon on the right to directly open a browser pop-up window, and view the variable in the pop-up window
+- Variables other than scalar, pair have two icons to the right
+    - Click the icon on the left to view the variables in the browser page http://localhost:8321/
+    - Click the icon on the right to directly open a browser pop-up window and view the variables in the pop-up window (you need to configure the browser to allow the pop-up window, see later)
 
-![](./images/explorer.png)
+<img src='./images/explorer.png' width='400'>
 
-Please configure your browser to allow this website to display pop-ups  
-![](./images/allow-browser-popup.png)
+##### Please configure your browser to allow this website to display pop-ups  
+<img src='./images/allow-browser-popup.png' width='600'>
 
 #### 7. Expand function documentation
-![](./images/expand-doc.png)
+Click the arrow to the right of the function to expand the function's documentation
+
+<img src='./images/expand-doc.png' width='800'>
