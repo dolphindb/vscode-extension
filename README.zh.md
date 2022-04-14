@@ -15,8 +15,22 @@
 
 ## [English](./README.md) | 中文
 
+VSCode 是微软开发的一款轻量、高性能又有极强扩展性的代码编辑器。它提供了强大的插件框架，开发者可以通过编写插件拓展 VSCode 编辑器的功能，甚至支持新的编程语言。
+
+DolphinDB 公司开发了这个针对 DolphinDB 数据库的 VSCode 插件，在 VSCode 中增加了对自研的 DolphinDB 脚本语言的支持，让用户可以编写并执行脚本来操作数据库，或查看数据库中的数据。
+
+## 功能
+- 代码高亮
+- 关键字、常量、内置函数的代码补全
+- 内置函数的文档提示、参数提示
+- 执行代码，并在 terminal 中展示 print 消息以及执行结果
+- 在侧边面板中管理多个数据库连接，展示会话变量
+- 在浏览器弹窗中展示表格、向量、矩阵等数据结构
+
+<img src='./images/demo.png' width='1000'>
+
 ## 使用说明
-#### 1. 升级 VSCode 到最新版 (v1.66.0 以上)
+#### 1. 安装或升级 VSCode 到最新版 (v1.66.0 以上)
 https://code.visualstudio.com/
 
 
@@ -30,8 +44,14 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 
 安装完插件后，请完全退出 VSCode 所有窗口并重新打开 VSCode，否则可能无法在浏览器中查看变量 (见后文)
 
-#### 3. 编辑服务器连接配置
-点击菜单栏中的 `文件 > 首选项 > 设置` (`File > Preferences > Settings`) 或者按快捷键 `ctrl + 逗号` 打开 VSCode 设置  
+#### 3. 查看、编辑服务器连接配置
+##### 在 VSCode 编辑器左侧资源管理器 (EXPLORER) 面板的 DOLPHINDB 区域中可以查看连接
+成功安装插件后，会在资源管理器 (EXPLORER) 面板中新增下方的 DOLPHINDB 区域
+
+<img src='./images/connections.png' width='400'>
+
+##### 编辑连接
+点击菜单栏中的 `文件 > 首选项 > 设置` (`File > Preferences > Settings`) 或者按快捷键 `Ctrl + 逗号` 打开 VSCode 设置  
 在搜索框中输入 dolphindb, 点击下方的 `在 settings.json 中编辑`, 在跳转到的 `settings.json` 配置文件中编辑 `dolphindb.connections` 配置项  
 `dolphindb.connections` 配置项是一个对象数组，默认有四个连接配置，可按情况修改或增加连接对象，
 `name` 和 `url` 属性是必填的 (不同的连接对象必须有不同的 `name`), 默认自动登录 admin 账号  
@@ -40,7 +60,7 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 
 #### 4. 打开或新建一个 DolphinDB 脚本文件
 - 如果脚本文件名是 `.dos` 后缀，插件会自动识别为 DolphinDB 语言，自动启用语法高亮及代码补全、提示
-- 如果脚本文件名是 `.txt` 后缀，则需要手动关联 DolphinDB 语言，方法如下：
+- 如果脚本文件名不是 `.dos` 后缀, 比如 `.txt` 后缀，则需要手动关联 DolphinDB 语言，方法如下：
 
 点击 VSCode 编辑器右下角状态栏的语言选择按钮，如下图  
 <img src='./images/language-mode.png' width='600'>
@@ -48,21 +68,22 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 在语言选择弹框中输入 `dolphindb`, 回车，即可切换当前文件关联的语言为 DolphinDB 语言  
 <img src='./images/select-language.png' width='600'>
 
-#### 5. 按快捷键 `ctrl + e` 执行代码
+#### 5. 按快捷键 `Ctrl + E` 执行代码
+在打开的 DolphinDB 脚本文件中，可以按快捷键 `Ctrl + E` 将代码发送到 DolphinDB Server 执行，第一次执行代码时会自动连接到 DOLPHINDB 区域中选中的连接
 - 如果当前有选中的代码，会将选中的代码发送至 DolphinDB Server 执行
 - 如果当前无选中的代码，会将当前光标所在的行发送至 DolphinDB Server 执行
-
-(如需自定义快捷键也可以到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，输入 dolphindb, 找到 execute 后，双击，输入你想要的快捷键)
 
 执行代码后会自动在浏览器中打开页面并展示执行结果 (http://localhost:8321/)  
 VSCode 编辑器下方的 Terminal 中也会有基于文本的输出
 
-如果报错连接不上服务器，请检查:
-- DolphinDB Server 版本不能低于 `1.30.16` 或 `2.00.4`
-- 是否开了系统代理，有些代理不支持 WebSocket 连接，请在系统中关闭，或者排除对应 IP，然后重启 VSCode)
+如果服务器连接错误 (如：`ws://xxx` errored)，请确保:
+- DolphinDB Server 版本不低于 `1.30.16` 或 `2.00.4`
+- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode
 
-#### 6. 在 VSCode 编辑器左侧 EXPLORER 面板的 DOLPHINDB 区域中切换连接及查看连接的会话变量
-如下图所示，有以下功能：
+(如需自定义快捷键也可以到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，输入 dolphindb, 找到 execute 后，双击，输入你想要的快捷键)
+
+#### 6. 在 DOLPHINDB 区域中切换连接及查看已连接会话的变量
+执行代码后，如下图所示，可以：
 - 切换执行代码所用的连接 (原有连接不会断开)
 - 点击连接右侧的按钮手动断开连接
 - 查看会话变量的值
@@ -76,6 +97,8 @@ VSCode 编辑器下方的 Terminal 中也会有基于文本的输出
 <img src='./images/allow-browser-popup.png' width='600'>
 
 #### 7. 展开函数文档
-点击函数右侧的箭头可以展开函数的文档
+在 VSCode 编辑器中输入 DolphinDB 内置函数时，点击函数右侧的箭头可以展开函数的文档
 
 <img src='./images/expand-doc.png' width='800'>
+
+函数输入完成后，将鼠标悬浮于函数名称上，也可查看函数文档
