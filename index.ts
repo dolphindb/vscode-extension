@@ -1395,6 +1395,10 @@ class DdbServer extends Server {
         // --- dispatch websocket 连接请求
         this.server_http.on('upgrade', this.on_upgrade.bind(this))
         
+        this.server_http.on('error', (err) => {
+            window.showErrorMessage(err.message)
+        })
+        
         await new Promise<void>(resolve => {
             this.server_http.listen(this.port, resolve)
         })
