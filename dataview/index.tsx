@@ -36,7 +36,7 @@ export type Result = { type: 'object', data: DdbObj } | { type: 'objref', data: 
 
 export class DataViewModel extends Model<DataViewModel> {
     remote = new Remote({
-        url: 'ws://localhost:8321/',
+        url: `ws://localhost:${ location.port === '80' ? '' : location.port }/`,
     })
     
     result: Result

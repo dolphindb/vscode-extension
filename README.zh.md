@@ -27,7 +27,7 @@ DolphinDB 公司开发了这个针对 DolphinDB 数据库的 VSCode 插件，在
 - 在侧边面板中管理多个数据库连接，展示会话变量
 - 在浏览器弹窗中展示表格、向量、矩阵等数据结构
 
-<img src='./images/demo.png' width='1000'>
+<img src='./images/demo.png' width='1200'>
 
 ## 使用说明
 #### 1. 安装或升级 VSCode 到最新版 (v1.66.0 以上)
@@ -73,14 +73,19 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 - 如果当前有选中的代码，会将选中的代码发送至 DolphinDB Server 执行
 - 如果当前无选中的代码，会将当前光标所在的行发送至 DolphinDB Server 执行
 
-执行代码后会自动在浏览器中打开页面并展示执行结果 (http://localhost:8321/)  
+执行代码后会自动在浏览器中打开 `DolphinDB Data Browser` 页面 (URL 可能是 http://localhost:8321/)
+
+如果执行的代码最后一条语句返回了表格、数组、矩阵，则会在 `DolphinDB Data Browser` 页面以表格的形式展现
+
 VSCode 编辑器下方的 Terminal 中也会有基于文本的输出
 
-如果服务器连接错误 (如：`ws://xxx` errored)，请确保:
+如果出现服务器连接错误 (如：`ws://xxx` errored)，请确保:
 - DolphinDB Server 版本不低于 `1.30.16` 或 `2.00.4`
 - 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode
 
 (如需自定义快捷键也可以到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，输入 dolphindb, 找到 execute 后，双击，输入你想要的快捷键)
+
+(为了在浏览器中展示表格等数据，每个 VSCode 窗口会启动一个本地 HTTP 服务器，其可用端口范围可以通过 `dolphindb.ports` 配置，默认为 `8321-8420`，鼠标悬浮在 ports 上可查看详细解释)
 
 #### 6. 在 DOLPHINDB 区域中切换连接及查看已连接会话的变量
 执行代码后，如下图所示，可以：

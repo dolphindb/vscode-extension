@@ -27,7 +27,7 @@ DolphinDB has developed this VSCode extension for the DolphinDB database, adding
 - Manage multiple database connections in the side panel, showing session variables
 - Display data structures such as tables, vectors, matrices, etc. in the browser pop-up window
 
-<img src='./images/demo.png' width='1000'>
+<img src='./images/demo.png' width='1200'>
 
 
 ## Getting Started
@@ -73,7 +73,10 @@ In the opened DolphinDB script file, you can press the shortcut key `Ctrl + E` t
 - If there is currently selected code, the selected code will be sent to DolphinDB Server for execution
 - If there is no currently selected code, the line where the current cursor is will be sent to DolphinDB Server for execution
 
-After executing the code, extension will automatically open the page (http://localhost:8321/) in the browser and display the execution result  
+The `Dolphindb Data Browser` page (URL may be http://localhost:8321/) will be automatically opened in the browser after executing the code
+
+If the final statement executed returns a table, vector or matrix, the result will be displayed in the form of a table in the `Dolphindb Data Browser` page.
+
 There will also be text-based output in the Terminal below the VSCode editor
 
 If you get a connection error (eg: `ws://xxx` errored), make sure that:
@@ -81,6 +84,8 @@ If you get a connection error (eg: `ws://xxx` errored), make sure that:
 - If there is a configured system proxy, the proxy software and proxy server need to support WebSocket connections, otherwise please turn off the proxy in the system, or add the DolphinDB Server IP to the exclusion list, and then restart VSCode
 
 (If you need to customize the shortcut keys, you can also modify them in `File > Preferences > Keyboard Shortcuts` in VSCode, enter dolphindb, find `execute`, double-click, and enter the shortcut key you want)
+
+(In order to display data in the browser, each VSCode window will start a local HTTP server, whose ports can be configured through `dolphindb.ports` configuration. The default is` 8321-8420`. Suspend mouse on ports to view detailed explanation.)
 
 #### 6. Switch connections and view session variables for connections in the DOLPHIDB area of the EXPLORER panel on the left side of the VSCode editor
 

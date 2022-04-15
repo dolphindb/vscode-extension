@@ -158,6 +158,28 @@ async function build_package_json () {
         },
     ]
     
+    const ports_property = {
+        type: 'string',
+        default: '8321-8420',
+        markdownDescription: {
+            zh: 
+                '本插件为了在浏览器中展示表格等数据，在 VSCode 中创建的本地 HTTP 服务器的可用端口范围  \n' +
+                '取值为逗号分割的多个可用端口或端口区间 (不能含有空格)，比如：`8321,8322,8300-8310,11000-11999`  \n' +
+                '默认值为 `8321-8420` (包含左右边界)  \n' +
+                '打开 VSCode 窗口时，按从前到后的顺序查找首个可用的端口作为实际监听端口后，打开对应的浏览器页面 `http://localhost:{实际监听端口}`  \n' +
+                '每个 VSCode 窗口会使用端口范围中的一个端口创建 HTTP 服务器，请保证可用端口范围足够大  \n' +
+                '修改这个配置后建议重启 VSCode (对于已经创建的本地 HTTP 服务器不会生效)  \n',
+                
+            en:
+                'The available port range of the local HTTP server created in VSCode by this plugin in order to display data such as tables in the browser  \n' +
+                'The value is multiple available ports or port ranges separated by commas (no spaces), for example: `8321,8322,8300-8310,11000-11999`  \n' +
+                'The default value is `8321-8420` (including left and right boundaries)  \n' +
+                'When opening the VSCode window, search the first available port as the actual listening port in order from front to back, and then open the corresponding browser page `http://localhost:{actual-listening-port}`  \n' +
+                'Each VSCode window will use a port in the port range to create an HTTP server, please ensure that the available port range is large enough  \n' + 
+                'It is recommended to restart VSCode after modifying this configuration (it will not take effect for the local HTTP server that has been created)  \n'
+        }
+    }
+    
     
     const package_json = {
         name,
@@ -269,7 +291,12 @@ async function build_package_json () {
                                 ])
                             ),
                         }
-                    }
+                    },
+                    
+                    'dolphindb.ports': {
+                        ...ports_property,
+                        markdownDescription: '%configs.ports.markdownDescription%'
+                    } as Schema,
                 }
             },
             
@@ -463,6 +490,8 @@ async function build_package_json () {
                             )
                         ])
                     ),
+                    
+                    'configs.ports.markdownDescription': ports_property.markdownDescription[language],
                     
                     ... Object.fromEntries(
                         ext_commands.map(({ command, title }) => [

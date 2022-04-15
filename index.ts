@@ -110,10 +110,21 @@ type DdbTerminal = Terminal & { printer: EventEmitter<string> }
 
 let term: DdbTerminal
 
-const web_url = 'http://localhost:8321/' as const
 
 const ddb_commands = [
     async function execute () {
+        if (!server) {
+            server = new DdbServer()
+            
+            try {
+                await server.start()
+            } catch (error) {
+                window.showErrorMessage(error.message)
+            }
+        }
+        
+        const { web_url } = server
+        
         if (!term || term.exitStatus) {
             let printer = new EventEmitter<string>()
             
@@ -130,7 +141,7 @@ const ddb_commands = [
                         open (init_dimensions: TerminalDimensions | undefined) {
                             printer.fire(
                                 'DolphinDB Shell\r\n' +
-                                'http://localhost:8321/\r\n' +
+                                `${web_url}\r\n` +
                                 '\r\n'
                             )
                             resolve()
@@ -396,15 +407,15 @@ export async function activate (ctx: ExtensionContext) {
     )
     
     
-    server = new DdbServer()
-    
-    await server.start()
-    
     console.log(
         t('DolphinDB 插件已初始化')
     )
 }
 
+
+export function deactivate (ctx: ExtensionContext) {
+    server?.stop()
+}
 
 /** 最大搜索行数 */
 const max_lines_to_match = 30 as const
@@ -1221,7 +1232,7 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
     
     async inspect (open = false) {
         if (!server.subscribers_inspection.length) {
-            open_url(web_url)
+            open_url(server.web_url)
             await delay(3000)
         }
         
@@ -1257,6 +1268,8 @@ class DdbServer extends Server {
     } as const
     
     static dev = fpd_ext === 'd:/1/ddb/ext/out/'
+    
+    web_url = 'http://localhost:8321/'
     
     server_ws: WebSocketServer
     
@@ -1340,6 +1353,7 @@ class DdbServer extends Server {
     
     
     constructor () {
+        // 实际上重写了 start 方法, this.port = 8321 未使用
         super(8321, { rpc: false })
     }
     
@@ -1380,6 +1394,7 @@ class DdbServer extends Server {
         this.handler = this.app.callback()
         
         this.server_http = http_create_server(this.handler)
+        this.server_http.unref()
         
         this.server_ws = new WebSocketServer({
             noServer: true,
@@ -1393,15 +1408,46 @@ class DdbServer extends Server {
         })
         
         // --- dispatch websocket 连接请求
-        this.server_http.on('upgrade', this.on_upgrade.bind(this))
+        this.server_http.on(
+            'upgrade',
+            this.on_upgrade.bind(this)
+        )
         
-        this.server_http.on('error', (err) => {
-            window.showErrorMessage(err.message)
-        })
-        
-        await new Promise<void>(resolve => {
-            this.server_http.listen(this.port, resolve)
-        })
+        // 获取配置的端口
+        for (const port of (function * () {
+                for (const range of 
+                    workspace.getConfiguration('dolphindb')
+                        .get<string>('ports')
+                        .split(',')
+                ) {
+                    const [left, right] = range.split('-')
+                        .map(x => 
+                            Number(x))
+                    
+                    if (!right)
+                        yield left
+                    
+                    for (let i = left;  i <= right;  i++)
+                        yield i
+                }
+            })()
+        )
+            try {
+                await new Promise<void>((resolve, reject) => {
+                    this.server_http.once('error', error => {
+                        console.log(`端口 ${port} 监听失败：${error.message}`)
+                        reject(error)
+                    })
+                    
+                    this.server_http.listen(port, resolve)
+                })
+                this.port = port
+                this.web_url = `http://localhost:${port}/`
+                break
+            } catch (error) {
+                if (error.code !== 'EADDRINUSE')
+                    throw error
+            }
     }
     
     
