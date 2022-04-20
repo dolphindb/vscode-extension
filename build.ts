@@ -152,8 +152,8 @@ async function build_package_json () {
             type: 'boolean',
             default: false,
             description: {
-                zh: '使用 Python 语言',
-                en: 'Use Python language'
+                zh: '使用 Python Parser 来解释执行脚本, 默认 false',
+                en: 'Use Python Parser to interpret and execute scripts, the default is false'
             },
         },
     ]

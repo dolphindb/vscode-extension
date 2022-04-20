@@ -11,6 +11,9 @@
     <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode' target='_blank'>
         <img alt='vscode extension installs' src='https://vsmarketplacebadge.apphb.com/installs/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
     </a>
+    <a href='https://github.com/dolphindb/api-javascript' target='_blank'>
+        <img alt='vscode extension installs' src='https://img.shields.io/npm/v/dolphindb?color=brightgreen&label=api-javascript&style=flat-square' />
+    </a>
 </p>
 
 ## [English](./README.md) | 中文
@@ -59,7 +62,7 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 
 
 #### 4. 打开或新建一个 DolphinDB 脚本文件
-- 如果脚本文件名是 `.dos` 后缀，插件会自动识别为 DolphinDB 语言，自动启用语法高亮及代码补全、提示
+- 如果脚本文件名是 `.dos` 后缀 (DolphinDB Script 的缩写)，插件会自动识别为 DolphinDB 语言，自动启用语法高亮及代码补全、提示
 - 如果脚本文件名不是 `.dos` 后缀, 比如 `.txt` 后缀，则需要手动关联 DolphinDB 语言，方法如下：
 
 点击 VSCode 编辑器右下角状态栏的语言选择按钮，如下图  

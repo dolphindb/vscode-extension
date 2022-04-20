@@ -11,6 +11,9 @@
     <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode' target='_blank'>
         <img alt='vscode extension installs' src='https://vsmarketplacebadge.apphb.com/installs/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
     </a>
+    <a href='https://github.com/dolphindb/api-javascript' target='_blank'>
+        <img alt='vscode extension installs' src='https://img.shields.io/npm/v/dolphindb?color=brightgreen&label=api-javascript&style=flat-square' />
+    </a>
 </p>
 
 ## English | [中文](./README.zh.md)
@@ -60,7 +63,7 @@ There are four connection configurations by default. You can modify or add conne
 Move the mouse over an attribute to view the description of the corresponding attribute.
 
 #### 4. Open or create a DolphinDB script file
-- If the script file name is suffixed with `.dos`, the plugin will automatically recognize the DolphinDB language, and automatically enable syntax highlighting, code completion, and prompts
+- If the script file name is suffixed with `.dos` (short for DolphinDB Script), the plugin will automatically recognize the DolphinDB language, and automatically enable syntax highlighting, code completion, and prompts
 - If the script file name is not `.dos` suffix, such as `.txt` suffix, you need to manually associate the DolphinDB language, the method is as follows:
 
 Click the language selection button in the status bar in the lower right corner of the VSCode editor, as shown below  

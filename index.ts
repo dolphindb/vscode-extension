@@ -14,6 +14,9 @@ import {
     
     languages,
     
+    extensions,
+    ExtensionKind,
+    
     ThemeIcon,
     
     MarkdownString,
@@ -1415,6 +1418,29 @@ class DdbServer extends Server {
         
         // 获取配置的端口
         for (const port of (function * () {
+            // 先打开 remote ssh 文件夹，运行代码，在远程主机上会监听 8321 端口，然后由 vscode 转发到本地，但是转发的端口监听的是 127.0.0.1:8321
+            // 再打开本地文件夹，运行代码，在本地主机上 8321 依旧监听成功，因为监听的地址是 *:8321
+            // 因此，如果插件在远程运行，如 remote-ssh, 那么端口从后往前找第一个可用的，避免转发的端口与本地端口冲突的情况
+            // https://code.visualstudio.com/api/advanced-topics/remote-extensions
+            // Opening something in a local browser or application
+            if (extensions.getExtension('dolphindb.dolphindb-vscode').extensionKind === ExtensionKind.Workspace)  // running remotely
+                for (const range of 
+                    workspace.getConfiguration('dolphindb')
+                        .get<string>('ports')
+                        .split(',')
+                        .reverse()
+                ) {
+                    const [left, right] = range.split('-')
+                        .map(x => 
+                            Number(x))
+                    
+                    if (!right)
+                        yield left
+                    
+                    for (let i = right;  i >= left;  i--)
+                        yield i
+                }
+            else
                 for (const range of 
                     workspace.getConfiguration('dolphindb')
                         .get<string>('ports')
@@ -1430,8 +1456,7 @@ class DdbServer extends Server {
                     for (let i = left;  i <= right;  i++)
                         yield i
                 }
-            })()
-        )
+        })())
             try {
                 await new Promise<void>((resolve, reject) => {
                     this.server_http.once('error', error => {
