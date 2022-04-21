@@ -26,7 +26,7 @@ DolphinDB has developed this VSCode extension for the DolphinDB database, adding
 - Code highlighting
 - Code completion for keywords, constants, built-in functions
 - Documentation hints, parameter hints for built-in functions
-- Execute the code and display the print message and the execution result in the terminal
+- The terminal can display the results of code execution and the messages output by the print function
 - Manage multiple database connections in the side panel, showing session variables
 - Display data structures such as tables, vectors, matrices, etc. in the browser pop-up window
 

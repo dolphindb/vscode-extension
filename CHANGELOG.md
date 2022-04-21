@@ -1,13 +1,35 @@
-# Change Log
+# Change Log (更新日志)
+## [2.0.570] - 2022.04.21
+-   增加 dolphindb.ports 配置  
+    Add dolphindb.ports configuration
+
+-   动态选择 listen port, 以支持多个 VSCode 窗口
+    Dynamically select listen port to support multiple VSCode windows
+
+-   修复 remote ssh 下端口冲突的问题
+    Fix the problem of port conflict under remote ssh
 
 ## [2.0.500] - 2022.04.07
-- Better code highlighting (更好的代码高亮)
-- Function, keyword, constant code completion (函数、关键字、常量代码补全)
-- Function documentation hints, parameter hints (函数文档提示，参数提示)
-- Code execution supports print messages (代码执行支持 print 消息)
-- Optimized connection management, supports multiple connections at the same time (优化连接管理、同时支持多个连接)
-- Sidebar session variable explorer refactoring (侧边栏会话变量 explorer 重构)
-- Display the execution results in the browser, and support multi-window display of data tables and vectors (在浏览器中展示执行结果，并支持数据表、向量的多窗口展示)
+-   更好的代码高亮
+    Better code highlighting
+
+-   函数、关键字、常量代码补全
+    Function, keyword, constant code completion
+
+-   函数文档提示，参数提示
+    Function documentation hints, parameter hints
+
+-   代码执行支持 print 消息
+    Code execution supports print messages
+
+-   优化连接管理、同时支持多个连接
+    Optimized connection management, supports multiple connections at the same time
+
+-   侧边栏会话变量 explorer 重构
+    Sidebar session variable explorer refactoring
+
+-   在浏览器中展示执行结果，并支持数据表、向量的多窗口展示
+    Display the execution results in the browser, and support multi-window display of data tables and vectors
 
 ## [0.6.6] - 2019-09-07
 * Add right-click menu "Login"
