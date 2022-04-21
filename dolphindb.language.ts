@@ -63,6 +63,8 @@ export const keywords = [
     'alter',
     'delete',
     
+    'transaction',
+    
     'inner join',
     'full join',
     'left join',
