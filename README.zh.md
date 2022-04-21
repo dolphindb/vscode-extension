@@ -110,3 +110,6 @@ VSCode 编辑器下方的 Terminal 中也会有基于文本的输出
 <img src='./images/expand-doc.png' width='800'>
 
 函数输入完成后，将鼠标悬浮于函数名称上，也可查看函数文档
+
+## 用户手册
+https://github.com/dolphindb/Tutorials_CN/blob/master/vscode_extension.md

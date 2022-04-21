@@ -111,3 +111,6 @@ When entering a DolphinDB built-in function in the VSCode editor, click the arro
 <img src='./images/expand-doc.png' width='800'>
 
 After the function input is complete, hover the mouse over the function name to view the function documentation
+
+## User Manual
+https://github.com/dolphindb/Tutorials_EN/blob/master/vscode_extension.md
