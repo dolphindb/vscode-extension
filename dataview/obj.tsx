@@ -182,6 +182,9 @@ function Vector ({
     }, [obj, objref, page_index, page_size])
     
     
+    if (!info.rows)
+        return <>{ (obj || objref.obj).toString() }</>
+    
     let rows = new Array(nrows)
     for (let i = 0;  i < nrows;  i++)
         rows[i] = i
