@@ -5,7 +5,8 @@ import './window.sass'
 
 
 import { default as React, useEffect } from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot as create_root } from 'react-dom/client'
+
 import { ConfigProvider } from 'antd'
 import zh from 'antd/lib/locale/zh_CN'
 import en from 'antd/lib/locale/en_US'
@@ -85,7 +86,7 @@ function DdbObjWindow () {
     }</ConfigProvider>
 }
 
-ReactDOM.render(
-    <DdbObjWindow/>,
+create_root(
     document.querySelector('.root')
-)
+).render(<DdbObjWindow/>)
+

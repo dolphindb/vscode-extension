@@ -4,7 +4,8 @@ import '../fonts/myfont.sass'
 import './index.sass'
 
 import { default as React, useEffect } from 'react'
-import ReactDOM from 'react-dom'
+import { createRoot as create_root } from 'react-dom/client'
+
 import {
     ConfigProvider,
 } from 'antd'
@@ -140,7 +141,6 @@ function DataView () {
 }
 
 
-ReactDOM.render(
-    <DataView/>,
+create_root(
     document.querySelector('.root')
-)
+).render(<DataView/>)

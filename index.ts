@@ -47,6 +47,8 @@ import {
     TreeItemCollapsibleState,
     type TreeDataProvider,
     type ProviderResult,
+    
+    type CancellationToken,
 } from 'vscode'
 
 import dayjs from 'dayjs'
@@ -270,9 +272,6 @@ export async function activate (ctx: ExtensionContext) {
     ctx.subscriptions.push(
         languages.registerCompletionItemProvider('dolphindb', {
             provideCompletionItems (doc, pos, canceller, ctx) {
-                if (canceller.isCancellationRequested)
-                    return
-                
                 const keyword = doc.getText(
                     doc.getWordRangeAtPosition(pos)
                 )
@@ -337,9 +336,6 @@ export async function activate (ctx: ExtensionContext) {
             },
             
             resolveCompletionItem (item, canceller) {
-                if (canceller.isCancellationRequested)
-                    return
-                
                 item.documentation = get_func_md(item.label as string)
                 
                 return item
@@ -352,9 +348,6 @@ export async function activate (ctx: ExtensionContext) {
     ctx.subscriptions.push(
         languages.registerHoverProvider('dolphindb', {
             provideHover (doc, pos, canceller) {
-                if (canceller.isCancellationRequested)
-                    return
-                
                 const md = get_func_md(
                     doc.getText(
                         doc.getWordRangeAtPosition(pos)
@@ -374,9 +367,6 @@ export async function activate (ctx: ExtensionContext) {
     ctx.subscriptions.push(
         languages.registerSignatureHelpProvider('dolphindb', {
             provideSignatureHelp (doc, pos, canceller, ctx) {
-                if (canceller.isCancellationRequested)
-                    return
-                
                 const { func_name, param_search_pos } = find_func_start(doc, pos)
                 if (param_search_pos === -1) 
                     return
@@ -385,11 +375,11 @@ export async function activate (ctx: ExtensionContext) {
                 if (index === -1) 
                     return
                 
-                const extractedSigAndParam = get_signature_and_params(func_name)
-                if (!extractedSigAndParam)
+                const signature_and_params = get_signature_and_params(func_name)
+                if (!signature_and_params)
                     return
                 
-                const { signature, params } = extractedSigAndParam
+                const { signature, params } = signature_and_params
                 let sig = new SignatureInformation(
                     signature,
                     get_func_md(func_name)
@@ -708,8 +698,8 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
             }
             
             case node instanceof DdbVarLocation: {
-                const { scalar, pair, vector, set, dict, matrix, table, chart, chunk } = node as DdbVarLocation
-                return [scalar, pair, vector, set, dict, matrix, table, chart, chunk].filter(node => 
+                const { scalar, object, pair, vector, set, dict, matrix, table, chart, chunk } = node as DdbVarLocation
+                return [scalar, object, pair, vector, set, dict, matrix, table, chart, chunk].filter(node => 
                     node.vars.length
                 )
             }
@@ -717,6 +707,14 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
             case node instanceof DdbVarForm:
                 return (node as DdbVarForm).vars
         }
+    }
+    
+    async resolveTreeItem (item: TreeItem, element: TreeItem, canceller: CancellationToken): Promise<TreeItem> {
+        if (!(item instanceof DdbVar))
+            return
+        
+        await item.resolve_tooltip()
+        return item
     }
 }
 
@@ -794,6 +792,16 @@ class DdbConnection extends TreeItem {
     }
     
     
+    /**
+         执行代码后更新变量面板  
+         变量只获取 scalar 和 pair 这两中不可变类型的值  
+         因为如果将 vector, matrix 等类型的变量作为 any vector 的元素创建 any vector，会失去 ownership，变得不可修改，如下  
+         ```dolphindb
+         a = [1]
+         (a, 0)  // 获取本地变量的值，展示在变量面板
+         append!(a, 1)  // error: append!(a, 1) => Read only object or object without ownership can't be applied to mutable function append!
+         ```
+     */
     async update () {
         const objs = await this.ddb.call('objs', [true])
         
@@ -818,6 +826,9 @@ class DdbConnection extends TreeItem {
                 extra: string
             }) => ({
                 node: this.name,
+                
+                ddb: this.ddb,
+                
                 name,
                 type: (() => {
                     const _type = type.toLowerCase()
@@ -827,10 +838,17 @@ class DdbConnection extends TreeItem {
                             DdbType[_type]
                 })(),
                 form: (() => {
-                    let _form = form.toLowerCase()
-                    if (_form === 'dictionary')
-                        _form = 'dict'
-                    return DdbForm[_form]
+                    const _form = form.toLowerCase()
+                    switch (_form) {
+                        case 'dictionary':
+                            return DdbForm.dict
+                        
+                        case 'sysobj':
+                            return DdbForm.object
+                            
+                        default:
+                            return DdbForm[_form]
+                    }
                 })(),
                 rows,
                 cols: columns,
@@ -838,23 +856,32 @@ class DdbConnection extends TreeItem {
                 shared,
                 extra,
                 obj: undefined as DdbObj
-            })
-        )
+            }))
+            .filter(v => 
+                v.name !== 'pnode_run' && 
+                !(v.form === DdbForm.object && (
+                    v.name === 'list' ||
+                    v.name === 'tuple' ||
+                    v.name === 'dict' ||
+                    v.name === 'set' ||
+                    v.name === '_ddb'
+                ))
+            )
         
-        let vars_light = vars_data.filter(v =>
-            v.bytes <= DdbVar.size_limit)
+        let imutables = vars_data.filter(v =>
+            v.form === DdbForm.scalar || v.form === DdbForm.pair)
         
-        if (vars_light.length) {
+        if (imutables.length) {
             const { value: values } = await this.ddb.eval<DdbObj<DdbObj[]>>(
                 `(${
-                    vars_light.map(({ name }) => 
+                    imutables.map(({ name }) => 
                         name
                     ).join(', ')
-                }, 0)`
+                }, 0)${ this.python ? '.toddb()' : '' }`
             )
             
             for (let i = 0;  i < values.length - 1;  i++)
-                vars_light[i].obj = values[i]
+                imutables[i].obj = values[i]
         }
         
         this.vars = vars_data.map(data => 
@@ -908,6 +935,7 @@ class DdbVarLocation extends TreeItem {
     
     chunk: DdbVarForm
     
+    object: DdbVarForm
     
     constructor (connection: DdbConnection, shared: boolean) {
         super(
@@ -926,6 +954,7 @@ class DdbVarLocation extends TreeItem {
         this.table  = new DdbVarForm(connection, this.shared, DdbForm.table)
         this.chart  = new DdbVarForm(connection, this.shared, DdbForm.chart)
         this.chunk  = new DdbVarForm(connection, this.shared, DdbForm.chunk)
+        this.object = new DdbVarForm(connection, this.shared, DdbForm.object)
     }
     
     
@@ -944,6 +973,7 @@ class DdbVarLocation extends TreeItem {
         let tables:  DdbVar[] = [ ]
         let charts:  DdbVar[] = [ ]
         let chunks:  DdbVar[] = [ ]
+        let objects:  DdbVar[] = [ ]
         
         for (const v of this.vars)
             switch (v.form) {
@@ -982,6 +1012,10 @@ class DdbVarLocation extends TreeItem {
                 case DdbForm.chunk:
                     chunks.push(v)
                     break
+                    
+                case DdbForm.object:
+                    objects.push(v)
+                    break
             }
         
         this.scalar.update(scalars)
@@ -993,6 +1027,7 @@ class DdbVarLocation extends TreeItem {
         this.table.update(tables)
         this.chart.update(charts)
         this.chunk.update(chunks)
+        this.object.update(objects)
     }
 }
 
@@ -1028,9 +1063,12 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
     static contexts = {
         [DdbForm.scalar]: 'scalar',
         [DdbForm.pair]: 'pair',
+        [DdbForm.object]: 'object',
     } as const
     
     node: string
+    
+    ddb: DDB
     
     // --- by objs(true)
     name: string
@@ -1073,9 +1111,7 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
                         return `<${tname}>`
                     
                     case DdbForm.vector:
-                        if (64 <= this.type && this.type < 128)
-                            return `${DdbType[this.type - 64]}[][${this.rows}]`
-                        return `<${tname}> ${this.rows} rows`
+                        return `<${ 64 <= this.type && this.type < 128 ? `${DdbType[this.type - 64]}[]` : tname }> ${this.rows} rows`
                     
                     case DdbForm.set:
                         return `<${tname}> ${this.rows} keys`
@@ -1088,6 +1124,9 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
                     
                     case DdbForm.matrix:
                         return `<${tname}> ${this.rows} × ${this.cols}`
+                    
+                    case DdbForm.object:
+                        return ''
                     
                     default:
                         return ` ${DdbForm[this.form]} ${tname}`
@@ -1179,6 +1218,9 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
                         }
                     }
                     
+                    case DdbForm.object:
+                        return ''
+                    
                     default:
                         return ` [${Number(this.bytes).to_fsize_str().replace(' ', '')}]`
                 }
@@ -1186,11 +1228,6 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
             
             return this.name + type + value
         })()
-        
-        this.tooltip = this.obj ?
-                inspect(this.obj, { colors: false })
-            :
-                `${this.get_value_type()}(${Number(this.bytes).to_fsize_str()})`
         
         // scalar, pair 不显示 inspect actions, 作特殊区分
         this.contextValue = DdbVar.contexts[this.form] || 'var'
@@ -1227,6 +1264,9 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
             case DdbForm.matrix:
                 return `matrix[${this.rows}r][${this.cols}c]`
             
+            case DdbForm.object:
+                return 'object'
+            
             default:
                 return `${DdbForm[this.form]} ${tname}`
         }
@@ -1258,6 +1298,20 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
                 :
                     [ ]) as [Uint8Array, boolean],
             )
+    }
+    
+    
+    async resolve_tooltip () {
+        if (!this.obj && this.bytes <= DdbVar.size_limit)
+            this.obj = await this.ddb.eval(this.name)
+        
+        this.tooltip = this.obj ?
+                this.form === DdbForm.object ?
+                    (this.obj.value as string)
+                :
+                    inspect(this.obj, { colors: false })
+            :
+                `${this.get_value_type()}(${Number(this.bytes).to_fsize_str()})`
     }
 }
 
