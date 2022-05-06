@@ -27,13 +27,14 @@ DolphinDB 公司开发了这个针对 DolphinDB 数据库的 VSCode 插件，在
 - 关键字、常量、内置函数的代码补全
 - 内置函数的文档提示、参数提示
 - 终端可以展示代码执行结果以及 print 函数输出的消息
+- 在底部面板中以表格的形式展示表格、向量、矩阵等数据结构
 - 在侧边面板中管理多个数据库连接，展示会话变量
-- 在浏览器弹窗中展示表格、向量、矩阵等数据结构
+- 在浏览器弹窗中显示表格
 
 <img src='./images/demo.png' width='1200'>
 
 ## 使用说明
-#### 1. 安装或升级 VSCode 到最新版 (v1.66.0 以上)
+#### 1. 安装或升级 VSCode 到最新版 (v1.68.0 以上)
 https://code.visualstudio.com/
 
 
@@ -76,17 +77,17 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 - 如果当前有选中的代码，会将选中的代码发送至 DolphinDB Server 执行
 - 如果当前无选中的代码，会将当前光标所在的行发送至 DolphinDB Server 执行
 
-执行代码后会自动在浏览器中打开 `DolphinDB Data Browser` 页面 (URL 可能是 http://localhost:8321/)
+执行代码后，VSCode 编辑器下方的终端内会有基于文本的输出，如果执行的代码最后一条语句返回了表格、数组、矩阵，则会在 VSCode 编辑器下方面板的 DolphinDB 区域中以表格的形式展示表格、向量、矩阵等数据结构。建议将 DolphinDB 标签页的内容拖动到终端的右侧，如下图
 
-如果执行的代码最后一条语句返回了表格、数组、矩阵，则会在 `DolphinDB Data Browser` 页面以表格的形式展现
+<img src='./images/drag-dataview.png' width='600'>
 
-VSCode 编辑器下方的 Terminal 中也会有基于文本的输出
+<img src='./images/with-dataview.png' width='600'>
 
 如果出现服务器连接错误 (如：`ws://xxx` errored)，请确保:
 - DolphinDB Server 版本不低于 `1.30.16` 或 `2.00.4`
 - 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode
 
-(如需自定义快捷键也可以到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，输入 dolphindb, 找到 execute 后，双击，输入你想要的快捷键)
+(如需自定义快捷键，也可以到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，输入 dolphindb, 找到 execute 后，双击，输入你想要的快捷键)
 
 (为了在浏览器中展示表格等数据，每个 VSCode 窗口会启动一个本地 HTTP 服务器，其可用端口范围可以通过 `dolphindb.ports` 配置，默认为 `8321-8420`，鼠标悬浮在 ports 上可查看详细解释)
 
@@ -96,8 +97,8 @@ VSCode 编辑器下方的 Terminal 中也会有基于文本的输出
 - 点击连接右侧的按钮手动断开连接
 - 查看会话变量的值
 - 非 scalar, pair 类型的变量右侧有两个图标
-    - 点击左边的图标可以在浏览器页面 http://localhost:8321/ 中查看变量
-    - 点击右边的图标可以直接打开一个浏览器弹窗，在弹窗中查看变量 (需要配置浏览器允许弹窗, 见后文)
+    - 点击左边的图标可以在编辑器下方面板的 DolphinDB 区域中查看变量
+    - 点击右边的图标可以直接打开一个浏览器弹窗，在弹窗中查看变量 (需要配置浏览器允许弹窗, 见后文)。弹窗功能需要浏览器中有一个打开的 `DolphinDB Data Browser` 标签页 (URL 可能是 http://localhost:8321/)，如果缺少这个标签页插件会先自动打开这个页面
 
 <img src='./images/explorer.png' width='400'>
 

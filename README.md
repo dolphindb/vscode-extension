@@ -27,14 +27,15 @@ DolphinDB has developed this VSCode extension for the DolphinDB database, adding
 - Code completion for keywords, constants, built-in functions
 - Documentation hints, parameter hints for built-in functions
 - The terminal can display the results of code execution and the messages output by the print function
+- Display data structures such as tables, vectors, matrices, etc. in tabular form in the bottom panel
 - Manage multiple database connections in the side panel, showing session variables
-- Display data structures such as tables, vectors, matrices, etc. in the browser pop-up window
+- Display table in browser popup
 
 <img src='./images/demo.png' width='1200'>
 
 
 ## Getting Started
-#### 1. Upgrade VSCode to the latest version (above v1.66.0)
+#### 1. Install or upgrade VSCode to the latest version (above v1.68.0)
 https://code.visualstudio.com/
 
 
@@ -76,11 +77,11 @@ In the opened DolphinDB script file, you can press the shortcut key `Ctrl + E` t
 - If there is currently selected code, the selected code will be sent to DolphinDB Server for execution
 - If there is no currently selected code, the line where the current cursor is will be sent to DolphinDB Server for execution
 
-The `Dolphindb Data Browser` page (URL may be http://localhost:8321/) will be automatically opened in the browser after executing the code
+After the code is executed, there will be text-based output in the terminal below the VSCode editor. If the last statement of the executed code returns a table, array, or matrix, it will be displayed in the form of a table in the DolphinDB area of the lower panel of the VSCode editor. Data structures such as tables, vectors, matrices, etc. It is recommended to drag the content of the DolphinDB tab to the right side of the terminal, as shown below
 
-If the final statement executed returns a table, vector or matrix, the result will be displayed in the form of a table in the `Dolphindb Data Browser` page.
+<img src='./images/drag-dataview.png' width='600'>
 
-There will also be text-based output in the Terminal below the VSCode editor
+<img src='./images/with-dataview.png' width='600'>
 
 If you get a connection error (eg: `ws://xxx` errored), make sure that:
 - DolphinDB Server version is at least `1.30.16` or `2.00.4`
@@ -97,8 +98,8 @@ As shown in the figure below, it has the following functions:
 - Click the button to the right of the connection to manually disconnect
 - View the value of the session variable
 - Variables other than scalar, pair have two icons to the right
-    - Click the icon on the left to view the variables in the browser page http://localhost:8321/
-    - Click the icon on the right to directly open a browser pop-up window and view the variables in the pop-up window (you need to configure the browser to allow the pop-up window, see later)
+    - Click the icon on the left to view the variables in the DolphinDB area of the lower panel of the editor
+    - Click the icon on the right to directly open a browser pop-up window and view the variables in the pop-up window (you need to configure the browser to allow the pop-up window, see later). The popup function requires an open `DolphinDB Data Browser` tab in the browser (the URL may be http://localhost:8321/). If this tab is missing, the plugin will automatically open this page first.
 
 <img src='./images/explorer.png' width='400'>
 
