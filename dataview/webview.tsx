@@ -1,10 +1,8 @@
 import 'antd/dist/antd.css'
 
-import 'xshell/scroll-bar.sass'
-
 import '../fonts/myfont.sass'
 
-import './index.sass'
+import './webview.sass'
 
 
 import { default as React, useEffect } from 'react'
@@ -36,18 +34,141 @@ import { Obj, DdbObjRef, open_obj } from './obj'
 
 
 
+interface VSCodeWebview {
+    postMessage (message: any, transfer?: ArrayBuffer[]): void
+    getState (): any
+    setState (state: any): void
+}
+
+declare function acquireVsCodeApi (): VSCodeWebview
+
+let vscode = acquireVsCodeApi()
+
+
+let remote = {
+    id: 0,
+    
+    /** 调用方发起的 rpc 对应响应的 message 处理器 */
+    handlers: [ ] as ((message: Message) => any)[],
+    
+    print: false,
+    
+    
+    /** 被调方的 message 处理器 */
+    funcs: { } as Record<
+        string, 
+        (message: Message) => void | Promise<void>
+    >,
+    
+    
+    init () {
+        window.addEventListener(
+            'message',
+            ({ data }) => {
+                remote.handle(data)
+            }
+        )
+    },
+    
+    
+    send (message: Message) {
+        if (!('id' in message))
+            message.id = this.id
+        
+        const { buffer } = Remote.pack(message)
+        
+        vscode.postMessage(buffer, [buffer])
+    },
+    
+    
+    /** 调用 remote 中的 func, 中间消息及返回结果可由 handler 处理，处理 done message 之后的返回值作为 call 函数的返回值 
+        如果为 unary rpc, 可以不传 handler, await call 之后可以得到响应 message 的 args
+    */
+    async call <T extends any[] = any[]> (
+        message: Message,
+        handler?: (message: Message<T>) => any
+    ) {
+        return new Promise<T>((resolve, reject) => {
+            this.handlers[this.id] = async (message: Message<T>) => {
+                const { error, done } = message
+                
+                if (error) {
+                    reject(
+                        Object.assign(
+                            new Error(),
+                            error
+                        )
+                    )
+                    return
+                }
+                
+                const result = handler ?
+                        await handler(message)
+                    :
+                        message.args
+                
+                if (done)
+                    resolve(result)
+            }
+            
+            this.send(message)
+            
+            this.id++
+        })
+    },
+    
+    
+    /** 处理接收到的 message
+        1. 被调用方接收 message 并开始处理
+        2. 调用方处理 message 响应
+    */
+    async handle (buffer: ArrayBuffer) {
+        const message = Remote.parse(buffer)
+        
+        const { func, id, done } = message
+        
+        if (this.print)
+            console.log(message)
+        
+        if (func) // 作为被调方
+            try {
+                const handler = this.funcs[func]
+                
+                if (!handler)
+                    throw new Error(`找不到 rpc handler for '${func}'`)
+                
+                await handler(message)
+            } catch (error) {
+                this.send(
+                    {
+                        id,
+                        error,
+                        done: true
+                    },
+                )
+                
+                throw error
+            }
+        else {  // 作为发起方
+            this.handlers[id](message)
+            
+            if (done)
+                this.handlers[id] = null
+        }
+    }
+}
+
+
 export type Result = { type: 'object', data: DdbObj } | { type: 'objref', data: DdbObjRef }
 
 export class DataViewModel extends Model<DataViewModel> {
-    remote = new Remote({
-        url: `ws://${location.host}`,
-    })
-    
     result: Result
     
     
     async init () {
-        this.remote.call(
+        remote.init()
+        
+        remote.call(
             { func: 'subscribe_repl' },
             async ({
                 args: [type, data, le]
@@ -73,7 +194,7 @@ export class DataViewModel extends Model<DataViewModel> {
             }
         )
         
-        this.remote.call(
+        remote.call(
             { func: 'subscribe_inspection' },
             async ({
                 args: [ddbvar, open, buffer, le]
@@ -88,7 +209,7 @@ export class DataViewModel extends Model<DataViewModel> {
                         await open_obj({
                             obj: ddbvar.obj,
                             objref: null,
-                            remote: this.remote
+                            remote
                         })
                     else
                         this.set({
@@ -103,7 +224,7 @@ export class DataViewModel extends Model<DataViewModel> {
                         await open_obj({
                             obj: null,
                             objref: objref,
-                            remote: this.remote
+                            remote
                         })
                     else
                         this.set({
@@ -122,13 +243,13 @@ let model = window.model = new DataViewModel()
 
 
 function DataView () {
-    const { result, remote } = model.use(['result', 'remote'])
+    const { result } = model.use(['result'])
     
     useEffect(() => {
         model.init()
     }, [ ])
     
-    if (!result || !remote)
+    if (!result)
         return <div>DolphinDB Data Browser</div>
     
     const { type, data } = result

@@ -23,9 +23,7 @@ import {
     type DdbSymbolExtendedValue,
     type DdbArrayVectorBlock,
 } from 'dolphindb/browser'
-import {
-    Remote,
-} from 'xshell/net.browser'
+import type { Message } from 'xshell/net.browser'
 
 
 import SvgLink from './link.icon.svg'
@@ -39,23 +37,32 @@ const views = {
     [DdbForm.matrix]: Matrix,
 }
 
+export type Context = 'page' | 'webview' | 'window'
+
+export interface Remote {
+    call <T extends any[] = any[]> (
+        message: Message,
+        handler?: (message: Message<T>) => any
+    ): Promise<T>
+}
+
 
 export function Obj ({
     obj,
     objref,
-    win = false,
+    ctx = 'webview',
     remote,
 }: {
     obj?: DdbObj
     objref?: DdbObjRef
-    win?: boolean
+    ctx?: Context
     remote: Remote
 }) {
     const info = obj || objref
     
     const View = views[info.form] || Default
     
-    return <View obj={obj} objref={objref} win={win} remote={remote} />
+    return <View obj={obj} objref={objref} ctx={ctx} remote={remote} />
 }
 
 
@@ -123,12 +130,12 @@ function Default ({ obj }: { obj: DdbObj }) {
 function Vector ({
     obj,
     objref,
-    win,
+    ctx,
     remote,
 }: {
     obj: DdbObj<DdbVectorValue>
     objref: DdbObjRef<DdbVectorValue>
-    win: boolean
+    ctx: Context
     remote: Remote
 }) {
     const info = obj || objref
@@ -222,7 +229,7 @@ function Vector ({
         
         <div className='bottom-bar'>
             <div className='actions'>
-                {!win && <Icon
+                {ctx === 'page' && <Icon
                     className='icon-link'
                     component={SvgLink}
                     onClick={async () => {
@@ -237,7 +244,7 @@ function Vector ({
                 current={page_index + 1}
                 pageSize={page_size}
                 pageSizeOptions={
-                    win ?
+                    ctx === 'window' ?
                         [10, 50, 100, 200, 500, 1000, 10000, 100000]
                     :
                         [20, 100, 200, 400, 1000, 10000, 100000]
@@ -405,19 +412,19 @@ function Cell ({
 function Table ({
     obj,
     objref,
-    win,
+    ctx,
     remote,
 }: {
     obj?: DdbObj<DdbObj<DdbVectorValue>[]>
     objref?: DdbObjRef<DdbObj<DdbVectorValue>[]>
-    win?: boolean
+    ctx: Context
     remote: Remote
 }) {
     const info = obj || objref
     
     const ncols = info.cols
     
-    const [page_size, set_page_size] = useState(20)
+    const [page_size, set_page_size] = useState(10)
     
     const nrows = Math.min(page_size, info.rows)
     
@@ -473,10 +480,10 @@ function Table ({
         
     
     return <div className='table'>
-        <div className='top'>
+        { ctx !== 'webview' && <div className='info'>
             <span className='name'>{info.name || 'table'}</span>
             <span className='desc'>{info.rows} × {info.cols}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
-        </div>
+        </div> }
         
         <AntTable
             dataSource={rows}
@@ -498,7 +505,7 @@ function Table ({
         
         <div className='bottom-bar'>
             <div className='actions'>
-                {!win && <Icon
+                {ctx === 'page' && <Icon
                     className='icon-link'
                     component={SvgLink}
                     onClick={async () => {
@@ -593,12 +600,12 @@ class TableColumn implements TableColumnType <number> {
 function Matrix ({
     obj,
     objref,
-    win,
+    ctx,
     remote,
 }: {
     obj?: DdbObj<DdbMatrixValue>
     objref?: DdbObjRef<DdbMatrixValue>
-    win?: boolean
+    ctx?: Context
     remote: Remote
 }) {
     const info = obj || objref
@@ -686,7 +693,7 @@ function Matrix ({
         
         <div className='bottom-bar'>
             <div className='actions'>
-                {!win && <Icon
+                {ctx === 'page' && <Icon
                     className='icon-link'
                     component={SvgLink}
                     onClick={async () => {

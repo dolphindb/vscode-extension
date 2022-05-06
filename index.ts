@@ -49,6 +49,8 @@ import {
     type ProviderResult,
     
     type CancellationToken,
+    
+    type WebviewView,
 } from 'vscode'
 
 import dayjs from 'dayjs'
@@ -67,7 +69,8 @@ import {
     inspect,
     set_inspect_options,
     delay,
-    delta2str
+    delta2str,
+    fread,
 } from 'xshell'
 import { Server } from 'xshell/server'
 import {
@@ -116,27 +119,221 @@ type DdbTerminal = Terminal & { printer: EventEmitter<string> }
 let term: DdbTerminal
 
 
+/** 基于 vscode webview 相关的消息函数 postMessage, onDidReceiveMessage, window.addEventListener('message', ...) 实现的 rpc  */
+let dataview = {
+    view: null as WebviewView,
+    
+    id: 0,
+    
+    /** 调用方发起的 rpc 对应响应的 message 处理器 */
+    handlers: [ ] as ((message: Message) => any)[],
+    
+    print: false,
+    
+    subscribers_repl: [ ] as DdbMessageListener[],
+    
+    subscribers_inspection: [ ] as ((ddbvar: Partial<DdbVar>, open: boolean, buffer?: Uint8Array, le?: boolean) => any)[],
+    
+    
+    /** 被调方的 message 处理器 */
+    funcs: {
+        async subscribe_repl ({ id }, view) {
+            console.log('webview subscribed to repl')
+            
+            function subscriber ({ type, data }: DdbMessage) {
+                dataview.send(
+                    {
+                        id,
+                        args: (() => {
+                            switch (type) {
+                                case 'print':
+                                case 'error':
+                                    return [type, data]
+                                
+                                case 'object':
+                                    return [type, data.pack(), data.le]
+                            }
+                        })()
+                    }
+                )
+            }
+            
+            dataview.subscribers_repl.push(subscriber)
+            
+            view.onDidDispose(() => {
+                console.log('webview unsubscribed repl due to dataview closed')
+                dataview.subscribers_repl = dataview.subscribers_repl.filter(s => 
+                    s !== subscriber)
+            })
+        },
+        
+        async subscribe_inspection ({ id }, view) {
+            console.log('subscribed to inspection')
+            
+            function subscriber (ddbvar: Partial<DdbVar>, open: boolean, buffer?: Uint8Array, le?: boolean) {
+                dataview.send(
+                    {
+                        id,
+                        args: [ddbvar, open, buffer, le]
+                    }
+                )
+            }
+            
+            dataview.subscribers_inspection.push(subscriber)
+            
+            view.onDidDispose(() => {
+                console.log('unsubscribed inspection due to dataview closed')
+                dataview.subscribers_inspection = dataview.subscribers_inspection.filter(s => 
+                    s !== subscriber)
+            })
+        },
+        
+        async eval ({ id, args: [node, script] }: Message<[string, string]>, view) {
+            let { ddb } = explorer.connections.find(({ name }) => 
+                name === node)
+                
+            const { buffer, le } = await ddb.eval(script, { parse_object: false })
+            
+            dataview.send(
+                {
+                    id,
+                    done: true,
+                    args: [buffer, le]
+                }
+            )
+        }
+    } as Record<
+        string, 
+        (message: Message, view?: WebviewView) => void | Promise<void>
+    >,
+    
+    
+    register () {
+        window.registerWebviewViewProvider(
+            'dolphindb.dataview',
+            {
+                async resolveWebviewView (view, ctx, canceller) {
+                    dataview.view = view
+                    
+                    view.webview.options = {
+                        enableCommandUris: true,
+                        enableScripts: true,
+                    }
+                    
+                    view.webview.onDidReceiveMessage(
+                        dataview.handle,
+                        dataview,
+                    )
+                    
+                    view.webview.html = (
+                        await fread(`${fpd_ext}dataview/webview.html`)
+                    ).replace(/\{host\}/g, `localhost:${server.port}`)
+                }
+            },
+            {
+                webviewOptions: {
+                    retainContextWhenHidden: true,
+                }
+            }
+        )
+        
+    },
+    
+    
+    send (message: Message) {
+        if (!('id' in message))
+            message.id = this.id
+        
+        this.view.webview.postMessage(
+            Remote.pack(message).buffer
+        )
+    },
+    
+    
+    /** 调用 remote 中的 func, 中间消息及返回结果可由 handler 处理，处理 done message 之后的返回值作为 call 函数的返回值 
+        如果为 unary rpc, 可以不传 handler, await call 之后可以得到响应 message 的 args
+    */
+    async call <T extends any[] = any[]> (
+        message: Message,
+        handler?: (message: Message<T>) => any
+    ) {
+        return new Promise<T>((resolve, reject) => {
+            this.handlers[this.id] = async (message: Message<T>) => {
+                const { error, done } = message
+                
+                if (error) {
+                    reject(
+                        Object.assign(
+                            new Error(),
+                            error
+                        )
+                    )
+                    return
+                }
+                
+                const result = handler ?
+                        await handler(message)
+                    :
+                        message.args
+                
+                if (done)
+                    resolve(result)
+            }
+            
+            this.send(message)
+            
+            this.id++
+        })
+    },
+    
+    
+    /** 处理接收到的 message
+        1. 被调用方接收 message 并开始处理
+        2. 调用方处理 message 响应
+    */
+    async handle (buffer: ArrayBuffer) {
+        const message = Remote.parse(buffer)
+        
+        const { func, id, done } = message
+        
+        if (this.print)
+            console.log(message)
+        
+        if (func) // 作为被调方
+            try {
+                const handler = this.funcs[func]
+                
+                if (!handler)
+                    throw new Error(`找不到 rpc handler for '${func}'`)
+                
+                await handler(message, this.view)
+            } catch (error) {
+                this.send(
+                    {
+                        id,
+                        error,
+                        done: true
+                    },
+                )
+                
+                throw error
+            }
+        else {  // 作为发起方
+            this.handlers[id](message)
+            
+            if (done)
+                this.handlers[id] = null
+        }
+    }
+}
+
+
 const ddb_commands = [
     async function execute () {
-        if (!server) {
-            server = new DdbServer()
-            
-            try {
-                await server.start()
-            } catch (error) {
-                window.showErrorMessage(error.message)
-            }
-        }
-        
         const { web_url } = server
         
         if (!term || term.exitStatus) {
             let printer = new EventEmitter<string>()
-            
-            let first = !term
-            
-            if (first)
-                open_url(web_url)
             
             await new Promise<void>(resolve => {
                 term = window.createTerminal({
@@ -154,6 +351,8 @@ const ddb_commands = [
                         
                         close () {
                             console.log('term.close()')
+                            term.dispose()
+                            printer.dispose()
                         },
                         
                         onDidWrite: printer.event,
@@ -164,9 +363,6 @@ const ddb_commands = [
                 
                 term.show(true)
             })
-            
-            if (first)  // 首次运行 execute
-                await delay(1000)
         }
         
         let { connection } = explorer
@@ -197,6 +393,9 @@ const ddb_commands = [
                                 data.replace(/\n/g, '\r\n') + 
                                 '\r\n'
                             )
+                        
+                        for (const subscriber of dataview.subscribers_repl)
+                            subscriber(message, ddb)
                         
                         for (const subscriber of server.subscribers_repl)
                             subscriber(message, ddb)
@@ -244,22 +443,32 @@ const ddb_commands = [
     async function open_variable (ddbvar: DdbVar) {
         console.log('open_variable', ddbvar)
         await ddbvar.inspect(true)
-    }
+    },
+    
+    async function reload_dataview () {
+        const { webview } = dataview.view
+        webview.html = webview.html + ' '
+    },
 ]
 
 
 export async function activate (ctx: ExtensionContext) {
+    // 命令注册
     for (const func of ddb_commands)
         ctx.subscriptions.push(
             commands.registerCommand(`dolphindb.${func.name}`, func)
         )
     
+    
+    // 连接、变量管理
     explorer = new DdbExplorer()
     
     explorer.view = window.createTreeView('dolphindb.explorer', {
         treeDataProvider: explorer
     })
     
+    
+    // 监听配置修改刷新连接
     workspace.onDidChangeConfiguration(event => {
         if (event.affectsConfiguration('dolphindb.connections')) {
             explorer.load_connections()
@@ -398,6 +607,17 @@ export async function activate (ctx: ExtensionContext) {
             }
         }, '(', ',')
     )
+    
+    
+    // HTTP Server
+    server = new DdbServer()
+    
+    try {
+        await server.start()
+        dataview.register()
+    } catch (error) {
+        window.showErrorMessage(error.message)
+    }
     
     
     console.log(
@@ -937,6 +1157,7 @@ class DdbVarLocation extends TreeItem {
     
     object: DdbVarForm
     
+    
     constructor (connection: DdbConnection, shared: boolean) {
         super(
             shared ? t('共享变量') : t('本地变量'),
@@ -1274,30 +1495,36 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
     
     
     async inspect (open = false) {
-        if (!server.subscribers_inspection.length) {
+        if (open && !server.subscribers_inspection.length) {
             open_url(server.web_url)
             await delay(3000)
         }
         
+        const args = [
+            {
+                node: this.node,
+                name: this.name,
+                form: this.form,
+                type: this.type,
+                rows: this.rows,
+                cols: this.cols,
+                bytes: this.bytes,
+                shared: this.shared,
+                extra: this.extra,
+            },
+            open,
+            ... (this.obj ? 
+                [this.obj.pack(), this.obj.le]
+            :
+                [ ]) as [Uint8Array, boolean],
+        ] as const
+        
+        
+        for (const subscriber of dataview.subscribers_inspection)
+            subscriber(...args)
+        
         for (const subscriber of server.subscribers_inspection)
-            subscriber(
-                {
-                    node: this.node,
-                    name: this.name,
-                    form: this.form,
-                    type: this.type,
-                    rows: this.rows,
-                    cols: this.cols,
-                    bytes: this.bytes,
-                    shared: this.shared,
-                    extra: this.extra,
-                },
-                open,
-                ... (this.obj ? 
-                    [this.obj.pack(), this.obj.le]
-                :
-                    [ ]) as [Uint8Array, boolean],
-            )
+            subscriber(...args)
     }
     
     
@@ -1522,6 +1749,7 @@ class DdbServer extends Server {
                 })
                 this.port = port
                 this.web_url = `http://localhost:${port}/`
+                console.log('dolphindb http server started:', this.web_url)
                 break
             } catch (error) {
                 if (error.code !== 'EADDRINUSE')
@@ -1550,24 +1778,17 @@ class DdbServer extends Server {
     
     override async router (ctx: Context) {
         let {
-            response,
             request: { path }
         } = ctx
-        
-        const fname = path.split('/').last
-        
-        if (DdbServer.dev && fname in DdbServer.libs) {
-            const fp = DdbServer.libs[fname]
-            response.redirect(`https://cdn.jsdelivr.net/npm/${fp}`)
-            response.status = 301
-            return true
-        }
         
         if (path === '/')
             path = '/index.html'
         
         if (path === '/window')
             path = '/window.html'
+        
+        if (path === '/webview')
+            path = '/webview.html'
         
         return this.try_send(
             ctx,

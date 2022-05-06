@@ -9,6 +9,6 @@
     "compilerOptions": {
         "outDir": "./out",
         "module": "ESNext",
-        "tsBuildInfoFile": "./node_modules/.web.tsbuildinfo",
+        "tsBuildInfoFile": "./out/.tsbuildinfo/web.json",
     }
 }

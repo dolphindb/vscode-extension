@@ -8,3 +8,4 @@
 docs.zh.json
 docs.en.json
 i18n/
+.tsbuildinfo/

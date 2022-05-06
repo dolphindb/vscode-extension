@@ -4,10 +4,10 @@ import type { Options as TSLoaderOptions } from 'ts-loader'
 import type { Options as SassOptions } from 'sass-loader'
 import sass from 'sass'
 
-import { fwrite, fcopy, fmkdir, request } from 'xshell'
+import { fwrite, fcopy, fmkdir } from 'xshell'
 import type { Item } from 'xshell/i18n'
 
-import { fpd_out, fpd_ext, vendors } from './config.js'
+import { fpd_out, fpd_ext } from './config.js'
 import { tm_language } from './dolphindb.language.js'
 import { r } from './i18n/index.js'
 
@@ -28,7 +28,6 @@ import { r } from './i18n/index.js'
             fcopy(fpd_ext + fname, fpd_out + fname)
         ),
         fcopy(`${fpd_ext}fonts/`, `${fpd_out}dataview/fonts/`),
-        get_vendors(`${fpd_out}dataview/`),
         build_package_json(),
         build_tm_language(),
         build_dataview(),
@@ -93,6 +92,14 @@ async function build_package_json () {
                 en: 'Inspect Variable in New Window'
             },
             icon: '$(multiple-windows)',
+        },
+        {
+            command: 'reload_dataview',
+            title: {
+                zh: '重新加载数据视图',
+                en: 'Reload Data View'
+            },
+            icon: '$(refresh)',
         },
     ]
     
@@ -215,13 +222,7 @@ async function build_package_json () {
             'onStartupFinished',
             
             // 'onView:dolphindb.env',
-            // 'onCommand:dolphindb.executeCode',
             // 'onCommand:dolphindb.addServer',
-            // 'onCommand:dolphindb.chooseServer',
-            // 'onCommand:dolphindb.removeServer',
-            // 'onCommand:dolphindb.helper',
-            // 'onCommand:dolphindb.login',
-            // 'onCommand:dolphindb.ssl'
         ],
         
         contributes: {
@@ -321,21 +322,32 @@ async function build_package_json () {
             //     }
             // ],
             
-            // viewsContainers: {
-            //     activitybar: [
-            //         {
-            //             id: 'dolphindb-explorer',
-            //             title: 'DolphinDB Explorer',
-            //             icon: 'media/explorer.svg'
-            //         }
-            //     ]
-            // },
+            viewsContainers: {
+                panel: [
+                    {
+                        id: 'ddbpanel',
+                        title: 'DolphinDB',
+                        icon: './icons/object.svg'
+                    }
+                ]
+            },
             
             views: {
                 explorer: [
                     {
                         id: 'dolphindb.explorer',
                         name: 'dolphindb',
+                    }
+                ],
+                
+                ddbpanel: [
+                    {
+                        type: 'webview',
+                        id: 'dolphindb.dataview',
+                        name: 'DataView',
+                        contextualTitle: 'DolphinDB',
+                        icon: './icons/object.svg',
+                        visibility: 'visible',
                     }
                 ]
             },
@@ -364,6 +376,16 @@ async function build_package_json () {
                         when: "view == dolphindb.explorer && viewItem == 'var'",
                         group: 'inline',
                     },
+                ],
+                
+                // webview 上方加刷新按钮
+                // 在 vscode 源码中搜索 MenuId.ViewTitle 查看相关属性及用法
+                'view/title': [
+                    {
+                        command: 'dolphindb.reload_dataview',
+                        group: 'navigation',
+                        when: 'view == dolphindb.dataview',
+                    }
                 ]
             }
             
@@ -542,28 +564,16 @@ async function build_dataview () {
         ),
         
         fcopy(
+            `${fpd_ext}dataview/webview.html`,
+            `${fpd_out}dataview/webview.html`,
+        ),
+        
+        fcopy(
             `${fpd_ext}dataview/logo.png`,
             `${fpd_out}dataview/logo.png`,
         ),
     ])
 }
-
-async function get_vendors (fpd: string, update = false) {
-    await Promise.all(
-        Object.entries(vendors)
-            .map(async ([name, fp]) => {
-                const fp_full = `${fpd}${name}`
-                
-                if (update || !fp_full.fexists)
-                    await fwrite(
-                        fp_full,
-                        await request(`https://cdn.jsdelivr.net/npm/${fp}`, { retries: 5 })
-                    )
-            }
-        )
-    )
-}
-
 
 const dataview_config: Webpack.Configuration = {
     name: 'DdbDataviewWebpackCompiler',
@@ -575,6 +585,7 @@ const dataview_config: Webpack.Configuration = {
     entry: {
         'index.js': './dataview/index.tsx',
         'window.js': './dataview/window.tsx',
+        'webview.js': './dataview/webview.tsx',
     },
     
     
@@ -596,13 +607,10 @@ const dataview_config: Webpack.Configuration = {
         // }
         
         // module: true,
-        
-        // 解决 'ERR_OSSL_EVP_UNSUPPORTED' 错误问题 for nodejs 17
-        // https://stackoverflow.com/questions/69394632/webpack-build-failing-with-err-ossl-evp-unsupported
-        hashFunction: 'sha256',
     },
     
-    target: ['web', 'es2020'],
+    // HookWebpackError: HMR is not implemented for module chunk format yet
+    target: ['web', 'es2022'],
     
     
     resolve: {
@@ -616,15 +624,6 @@ const dataview_config: Webpack.Configuration = {
         fallback: {
             process: false,
         }
-    },
-    
-    
-    externals: {
-        react: 'React',
-        'react-dom': 'ReactDOM',
-        jquery: '$',
-        lodash: '_',
-        antd: 'antd',
     },
     
     
@@ -724,7 +723,7 @@ const dataview_config: Webpack.Configuration = {
     
     cache: {
         type: 'filesystem',
-        compression: false,
+        compression: 'brotli',
     },
     
     ignoreWarnings: [

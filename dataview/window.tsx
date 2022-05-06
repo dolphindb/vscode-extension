@@ -1,6 +1,9 @@
+import 'antd/dist/antd.css'
+
 import 'xshell/scroll-bar.sass'
 
 import '../fonts/myfont.sass'
+
 import './window.sass'
 
 
@@ -18,12 +21,12 @@ import { Model } from 'react-object-model'
 
 import { language } from '../i18n'
 import { DdbForm, type DdbObj } from 'dolphindb/browser'
-import { type Remote } from 'xshell/net.browser'
 import { delay } from 'xshell/utils.browser'
 
 import {
     Obj,
     type DdbObjRef,
+    type Remote,
 } from './obj'
 
 
@@ -82,7 +85,7 @@ function DdbObjWindow () {
         return <div>DolphinDB Window</div>
     
     return <ConfigProvider locale={locales[language]} autoInsertSpaceInButton={false}>{
-        <Obj obj={obj} objref={objref} win remote={remote} />
+        <Obj obj={obj} objref={objref} ctx='window' remote={remote} />
     }</ConfigProvider>
 }
 

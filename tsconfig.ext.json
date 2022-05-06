@@ -7,6 +7,6 @@
     
     "compilerOptions": {
         "outDir": "./out/",
-        "tsBuildInfoFile": "./node_modules/.ext.tsbuildinfo",
+        "tsBuildInfoFile": "./out/.tsbuildinfo/ext.json",
     }
 }

@@ -8,6 +8,6 @@
     "compilerOptions": {
         "outDir": "./",
         "target": "ESNext",
-        "tsBuildInfoFile": "./node_modules/.build.tsbuildinfo"
+        "tsBuildInfoFile": "./out/.tsbuildinfo/build.json"
     }
 }
