@@ -37,7 +37,7 @@ const views = {
     [DdbForm.matrix]: Matrix,
 }
 
-export type Context = 'page' | 'webview' | 'window'
+export type Context = 'page' | 'webview' | 'window' | 'embed'
 
 export interface Remote {
     call <T extends any[] = any[]> (
@@ -229,7 +229,7 @@ function Vector ({
         
         <div className='bottom-bar'>
             <div className='actions'>
-                {ctx === 'page' && <Icon
+                {(ctx === 'page' || ctx === 'embed') && <Icon
                     className='icon-link'
                     component={SvgLink}
                     onClick={async () => {
@@ -505,7 +505,7 @@ function Table ({
         
         <div className='bottom-bar'>
             <div className='actions'>
-                {ctx === 'page' && <Icon
+                {(ctx === 'page' || ctx === 'embed') && <Icon
                     className='icon-link'
                     component={SvgLink}
                     onClick={async () => {
@@ -693,7 +693,7 @@ function Matrix ({
         
         <div className='bottom-bar'>
             <div className='actions'>
-                {ctx === 'page' && <Icon
+                {(ctx === 'page' || ctx === 'embed') && <Icon
                     className='icon-link'
                     component={SvgLink}
                     onClick={async () => {

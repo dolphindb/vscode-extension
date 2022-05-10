@@ -85,7 +85,9 @@ function DdbObjWindow () {
         return <div>DolphinDB Window</div>
     
     return <ConfigProvider locale={locales[language]} autoInsertSpaceInButton={false}>{
-        <Obj obj={obj} objref={objref} ctx='window' remote={remote} />
+        <div className='result'>
+            <Obj obj={obj} objref={objref} ctx='window' remote={remote} />
+        </div>
     }</ConfigProvider>
 }
 

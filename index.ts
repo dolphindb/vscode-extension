@@ -343,8 +343,7 @@ const ddb_commands = [
                         open (init_dimensions: TerminalDimensions | undefined) {
                             printer.fire(
                                 'DolphinDB Shell\r\n' +
-                                `${web_url}\r\n` +
-                                '\r\n'
+                                `${web_url}\r\n`
                             )
                             resolve()
                         },
@@ -378,6 +377,7 @@ const ddb_commands = [
         const time_start = dayjs()
         
         printer?.fire(
+            '\r\n\r\n' +
             `${time_start.format('YYYY.MM.DD HH:mm:ss.SSS')}  ${connection.name}\r\n`
         )
         
@@ -412,15 +412,13 @@ const ddb_commands = [
                  str_result +
                 `(${delta2str(
                     dayjs().diff(time_start)
-                )})\r\n` +
-                '\r\n'
+                )})\r\n`
             )
             
             await connection.update()
         } catch (error) {
             printer?.fire(
-                `${error.message.replace(/\n/g, '\r\n').red}\r\n` +
-                '\r\n'
+                `${error.message.replace(/\n/g, '\r\n').red}\r\n`
             )
             throw error
         }
