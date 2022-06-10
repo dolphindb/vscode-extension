@@ -2,7 +2,8 @@
     "extends": "./tsconfig.json",
     
     "files": [
-        "./build.ts"
+        "./build.ts",
+        "./dev.ts"
     ],
     
     "compilerOptions": {

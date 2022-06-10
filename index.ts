@@ -5,9 +5,11 @@ import {
 } from 'http'
 import type { Duplex } from 'stream'
 
+import path from 'upath'
 
 import {
     window,
+    
     workspace,
     
     commands,
@@ -59,6 +61,9 @@ import {
     default as Koa,
     type Context,
 } from 'koa'
+
+// @ts-ignore
+import KoaCors from '@koa/cors'
 import KoaCompress from 'koa-compress'
 import { userAgent as KoaUserAgent } from 'koa-useragent'
 import open_url from 'open'
@@ -72,7 +77,7 @@ import {
     delta2str,
     fread,
 } from 'xshell'
-import { Server } from 'xshell/server'
+import { Server } from 'xshell/server.js'
 import {
     DDB,
     DdbForm,
@@ -85,14 +90,18 @@ import {
     type DdbFunctionDefValue,
 } from 'dolphindb'
 
+import docs_zh from 'dolphindb/docs.zh.json'
+import docs_en from 'dolphindb/docs.en.json'
+import { constants, keywords } from 'dolphindb/language.js'
 
-import { fpd_ext } from './config'
-import { language, t } from './i18n'
-import { constants, keywords } from './dolphindb.language'
-import { get_text } from './utils'
+import { language, t } from './i18n/index.js'
+import { get_text } from './utils.js'
 
-import docs_zh from './docs.zh.json'
-import docs_en from './docs.en.json'
+
+const fpd_ext = path.normalizeTrim(
+    extensions.getExtension('dolphindb.dolphindb-vscode').extensionPath
+) + '/'
+
 
 set_inspect_options()
 
@@ -403,13 +412,30 @@ const ddb_commands = [
                 }
             )
             
-            const str_result = obj.form === DdbForm.scalar && obj.type === DdbType.void ?
-                    ''
-                :
-                    inspect(obj).replace(/\n/g, '\r\n') + '\r\n'
             
             printer?.fire(
-                 str_result +
+                 (() => {
+                     switch (obj.form) {
+                         case DdbForm.vector:
+                         case DdbForm.set:
+                         case DdbForm.matrix:
+                         case DdbForm.table:
+                         case DdbForm.chart: {
+                             const objstr = obj.inspect_type().blue
+                             console.log(objstr)
+                             return objstr.replace(/\n/g, '\r\n') + '\r\n'
+                         }
+                         
+                         default: {
+                             if (obj.type === DdbType.void)
+                                 break
+                             
+                             const objstr = inspect(obj)
+                             console.log(objstr)
+                             return objstr.replace(/\n/g, '\r\n') + '\r\n'
+                         }
+                     }
+                 })() +
                 `(${delta2str(
                     dayjs().diff(time_start)
                 )})\r\n`
@@ -1663,6 +1689,10 @@ class DdbServer extends Server {
                 },
                 threshold: 512
             })
+        )
+        
+        app.use(
+            KoaCors({ credentials: true })
         )
         
         app.use(KoaUserAgent)

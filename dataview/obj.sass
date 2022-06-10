@@ -37,28 +37,30 @@
         &.ant-table-thead > tr > th
             padding: 4px 8px
     
-    .bottom-bar
-        padding-top: 4px
-        
+.bottom-bar
+    padding-top: 4px
+    
+    display: flex
+    
+    align-items: center
+    
+    .actions
         display: flex
         
         align-items: center
         
-        .actions
-            display: flex
-            
-            align-items: center
-            
-            .icon-link
-                margin-right: 10px
-            
-            margin-left: -4px
-            
-            .icon-link
-                color: #888888
-                font-size: 28px
+        .icon-link
+            margin-right: 10px
+        
+        margin-left: -4px
+        
+        .icon-link
+            color: #888888
+            font-size: 28px
 
 .result
+    height: 100%
+    
     .ant-table-thead > tr > th,
     .ant-table-tbody > tr > td,
     .ant-table tfoot > tr > th,
@@ -90,3 +92,22 @@
         
     .ant-table table
         width: unset
+
+.chart
+    height: 100%
+    display: flex
+    flex-direction: column
+    
+    .chart-title
+        flex: 1
+        min-height: 0px
+        text-align: center
+    
+    .chart-body
+        flex: 10
+        min-height: 0px
+    
+    .bottom-bar
+        flex: 1
+        min-height: 0px
+        

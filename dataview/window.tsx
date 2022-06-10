@@ -2,7 +2,7 @@ import 'antd/dist/antd.css'
 
 import 'xshell/scroll-bar.sass'
 
-import '../fonts/myfont.sass'
+import './myfont.sass'
 
 import './window.sass'
 
@@ -11,23 +11,23 @@ import { default as React, useEffect } from 'react'
 import { createRoot as create_root } from 'react-dom/client'
 
 import { ConfigProvider } from 'antd'
-import zh from 'antd/lib/locale/zh_CN'
-import en from 'antd/lib/locale/en_US'
-import ja from 'antd/lib/locale/ja_JP'
-import ko from 'antd/lib/locale/ko_KR'
+import zh from 'antd/lib/locale/zh_CN.js'
+import en from 'antd/lib/locale/en_US.js'
+import ja from 'antd/lib/locale/ja_JP.js'
+import ko from 'antd/lib/locale/ko_KR.js'
 
 
 import { Model } from 'react-object-model'
 
-import { language } from '../i18n'
-import { DdbForm, type DdbObj } from 'dolphindb/browser'
-import { delay } from 'xshell/utils.browser'
+import { language } from '../i18n/index.js'
+import { DdbForm, type DdbObj } from 'dolphindb/browser.js'
+import { delay } from 'xshell/utils.browser.js'
 
 import {
     Obj,
     type DdbObjRef,
     type Remote,
-} from './obj'
+} from './obj.js'
 
 
 const locales = { zh, en, ja, ko }
