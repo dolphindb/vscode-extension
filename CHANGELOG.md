@@ -1,4 +1,11 @@
 # Change Log (更新日志)
+## [2.0.600] - 2022.06.10
+-   支持通过 plot 函数绘图  
+    Support for plotting through the plot function  
+
+-   表格、向量、图在 VSCode 内可以下方的面板中展示，不依赖浏览器  
+    Tables, vectors, and graphs can be displayed in the lower panel in VSCode, independent of the browser  
+
 ## [2.0.570] - 2022.04.21
 -   增加 dolphindb.ports 配置  
     Add dolphindb.ports configuration

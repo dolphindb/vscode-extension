@@ -1,9 +1,6 @@
 import 'antd/dist/antd.css'
 
-import '../fonts/myfont.sass'
-
 import './webview.sass'
-
 
 import { default as React, useEffect } from 'react'
 import { createRoot as create_root } from 'react-dom/client'
@@ -11,10 +8,10 @@ import { createRoot as create_root } from 'react-dom/client'
 import {
     ConfigProvider,
 } from 'antd'
-import zh from 'antd/lib/locale/zh_CN'
-import en from 'antd/lib/locale/en_US'
-import ja from 'antd/lib/locale/ja_JP'
-import ko from 'antd/lib/locale/ko_KR'
+import zh from 'antd/lib/locale/zh_CN.js'
+import en from 'antd/lib/locale/en_US.js'
+import ja from 'antd/lib/locale/ja_JP.js'
+import ko from 'antd/lib/locale/ko_KR.js'
 const locales = { zh, en, ja, ko }
 
 import { Model } from 'react-object-model'
@@ -22,15 +19,15 @@ import { Model } from 'react-object-model'
 import {
     Remote,
     type Message,
-} from 'xshell/net.browser'
+} from 'xshell/net.browser.js'
 import {
     DdbObj,
     DdbForm,
-} from 'dolphindb/browser'
+} from 'dolphindb/browser.js'
 
-import { language } from '../i18n'
+import { language } from '../i18n/index.js'
 
-import { Obj, DdbObjRef, open_obj } from './obj'
+import { Obj, DdbObjRef, open_obj } from './obj.js'
 
 
 
