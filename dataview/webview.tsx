@@ -251,7 +251,10 @@ function DataView () {
     
     const { type, data } = result
     
-    return <ConfigProvider locale={locales[language]} autoInsertSpaceInButton={false}>{
+    return <ConfigProvider
+        locale={locales[language] as any}
+        autoInsertSpaceInButton={false}
+    >{
         <div className='result'>{
             type === 'object' ?
                 <Obj obj={data} remote={remote} />

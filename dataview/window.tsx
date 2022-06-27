@@ -20,7 +20,11 @@ import ko from 'antd/lib/locale/ko_KR.js'
 import { Model } from 'react-object-model'
 
 import { language } from '../i18n/index.js'
-import { DdbForm, type DdbObj } from 'dolphindb/browser.js'
+import {
+    type DDB,
+    DdbForm,
+    type DdbObj
+} from 'dolphindb/browser.js'
 import { delay } from 'xshell/utils.browser.js'
 
 import {
@@ -34,17 +38,19 @@ const locales = { zh, en, ja, ko }
 
 
 export class WindowModel extends Model<WindowModel> {
-    obj: DdbObj
-    objref: DdbObjRef
+    obj?: DdbObj
+    objref?: DdbObjRef
     
-    remote: Remote
+    remote?: Remote
+    
+    ddb?: DDB
 }
 
 let model = window.model = new WindowModel()
 
 
 function DdbObjWindow () {
-    const { obj, objref, remote } = model.use(['obj', 'objref', 'remote'])
+    const { obj, objref, remote, ddb } = model.use(['obj', 'objref', 'remote', 'ddb'])
     
     useEffect(() => {
         (async () => {
@@ -70,13 +76,14 @@ function DdbObjWindow () {
         
         ;(async () => {
             await delay(200)
-            const $obj = document.querySelector<HTMLElement>('.root > div')
+            
             const $table = document.querySelector<HTMLTableElement>('table')
-            if (!$obj || !$table)
+            if (!$table)
                 return
+            
             window.resizeTo(
                 Math.min($table.offsetWidth + 40, screen.width - 100),
-                Math.min($obj.offsetHeight + 80,  screen.height - 100),
+                Math.min($table.offsetHeight + 200,  screen.height - 100),
             )
         })()
     }, [obj, objref])
@@ -84,9 +91,12 @@ function DdbObjWindow () {
     if (!obj && !objref)
         return <div>DolphinDB Window</div>
     
-    return <ConfigProvider locale={locales[language]} autoInsertSpaceInButton={false}>{
+    return <ConfigProvider
+        locale={locales[language] as any}
+        autoInsertSpaceInButton={false}
+    >{
         <div className='result'>
-            <Obj obj={obj} objref={objref} ctx='window' remote={remote} />
+            <Obj obj={obj} objref={objref} ctx='window' remote={remote} ddb={ddb}/>
         </div>
     }</ConfigProvider>
 }

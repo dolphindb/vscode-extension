@@ -428,7 +428,7 @@ const ddb_commands = [
                          
                          default: {
                              if (obj.type === DdbType.void)
-                                 break
+                                 return ''
                              
                              const objstr = inspect(obj)
                              console.log(objstr)
