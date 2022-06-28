@@ -1,7 +1,7 @@
 {
     "name": "dolphindb-vscode",
     "type": "module",
-    "version": "2.0.602",
+    "version": "2.0.604",
     "engines": {
         "vscode": ">=1.68.0"
     },
@@ -24,10 +24,10 @@
         "@types/react-dom": "^18.0.5",
         "@types/vscode": "^1.68.0",
         "@types/ws": "^8.5.3",
-        "antd": "^4.21.3",
+        "antd": "^4.21.4",
         "css-loader": "^6.7.1",
         "dayjs": "^1.11.3",
-        "dolphindb": "2.0.532",
+        "dolphindb": "2.0.601",
         "koa": "^2.13.4",
         "koa-compress": "^5.1.0",
         "koa-useragent": "^4.0.0",
@@ -36,7 +36,7 @@
         "react-dom": "^18.2.0",
         "react-object-model": "^0.0.19",
         "sass": "^1.53.0",
-        "sass-loader": "^13.0.1",
+        "sass-loader": "^13.0.2",
         "source-map-loader": "^4.0.0",
         "style-loader": "^3.3.1",
         "ts-loader": "^9.3.1",
