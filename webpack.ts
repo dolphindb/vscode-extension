@@ -135,6 +135,14 @@ export async function build_package_json () {
             },
             icon: '$(refresh)',
         },
+        {
+            command: 'open_dataview',
+            title: {
+                zh: '在新窗口中查看',
+                en: 'Inspect in New Window'
+            },
+            icon: '$(multiple-windows)',
+        },
     ]
     
     const connection_properties: Schema[] = [
@@ -420,6 +428,11 @@ export async function build_package_json () {
                 'view/title': [
                     {
                         command: 'dolphindb.reload_dataview',
+                        group: 'navigation',
+                        when: 'view == dolphindb.dataview',
+                    },
+                    {
+                        command: 'dolphindb.open_dataview',
                         group: 'navigation',
                         when: 'view == dolphindb.dataview',
                     }

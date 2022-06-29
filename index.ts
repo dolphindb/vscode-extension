@@ -336,6 +336,7 @@ let dataview = {
     }
 }
 
+let con_ddbvar: DdbVar
 
 const ddb_commands = [
     async function execute () {
@@ -412,6 +413,11 @@ const ddb_commands = [
                 }
             )
             
+            if (obj.length !== 0) {
+                con_ddbvar = new DdbVar(obj)
+                con_ddbvar.bytes = 0n
+                con_ddbvar.obj = obj
+            }
             
             printer?.fire(
                  (() => {
@@ -461,6 +467,7 @@ const ddb_commands = [
     
     async function inspect_variable (ddbvar: DdbVar) {
         console.log('inspect_variable', ddbvar)
+        con_ddbvar = ddbvar
         await ddbvar.inspect()
     },
     
@@ -472,6 +479,11 @@ const ddb_commands = [
     async function reload_dataview () {
         const { webview } = dataview.view
         webview.html = webview.html + ' '
+    },
+    
+    async function open_dataview () {
+        console.log('open_dataview', con_ddbvar)
+        await con_ddbvar.inspect(true)
     },
 ]
 
