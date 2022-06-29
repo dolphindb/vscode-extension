@@ -202,13 +202,9 @@ export class DataViewModel extends Model<DataViewModel> {
                 ddbvar.bytes = BigInt(ddbvar.bytes)
                 
                 if (ddbvar.obj)
-                    if (open)
-                        await open_obj({
-                            obj: ddbvar.obj,
-                            objref: null,
-                            remote
-                        })
-                    else
+                    if (open) {
+                        
+                    } else
                         this.set({
                             result: {
                                 type: 'object',
@@ -217,13 +213,9 @@ export class DataViewModel extends Model<DataViewModel> {
                         })
                 else {
                     const objref = new DdbObjRef(ddbvar)
-                    if (open)
-                        await open_obj({
-                            obj: null,
-                            objref: objref,
-                            remote
-                        })
-                    else
+                    if (open) {
+                        
+                    } else
                         this.set({
                             result: {
                                 type: 'objref',
