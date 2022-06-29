@@ -336,6 +336,7 @@ let dataview = {
     }
 }
 
+let lastvar: DdbVar
 
 const ddb_commands = [
     async function execute () {
@@ -412,6 +413,9 @@ const ddb_commands = [
                 }
             )
             
+            lastvar = new DdbVar(obj)
+            lastvar.bytes = 0n
+            lastvar.obj = obj
             
             printer?.fire(
                  (() => {
@@ -461,10 +465,11 @@ const ddb_commands = [
     
     async function inspect_variable (ddbvar: DdbVar) {
         console.log('inspect_variable', ddbvar)
+        lastvar = ddbvar
         await ddbvar.inspect()
     },
     
-    async function open_variable (ddbvar: DdbVar) {
+    async function open_variable (ddbvar: DdbVar = lastvar) {
         console.log('open_variable', ddbvar)
         await ddbvar.inspect(true)
     },

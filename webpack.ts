@@ -422,6 +422,11 @@ export async function build_package_json () {
                         command: 'dolphindb.reload_dataview',
                         group: 'navigation',
                         when: 'view == dolphindb.dataview',
+                    },
+                    {
+                        command: 'dolphindb.open_variable',
+                        group: 'navigation',
+                        when: 'view == dolphindb.dataview',
                     }
                 ]
             }
