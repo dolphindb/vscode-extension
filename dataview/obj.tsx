@@ -14,12 +14,14 @@ import { Line, Pie, Bar, Column, Scatter, Area, DualAxes, Histogram, Stock } fro
 
 
 import {
+    type DDB,
     DdbObj,
     DdbForm,
     DdbType,
     DdbChartType,
     nulls,
-    format,
+    formati,
+    
     datetime2ms,
     month2ms,
     minute2ms,
@@ -30,14 +32,15 @@ import {
     timestamp2ms,
     nanotime2ns,
     nanotimestamp2ns,
+    
     type DdbValue,
     type DdbVectorValue,
     type DdbMatrixValue,
     type DdbSymbolExtendedValue,
     type DdbArrayVectorBlock,
     type DdbChartValue,
-} from 'dolphindb/browser'
-import type { Message } from 'xshell/net.browser'
+} from 'dolphindb/browser.js'
+import type { Message } from 'xshell/net.browser.js'
 
 import SvgLink from './link.icon.svg'
 import { type WindowModel } from './window.js'
@@ -66,17 +69,19 @@ export function Obj ({
     objref,
     ctx = 'webview',
     remote,
+    ddb
 }: {
     obj?: DdbObj
     objref?: DdbObjRef
     ctx?: Context
-    remote: Remote
+    remote?: Remote
+    ddb?: DDB
 }) {
     const info = obj || objref
     
     const View = views[info.form] || Default
     
-    return <View obj={obj} objref={objref} ctx={ctx} remote={remote} />
+    return <View obj={obj} objref={objref} ctx={ctx} remote={remote} ddb={ddb} />
 }
 
 
@@ -116,11 +121,13 @@ export class DdbObjRef <T extends DdbValue = DdbValue> {
 export async function open_obj ({
     obj,
     objref,
-    remote
+    remote,
+    ddb,
 }: {
-    obj: DdbObj
-    objref: DdbObjRef
-    remote: Remote
+    obj?: DdbObj
+    objref?: DdbObjRef
+    remote?: Remote
+    ddb?: DDB
 }) {
     let win = window.open('./window', new Date().toString(), 'left=100,top=100,width=1000,height=640,popup')
     
@@ -132,12 +139,13 @@ export async function open_obj ({
         obj,
         objref,
         remote,
+        ddb
     })
 }
 
 
-function Default ({ obj }: { obj: DdbObj }) {
-    return <div>{obj.toString()}</div>
+function Default ({ obj, objref }: { obj?: DdbObj, objref?: DdbObjRef }) {
+    return <div>{(obj || objref).toString()}</div>
 }
 
 
@@ -146,11 +154,13 @@ function Vector ({
     objref,
     ctx,
     remote,
+    ddb,
 }: {
-    obj: DdbObj<DdbVectorValue>
-    objref: DdbObjRef<DdbVectorValue>
+    obj?: DdbObj<DdbVectorValue>
+    objref?: DdbObjRef<DdbVectorValue>
     ctx: Context
-    remote: Remote
+    remote?: Remote
+    ddb?: DDB
 }) {
     const info = obj || objref
     
@@ -178,27 +188,35 @@ function Vector ({
     
     useEffect(() => {
         (async () => {
-            if (obj)
+            if (
+                obj ||
+                info.form === DdbForm.set && objref.obj
+            )
                 return
             
-            const { node, name, rows } = objref
+            const { node, name, rows, form } = objref
             
             const offset = page_size * page_index
             
             if (offset >= rows)
                 return
             
-            const script = `${name}[${offset}:${Math.min(offset + page_size, rows)}]`
+            const script = form === DdbForm.set ?
+                    name
+                :
+                    `${name}[${offset}:${Math.min(offset + page_size, rows)}]`
             
-            console.log('vector.fetch:', script)
+            console.log(`${DdbForm[form]}.fetch:`, script)
             
-            objref.obj = DdbObj.parse(
-                ... await remote.call<[Uint8Array, boolean]>({
-                    func: 'eval',
-                    args: [node, script]
-                })
-                
-            ) as DdbObj<DdbObj[]>
+            if (ddb)
+                objref.obj = await ddb.eval(script)
+            else
+                objref.obj = DdbObj.parse(
+                    ... await remote.call<[Uint8Array, boolean]>({
+                        func: 'eval',
+                        args: [node, script]
+                    })
+                ) as DdbObj<DdbObj[]>
             
             render({ })
         })()
@@ -208,16 +226,17 @@ function Vector ({
     if (!info.rows)
         return <>{ (obj || objref.obj).toString() }</>
     
-    let rows = new Array(nrows)
+    let rows = new Array<number>(nrows)
     for (let i = 0;  i < nrows;  i++)
         rows[i] = i
     
-    let cols = new Array(ncols)
+    let cols = new Array<VectorColumn>(ncols)
     for (let i = 0;  i < ncols;  i++)
         cols[i] = new VectorColumn({
             obj,
             objref,
             index: i,
+            form: info.form as (DdbForm.set | DdbForm.vector),
             ncols,
             page_index,
             page_size,
@@ -225,7 +244,7 @@ function Vector ({
     
     return <div className='vector'>
         <AntTable
-            dataSource={rows}
+            dataSource={rows as any[]}
             rowKey={x => x}
             bordered
             columns={[
@@ -249,7 +268,7 @@ function Vector ({
                     className='icon-link'
                     component={SvgLink}
                     onClick={async () => {
-                        await open_obj({ obj, objref, remote })
+                        await open_obj({ obj, objref, remote, ddb })
                     }}
                 />}
             </div>
@@ -283,6 +302,8 @@ function Vector ({
 class VectorColumn implements TableColumnType <number> {
     index: number
     
+    form: DdbForm.vector | DdbForm.set
+    
     obj?: DdbObj<DdbVectorValue>
     objref?: DdbObjRef<DdbVectorValue>
     
@@ -304,7 +325,7 @@ class VectorColumn implements TableColumnType <number> {
         <Cell
             obj={this.obj || this.objref.obj}
             index={
-                (this.obj ? 
+                (this.obj || this.form === DdbForm.set ? 
                     this.page_size * this.page_index
                 :
                     0
@@ -313,8 +334,6 @@ class VectorColumn implements TableColumnType <number> {
         />
 }
 
-
-let decoder = new TextDecoder()
 
 function Cell ({
     obj,
@@ -326,100 +345,7 @@ function Cell ({
     if (!obj || index >= obj.rows)
         return null
     
-    const str = (() => {
-        // 逻辑类似 ddb.browser.ts 中的 DdbObj.toString(), 但是只返回一项
-        // case DdbForm.vector:
-        // case DdbForm.pair:
-        // case DdbForm.set:
-        
-        if (64 <= obj.type && obj.type < 128) {  // array vector
-            // 因为 array vector 目前只支持：Logical, Integral（不包括 INT128, COMPRESS 类型）, Floating, Temporal
-            // 都对应 TypedArray 中的一格，所以 lengths.length 等于 block 中的 row 的个数
-            // av = array(INT[], 0, 5)
-            // append!(av, [1..1])
-            // append!(av, [1..70000])
-            // append!(av, [1..1])
-            // append!(av, [1..500])
-            // ...
-            // av
-            
-            const _type = obj.type - 64
-            
-            let offset = 0
-            
-            for (const { lengths, data, rows } of obj.value as DdbArrayVectorBlock[]) {
-                let acc_len = 0
-                
-                if (offset + rows <= index) {
-                    offset += rows
-                    continue  // 跳过这个 block
-                }
-                
-                for (const length of lengths) {
-                    if (offset < index) {
-                        offset++
-                        acc_len += length
-                        continue
-                    }
-                    
-                    const limit = 10
-                    
-                    let items = new Array(
-                        Math.min(limit, length)
-                    )
-                    
-                    for (let i = 0;  i < items.length;  i++)
-                        items[i] = format(_type, data[acc_len + i], obj.le)
-                    
-                    return (
-                        items.join(', ') + (length > limit ? ', ...' : '')
-                    ).bracket('square')
-                }
-            }
-        }
-        
-        switch (obj.type) {
-            case DdbType.string:
-            case DdbType.symbol:
-                return obj.value[index]
-            
-            case DdbType.symbol_extended: {
-                const { base, data } = obj.value as DdbSymbolExtendedValue
-                return base[data[index]]
-            }
-            
-            case DdbType.uuid:
-            case DdbType.int128: 
-            case DdbType.ipaddr:
-                return format(
-                    obj.type,
-                    (obj.value as Uint8Array).subarray(16 * index, 16 * (index + 1)),
-                    obj.le
-                )
-            
-            case DdbType.blob: {
-                const value = obj.value[index] as Uint8Array
-                return value.length > 100 ?
-                        decoder.decode(
-                            value.subarray(0, 98)
-                        ) + '…'
-                    :
-                        decoder.decode(value)
-            }
-            
-            case DdbType.complex:
-            case DdbType.point:
-                return format(
-                    obj.type,
-                    (obj.value as Float64Array).subarray(2 * index, 2 * (index + 1)),
-                    obj.le
-                )
-            
-            
-            default:
-                return format(obj.type, obj.value[index], obj.le)
-        }
-    })()
+    const str = formati(obj, index)
     
     return str === 'null' ? null : <>{str}</>
 }
@@ -430,11 +356,13 @@ function Table ({
     objref,
     ctx,
     remote,
+    ddb
 }: {
     obj?: DdbObj<DdbObj<DdbVectorValue>[]>
     objref?: DdbObjRef<DdbObj<DdbVectorValue>[]>
     ctx: Context
-    remote: Remote
+    remote?: Remote
+    ddb?: DDB
 }) {
     const info = obj || objref
     
@@ -470,23 +398,26 @@ function Table ({
             
             console.log(`table.fetch:`, script)
             
-            objref.obj = DdbObj.parse(
-                ... await remote.call<[Uint8Array, boolean]>({
-                    func: 'eval',
-                    args: [node, script]
-                })
-            ) as DdbObj<DdbObj<DdbVectorValue>[]>
+            if (ddb)
+                objref.obj = await ddb.eval(script)
+            else
+                objref.obj = DdbObj.parse(
+                    ... await remote.call<[Uint8Array, boolean]>({
+                        func: 'eval',
+                        args: [node, script]
+                    })
+                ) as DdbObj<DdbObj<DdbVectorValue>[]>
             
             render({ })
         })()
     }, [obj, objref, page_index, page_size])
     
     
-    let rows = new Array(nrows)
+    let rows = new Array<number>(nrows)
     for (let i = 0;  i < nrows;  i++)
         rows[i] = i
     
-    let cols = new Array(ncols)
+    let cols = new Array<TableColumn>(ncols)
     for (let i = 0;  i < ncols;  i++)
         cols[i] = new TableColumn({
             obj,
@@ -500,11 +431,11 @@ function Table ({
     return <div className='table'>
         { ctx !== 'webview' && <div className='info'>
             <span className='name'>{info.name || 'table'}</span>
-            <span className='desc'>{info.rows} × {info.cols}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+            <span className='desc'>{info.rows}r × {info.cols}c  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
         </div> }
         
         <AntTable
-            dataSource={rows}
+            dataSource={rows as any[]}
             rowKey={x => x}
             bordered
             columns={[
@@ -527,7 +458,7 @@ function Table ({
                     className='icon-link'
                     component={SvgLink}
                     onClick={async () => {
-                        await open_obj({ obj, objref, remote })
+                        await open_obj({ obj, objref, remote, ddb })
                     }}
                 />}
             </div>
@@ -620,11 +551,13 @@ function Matrix ({
     objref,
     ctx,
     remote,
+    ddb,
 }: {
     obj?: DdbObj<DdbMatrixValue>
     objref?: DdbObjRef<DdbMatrixValue>
     ctx?: Context
-    remote: Remote
+    remote?: Remote
+    ddb?: DDB
 }) {
     const info = obj || objref
     
@@ -660,23 +593,26 @@ function Matrix ({
             
             console.log('matrix.fetch', script)
             
-            objref.obj = DdbObj.parse(
-                ... await remote.call<[Uint8Array, boolean]>({
-                    func: 'eval',
-                    args: [node, script]
-                })
-            ) as DdbObj<DdbMatrixValue>
+            if (ddb)
+                objref.obj = await ddb.eval(script)
+            else
+                objref.obj = DdbObj.parse(
+                    ... await remote.call<[Uint8Array, boolean]>({
+                        func: 'eval',
+                        args: [node, script]
+                    })
+                ) as DdbObj<DdbMatrixValue>
             
             render({ })
         })()
     }, [obj, objref, page_index, page_size])
     
     
-    let rows = new Array(nrows)
+    let rows = new Array<number>(nrows)
     for (let i = 0;  i < nrows;  i++)
         rows[i] = i
     
-    let cols = new Array(ncols)
+    let cols = new Array<MatrixColumn>(ncols)
     for (let i = 0;  i < ncols;  i++)
         cols[i] = new MatrixColumn({
             obj,
@@ -688,7 +624,7 @@ function Matrix ({
     
     return <div className='matrix'>
         <AntTable
-            dataSource={rows}
+            dataSource={rows as any[]}
             rowKey={x => x}
             bordered
             columns={[
@@ -697,13 +633,18 @@ function Matrix ({
                     key: 'index',
                     className: 'row-head',
                     fixed: 'left',
-                    render (irow) {
+                    render (irow: number) {
                         const i = obj ? 
                                 page_size * page_index + irow
                             :
                                 irow
                         
-                        return (obj || objref.obj)?.value.rows?.value[i] || i
+                        const rows = (obj || objref.obj)?.value.rows
+                        
+                        return rows ?
+                                formati(rows, i)
+                            :
+                                i
                     }
                 },
                 ... cols
@@ -717,7 +658,7 @@ function Matrix ({
                     className='icon-link'
                     component={SvgLink}
                     onClick={async () => {
-                        await open_obj({ obj, objref, remote })
+                        await open_obj({ obj, objref, remote, ddb })
                     }}
                 />}
             </div>
@@ -751,17 +692,22 @@ class MatrixColumn implements TableColumnType <number> {
     page_index: number
     page_size: number
     
-    title: number
+    title: number | string
     key: number
     
     constructor (data: Partial<MatrixColumn>) {
         Object.assign(this, data)
+        
         this.title = this.index
         this.key = this.index
+        
         let obj = this.obj || this.objref.obj
         if (!obj)
             return
-        this.title = obj.value.cols?.value[this.index] || this.index
+        
+        const cols = obj?.value.cols
+        if (cols)
+            this.title = formati(cols, this.index)
     }
     
     render = (irow: number) => {
@@ -816,11 +762,13 @@ function Chart ({
     objref,
     ctx,
     remote,
+    ddb,
 }: {
     obj?: DdbObj<DdbChartValue>
     objref?: DdbObjRef<DdbChartValue>
     ctx?: Context
-    remote: Remote
+    remote?: Remote
+    ddb?: DDB
 }) {
     const [
         {
@@ -862,12 +810,17 @@ function Chart ({
                         }
                     }
                 }
-            } = obj || DdbObj.parse(
-                ... await remote.call<[Uint8Array, boolean]>({
-                    func: 'eval',
-                    args: [objref.node, objref.name]
-                })
-            ) as DdbObj<DdbChartValue>
+            } = obj ||
+                (ddb ? 
+                    await ddb.eval(objref.name)
+                :
+                    DdbObj.parse(
+                        ... await remote.call<[Uint8Array, boolean]>({
+                            func: 'eval',
+                            args: [objref.node, objref.name]
+                        })
+                    ) as DdbObj<DdbChartValue>
+                )
             
             const { multi_y_axes = false } = extras || { }
             
@@ -1192,7 +1145,7 @@ function Chart ({
                     />
                 
                 case DdbChartType.kline:
-                    return <Stock 
+                    return <Stock
                         data={data}
                         xField='row'
                         yField={['open', 'close', 'high', 'low']}
@@ -1207,8 +1160,37 @@ function Chart ({
                             }
                         }}
                         padding='auto'
+                        tooltip={{
+                            crosshairs: {
+                                // 自定义 crosshairs line 样式
+                                line: {
+                                    style: {
+                                        lineWidth: 0.5,
+                                        stroke: 'rgba(0,0,0,0.25)'
+                                    }
+                                },
+                                text: (type, defaultContent, items) => {
+                                    let textContent
+                                    
+                                    if (type === 'x') {
+                                        const item = items[0]
+                                        textContent = item ? item.title : defaultContent
+                                    } else 
+                                        textContent = defaultContent.toFixed(2)
+                                    
+                                    return {
+                                        position: type === 'y' ? 'start' : 'end',
+                                        content: textContent,
+                                        // 自定义 crosshairs text 样式
+                                        style: {
+                                            fill: '#dfdfdf'
+                                        }
+                                    }
+                                }
+                            }
+                        }}
                     />
-                    
+                
                 default:
                     return <Line
                         className='chart-body'
@@ -1238,7 +1220,7 @@ function Chart ({
                     className='icon-link'
                     component={SvgLink}
                     onClick={async () => {
-                        await open_obj({ obj, objref, remote })
+                        await open_obj({ obj, objref, remote, ddb })
                     }}
                 />}
             </div>
