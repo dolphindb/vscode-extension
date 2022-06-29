@@ -413,9 +413,11 @@ const ddb_commands = [
                 }
             )
             
-            lastvar = new DdbVar(obj)
-            lastvar.bytes = 0n
-            lastvar.obj = obj
+            lastvar = new DdbVar({
+                ...obj,
+                obj,
+                bytes: 0n,
+            })
             
             printer?.fire(
                  (() => {
