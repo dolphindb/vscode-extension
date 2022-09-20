@@ -10,5 +10,95 @@
     },
     "本地变量": {
         "en": "Local Variables"
+    },
+    "DolphinDB 执行状态": {
+        "en": "DolphinDB Execution Status"
+    },
+    "取消作业": {
+        "en": "Cancel Job"
+    },
+    "执行中": {
+        "en": "Executing"
+    },
+    "空闲中": {
+        "en": "Idle"
+    },
+    "DolphinDB 小数显示位数": {
+        "en": "DolphinDB decimal places:"
+    },
+    "设置 DolphinDB 小数显示位数": {
+        "en": "Set DolphinDB decimal places:"
+    },
+    "小数位数:": {
+        "en": "decimal places:"
+    },
+    "设置小数点后显示的位数 (可取 0 ~ 20) (置空时重置为实际数据的位数)": {
+        "en": "Set the number of digits displayed after the decimal point (can be 0 ~ 20) (reset to the actual number of digits when empty)"
+    },
+    "实际数据的位数": {
+        "en": "number of digits of actual data"
+    },
+    "小数位数应为空或介于 0 - 20": {
+        "en": "Number of decimal places should be empty or between 0 - 20"
+    },
+    "dolphindb.decimals 配置被修改": {
+        "en": "dolphindb.decimals configuration modified"
+    },
+    "webview 已订阅 repl": {
+        "en": "webview is subscribed to repl"
+    },
+    "webview 的 repl 订阅被关闭，因为 dataview 被关闭": {
+        "en": "The repl subscription of the webview is closed because the dataview is closed"
+    },
+    "webview 已订阅 inspection": {
+        "en": "webview has subscribed inspection"
+    },
+    "webview 的 inspection 订阅被关闭，因为 dataview 被关闭": {
+        "en": "The inspection subscription of the webview is closed because the dataview is closed"
+    },
+    "dolphindb 终端被关闭": {
+        "en": "dolphindb terminal is closed"
+    },
+    "是否取消执行中的任务？": {
+        "en": "Cancel the task in progress?"
+    },
+    "是": {
+        "en": "Yes"
+    },
+    "否": {
+        "en": "No"
+    },
+    "断开 dolphindb 连接:": {
+        "en": "Disconnect dolphindb:"
+    },
+    "查看 dolphindb 变量:": {
+        "en": "Inspect the dolphindb variable:"
+    },
+    "在新窗口查看变量:": {
+        "en": "View variables in new window:"
+    },
+    "上传到服务器端的路径": {
+        "en": "The path to upload to the server side"
+    },
+    "文件上传成功": {
+        "en": "File uploaded successfully"
+    },
+    "切换连接:": {
+        "en": "Change connection:"
+    },
+    "连接成功:": {
+        "en": "Connection succeeded:"
+    },
+    "page 已订阅 repl": {
+        "en": "page subscribed to repl"
+    },
+    "page 的 repl 订阅被关闭，因为 websocket 连接被关闭": {
+        "en": "The page's repl subscription was closed because the websocket connection was closed"
+    },
+    "page 已订阅 inspection": {
+        "en": "page Subscribed inspection"
+    },
+    "page 的 inspection 订阅被关闭，因为 websocket 连接被关闭": {
+        "en": "The page's inspection subscription was closed because the websocket connection was closed"
     }
 }

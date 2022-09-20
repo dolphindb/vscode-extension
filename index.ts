@@ -1,25 +1,18 @@
 import zlib from 'zlib'
-import {
-    createServer as http_create_server,
-    type IncomingMessage,
-} from 'http'
+import { createServer, type IncomingMessage } from 'http'
 import type { Duplex } from 'stream'
-
-import path from 'upath'
 
 import {
     window,
-    
     workspace,
     
     commands,
     
     languages,
     
-    extensions,
-    ExtensionKind,
+    extensions, ExtensionKind,
     
-    ThemeIcon,
+    ThemeIcon, ThemeColor,
     
     MarkdownString,
     
@@ -27,45 +20,41 @@ import {
     Range,
     type Position,
     
-    EventEmitter,
-    type Event,
+    EventEmitter, type Event,
     
     type ExtensionContext,
     
-    type Terminal,
-    type TerminalDimensions,
+    type Terminal, type TerminalDimensions,
     
     Hover,
     
-    SignatureInformation,
-    SignatureHelp,
-    ParameterInformation,
+    SignatureInformation, SignatureHelp, ParameterInformation,
     
-    CompletionItem,
-    CompletionItemKind,
+    CompletionItem, CompletionItemKind,
     
-    type TreeView,
-    TreeItem,
-    TreeItemCollapsibleState,
-    type TreeDataProvider,
-    type ProviderResult,
+    type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider, type ProviderResult,
     
     type CancellationToken,
     
     type WebviewView,
+    
+    StatusBarAlignment, type StatusBarItem,
+    
+    InputBoxValidationSeverity,
+    
+    ConfigurationTarget, type ConfigurationChangeEvent,
 } from 'vscode'
 
+import path from 'upath'
 import dayjs from 'dayjs'
 import { WebSocket, WebSocketServer } from 'ws'
-import {
-    default as Koa,
-    type Context,
-} from 'koa'
+import { default as Koa, type Context } from 'koa'
 
 // @ts-ignore
 import KoaCors from '@koa/cors'
 import KoaCompress from 'koa-compress'
 import { userAgent as KoaUserAgent } from 'koa-useragent'
+
 import open_url from 'open'
 
 import {
@@ -76,6 +65,8 @@ import {
     delay,
     delta2str,
     fread,
+    genid,
+    assert,
 } from 'xshell'
 import { Server } from 'xshell/server.js'
 import {
@@ -86,8 +77,10 @@ import {
     DdbFunctionType,
     format,
     formati,
+    type DdbMessage,
     type DdbFunctionDefValue,
     type DdbVectorValue,
+    type InspectOptions,
 } from 'dolphindb'
 
 import docs_zh from 'dolphindb/docs.zh.json'
@@ -107,20 +100,131 @@ set_inspect_options()
 
 const docs = language === 'zh' ? docs_zh : docs_en
 
-const constants_lower = constants.map(constant => 
-    constant.toLowerCase())
+const constants_lower = constants.map(constant => constant.toLowerCase())
 
 const funcs = Object.keys(docs)
-const funcs_lower = funcs.map(func => 
-    func.toLowerCase())
+const funcs_lower = funcs.map(func => func.toLowerCase())
 
 const icon_empty = `${fpd_ext}icons/radio.empty.svg`
 const icon_checked = `${fpd_ext}icons/radio.checked.svg`
 
 
+let extctx: ExtensionContext
+
 let server: DdbServer
 
 let explorer: DdbExplorer
+
+
+/** 底部代码执行状态 status bar */
+let statbar = {
+    bgerr: new ThemeColor('statusBarItem.errorBackground'),
+    
+    bar: null as StatusBarItem,
+    
+    init () {
+        this.bar = window.createStatusBarItem({
+            name: t('DolphinDB 执行状态'),
+            id: 'ddb_statbar',
+            alignment: StatusBarAlignment.Right,
+            // priority: 暂不设置
+        } as any)
+        
+        this.bar.command = 'dolphindb.cancel'
+        this.bar.tooltip = t('取消作业')
+        
+        this.set_idle()
+    },
+    
+    set_running () {
+        this.set(true)
+    },
+    
+    set_idle () {
+        this.set(false)
+    },
+    
+    set (running: boolean) {
+        this.bar.text = running ? t('执行中') : t('空闲中')
+        this.bar.backgroundColor = running ? this.bgerr : null
+        this.bar.show()
+    }
+}
+
+let formatter = {
+    bar: null as StatusBarItem,
+    
+    decimals: null as number | null,
+    
+    
+    init () {
+        this.bar = window.createStatusBarItem({
+            name: t('DolphinDB 小数显示位数'),
+            id: 'ddb_formatter',
+            alignment: StatusBarAlignment.Right,
+            // priority: 暂不设置
+        } as any)
+        
+        this.bar.command = 'dolphindb.set_decimals'
+        this.bar.tooltip = t('设置 DolphinDB 小数显示位数')
+        
+        this.read_config()
+        
+        this.update_bar()
+    },
+    
+    update_bar () {
+        this.bar.text = `${t('小数位数:')} ${ this.decimals ?? '实际' }`
+        this.bar.show()
+    },
+    
+    read_config () {
+        this.decimals = workspace.getConfiguration('dolphindb').get('decimals')
+        console.log(`formatter.decimals: ${this.decimals}`)
+    },
+    
+    save_config () {
+        workspace.getConfiguration('dolphindb').update('decimals', this.decimals, ConfigurationTarget.Global)
+        console.log(`formatter.decimals: ${this.decimals}`)
+    },
+    
+    async prompt () {
+        const value = await window.showInputBox({
+            prompt: t('设置小数点后显示的位数 (可取 0 ~ 20) (置空时重置为实际数据的位数)'),
+            placeHolder: t('实际数据的位数'),
+            value: this.decimals === null || this.decimals === undefined ? '' : String(this.decimals),
+            ignoreFocusOut: true,
+            validateInput (value: string) {
+                if (value === '' || /^\s*((1)?[0-9]|20)\s*$/.test(value)) {
+                    const value_ = value.replace(/\s+/g, '')
+                    return { message: `${'设置小数位数为:'} ${value_ === '' ? t('实际数据的位数') : value_}`, severity: InputBoxValidationSeverity.Info }
+                } else
+                    return { message: t('小数位数应为空或介于 0 - 20'), severity: InputBoxValidationSeverity.Error }
+            }
+        })
+        
+        if (value === undefined) {  // 通过按 esc 取消
+            console.log('formatter.prompt: cancelled')
+            return
+        }
+        
+        this.decimals = value ? Number(value) : null
+        
+        this.save_config()
+        // 会触发 on_config_change, 不需要再 this.update_bar()
+    },
+    
+    async on_config_change (event: ConfigurationChangeEvent) {
+        if (event.affectsConfiguration('dolphindb.decimals')) {
+            console.log(t('dolphindb.decimals 配置被修改'))
+            this.read_config()
+            this.update_bar()
+            
+            if (explorer.connection.vars)
+                await explorer.connection.update()
+        }
+    },
+}
 
 
 type DdbTerminal = Terminal & { printer: EventEmitter<string> }
@@ -128,39 +232,40 @@ type DdbTerminal = Terminal & { printer: EventEmitter<string> }
 let term: DdbTerminal
 
 
+type ViewMessageHandler = (message: Message, view: WebviewView) => void | any[] | Promise<void | any[]>
+
 /** 基于 vscode webview 相关的消息函数 postMessage, onDidReceiveMessage, window.addEventListener('message', ...) 实现的 rpc  */
 let dataview = {
     view: null as WebviewView,
     
-    id: 0,
-    
-    /** 调用方发起的 rpc 对应响应的 message 处理器 */
-    handlers: [ ] as ((message: Message) => any)[],
+    /** map<id, message handler>: 通过 rpc message.id 找到对应的 handler, unary rpc 接收方不需要设置 handlers, 发送方需要 */
+    handlers: new Map<number, ViewMessageHandler>(),
     
     print: false,
     
-    subscribers_repl: [ ] as DdbMessageListener[],
     
-    subscribers_inspection: [ ] as ((ddbvar: Partial<DdbVar>, open: boolean, buffer?: Uint8Array, le?: boolean) => any)[],
+    subscribers_repl: [ ] as ((message: DdbMessage, ddb: DDB, options?: InspectOptions) => void)[],
+    
+    subscribers_inspection: [ ] as ((ddbvar: Partial<DdbVar>, open: boolean, options?: InspectOptions, buffer?: Uint8Array, le?: boolean) => any)[],
     
     
-    /** 被调方的 message 处理器 */
+    /** 通过 rpc message.func 被调用的 rpc 函数 */
     funcs: {
         async subscribe_repl ({ id }, view) {
-            console.log('webview subscribed to repl')
+            console.log(t('webview 已订阅 repl'))
             
-            function subscriber ({ type, data }: DdbMessage) {
+            function subscriber ({ type, data }: DdbMessage, ddb: DDB, options?: InspectOptions) {
                 dataview.send(
                     {
                         id,
-                        args: (() => {
+                        data: (() => {
                             switch (type) {
                                 case 'print':
                                 case 'error':
                                     return [type, data]
                                 
                                 case 'object':
-                                    return [type, data.pack(), data.le]
+                                    return [type, data.pack(), data.le, options]
                             }
                         })()
                     }
@@ -170,51 +275,32 @@ let dataview = {
             dataview.subscribers_repl.push(subscriber)
             
             view.onDidDispose(() => {
-                console.log('webview unsubscribed repl due to dataview closed')
-                dataview.subscribers_repl = dataview.subscribers_repl.filter(s => 
-                    s !== subscriber)
+                console.log(t('webview 的 repl 订阅被关闭，因为 dataview 被关闭'))
+                dataview.subscribers_repl = dataview.subscribers_repl.filter(s => s !== subscriber)
             })
         },
         
         async subscribe_inspection ({ id }, view) {
-            console.log('subscribed to inspection')
+            console.log(t('webview 已订阅 inspection'))
             
-            function subscriber (ddbvar: Partial<DdbVar>, open: boolean, buffer?: Uint8Array, le?: boolean) {
-                dataview.send(
-                    {
-                        id,
-                        args: [ddbvar, open, buffer, le]
-                    }
-                )
+            function subscriber (ddbvar: Partial<DdbVar>, open: boolean, options?: InspectOptions, buffer?: Uint8Array, le?: boolean) {
+                dataview.send({ id, data: [ddbvar, open, options, buffer, le] })
             }
             
             dataview.subscribers_inspection.push(subscriber)
             
             view.onDidDispose(() => {
-                console.log('unsubscribed inspection due to dataview closed')
-                dataview.subscribers_inspection = dataview.subscribers_inspection.filter(s => 
-                    s !== subscriber)
+                console.log(t('webview 的 inspection 订阅被关闭，因为 dataview 被关闭'))
+                dataview.subscribers_inspection = dataview.subscribers_inspection.filter(s => s !== subscriber)
             })
         },
         
-        async eval ({ id, args: [node, script] }: Message<[string, string]>, view) {
-            let { ddb } = explorer.connections.find(({ name }) => 
-                name === node)
-                
+        async eval ({ data: [node, script] }: Message<[string, string]>, view) {
+            let { ddb } = explorer.connections.find(({ name }) => name === node)
             const { buffer, le } = await ddb.eval(script, { parse_object: false })
-            
-            dataview.send(
-                {
-                    id,
-                    done: true,
-                    args: [buffer, le]
-                }
-            )
+            return [buffer, le]
         }
-    } as Record<
-        string, 
-        (message: Message, view?: WebviewView) => void | Promise<void>
-    >,
+    } as Record<string, ViewMessageHandler>,
     
     
     register () {
@@ -223,237 +309,238 @@ let dataview = {
             {
                 async resolveWebviewView (view, ctx, canceller) {
                     dataview.view = view
-                    
-                    view.webview.options = {
-                        enableCommandUris: true,
-                        enableScripts: true,
-                    }
-                    
-                    view.webview.onDidReceiveMessage(
-                        dataview.handle,
-                        dataview,
-                    )
-                    
+                    view.webview.options = { enableCommandUris: true, enableScripts: true }
+                    view.webview.onDidReceiveMessage(dataview.handle, dataview)
                     view.webview.html = (
                         await fread(`${fpd_ext}dataview/webview.html`)
                     ).replace(/\{host\}/g, `localhost:${server.port}`)
                 }
             },
-            {
-                webviewOptions: {
-                    retainContextWhenHidden: true,
-                }
-            }
-        )
-        
-    },
-    
-    
-    send (message: Message) {
-        if (!('id' in message))
-            message.id = this.id
-        
-        this.view.webview.postMessage(
-            Remote.pack(message).buffer
+            { webviewOptions: { retainContextWhenHidden: true } }
         )
     },
     
     
-    /** 调用 remote 中的 func, 中间消息及返回结果可由 handler 处理，处理 done message 之后的返回值作为 call 函数的返回值 
-        如果为 unary rpc, 可以不传 handler, await call 之后可以得到响应 message 的 args
-    */
-    async call <T extends any[] = any[]> (
-        message: Message,
-        handler?: (message: Message<T>) => any
-    ) {
-        return new Promise<T>((resolve, reject) => {
-            this.handlers[this.id] = async (message: Message<T>) => {
-                const { error, done } = message
-                
-                if (error) {
-                    reject(
-                        Object.assign(
-                            new Error(),
-                            error
-                        )
-                    )
-                    return
-                }
-                
-                const result = handler ?
-                        await handler(message)
-                    :
-                        message.args
-                
-                if (done)
-                    resolve(result)
-            }
-            
-            this.send(message)
-            
-            this.id++
-        })
+    /** 发送或连接出错时自动清理 message.id 对应的 handler */
+    async send (message: Message) {
+        if (!message.id)
+            message.id = genid()
+        
+        try {
+            assert(await this.view.webview.postMessage(Remote.pack(message).buffer))
+        } catch (error) {
+            this.handlers.delete(message.id)
+            throw error
+        }
     },
     
     
-    /** 处理接收到的 message
-        1. 被调用方接收 message 并开始处理
-        2. 调用方处理 message 响应
-    */
+    /** 处理接收到的 websocket message 并解析, 根据 id dispatch 到对应的 handler 进行处理  
+        如果 message.done == true 则清理 handler  
+        如果 handler 返回了值，则包装为 message 发送 */
     async handle (buffer: ArrayBuffer) {
         const message = Remote.parse(buffer)
         
-        const { func, id, done } = message
+        const { id, func, done } = message
         
         if (this.print)
             console.log(message)
         
-        if (func) // 作为被调方
-            try {
-                const handler = this.funcs[func]
-                
-                if (!handler)
-                    throw new Error(`找不到 rpc handler for '${func}'`)
-                
-                await handler(message, this.view)
-            } catch (error) {
-                this.send(
-                    {
-                        id,
-                        error,
-                        done: true
-                    },
-                )
-                
-                throw error
-            }
-        else {  // 作为发起方
-            this.handlers[id](message)
-            
+        let handler: ViewMessageHandler
+        
+        if (func)
+            handler = this.funcs[func]
+        else {
+            handler = this.handlers.get(id)
             if (done)
-                this.handlers[id] = null
+                this.handlers.delete(id)
         }
+        
+        try {
+            if (handler) {
+                const data = await handler(message, this.view)
+                if (data)
+                    await this.send({ id, data })
+            } else if (message.error)
+                throw message.error
+            else
+                throw new Error(`cannot find rpc handler: ${func ? `func: ${func.quote()}` : `id: ${id}`}`)
+        } catch (error) {
+            // handle 出错并不意味着 rpc 一定会结束，可能 error 是运行中的正常数据，所以不能清理 handler
+            
+            if (!message.error)  // 防止无限循环往对方发送 error, 只有在对方无错误时才可以发送
+                try { await this.send({ id, error, /* 不能设置 done 清理对面 handler, 理由同上 */ }) } catch { }
+            
+            // 再往上层抛出错误没有意义了，上层调用栈是 websocket.on('message') 之类的
+            console.log(error)
+        }
+    },
+    
+    
+    /** 调用 remote 中的 func, 适用于最简单的一元 rpc (请求, 响应) */
+    async call <TReturn extends any[] = any[]> (func: string, args?: any[]) {
+        return new Promise<TReturn>(async (resolve, reject) => {
+            const id = genid()
+            
+            this.handlers.set(id, (message: Message<TReturn>) => {
+                const { error, data } = message
+                if (error)
+                    reject(error)
+                else
+                    resolve(data)
+                this.handlers.delete(id)
+            })
+            
+            await this.send({ id, func, data: args })  // 不需要 done: true, 因为对面的 remote.handlers 中不会有这个 id 的 handler
+        })
     }
 }
 
+
 let lastvar: DdbVar
+
+
+async function _execute (text: string) {
+    const { web_url } = server
+    
+    if (!term) {
+        let printer = new EventEmitter<string>()
+        
+        await new Promise<void>(resolve => {
+            term = window.createTerminal({
+                name: 'DolphinDB',
+                
+                pty: {
+                    open (init_dimensions: TerminalDimensions | undefined) {
+                        printer.fire(
+                            'DolphinDB Shell\r\n' +
+                            `${web_url}\r\n`
+                        )
+                        resolve()
+                    },
+                    
+                    close () {
+                        console.log(t('dolphindb 终端被关闭'))
+                        term.dispose()
+                        printer.dispose()
+                    },
+                    
+                    onDidWrite: printer.event,
+                },
+            }) as DdbTerminal
+            
+            term.printer = printer
+            
+            term.show(true)
+        })
+    }
+    
+    let { connection } = explorer
+    
+    if (!connection.connected) {
+        connection.disconnect()
+        await connection.connect()
+    }
+    
+    let { ddb } = connection
+    let { printer } = term
+    
+    const time_start = dayjs()
+    
+    printer.fire(
+        '\r\n' +
+        `${time_start.format('YYYY.MM.DD HH:mm:ss.SSS')}  ${connection.name}\r\n`
+    )
+    
+    connection.running = true
+    statbar.set_running()
+    
+    try {
+        const obj = await ddb.eval(
+            text.replace(/\r\n/g, '\n'),
+            {
+                listener (message) {
+                    const { type, data } = message
+                    if (type === 'print')
+                        printer.fire(data.replace(/\n/g, '\r\n') + '\r\n')
+                    
+                    for (const subscriber of dataview.subscribers_repl)
+                        subscriber(message, ddb, { decimals: formatter.decimals })
+                    
+                    for (const subscriber of server.subscribers_repl)
+                        subscriber(message, ddb, { decimals: formatter.decimals })
+                }
+            }
+        )
+        
+        lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+        
+        printer.fire(
+            (() => {
+                switch (obj.form) {
+                    case DdbForm.vector:
+                    case DdbForm.set:
+                    case DdbForm.matrix:
+                    case DdbForm.table:
+                    case DdbForm.chart:
+                        return obj.inspect_type().replace(/\n/g, '\r\n').blue + '\r\n'
+                    
+                    default: {
+                        return obj.type === DdbType.void ?
+                                ''
+                            :
+                                inspect(obj, { decimals: formatter.decimals } as InspectOptions).replace(/\n/g, '\r\n') + '\r\n'
+                    }
+                }
+             })() +
+            `(${delta2str(dayjs().diff(time_start))})\r\n`
+        )
+        
+        await connection.update()
+    } catch (error) {
+        console.log(error)
+        printer.fire(`${error.message.replace(/\n/g, '\r\n').red}\r\n`)
+    } finally {
+        connection.running = false
+        statbar.set_idle()
+    }
+}
+
 
 const ddb_commands = [
     async function execute () {
-        const { web_url } = server
-        
-        if (!term || term.exitStatus) {
-            let printer = new EventEmitter<string>()
-            
-            await new Promise<void>(resolve => {
-                term = window.createTerminal({
-                    name: 'DolphinDB',
-                    
-                    pty: {
-                        open (init_dimensions: TerminalDimensions | undefined) {
-                            printer.fire(
-                                'DolphinDB Shell\r\n' +
-                                `${web_url}\r\n`
-                            )
-                            resolve()
-                        },
-                        
-                        close () {
-                            console.log('term.close()')
-                            term.dispose()
-                            printer.dispose()
-                        },
-                        
-                        onDidWrite: printer.event,
-                    },
-                }) as DdbTerminal
-                
-                term.printer = printer
-                
-                term.show(true)
-            })
-        }
-        
+        await _execute(get_text('selection or line'))
+    },
+    
+    async function execute_line () {
+        await _execute(get_text('line'))
+    },
+    
+    async function execute_selection () {
+        await _execute(get_text('selection'))
+    },
+    
+    async function execute_file () {
+        await _execute(get_text('all'))
+    },
+    
+    async function cancel () {
         let { connection } = explorer
         
-        if (!connection.connected) {
-            connection.disconnect()
-            await connection.connect()
-        }
+        if (!connection.running)
+            return
         
-        let { ddb } = connection
-        let { printer } = term || { }
+        const answer = await window.showWarningMessage(t('是否取消执行中的任务？'), t('是'), t('否'))
         
-        const time_start = dayjs()
+        if (answer !== t('是') || !connection.running)
+            return
         
-        printer?.fire(
-            '\r\n\r\n' +
-            `${time_start.format('YYYY.MM.DD HH:mm:ss.SSS')}  ${connection.name}\r\n`
-        )
+        // LOCAL
+        // await remote.call('cancel', [connection.name])
+        await connection.ddb.cancel()
         
-        try {
-            const obj = await ddb.eval(
-                get_text('selection or line')
-                    .replace(/\r\n/g, '\n'),
-                {
-                    listener (message) {
-                        const { type, data } = message
-                        if (type === 'print')
-                            printer?.fire(
-                                data.replace(/\n/g, '\r\n') + 
-                                '\r\n'
-                            )
-                        
-                        for (const subscriber of dataview.subscribers_repl)
-                            subscriber(message, ddb)
-                        
-                        for (const subscriber of server.subscribers_repl)
-                            subscriber(message, ddb)
-                    }
-                }
-            )
-            
-            lastvar = new DdbVar({
-                ...obj,
-                obj,
-                bytes: 0n,
-            })
-            
-            printer?.fire(
-                 (() => {
-                     switch (obj.form) {
-                         case DdbForm.vector:
-                         case DdbForm.set:
-                         case DdbForm.matrix:
-                         case DdbForm.table:
-                         case DdbForm.chart: {
-                             const objstr = obj.inspect_type().blue
-                             console.log(objstr)
-                             return objstr.replace(/\n/g, '\r\n') + '\r\n'
-                         }
-                         
-                         default: {
-                             if (obj.type === DdbType.void)
-                                 return ''
-                             
-                             const objstr = inspect(obj)
-                             console.log(objstr)
-                             return objstr.replace(/\n/g, '\r\n') + '\r\n'
-                         }
-                     }
-                 })() +
-                `(${delta2str(
-                    dayjs().diff(time_start)
-                )})\r\n`
-            )
-            
-            await connection.update()
-        } catch (error) {
-            printer?.fire(
-                `${error.message.replace(/\n/g, '\r\n').red}\r\n`
-            )
-            throw error
-        }
+        connection.running = false
+        statbar.set_idle()
     },
     
     function set_connection (name: string) {
@@ -461,50 +548,72 @@ const ddb_commands = [
     },
     
     function disconnect_connection (connection: DdbConnection) {
-        console.log('disconnect_ddb_connection', connection)
+        console.log(t('断开 dolphindb 连接:'), connection)
         connection.disconnect()
     },
     
     async function inspect_variable (ddbvar: DdbVar) {
-        console.log('inspect_variable', ddbvar)
+        console.log(t('查看 dolphindb 变量:'), ddbvar)
         lastvar = ddbvar
         await ddbvar.inspect()
     },
     
     async function open_variable (ddbvar: DdbVar = lastvar) {
-        console.log('open_variable', ddbvar)
+        console.log(t('在新窗口查看变量:'), ddbvar)
         await ddbvar.inspect(true)
     },
     
-    async function reload_dataview () {
+    function reload_dataview () {
         const { webview } = dataview.view
         webview.html = webview.html + ' '
     },
+    
+    async function upload_file () {
+        const key_fp_remote = 'dolphindb.fp_remote'
+        
+        const fp_remote = await window.showInputBox({
+            title: t('上传到服务器端的路径'),
+            value: extctx.globalState.get(key_fp_remote)
+        })
+        
+        if (!fp_remote)
+            return
+        
+        await window.activeTextEditor.document.save()
+        
+        extctx.globalState.update(key_fp_remote, fp_remote)
+        
+        await _upload_file(explorer.connection, fp_remote, get_text('all'))
+        
+        window.showInformationMessage(t('文件上传成功'))
+    },
+    
+    function set_decimals () {
+        formatter.prompt()
+    }
 ]
 
 
 export async function activate (ctx: ExtensionContext) {
+    extctx = ctx
+    
     // 命令注册
     for (const func of ddb_commands)
-        ctx.subscriptions.push(
-            commands.registerCommand(`dolphindb.${func.name}`, func)
-        )
+        ctx.subscriptions.push(commands.registerCommand(`dolphindb.${func.name}`, func))
     
     
     // 连接、变量管理
     explorer = new DdbExplorer()
     
-    explorer.view = window.createTreeView('dolphindb.explorer', {
-        treeDataProvider: explorer
-    })
+    explorer.view = window.createTreeView('dolphindb.explorer', { treeDataProvider: explorer })
     
+    formatter.init()
+    statbar.init()
     
-    // 监听配置修改刷新连接
+    // 监听配置，dispatch 修改 event
     workspace.onDidChangeConfiguration(event => {
-        if (event.affectsConfiguration('dolphindb.connections')) {
-            explorer.load_connections()
-            explorer.refresher.fire()
-        }
+        formatter.on_config_change(event)
+        explorer.on_config_change(event)
     })
     
     
@@ -512,21 +621,15 @@ export async function activate (ctx: ExtensionContext) {
     ctx.subscriptions.push(
         languages.registerCompletionItemProvider('dolphindb', {
             provideCompletionItems (doc, pos, canceller, ctx) {
-                const keyword = doc.getText(
-                    doc.getWordRangeAtPosition(pos)
-                )
+                const keyword = doc.getText(doc.getWordRangeAtPosition(pos))
                 
                 let fns: string[]
                 let _constants: string[]
                 
                 if (keyword.length === 1) {
                     const c = keyword[0].toLowerCase()
-                    fns = funcs.filter((func, i) => 
-                        funcs_lower[i].startsWith(c)
-                    )
-                    _constants = constants.filter((constant, i) => 
-                        constants_lower[i].startsWith(c)
-                    )
+                    fns = funcs.filter((func, i) => funcs_lower[i].startsWith(c))
+                    _constants = constants.filter((constant, i) => constants_lower[i].startsWith(c))
                 } else {
                     const keyword_lower = keyword.toLowerCase()
                     
@@ -556,20 +659,12 @@ export async function activate (ctx: ExtensionContext) {
                 }
                 
                 const completions = [
-                    ...keywords.filter(kw => 
-                        kw.startsWith(keyword)
-                    ).map(kw => ({
-                        label: kw,
-                        kind: CompletionItemKind.Keyword
-                    })),
-                    ... _constants.map(constant => ({
-                        label: constant,
-                        kind: CompletionItemKind.Constant
-                    })),
-                    ...fns.map(fn => ({
-                        label: fn,
-                        kind: CompletionItemKind.Function,
-                    }) as CompletionItem),
+                    ...keywords.filter(kw => kw.startsWith(keyword))
+                        .map(kw => ({ label: kw, kind: CompletionItemKind.Keyword })),
+                    
+                    ... _constants.map(constant => ({ label: constant, kind: CompletionItemKind.Constant })),
+                    
+                    ...fns.map(fn => ({ label: fn, kind: CompletionItemKind.Function }) as CompletionItem),
                 ]
                 
                 return completions.length ? completions : null
@@ -577,7 +672,6 @@ export async function activate (ctx: ExtensionContext) {
             
             resolveCompletionItem (item, canceller) {
                 item.documentation = get_func_md(item.label as string)
-                
                 return item
             }
         })
@@ -588,15 +682,9 @@ export async function activate (ctx: ExtensionContext) {
     ctx.subscriptions.push(
         languages.registerHoverProvider('dolphindb', {
             provideHover (doc, pos, canceller) {
-                const md = get_func_md(
-                    doc.getText(
-                        doc.getWordRangeAtPosition(pos)
-                    )
-                )
-                
+                const md = get_func_md(doc.getText(doc.getWordRangeAtPosition(pos)))
                 if (!md)
                     return
-                
                 return new Hover(md)
             }
         })
@@ -620,15 +708,10 @@ export async function activate (ctx: ExtensionContext) {
                     return
                 
                 const { signature, params } = signature_and_params
-                let sig = new SignatureInformation(
-                    signature,
-                    get_func_md(func_name)
-                )
+                let sig = new SignatureInformation(signature, get_func_md(func_name))
                 
                 for (let param of params)
-                    sig.parameters.push(
-                        new ParameterInformation(param)
-                    )
+                    sig.parameters.push(new ParameterInformation(param))
                 
                 let help = new SignatureHelp()
                 help.signatures.push(sig)
@@ -642,18 +725,11 @@ export async function activate (ctx: ExtensionContext) {
     
     // HTTP Server
     server = new DdbServer()
+    await server.start()
     
-    try {
-        await server.start()
-        dataview.register()
-    } catch (error) {
-        window.showErrorMessage(error.message)
-    }
+    dataview.register()
     
-    
-    console.log(
-        t('DolphinDB 插件已初始化')
-    )
+    console.log(t('DolphinDB 插件已初始化'))
 }
 
 
@@ -671,9 +747,7 @@ const token_map = {
     ']': '['
 } as const
 
-const token_ends = new Set(
-    Object.values(token_map)
-)
+const token_ends = new Set(Object.values(token_map))
 
 function get_func_md (keyword: string) {
     const func_doc = docs[keyword]
@@ -908,12 +982,17 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
         
         this.connections = workspace.getConfiguration('dolphindb')
             .get<Partial<DdbConnection>[]>('connections')
-            .map(conn => 
-                new DdbConnection(conn)
-            )
+            .map(conn => new DdbConnection(conn))
         
         this.connection = this.connections[0]
         this.connection.iconPath = icon_checked
+    }
+    
+    on_config_change (event: ConfigurationChangeEvent) {
+        if (event.affectsConfiguration('dolphindb.connections')) {
+            explorer.load_connections()
+            explorer.refresher.fire()
+        }
     }
     
     set_connection (name: string) {
@@ -924,7 +1003,10 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
             } else
                 connection.iconPath = icon_empty
         
-        console.log('ddb_explorer.set_connection', this.connection)
+        console.log(t('切换连接:'), this.connection)
+        
+        statbar.set(this.connection.running)
+        
         this.refresher.fire()
     }
     
@@ -939,20 +1021,13 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
                 
             case node instanceof DdbConnection: {
                 const { local, shared } = node as DdbConnection
-                const locations = [local, shared].filter(node => 
-                    node.vars.length
-                )
-                return locations.length === 1?
-                        this.getChildren(locations[0])
-                    :
-                        locations
+                const locations = [local, shared].filter(node => node.vars.length)
+                return locations.length === 1 ? this.getChildren(locations[0]) : locations
             }
             
             case node instanceof DdbVarLocation: {
                 const { scalar, object, pair, vector, set, dict, matrix, table, chart, chunk } = node as DdbVarLocation
-                return [scalar, object, pair, vector, set, dict, matrix, table, chart, chunk].filter(node => 
-                    node.vars.length
-                )
+                return [scalar, object, pair, vector, set, dict, matrix, table, chart, chunk].filter(node => node.vars.length)
             }
             
             case node instanceof DdbVarForm:
@@ -963,7 +1038,6 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
     async resolveTreeItem (item: TreeItem, element: TreeItem, canceller: CancellationToken): Promise<TreeItem> {
         if (!(item instanceof DdbVar))
             return
-        
         await item.resolve_tooltip()
         return item
     }
@@ -971,6 +1045,8 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
 
 
 class DdbConnection extends TreeItem {
+    // --- 配置参数
+    
     /** 连接名称 (连接 id)，如 local8848, controller, datanode0 */
     name: string
     
@@ -984,7 +1060,8 @@ class DdbConnection extends TreeItem {
     password: string
     
     python: boolean
-    // ---
+    
+    // --- 状态
     
     ddb: DDB
     
@@ -995,6 +1072,8 @@ class DdbConnection extends TreeItem {
     local: DdbVarLocation
     
     shared: DdbVarLocation
+    
+    running = false
     
     
     get connected () {
@@ -1026,7 +1105,7 @@ class DdbConnection extends TreeItem {
     
     async connect () {
         await this.ddb.connect(this)
-        console.log(`${this.name} ${t('成功连接到 DolphinDB')}`)
+        console.log(`${t('连接成功:')} ${this.name}`)
         
         this.collapsibleState = TreeItemCollapsibleState.Expanded
         this.contextValue = 'connected'
@@ -1041,7 +1120,6 @@ class DdbConnection extends TreeItem {
         this.contextValue = 'disconnected'
         explorer.refresher.fire(this)
     }
-    
     
     /**
          执行代码后更新变量面板  
@@ -1083,10 +1161,7 @@ class DdbConnection extends TreeItem {
                 name,
                 type: (() => {
                     const _type = type.toLowerCase()
-                    return _type.endsWith('[]') ?
-                            DdbType[_type.slice(0, -2)] + 64
-                        :
-                            DdbType[_type]
+                    return _type.endsWith('[]') ? DdbType[_type.slice(0, -2)] + 64 : DdbType[_type]
                 })(),
                 form: (() => {
                     const _form = form.toLowerCase()
@@ -1124,19 +1199,14 @@ class DdbConnection extends TreeItem {
         
         if (imutables.length) {
             const { value: values } = await this.ddb.eval<DdbObj<DdbObj[]>>(
-                `(${
-                    imutables.map(({ name }) => 
-                        name
-                    ).join(', ')
-                }, 0)${ this.python ? '.toddb()' : '' }`
+                `(${imutables.map(({ name }) => name).join(', ')}, 0)${ this.python ? '.toddb()' : '' }`
             )
             
             for (let i = 0;  i < values.length - 1;  i++)
                 imutables[i].obj = values[i]
         }
         
-        this.vars = vars_data.map(data => 
-            new DdbVar(data))
+        this.vars = vars_data.map(data => new DdbVar(data))
         
         // this.varsmap = this.vars.reduce<Record<string, any>>((acc, row) => {
         //         acc[row.name] = row
@@ -1190,10 +1260,7 @@ class DdbVarLocation extends TreeItem {
     
     
     constructor (connection: DdbConnection, shared: boolean) {
-        super(
-            shared ? t('共享变量') : t('本地变量'),
-            TreeItemCollapsibleState.Expanded
-        )
+        super(shared ? t('共享变量') : t('本地变量'), TreeItemCollapsibleState.Expanded)
         this.connection = connection
         this.shared = shared
         
@@ -1307,7 +1374,7 @@ class DdbVarForm extends TreeItem {
 }
 
 
-class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
+class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     static size_limit = 10240n as const
     
     static icon = new ThemeIcon('symbol-variable')
@@ -1340,7 +1407,7 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
     extra: string
     
     /** this.bytes <= DdbVar.size_limit */
-    obj: T
+    obj: TObj
     
     
     constructor (data: Partial<DdbVar>) {
@@ -1388,13 +1455,13 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
             const value = (() => {
                 switch (this.form) {
                     case DdbForm.scalar:
-                        return ' = ' + format(this.type, this.obj.value, this.obj.le, { colors: false })
+                        return ' = ' + format(this.type, this.obj.value, this.obj.le, { colors: false, decimals: formatter.decimals })
                     
                     case DdbForm.pair:
                         return ' = [' +
-                            formati(this.obj as DdbObj<DdbVectorValue>, 0, { colors: false }) +
+                            formati(this.obj as DdbObj<DdbVectorValue>, 0, { colors: false, decimals: formatter.decimals }) +
                             ', ' +
-                            formati(this.obj as DdbObj<DdbVectorValue>, 1, { colors: false }) +
+                            formati(this.obj as DdbObj<DdbVectorValue>, 1, { colors: false, decimals: formatter.decimals }) +
                         ']'
                     
                     case DdbForm.object:
@@ -1451,7 +1518,7 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
         }
     }
     
-    
+    /** - open?: 是否在新窗口中打开 */
     async inspect (open = false) {
         if (open && !server.subscribers_inspection.length) {
             open_url(server.web_url)
@@ -1471,10 +1538,8 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
                 extra: this.extra,
             },
             open,
-            ... (this.obj ? 
-                [this.obj.pack(), this.obj.le]
-            :
-                [ ]) as [Uint8Array, boolean],
+            { decimals: formatter.decimals },
+            ... (this.obj ? [this.obj.pack(), this.obj.le] : [ ]) as [Uint8Array, boolean],
         ] as const
         
         
@@ -1494,7 +1559,7 @@ class DdbVar <T extends DdbObj = DdbObj> extends TreeItem {
                 this.form === DdbForm.object ?
                     (this.obj.value as string)
                 :
-                    inspect(this.obj, { colors: false })
+                    inspect(this.obj, { colors: false, decimals: formatter.decimals } as InspectOptions)
             :
                 `${this.get_value_type()}(${Number(this.bytes).to_fsize_str()})`
     }
@@ -1515,28 +1580,28 @@ class DdbServer extends Server {
     
     server_ws: WebSocketServer
     
-    subscribers_repl = [ ] as DdbMessageListener[]
+    subscribers_repl = [ ] as ((message: DdbMessage, ddb: DDB, options?: InspectOptions) => void)[]
     
-    subscribers_inspection = [ ] as ((ddbvar: Partial<DdbVar>, open: boolean, buffer?: Uint8Array, le?: boolean) => any)[]
+    subscribers_inspection = [ ] as ((ddbvar: Partial<DdbVar>, open: boolean, options?: InspectOptions, buffer?: Uint8Array, le?: boolean) => any)[]
     
     
     remote = new Remote ({
         funcs: {
             async subscribe_repl ({ id }, websocket) {
-                console.log('subscribed to repl')
+                console.log(t('page 已订阅 repl'))
                 
-                function subscriber ({ type, data }: DdbMessage) {
+                function subscriber ({ type, data }: DdbMessage, ddb: DDB, options?: InspectOptions) {
                     server.remote.send(
                         {
                             id,
-                            args: (() => {
+                            data: (() => {
                                 switch (type) {
                                     case 'print':
                                     case 'error':
                                         return [type, data]
                                     
                                     case 'object':
-                                        return [type, data.pack(), data.le]
+                                        return [type, data.pack(), data.le, options]
                                 }
                             })()
                         },
@@ -1546,49 +1611,37 @@ class DdbServer extends Server {
                 
                 server.subscribers_repl.push(subscriber)
                 
-                websocket.addEventListener('close', () => {
-                    console.log('unsubscribed repl due to websocket connection closed')
-                    server.subscribers_repl = server.subscribers_repl.filter(s => 
-                        s !== subscriber)
-                })
+                function on_close () {
+                    console.log(t('page 的 repl 订阅被关闭，因为 websocket 连接被关闭'))
+                    websocket.removeEventListener('close', on_close)
+                    server.subscribers_repl = server.subscribers_repl.filter(s => s !== subscriber)
+                }
+                
+                websocket.addEventListener('close', on_close)
             },
             
             async subscribe_inspection ({ id }, websocket) {
-                console.log('subscribed to inspection')
+                console.log(t('page 已订阅 inspection'))
                 
-                function subscriber (ddbvar: Partial<DdbVar>, open: boolean, buffer?: Uint8Array, le?: boolean) {
-                    server.remote.send(
-                        {
-                            id,
-                            args: [ddbvar, open, buffer, le]
-                        },
-                        websocket
-                    )
+                function subscriber (ddbvar: Partial<DdbVar>, open: boolean, options?: InspectOptions, buffer?: Uint8Array, le?: boolean) {
+                    server.remote.send({ id, data: [ddbvar, open, options, buffer, le] }, websocket)
                 }
                 
                 server.subscribers_inspection.push(subscriber)
                 
-                websocket.addEventListener('close', () => {
-                    console.log('unsubscribed inspection due to websocket connection closed')
-                    server.subscribers_inspection = server.subscribers_inspection.filter(s => 
-                        s !== subscriber)
-                })
+                function on_close () {
+                    console.log(t('page 的 inspection 订阅被关闭，因为 websocket 连接被关闭'))
+                    websocket.removeEventListener('close', on_close)
+                    server.subscribers_inspection = server.subscribers_inspection.filter(s => s !== subscriber)
+                }
+                
+                websocket.addEventListener('close', on_close)
             },
             
-            async eval ({ id, args: [node, script] }: Message<[string, string]>, websocket) {
-                let { ddb } = explorer.connections.find(({ name }) => 
-                    name === node)
-                    
+            async eval ({ data: [node, script] }: Message<[string, string]>, websocket) {
+                let { ddb } = explorer.connections.find(({ name }) => name === node)
                 const { buffer, le } = await ddb.eval(script, { parse_object: false })
-                
-                server.remote.send(
-                    {
-                        id,
-                        done: true,
-                        args: [buffer, le]
-                    },
-                    websocket
-                )
+                return [buffer, le]
             }
         }
     })
@@ -1608,9 +1661,7 @@ class DdbServer extends Server {
             console.log(ctx)
         })
         
-        app.use(
-            this.entry.bind(this)
-        )
+        app.use(this.entry.bind(this))
         
         app.use(
             KoaCompress({
@@ -1625,21 +1676,17 @@ class DdbServer extends Server {
             })
         )
         
-        app.use(
-            KoaCors({ credentials: true })
-        )
+        app.use(KoaCors({ credentials: true }))
         
         app.use(KoaUserAgent)
         
-        app.use(
-            this._router.bind(this)
-        )
+        app.use(this._router.bind(this))
         
         this.app = app
         
         this.handler = this.app.callback()
         
-        this.server_http = http_create_server(this.handler)
+        this.server_http = createServer(this.handler)
         this.server_http.unref()
         
         this.server_ws = new WebSocketServer({
@@ -1667,15 +1714,8 @@ class DdbServer extends Server {
             // https://code.visualstudio.com/api/advanced-topics/remote-extensions
             // Opening something in a local browser or application
             if (extensions.getExtension('dolphindb.dolphindb-vscode').extensionKind === ExtensionKind.Workspace)  // running remotely
-                for (const range of 
-                    workspace.getConfiguration('dolphindb')
-                        .get<string>('ports')
-                        .split(',')
-                        .reverse()
-                ) {
-                    const [left, right] = range.split('-')
-                        .map(x => 
-                            Number(x))
+                for (const range of workspace.getConfiguration('dolphindb').get<string>('ports').split(',').reverse()) {
+                    const [left, right] = range.split('-').map(x => Number(x))
                     
                     if (!right)
                         yield left
@@ -1684,14 +1724,8 @@ class DdbServer extends Server {
                         yield i
                 }
             else
-                for (const range of 
-                    workspace.getConfiguration('dolphindb')
-                        .get<string>('ports')
-                        .split(',')
-                ) {
-                    const [left, right] = range.split('-')
-                        .map(x => 
-                            Number(x))
+                for (const range of workspace.getConfiguration('dolphindb').get<string>('ports').split(',')) {
+                    const [left, right] = range.split('-').map(x => Number(x))
                     
                     if (!right)
                         yield left
@@ -1762,3 +1796,23 @@ class DdbServer extends Server {
         )
     }
 }
+
+
+async function _upload_file (connection: DdbConnection, fp_remote: string, ftext: string) {
+    if (!connection.connected) {
+        connection.disconnect()
+        await connection.connect()
+    }
+    
+    const fpd_remote = fp_remote.fdir
+    
+    const { ddb } = connection
+    
+    if (!(
+        await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])
+    ).value)
+        await ddb.call('mkdir', [fpd_remote])
+    
+    await ddb.call('saveTextFile', [ftext, fp_remote])
+}
+

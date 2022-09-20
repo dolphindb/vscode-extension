@@ -1,10 +1,7 @@
 {
     "extends": "./tsconfig.json",
     
-    "files": [
-        "./build.ts",
-        "./dev.ts"
-    ],
+    "files": ["./build.ts"],
     
     "compilerOptions": {
         "outDir": "./",

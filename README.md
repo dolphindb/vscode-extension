@@ -83,9 +83,12 @@ After the code is executed, there will be text-based output in the terminal belo
 
 <img src='./images/with-dataview.png' width='600'>
 
-If you get a connection error (eg: `ws://xxx` errored), make sure that:
-- DolphinDB Server version is at least `1.30.16` or `2.00.4`
+If there is a server connection error (eg: `ws://192.168.1.111:8848` errored), you can first try to access the corresponding server address with a browser `http://192.168.1.111:8848`  
+If you can open the web page and use it normally, check again:
+- Execute the `version()` function, the returned version of DolphinDB Server should not be lower than `1.30.16` or `2.00.4`
 - If there is a configured system proxy, the proxy software and proxy server need to support WebSocket connections, otherwise please turn off the proxy in the system, or add the DolphinDB Server IP to the exclusion list, and then restart VSCode
+
+VSCode has a memory limit of about `1 GB`. It is recommended to use `limit` to limit the number of returned records; or assign the result to a variable, such as `a = select * from`, then click the button next to the sidebar variable to perform paging lazy loading, and retrieve a single page of data as needed
 
 (If you need to customize the shortcut keys, you can also modify them in `File > Preferences > Keyboard Shortcuts` in VSCode, enter dolphindb, find `execute`, double-click, and enter the shortcut key you want)
 

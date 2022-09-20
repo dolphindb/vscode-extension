@@ -83,9 +83,12 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 
 <img src='./images/with-dataview.png' width='600'>
 
-如果出现服务器连接错误 (如：`ws://xxx` errored)，请确保:
-- DolphinDB Server 版本不低于 `1.30.16` 或 `2.00.4`
+如果出现服务器连接错误 (如：`ws://192.168.1.111:8848` errored)，可以先尝试用浏览器访问对应的 server 地址 `http://192.168.1.111:8848`  
+如果可以打开网页且正常使用，再检查:
+- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`
 - 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode
+
+VSCode 有大约为 `1 GB` 的内存限制。建议使用 `limit` 限制返回记录数；或者将结果赋给某个变量，如 `a = select * from`，后续通过点击侧边栏变量旁边的按钮进行分页懒加载，按需取回单页数据
 
 (如需自定义快捷键，也可以到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，输入 dolphindb, 找到 execute 后，双击，输入你想要的快捷键)
 

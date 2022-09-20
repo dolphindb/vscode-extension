@@ -71,14 +71,8 @@ export async function copy_files () {
 
 export async function build_tm_language () {
     await Promise.all([
-        fwrite(
-            `${fpd_out}dolphindb.tmLanguage.json`,
-            tm_language
-        ),
-        fcopy(
-            `${fpd_root}dolphindb.language-configuration.json`,
-            `${fpd_out}dolphindb.language-configuration.json`
-        )
+        fwrite(`${fpd_out}dolphindb.tmLanguage.json`, tm_language),
+        fcopy(`${fpd_root}dolphindb.language-configuration.json`, `${fpd_out}dolphindb.language-configuration.json`)
     ])
 }
 
@@ -94,6 +88,40 @@ export async function build_package_json () {
             title: {
                 zh: 'DolphinDB: 执行代码',
                 en: 'DolphinDB: Execute Code'
+            },
+        },
+        {
+            command: 'execute_line',
+            when: "editorTextFocus && editorLangId == 'dolphindb'",
+            title: {
+                zh: '执行当前行',
+                en: 'Execute Line'
+            },
+            icon: '$(play)'
+        },
+        {
+            command: 'execute_selection',
+            when: "editorTextFocus && editorLangId == 'dolphindb'",
+            title: {
+                zh: '执行当前选中',
+                en: 'Execute Selection'
+            },
+            icon: '$(play)'
+        },
+        {
+            command: 'execute_file',
+            when: "editorLangId == 'dolphindb'",
+            title: {
+                zh: '执行整个文件',
+                en: 'Execute File'
+            },
+            icon: '$(play)'
+        },
+        {
+            command: 'cancel',
+            title: {
+                zh: 'DolphinDB: 取消作业',
+                en: 'DolphinDB: Cancel Job'
             },
         },
         {
@@ -114,26 +142,41 @@ export async function build_package_json () {
         {
             command: 'inspect_variable',
             title: {
-                zh: '查看变量',
-                en: 'Inspect Variable'
+                zh: 'DolphinDB: 查看变量',
+                en: 'DolphinDB: Inspect Variable'
             },
             icon: '$(browser)',
         },
         {
             command: 'open_variable',
             title: {
-                zh: '在新窗口中查看变量',
-                en: 'Inspect Variable in New Window'
+                zh: 'DolphinDB: 在新窗口中查看变量',
+                en: 'DolphinDB: Inspect Variable in New Window'
             },
             icon: '$(multiple-windows)',
         },
         {
             command: 'reload_dataview',
             title: {
-                zh: '重新加载数据视图',
-                en: 'Reload Data View'
+                zh: 'DolphinDB: 重新加载数据视图',
+                en: 'DolphinDB: Reload DataView'
             },
             icon: '$(refresh)',
+        },
+        {
+            command: 'upload_file',
+            title: {
+                zh: 'DolphinDB: 上传文件',
+                en: 'DolphinDB: Upload File'
+            },
+            icon: '$(cloud-upload)',
+        },
+        {
+            command: 'set_decimals',
+            title: {
+                zh: 'DolphinDB: 设置 DolphinDB 小数显示位数',
+                en: 'DolphinDB: Set decimal places'
+            },
         },
     ]
     
@@ -221,6 +264,15 @@ export async function build_package_json () {
         }
     }
     
+    const decimals_property = {
+        type: ['number', 'null'],
+        default: null,
+        description: {
+            zh: '小数点后显示的位数 (可取 0 ~ 20)，默认为 null (实际数据的位数)',
+            en: 'The number of digits displayed after the decimal point (can be 0 ~ 20), the default is null (the actual number of digits)'
+        }
+    }
+    
     
     const package_json_ = {
         name,
@@ -267,10 +319,7 @@ export async function build_package_json () {
                 {
                     id: 'dolphindb',
                     extensions: ['.dos'],
-                    aliases: [
-                        'DolphinDB',
-                        'dolphindb'
-                    ],
+                    aliases: ['DolphinDB', 'dolphindb'],
                     configuration: './dolphindb.language-configuration.json'
                 }
             ],
@@ -335,6 +384,11 @@ export async function build_package_json () {
                         ...ports_property,
                         markdownDescription: '%configs.ports.markdownDescription%'
                     } as Schema,
+                    
+                    'dolphindb.decimals': {
+                        ...decimals_property,
+                        description: '%configs.decimals.description%'
+                    } as Schema
                 }
             },
             
@@ -381,7 +435,7 @@ export async function build_package_json () {
                     {
                         type: 'webview',
                         id: 'dolphindb.dataview',
-                        name: 'DataView',
+                        name: '%configs.ddbpanel.name%',
                         contextualTitle: 'DolphinDB',
                         icon: './icons/object.svg',
                         visibility: 'visible',
@@ -428,110 +482,33 @@ export async function build_package_json () {
                         group: 'navigation',
                         when: 'view == dolphindb.dataview',
                     }
-                ]
+                ],
+                
+                // 执行按钮
+                'editor/title/run': [
+                    {
+                        when: "editorLangId == 'dolphindb'",
+                        command: 'dolphindb.execute_file',
+                    },
+                    {
+                        when: "editorLangId == 'dolphindb'",
+                        command: 'dolphindb.execute_line'
+                    },
+                    {
+                        when: "editorLangId == 'dolphindb'",
+                        command: 'dolphindb.execute_selection'
+                    },
+                ],
+                
+                // 上传按钮
+                'editor/title': [
+                    {
+                        when: "editorLangId == 'dolphindb'",
+                        command: 'dolphindb.upload_file',
+                        group: 'navigation',
+                    }
+                ],
             }
-            
-            // commands: [
-            //     {
-            //         command: 'dolphindb.executeCode',
-            //         title: 'DolphinDB: executeCode'
-            //     },
-            //     {
-            //         command: 'dolphindb.addServer',
-            //         title: 'DolphinDB: addServer'
-            //     },
-            //     {
-            //         command: 'dolphindb.chooseServer',
-            //         title: 'DolphinDB: chooseServer'
-            //     },
-            //     {
-            //         command: 'dolphindb.removeServer',
-            //         title: 'DolphinDB: removeServer'
-            //     },
-            //     {
-            //         command: 'dolphindb.helper',
-            //         title: 'DolphinDB: Helper'
-            //     },
-            //     {
-            //         command: 'dolphindb.env.refresh',
-            //         title: 'Refresh',
-            //         icon: {
-            //             light: 'resources/light/refresh.svg',
-            //             dark: 'resources/dark/refresh.svg'
-            //         }
-            //     },
-            //     {
-            //         command: 'dolphindb.env.showInfo',
-            //         title: 'Show'
-            //     },
-            //     {
-            //         command: 'dolphindb.login',
-            //         title: 'DolphinDB: login'
-            //     },
-            //     {
-            //         command: 'dolphindb.ssl',
-            //         title: 'DolphinDB: SSL'
-            //     }
-            // ],
-            
-            // menus: {
-            //     'editor/context': [
-            //         {
-            //             command: 'dolphindb.executeCode',
-            //             when: 'resourceLangId == dolphindb'
-            //         },
-            //         {
-            //             command: 'dolphindb.addServer',
-            //             when: 'resourceLangId == dolphindb'
-            //         },
-            //         {
-            //             command: 'dolphindb.chooseServer',
-            //             when: 'resourceLangId == dolphindb'
-            //         },
-            //         {
-            //             command: 'dolphindb.removeServer',
-            //             when: 'resourceLangId == dolphindb'
-            //         },
-            //         {
-            //             command: 'dolphindb.login',
-            //             when: 'resourceLangId == dolphindb'
-            //         },
-            //         {
-            //             command: 'dolphindb.ssl',
-            //             when: 'resourceLangId == dolphindb'
-            //         }
-            //     ],
-                
-            //     'view/title': [
-            //         {
-            //             command: 'dolphindb.env.refresh',
-            //             when: 'view == dolphindb.env',
-            //             group: 'navigation'
-            //         }
-            //     ],
-                
-            //     'view/item/context': [
-            //         {
-            //             command: 'dolphindb.env.showInfo',
-            //             when: 'view == dolphindb.env && viewItem == variableInfo',
-            //             group: 'inline'
-            //         }
-            //     ]
-            // },
-            
-            // keybindings: [
-            //     {
-            //         command: 'dolphindb.executeCode',
-            //         key: 'ctrl+e',
-            //         mac: 'cmd+e'
-            //     }
-            // ],
-            
-            // breakpoints: [
-            //     {
-            //         language: 'dolphindb'
-            //     }
-            // ]
         }
     }
     
@@ -556,6 +533,13 @@ export async function build_package_json () {
                     ),
                     
                     'configs.ports.markdownDescription': ports_property.markdownDescription[language],
+                    
+                    'configs.decimals.description': decimals_property.description[language],
+                    
+                    'configs.ddbpanel.name': {
+                        zh: '数据视图',
+                        en: 'DataView'
+                    }[language],
                     
                     ... Object.fromEntries(
                         ext_commands.map(({ command, title }) => [
@@ -781,60 +765,29 @@ let dataview_config: Configuration = {
 export let dataview_webpack = {
     compiler: null as Compiler,
     
-    watcher: null as Watching,
     
-    
-    async build () {
-        dataview_config.mode = 'production'
+    async build (production: boolean) {
+        if (production)
+            dataview_config.mode = 'production'
         
         this.compiler = Webpack(dataview_config)
         
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<Stats>((resolve, reject) => {
             this.compiler.run((error, stats) => {
-                if (error || stats.hasErrors()) {
-                    console.log(
-                        stats.toString(dataview_config.stats)
-                    )
-                    reject(
-                        new Error('dataview 编译失败')
-                    )
-                    return
-                }
+                if (stats)
+                    console.log(stats.toString(dataview_config.stats))
                 
-                console.log(
-                    stats.toString(dataview_config.stats)
-                )
-                resolve()
+                if (error)
+                    reject(error)
+                else if (stats.hasErrors())
+                    reject(new Error('dataview 构建失败'))
+                else
+                    resolve(stats)
             })
         })
         
         await new Promise(resolve => {
             this.compiler.close(resolve)
-        })
-    },
-    
-    async start () {
-        this.compiler = Webpack(dataview_config)
-        
-        let first = true
-        
-        return new Promise<Stats>( resolve => {
-            this.watcher = this.compiler.watch({
-                ignored: [
-                    '**/node_modules/',
-                ],
-                aggregateTimeout: 500
-            }, (error, stats) => {
-                if (error)
-                    console.log(error)
-                console.log(
-                    stats.toString(dataview_config.stats)
-                )
-                if (!first)
-                    return
-                first = false
-                resolve(stats)
-            })
         })
     }
 }
@@ -957,63 +910,34 @@ let ext_config: Configuration = {
 }
 
 
-export let ext_webpack = {
+export const ext_webpack = {
     compiler: null as Compiler,
     
     watcher: null as Watching,
     
     
-    async build () {
-        ext_config.mode = 'production'
+    async build (production: boolean) {
+        if (production)
+            ext_config.mode = 'production'
         
         this.compiler = Webpack(ext_config)
         
-        await new Promise<void>((resolve, reject) => {
+        await new Promise<Stats>((resolve, reject) => {
             this.compiler.run((error, stats) => {
-                if (error || stats.hasErrors()) {
-                    console.log(
-                        stats.toString(ext_config.stats)
-                    )
-                    reject(
-                        new Error('dataview 编译失败')
-                    )
-                    return
-                }
+                if (stats)
+                    console.log(stats.toString(ext_config.stats))
                 
-                console.log(
-                    stats.toString(ext_config.stats)
-                )
-                resolve()
+                if (error)
+                    reject(error)
+                else if (stats.hasErrors())
+                    reject(new Error('扩展构建失败'))
+                else
+                    resolve(stats)
             })
         })
         
         await new Promise(resolve => {
             this.compiler.close(resolve)
-        })
-    },
-    
-    async start () {
-        this.compiler = Webpack(ext_config)
-        
-        let first = true
-        
-        return new Promise<Stats>( resolve => {
-            this.watcher = this.compiler.watch({
-                ignored: [
-                    '**/node_modules/',
-                ],
-                aggregateTimeout: 500
-            }, (error, stats) => {
-                if (error)
-                    console.log(error)
-                console.log(
-                    stats.toString(ext_config.stats)
-                )
-                if (!first)
-                    return
-                first = false
-                resolve(stats)
-            })
         })
     }
 }
@@ -1029,7 +953,7 @@ interface Schema {
     /** 内部使用 */
     name?: string
     
-    type: 'boolean' | 'number' | 'string' | 'object' | 'array'
+    type: 'boolean' | 'number' | 'string' | 'object' | 'array' | ('boolean' | 'number' | 'string' | 'object' | 'array')[]
     default?: any
     
     items?: Schema

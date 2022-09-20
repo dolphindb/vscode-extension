@@ -1,50 +1,50 @@
 {
     "name": "dolphindb-vscode",
     "type": "module",
-    "version": "2.0.607",
+    "version": "2.0.800",
     "engines": {
         "vscode": ">=1.68.0"
     },
     "scripts": {
-        "dev": "tsc --project ./tsconfig.build.json && node ./dev.js",
-        "build": "tsc --project ./tsconfig.build.json && node ./build.js"
+        "dev": "tsc --project ./tsconfig.node.json && node ./build.js",
+        "build": "tsc --project ./tsconfig.node.json && node ./build.js --production"
     },
     "overrides": {
         "rc-trigger": "^5.2.18"
     },
     "devDependencies": {
-        "@ant-design/plots": "^1.0.9",
-        "@koa/cors": "^3.3.0",
-        "@svgr/webpack": "^6.2.1",
-        "@types/koa": "^2.13.4",
+        "@ant-design/plots": "^1.2.2",
+        "@koa/cors": "^3.4.1",
+        "@svgr/webpack": "^6.3.1",
+        "@types/koa": "^2.13.5",
         "@types/koa-compress": "^4.0.3",
         "@types/koa-useragent": "^2.1.2",
-        "@types/node": "^18.0.0",
-        "@types/react": "^18.0.14",
-        "@types/react-dom": "^18.0.5",
-        "@types/vscode": "^1.68.0",
+        "@types/node": "^18.7.18",
+        "@types/react": "^18.0.20",
+        "@types/react-dom": "^18.0.6",
+        "@types/vscode": "^1.71.0",
         "@types/ws": "^8.5.3",
-        "antd": "^4.21.4",
+        "antd": "^4.23.2",
         "css-loader": "^6.7.1",
-        "dayjs": "^1.11.3",
-        "dolphindb": "2.0.602",
+        "dayjs": "^1.11.5",
+        "dolphindb": "2.0.603",
         "koa": "^2.13.4",
         "koa-compress": "^5.1.0",
-        "koa-useragent": "^4.0.0",
+        "koa-useragent": "^4.1.0",
         "open": "^8.4.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "react-object-model": "^0.0.19",
-        "sass": "^1.53.0",
+        "react-object-model": "^0.0.21",
+        "sass": "^1.54.9",
         "sass-loader": "^13.0.2",
         "source-map-loader": "^4.0.0",
         "style-loader": "^3.3.1",
-        "ts-loader": "^9.3.1",
+        "ts-loader": "^9.4.0",
         "tslib": "^2.4.0",
-        "typescript": "^4.7.4",
+        "typescript": "^4.8.3",
         "upath": "^2.0.1",
-        "webpack": "^5.73.0",
-        "ws": "^8.8.0",
-        "xshell": "0.0.58"
+        "webpack": "^5.74.0",
+        "ws": "^8.8.1",
+        "xshell": "0.0.60"
     }
 }

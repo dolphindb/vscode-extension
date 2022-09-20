@@ -2,12 +2,11 @@ import 'antd/dist/antd.css'
 
 import './webview.sass'
 
+
 import { default as React, useEffect } from 'react'
 import { createRoot as create_root } from 'react-dom/client'
 
-import {
-    ConfigProvider,
-} from 'antd'
+import { ConfigProvider } from 'antd'
 import zh from 'antd/lib/locale/zh_CN.js'
 import en from 'antd/lib/locale/en_US.js'
 import ja from 'antd/lib/locale/ja_JP.js'
@@ -16,19 +15,13 @@ const locales = { zh, en, ja, ko }
 
 import { Model } from 'react-object-model'
 
-import {
-    Remote,
-    type Message,
-} from 'xshell/net.browser.js'
-import {
-    DdbObj,
-    DdbForm,
-} from 'dolphindb/browser.js'
+import { genid } from 'xshell/utils.browser.js'
+import { Remote, type Message } from 'xshell/net.browser.js'
+import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
 
 import { language } from '../i18n/index.js'
 
-import { Obj, DdbObjRef, open_obj } from './obj.js'
-
+import { Obj, DdbObjRef } from './obj.js'
 
 
 interface VSCodeWebview {
@@ -42,189 +35,176 @@ declare function acquireVsCodeApi (): VSCodeWebview
 let vscode = acquireVsCodeApi()
 
 
+/** 接收到消息后的处理函数  
+    返回值可以是:
+    - 数组: 会自动被封装为 { id: 相同, data: 返回值, done: true } 这样的消息并调用 websocket.send 将其发送
+    - void: 什么都不做
+    - 以上的 promise */
+type MessageHandler = (message: Message) => void | any[] | Promise<void | any[]>
+
+// LOCAL
+// let remote = new Remote({ url: 'ws://localhost/ddb' })
 let remote = {
-    id: 0,
+    /** 通过 rpc message.func 被调用的 rpc 函数 */
+    funcs: { } as Record<string, MessageHandler>,
     
-    /** 调用方发起的 rpc 对应响应的 message 处理器 */
-    handlers: [ ] as ((message: Message) => any)[],
+    /** map<id, message handler>: 通过 rpc message.id 找到对应的 handler, unary rpc 接收方不需要设置 handlers, 发送方需要 */
+    handlers: new Map<number, MessageHandler>(),
     
     print: false,
     
     
-    /** 被调方的 message 处理器 */
-    funcs: { } as Record<
-        string, 
-        (message: Message) => void | Promise<void>
-    >,
-    
-    
     init () {
-        window.addEventListener(
-            'message',
-            ({ data }) => {
-                remote.handle(data)
-            }
-        )
-    },
-    
-    
-    send (message: Message) {
-        if (!('id' in message))
-            message.id = this.id
-        
-        const { buffer } = Remote.pack(message)
-        
-        vscode.postMessage(buffer, [buffer])
-    },
-    
-    
-    /** 调用 remote 中的 func, 中间消息及返回结果可由 handler 处理，处理 done message 之后的返回值作为 call 函数的返回值 
-        如果为 unary rpc, 可以不传 handler, await call 之后可以得到响应 message 的 args
-    */
-    async call <T extends any[] = any[]> (
-        message: Message,
-        handler?: (message: Message<T>) => any
-    ) {
-        return new Promise<T>((resolve, reject) => {
-            this.handlers[this.id] = async (message: Message<T>) => {
-                const { error, done } = message
-                
-                if (error) {
-                    reject(
-                        Object.assign(
-                            new Error(),
-                            error
-                        )
-                    )
-                    return
-                }
-                
-                const result = handler ?
-                        await handler(message)
-                    :
-                        message.args
-                
-                if (done)
-                    resolve(result)
-            }
-            
-            this.send(message)
-            
-            this.id++
+        window.addEventListener('message', ({ data }) => {
+            remote.handle(data)
         })
     },
     
     
-    /** 处理接收到的 message
-        1. 被调用方接收 message 并开始处理
-        2. 调用方处理 message 响应
-    */
+    send (message: Message) {
+        if (!message.id)
+            message.id = genid()
+        
+        try {
+            const { buffer } = Remote.pack(message)
+            vscode.postMessage(buffer, [buffer])
+        } catch (error) {
+            this.handlers.delete(message.id)
+            throw error
+        }
+    },
+    
+    
+    /** 处理接收到的 websocket message 并解析, 根据 id dispatch 到对应的 handler 进行处理  
+        如果 message.done == true 则清理 handler  
+        如果 handler 返回了值，则包装为 message 发送 */
     async handle (buffer: ArrayBuffer) {
         const message = Remote.parse(buffer)
         
-        const { func, id, done } = message
+        const { id, func, done } = message
         
         if (this.print)
             console.log(message)
         
-        if (func) // 作为被调方
-            try {
-                const handler = this.funcs[func]
-                
-                if (!handler)
-                    throw new Error(`找不到 rpc handler for '${func}'`)
-                
-                await handler(message)
-            } catch (error) {
-                this.send(
-                    {
-                        id,
-                        error,
-                        done: true
-                    },
-                )
-                
-                throw error
-            }
-        else {  // 作为发起方
-            this.handlers[id](message)
-            
+        let handler: MessageHandler
+        
+        if (func)
+            handler = this.funcs[func]
+        else {
+            handler = this.handlers.get(id)
             if (done)
-                this.handlers[id] = null
+                this.handlers.delete(id)
         }
+        
+        try {
+            if (handler) {
+                const data = await handler(message)
+                if (data)
+                    this.send({ id, data })
+            } else if (message.error)
+                throw message.error
+            else
+                throw new Error(`找不到 rpc handler: ${func ? `func: ${func.quote()}` : `id: ${id}`}`)
+        } catch (error) {
+            // handle 出错并不意味着 rpc 一定会结束，可能 error 是运行中的正常数据，所以不能清理 handler
+            
+            if (!message.error)  // 防止无限循环往对方发送 error, 只有在对方无错误时才可以发送
+                try { this.send({ id, error, /* 不能设置 done 清理对面 handler, 理由同上 */ }) } catch { }
+            
+            // 再往上层抛出错误没有意义了，上层调用栈是 websocket.on('message') 之类的
+            console.log(error)
+        }
+    },
+    
+    
+    /** 调用 remote 中的 func, 适用于最简单的一元 rpc (请求, 响应) */
+    async call <TReturn extends any[] = any[]> (func: string, args?: any[]) {
+        return new Promise<TReturn>(async (resolve, reject) => {
+            const id = genid()
+            
+            this.handlers.set(id, (message: Message<TReturn>) => {
+                const { error, data } = message
+                if (error)
+                    reject(error)
+                else
+                    resolve(data)
+                this.handlers.delete(id)
+            })
+            
+            this.send({ id, func, data: args })  // 不需要 done: true, 因为对面的 remote.handlers 中不会有这个 id 的 handler
+        })
     }
 }
 
 
-export type Result = { type: 'object', data: DdbObj } | { type: 'objref', data: DdbObjRef }
-
-export class DataViewModel extends Model<DataViewModel> {
-    result: Result
+class DataViewModel extends Model<DataViewModel> {
+    result?: { type: 'object', data: DdbObj } | { type: 'objref', data: DdbObjRef }
+    
+    options?: InspectOptions
     
     
     async init () {
         remote.init()
         
-        remote.call(
-            { func: 'subscribe_repl' },
-            async ({
-                args: [type, data, le]
-            }: Message<
+        
+        // --- subscribe repl rpc (一个请求，无限个响应)
+        
+        const id_repl = genid()
+        
+        remote.handlers.set(
+            id_repl,
+            async ({ /* error 可能会有，但在 webview 里不关心 */ data: [type, data, le, options] }: Message<
                 ['print', string] |
-                ['object', Uint8Array, boolean] |
+                ['object', Uint8Array, boolean, InspectOptions?] |
                 ['error', any]
             >) => {
-                if (type === 'object')
-                    data = DdbObj.parse(data, le)
+                if (type !== 'object')
+                    return
                 
-                if (
-                    type === 'object' && 
-                    (data as DdbObj).form !== DdbForm.scalar && 
-                    (data as DdbObj).form !== DdbForm.pair
-                )
-                    this.set({
-                        result: {
-                            type,
-                            data
-                        }
-                    })
-            }
-        )
+                data = DdbObj.parse(data, le)
+                
+                switch ((data as DdbObj).form) {
+                    case DdbForm.scalar:
+                    case DdbForm.pair:
+                        break
+                    
+                    default:
+                        this.set({ result: { type, data }, options: options === null ? undefined : options })
+                }
+            })
         
-        remote.call(
-            { func: 'subscribe_inspection' },
-            async ({
-                args: [ddbvar, open, buffer, le]
-            }) => {
+        remote.send({ id: id_repl, func: 'subscribe_repl' })
+        
+        // --- subscribe inspection rpc (一个请求，无限个响应)
+        
+        const id_inspection = genid()
+        
+        remote.handlers.set(
+            id_inspection,
+            async ({ data: [ddbvar, open, options, buffer, le] }: 
+                Message<[any, boolean, InspectOptions?, Uint8Array?, boolean?]>
+            ) => {
                 if (buffer)
                     ddbvar.obj = DdbObj.parse(buffer, le)
                 
                 ddbvar.bytes = BigInt(ddbvar.bytes)
                 
+                if (options === null)
+                    options = undefined
+                
                 if (ddbvar.obj)
-                    if (open) {
-                        
-                    } else
-                        this.set({
-                            result: {
-                                type: 'object',
-                                data: ddbvar.obj,
-                            }
-                        })
+                    if (open) { } 
+                    else
+                        this.set({ result: { type: 'object', data: ddbvar.obj }, options })
                 else {
                     const objref = new DdbObjRef(ddbvar)
-                    if (open) {
-                        
-                    } else
-                        this.set({
-                            result: {
-                                type: 'objref',
-                                data: objref
-                            }
-                        })
+                    if (open) { }
+                    else
+                        this.set({ result: { type: 'objref', data: objref }, options })
                 }
-            }
-        )
+            })
+        
+        remote.send({ id: id_inspection, func: 'subscribe_inspection' })
     }
 }
 
@@ -232,26 +212,23 @@ let model = window.model = new DataViewModel()
 
 
 function DataView () {
-    const { result } = model.use(['result'])
+    const { result, options } = model.use(['result', 'options'])
     
     useEffect(() => {
         model.init()
     }, [ ])
     
     if (!result)
-        return <div>DolphinDB Data Browser</div>
+        return null
     
     const { type, data } = result
     
-    return <ConfigProvider
-        locale={locales[language] as any}
-        autoInsertSpaceInButton={false}
-    >{
-        <div className='result'>{
+    return <ConfigProvider locale={locales[language] as any} autoInsertSpaceInButton={false}>{
+        <div className='result webview'>{
             type === 'object' ?
-                <Obj obj={data} remote={remote} />
+                <Obj obj={data} remote={remote} ctx='webview' options={options} />
             :
-                <Obj objref={data} remote={remote} />
+                <Obj objref={data} remote={remote} ctx='webview' options={options} />
         }</div>
     }</ConfigProvider>
 }
