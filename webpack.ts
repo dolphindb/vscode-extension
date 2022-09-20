@@ -320,7 +320,11 @@ export async function build_package_json () {
                     id: 'dolphindb',
                     extensions: ['.dos'],
                     aliases: ['DolphinDB', 'dolphindb'],
-                    configuration: './dolphindb.language-configuration.json'
+                    configuration: './dolphindb.language-configuration.json',
+                    icon: {
+                        dark: './icons/file.svg',
+                        light: './icons/file.svg',
+                    }
                 }
             ],
             
