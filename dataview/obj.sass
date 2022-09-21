@@ -197,6 +197,9 @@ $font-family: var(--vscode-editor-font-family, 'MyFont')
     .ant-table-tbody > tr.ant-table-row:hover > td,
     .ant-table-tbody > tr > td.ant-table-cell-row-hover
         background-color: $hover-color !important
+    
+    .ant-table-tbody > tr.ant-table-placeholder:hover > td
+        background-color: $background-color !important
         
     .ant-table-tbody > tr > td
         transition: none
@@ -206,6 +209,10 @@ $font-family: var(--vscode-editor-font-family, 'MyFont')
         
     .ant-table table
         width: unset
+    .ant-empty-normal
+         color: $font-color !important
+         .ant-empty-img-simple-path, .ant-empty-img-simple-ellipse
+            fill: $background-color
 
 .chart
     height: 100%
