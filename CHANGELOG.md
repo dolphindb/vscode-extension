@@ -1,5 +1,5 @@
 # Change Log (更新日志)
-## [2.0.801] - 2022.09.28
+## [2.0.802] - 2022.09.28
 -   数据视图（数组、表格、图等）**支持自适应 VSCode 主题颜色**  
     Bottom data view (array, table, graph, etc.) **Supports adaptive VSCode theme colors**
 
