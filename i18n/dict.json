@@ -30,13 +30,13 @@
         "en": "Set DolphinDB decimal places:"
     },
     "小数位数:": {
-        "en": "decimal places:"
+        "en": "Decimals:"
     },
     "设置小数点后显示的位数 (可取 0 ~ 20) (置空时重置为实际数据的位数)": {
-        "en": "Set the number of digits displayed after the decimal point (can be 0 ~ 20) (reset to the actual number of digits when empty)"
+        "en": "Set the number of digits displayed after the decimal point (can be 0 ~ 20) (Leave it empty to display the actual number of digits)"
     },
     "实际数据的位数": {
-        "en": "number of digits of actual data"
+        "en": "the actual number of digits (default)"
     },
     "小数位数应为空或介于 0 - 20": {
         "en": "Number of decimal places should be empty or between 0 - 20"
