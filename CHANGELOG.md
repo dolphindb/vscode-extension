@@ -18,10 +18,10 @@
 -   底部状态栏新增小数位数配置栏（配置选项: dolphindb.decimals），支持自定义展示的小数位数，如小数固定显示两位 `1.00`  
     Added a new decimal point configuration column at the bottom (configuration option: dolphindb.decimals), supports custom decimal display digits, such as fixed display with two decimal places `1.00`
     
--   支持词典 (dict) 的可视化展示
+-   支持词典 (dict) 的可视化展示  
     Visual display of dictionaries is supported
 
--   关键字、函数提示、函数文档更新
+-   关键字、函数提示、函数文档更新  
     Keywords, function hints, function documentation update
     
 -   执行代码的输出间隔改为一个空行，使显示更紧凑  
@@ -30,7 +30,7 @@
 -   点击终端中的错误代码（例如 ‘RefId: S00001’） 可跳转至解释文档  
     You can now navigate to the associated documentation by clicking the error code (e.g., 'RefId: S00001').
     
--   数据视图优化了分页显示样式，修复宽度较小时分页选项显示不全的问题，并为新窗口打开等图标增加 tooltip
+-   数据视图优化了分页显示样式，修复宽度较小时分页选项显示不全的问题，并为新窗口打开等图标增加 tooltip  
     Enhanced pagination design and fixed display issues; Added tooltips (e.g., “Inspect Icons in New Window“) for icon buttons in the DATAVIEW panel.
     
 -   修复了画图传入时间列未正确格式化的问题  
