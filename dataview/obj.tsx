@@ -1326,23 +1326,33 @@ function Chart ({
             let col_labels = (cols_?.value || [ ]) as any[]
             let col_lables_ = new Array(col_labels.length)
             
-            // 没有设置 label 的情况
-            let row_labels_ = new Array(rows)
+            const row_labels = (() => {
+                // 没有设置 label 的话直接以序号赋值并返回
+                if (!rows_) {
+                    let arr = new Array(rows)
+                    for (let i = 0;  i < rows;  i++)
+                        arr[i] = i
+                    return arr
+                } else if (charttype === DdbChartType.kline || charttype === DdbChartType.scatter)
+                    return rows_.value
+                else {
+                    // format 为 string
+                    const arr = new Array(rows)
+                    for (let i = 0; i < rows; i++)
+                        arr[i] = formati(rows_, i, options)
+                    return arr
+                }
+            })()
             
-            for (let i = 0; i < rows; i++) 
-                row_labels_[i] = i
-            
-            let row_labels = (rows_?.value || row_labels_) as any[]
-                       
             const n = charttype === DdbChartType.line && multi_y_axes || charttype === DdbChartType.kline ? rows : rows * cols
             let data_ = new Array(n)
             
             switch (charttype) {
                 case DdbChartType.line:
-                    if (multi_y_axes) 
+                    if (multi_y_axes)
                         for (let j = 0; j < rows; j++) {
                             let dataobj: any = { }
-                            dataobj.row = format(rows_.type, row_labels[j], rows_.le)
+                            dataobj.row = row_labels[j]
                             for (let i = 0; i < cols; i++) {
                                 const col = col_labels[i]?.value?.name || col_labels[i]
                                 col_lables_[i] = col
@@ -1360,7 +1370,7 @@ function Chart ({
                             for (let j = 0; j < rows; j++) {
                                 const idata = i * rows + j
                                 data_[idata] = {
-                                    row: format(rows_.type, row_labels[j], rows_.le),
+                                    row: row_labels[j],
                                     col,
                                     value: to_chart_data(data[idata], datatype)
                                 }
@@ -1396,21 +1406,21 @@ function Chart ({
                         for (let j = 0; j < rows; j++) {
                             const idata = i * rows + j
                             data_[idata] = {
-                                row: charttype === DdbChartType.scatter ? row_labels[j] : format(rows_.type, row_labels[j], rows_.le),
+                                row: row_labels[j],
                                 col,
                                 value: to_chart_data(data[idata], datatype)
                             }
                         }
                     }
                     
-                    if (charttype === DdbChartType.histogram && bin_start && bin_end) 
+                    if (charttype === DdbChartType.histogram && bin_start && bin_end)
                         data_ = data_.filter(data => 
                             data.value >= Number(bin_start.value) && data.value <= Number(bin_end.value))
                     
                     break
             }
             
-            console.log('data:', data_)   
+            console.log('data:', data_)
             
             set_config({
                 inited: true,

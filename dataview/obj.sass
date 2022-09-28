@@ -19,7 +19,7 @@ $line-number-foreground-color: var(--vscode-editorLineNumber-foreground, #000000
 $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForeground, #000000)
 
 
-$font-family: var(--vscode-editor-font-family, 'MyFont')
+// $font-family: var(--vscode-editor-font-family, 'MyFont')
 
 
 .vector, .table, .matrix
@@ -81,12 +81,16 @@ $font-family: var(--vscode-editor-font-family, 'MyFont')
         
         
     .ant-pagination
+        .ant-pagination-item
+            font-family: MyFont
+        
         .ant-pagination-item a
             color: $color !important
         
         .ant-pagination-item-active
             background-color: $background-color !important
             border: 0px
+            font-weight: bold
             
             a
                 margin-top: 1px
@@ -103,12 +107,15 @@ $font-family: var(--vscode-editor-font-family, 'MyFont')
         
         .ant-pagination-disabled svg
             color: $color !important
+        
         .ant-pagination-options
             color: $font-color !important
             display: inline-block !important
+            
             input
                 background-color: $input-background-color !important
                 color: $input-foreground-color !important
+        
         
     .ant-select
         color: $font-color
@@ -210,11 +217,13 @@ $font-family: var(--vscode-editor-font-family, 'MyFont')
         
     .ant-table table
         width: unset
+    
     .ant-empty-normal
          color: $font-color !important
+         
          .ant-empty-img-simple-path, .ant-empty-img-simple-ellipse
             fill: $background-color
-
+    
 .chart
     height: 100%
     display: flex

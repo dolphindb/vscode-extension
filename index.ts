@@ -24,7 +24,7 @@ import {
     
     type ExtensionContext,
     
-    type Terminal, type TerminalDimensions,
+    type Terminal, type TerminalDimensions, type TerminalLink,
     
     Hover,
     
@@ -54,8 +54,6 @@ import { default as Koa, type Context } from 'koa'
 import KoaCors from '@koa/cors'
 import KoaCompress from 'koa-compress'
 import { userAgent as KoaUserAgent } from 'koa-useragent'
-
-import open_url from 'open'
 
 import {
     type Message,
@@ -174,7 +172,7 @@ let formatter = {
     },
     
     update_bar () {
-        this.bar.text = `${t('小数位数:')} ${ this.decimals ?? '实际' }`
+        this.bar.text = `${t('小数位数:')} ${ this.decimals ?? t('实际') }`
         this.bar.show()
     },
     
@@ -197,7 +195,7 @@ let formatter = {
             validateInput (value: string) {
                 if (value === '' || /^\s*((1)?[0-9]|20)\s*$/.test(value)) {
                     const value_ = value.replace(/\s+/g, '')
-                    return { message: `${'设置小数位数为:'} ${value_ === '' ? t('实际数据的位数') : value_}`, severity: InputBoxValidationSeverity.Info }
+                    return { message: `${t('设置小数位数为:')} ${value_ === '' ? t('实际数据的位数') : value_}`, severity: InputBoxValidationSeverity.Info }
                 } else
                     return { message: t('小数位数应为空或介于 0 - 20'), severity: InputBoxValidationSeverity.Error }
             }
@@ -314,6 +312,7 @@ let dataview = {
                     view.webview.html = (
                         await fread(`${fpd_ext}dataview/webview.html`)
                     ).replace(/\{host\}/g, `localhost:${server.port}`)
+                    .replace('{language}', language)
                 }
             },
             { webviewOptions: { retainContextWhenHidden: true } }
@@ -456,6 +455,9 @@ async function _execute (text: string) {
     statbar.set_running()
     
     try {
+        // TEST
+        // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
+        
         const obj = await ddb.eval(
             text.replace(/\r\n/g, '\n'),
             {
@@ -473,7 +475,6 @@ async function _execute (text: string) {
             }
         )
         
-        lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
         
         printer.fire(
             (() => {
@@ -483,13 +484,16 @@ async function _execute (text: string) {
                     case DdbForm.matrix:
                     case DdbForm.table:
                     case DdbForm.chart:
-                        return obj.inspect_type().replace(/\n/g, '\r\n').blue + '\r\n'
+                    case DdbForm.dict: {
+                        lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+                        return obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
+                    }
                     
                     default: {
                         return obj.type === DdbType.void ?
                                 ''
                             :
-                                inspect(obj, { decimals: formatter.decimals } as InspectOptions).replace(/\n/g, '\r\n') + '\r\n'
+                                inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
                     }
                 }
              })() +
@@ -499,10 +503,15 @@ async function _execute (text: string) {
         await connection.update()
     } catch (error) {
         console.log(error)
-        printer.fire(`${error.message.replace(/\n/g, '\r\n').red}\r\n`)
+        let message = error.message as string
+        if (message.includes('RefId:'))
+            message = message.replaceAll(/RefId:\s*(\w+)/g, 'RefId: $1'.blue.underline)
+        printer.fire(message.replaceAll('\n', '\r\n').red + '\r\n')
+        // 执行 ddb 脚本遇到错误是可以预期的，也做了处理，不需要再向上抛出
     } finally {
         connection.running = false
-        statbar.set_idle()
+        if (connection === explorer.connection)  // 可能执行过程中切换了连接
+            statbar.set_idle()
     }
 }
 
@@ -530,17 +539,14 @@ const ddb_commands = [
         if (!connection.running)
             return
         
-        const answer = await window.showWarningMessage(t('是否取消执行中的任务？'), t('是'), t('否'))
+        const answer = await window.showWarningMessage(t('是否取消执行中的作业？'), t('取消作业'), t('不要取消'))
         
-        if (answer !== t('是') || !connection.running)
+        if (answer !== t('取消作业') || !connection.running)
             return
         
         // LOCAL
         // await remote.call('cancel', [connection.name])
         await connection.ddb.cancel()
-        
-        connection.running = false
-        statbar.set_idle()
     },
     
     function set_connection (name: string) {
@@ -614,6 +620,35 @@ export async function activate (ctx: ExtensionContext) {
     workspace.onDidChangeConfiguration(event => {
         formatter.on_config_change(event)
         explorer.on_config_change(event)
+    })
+    
+    
+    window.registerTerminalLinkProvider({
+        provideTerminalLinks (context, token) {
+            const { line } = context
+            if (line.includes('RefId:')) {
+                let links: TerminalLink[] = [ ]
+                for (const match of line.matchAll(/RefId: (\w+)/g)) {
+                    const [str, id] = match
+                    
+                    links.push({
+                        startIndex: match.index,
+                        length: str.length,
+                        tooltip:
+                            // LOCAL
+                            // `https://dolphindb.cn/cn/help/ErrorCodeList/${id}/index.html`,
+                            (language === 'zh' ? 'https://dolphindb.cn/cn/' : 'https://dolphindb.com/') +
+                            `help/ErrorCode${ language === 'zh' ? 'List' : 'Reference' }/${id}/index.html`,
+                    })
+                }
+                return links
+            } else
+                return [ ]
+        },
+        
+        handleTerminalLink (link) {
+            commands.executeCommand('vscode.open', link.tooltip)
+        },
     })
     
     
@@ -1021,8 +1056,7 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
                 
             case node instanceof DdbConnection: {
                 const { local, shared } = node as DdbConnection
-                const locations = [local, shared].filter(node => node.vars.length)
-                return locations.length === 1 ? this.getChildren(locations[0]) : locations
+                return [local, shared].filter(node => node.vars.length)
             }
             
             case node instanceof DdbVarLocation: {
@@ -1521,7 +1555,7 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     /** - open?: 是否在新窗口中打开 */
     async inspect (open = false) {
         if (open && !server.subscribers_inspection.length) {
-            open_url(server.web_url)
+            await commands.executeCommand('vscode.open', server.web_url)
             await delay(3000)
         }
         
