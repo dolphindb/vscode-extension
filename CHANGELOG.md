@@ -1,35 +1,38 @@
 # Change Log (更新日志)
-## [2.0.800] - 2022.09.21
--   底部的数据视图（数组、表格、图等）**支持自适应 VSCode 主题颜色**  
+## [2.0.801] - 2022.09.28
+-   数据视图（数组、表格、图等）**支持自适应 VSCode 主题颜色**  
     Bottom data view (array, table, graph, etc.) **Supports adaptive VSCode theme colors**
 
--   支持词典 (dict) 的可视化展示  
-    Visual display of dictionaries is supported
-
--   底部新增代码执行状态栏，显示执行状态，且支持点击取消当前执行任务  
+-   底部状态栏新增按钮，显示代码执行状态，且支持点击取消当前执行任务  
     A code execution status bar is added at the bottom to display the execution status and support clicking to cancel the current execution task
-
--   顶部增加按钮支持执行选中代码、执行当前行代码、执行整个文件  
+    
+-   顶部增加按钮支持选择执行选中代码、执行当前行代码或执行整个文件  
     Added buttons at the top to support executing the selected code, executing the current line of code, and executing the entire file
-
+    
 -   顶部增加按钮支持上传代码文件到服务器  
     Add a button at the top to support uploading code files to the server
-
--   数值显示使用逗号分隔，如 `1,000,000,000`  
+    
+-   数值支持千分号（,）分隔，如 `1,000,000,000`  
     Values are displayed separated by commas, such as `1,000,000,000`
+    
+-   底部状态栏新增小数位数配置栏（配置选项: dolphindb.decimals），支持自定义展示的小数位数，如小数固定显示两位 `1.00`  
+    Added a new decimal point configuration column at the bottom (configuration option: dolphindb.decimals), supports custom decimal display digits, such as fixed display with two decimal places `1.00`
+    
+-   支持词典 (dict) 的可视化展示
+    Visual display of dictionaries is supported
 
--   底部新增小数点位数配置栏 (配置选项: `dolphindb.decimals`), 支持自定义小数展示位数，如固定显示两位小数 `1.00`
-    Added a new decimal point configuration column at the bottom (configuration option: `dolphindb.decimals`), supports custom decimal display digits, such as fixed display with two decimal places `1.00`
-
--   关键字、函数提示、函数文档更新  
+-   关键字、函数提示、函数文档更新
     Keywords, function hints, function documentation update
-
--   执行代码的输出间隔改为一个空行，显示更紧凑  
+    
+-   执行代码的输出间隔改为一个空行，使显示更紧凑  
     The output interval of the executed code is changed to a blank line, and the display is more compact
-
--   优化分页样式，增加分页选项，增加新窗口打开等图标悬浮提示  
-    Optimize the paging style, add paging options, and add icon floating prompts such as new window opening
-
+    
+-   点击终端中的错误代码（例如 ‘RefId: S00001’） 可跳转至解释文档  
+    You can now navigate to the associated documentation by clicking the error code (e.g., 'RefId: S00001').
+    
+-   数据视图优化了分页显示样式，修复宽度较小时分页选项显示不全的问题，并为新窗口打开等图标增加 tooltip
+    Enhanced pagination design and fixed display issues; Added tooltips (e.g., “Inspect Icons in New Window“) for icon buttons in the DATAVIEW panel.
+    
 -   修复了画图传入时间列未正确格式化的问题  
     Fixed an issue where the incoming time column in Paint was not formatted correctly
 
