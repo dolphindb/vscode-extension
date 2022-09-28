@@ -522,15 +522,28 @@ const ddb_commands = [
     },
     
     async function execute_line () {
-        await _execute(get_text('line'))
+        try {
+            await _execute(get_text('line'))
+        } catch (error) {
+            // 点击图标执行 execute_ddb_line 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
+            window.showErrorMessage(error.message)
+        }
     },
     
     async function execute_selection () {
-        await _execute(get_text('selection'))
+        try {
+            await _execute(get_text('selection'))
+        } catch (error) {
+            window.showErrorMessage(error.message)
+        }
     },
     
     async function execute_file () {
-        await _execute(get_text('all'))
+        try {
+            await _execute(get_text('all'))
+        } catch (error) {
+            window.showErrorMessage(error.message)
+        }
     },
     
     async function cancel () {
