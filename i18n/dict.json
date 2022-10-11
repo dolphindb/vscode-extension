@@ -112,5 +112,8 @@
     },
     "不要取消": {
         "en": "Do Not Cancel"
+    },
+    "已连接":{
+        "en": "Connected"
     }
 }
