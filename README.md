@@ -50,7 +50,7 @@ Click on Version History to download the latest version locally
 After installing the plugin, please completely quit all windows of VSCode and reopen VSCode, otherwise you may not be able to view the variables in the browser (see below)
 
 #### 3. View and edit server connection configuration
-##### Connections can be viewed in the DOLPhinDB area of the EXPLORER panel on the left side of the VSCode editor
+##### Connections can be viewed in the DolphinDB area of the EXPLORER panel on the left side of the VSCode editor
 After the plugin is successfully installed, the DOLPHIDB area below will be added to the EXPLORER panel
 
 <img src='./images/connections.png' width='400'>
