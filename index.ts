@@ -1153,7 +1153,7 @@ class DdbConnection extends TreeItem {
     async connect () {
         await this.ddb.connect(this)
         console.log(`${t('连接成功:')} ${this.name}`)
-        this.description = this.ddb.connected ? this.url + ' ' + t('已连接') : this.url
+        this.description = this.url + ' ' + t('已连接')
         
         this.collapsibleState = TreeItemCollapsibleState.Expanded
         this.contextValue = 'connected'
