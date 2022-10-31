@@ -517,18 +517,14 @@ async function _execute (text: string) {
 
 
 const ddb_commands = [
-    async function execute () {
-        try {
-            await _execute(get_text('selection or line'))
-        } catch (error) {
-            // 点击图标执行 execute_ddb_line 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
-            window.showErrorMessage(error.message)
-        }
+    async function execute() {
+        await _execute(get_text('selection or line'))
     },
     
     async function execute_selection_or_line () {
         try {
             await _execute(get_text('selection or line'))
+            // 点击图标执行 execute_ddb_line 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         } catch (error) {
             window.showErrorMessage(error.message)
         }

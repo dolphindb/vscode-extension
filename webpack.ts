@@ -95,7 +95,7 @@ export async function build_package_json () {
             when: "editorTextFocus && editorLangId == 'dolphindb'",
             title: {
                 zh: '执行选中或当前行',
-                en: 'Execute Selection or line'
+                en: 'Execute Selection or Line'
             },
             icon: '$(play)'
         },
