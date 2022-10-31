@@ -91,20 +91,11 @@ export async function build_package_json () {
             },
         },
         {
-            command: 'execute_line',
+            command: 'execute_selection_or_line',
             when: "editorTextFocus && editorLangId == 'dolphindb'",
             title: {
-                zh: '执行当前行',
-                en: 'Execute Line'
-            },
-            icon: '$(play)'
-        },
-        {
-            command: 'execute_selection',
-            when: "editorTextFocus && editorLangId == 'dolphindb'",
-            title: {
-                zh: '执行当前选中',
-                en: 'Execute Selection'
+                zh: '执行选中或当前行',
+                en: 'Execute Selection or line'
             },
             icon: '$(play)'
         },
@@ -496,11 +487,7 @@ export async function build_package_json () {
                     },
                     {
                         when: "editorLangId == 'dolphindb'",
-                        command: 'dolphindb.execute_line'
-                    },
-                    {
-                        when: "editorLangId == 'dolphindb'",
-                        command: 'dolphindb.execute_selection'
+                        command: 'dolphindb.execute_selection_or_line'
                     },
                 ],
                 
