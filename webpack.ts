@@ -706,8 +706,6 @@ let dataview_config: Configuration = {
     },
     
     plugins: [
-        // new Webpack.HotModuleReplacementPlugin(),
-        
         // new Webpack.DefinePlugin({
         //     process: { env: { }, argv: [] }
         // })
@@ -867,10 +865,7 @@ let ext_config: Configuration = {
         minimize: false,
     },
     
-    cache: {
-        type: 'filesystem',
-        compression: 'brotli',
-    },
+    cache: false,
     
     ignoreWarnings: [
         /Failed to parse source map/,
