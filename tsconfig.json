@@ -1,8 +1,9 @@
 {
     "files": [
-        "./index.ts",
         "./build.ts",
-        "./dev.ts",
+        
+        "./index.ts",
+        
         "./dataview/index.tsx",
         "./dataview/window.tsx",
         "./dataview/webview.tsx",
@@ -10,10 +11,10 @@
     
     "compilerOptions": {
         // --- module
-        "module": "NodeNext", // none, CommonJS, amd, system, umd, es6, es2015, ESNext
+        "module": "ESNext", // none, CommonJS, amd, system, umd, es6, es2015, ESNext
         "moduleResolution": "NodeNext",
         "allowSyntheticDefaultImports": true,
-        "esModuleInterop": true,
+        "esModuleInterop": false,
         "resolveJsonModule": true,
         "isolatedModules": true,
         
@@ -25,9 +26,6 @@
         "newLine": "lf",
         "lib": ["ESNext", "DOM"],
         "importHelpers": true,
-        // "watch": false
-        "incremental": true,
-        "preserveWatchOutput": true,
         
         
         // --- emit
@@ -39,7 +37,7 @@
         // --- source maps
         "sourceMap": true,
         "inlineSourceMap": false,
-        "inlineSources": true,
+        "inlineSources": false,
         
         // --- features
         "experimentalDecorators": true,
@@ -61,17 +59,6 @@
         "noUnusedLocals": false,
         "noUnusedParameters": false,
         "skipLibCheck": true,
-    },
-    
-    "watchOptions": {
-        "excludeDirectories": [
-            "**/node_modules",
-        ],
-        
-        "watchFile": "useFsEvents",
-        "watchDirectory": "useFsEvents",
-        
-        "fallbackPolling": "dynamicPriority"
     }
 }
 

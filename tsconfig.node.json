@@ -4,8 +4,10 @@
     "files": ["./build.ts"],
     
     "compilerOptions": {
+        "module": "NodeNext",
+        "esModuleInterop": true,
         "outDir": "./",
-        "target": "ESNext",
-        "tsBuildInfoFile": "./out/.tsbuildinfo/build.json"
+        "incremental": true,
+        "tsBuildInfoFile": "./out/.tsbuildinfo.node.json"
     }
 }
