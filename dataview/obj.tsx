@@ -1,6 +1,7 @@
 import './obj.sass'
 
 import { default as React, useEffect, useRef, useState } from 'react'
+
 import {
     Pagination,
     Table as AntTable,
@@ -12,11 +13,14 @@ import {
     
     type TableColumnType,
 } from 'antd'
+
 import {
-    default as Icon,
+    default as _Icon,
     CaretRightOutlined,
     PauseOutlined,
 } from '@ant-design/icons'
+const Icon: typeof _Icon.default = _Icon as any
+
 import { Line, Pie, Bar, Column, Scatter, Area, DualAxes, Histogram, Stock } from '@ant-design/plots'
 
 import { nanoid } from 'nanoid'
@@ -44,7 +48,7 @@ import {
     type DdbChartObj,
     type StreamingData,
 } from 'dolphindb/browser.js'
-import { delay } from 'xshell/utils.browser.js'
+import { assert, delay } from 'xshell/utils.browser.js'
 
 import { t } from '../i18n/index.js'
 
@@ -203,8 +207,8 @@ function Dict ({
     
     return <div className='dict'>
         { ctx !== 'webview' && <div className='info'>
-            <span className='name'>dict</span>
-            <span className='desc'>{_obj.rows} keys { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+            <span className='type'>{t('词典')}</span>
+            <span className='desc'>{_obj.rows} {t('个键')} { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
         </div> }
         
         <Tree
@@ -242,7 +246,7 @@ function build_tree_data (
                     children: build_tree_data(valueobj, { remote, ctx, ddb })
                 }
              else if (valueobj.form === DdbForm.scalar) {
-                let value = format(valueobj.type, valueobj.value, valueobj.le, options)
+                let value = format(valueobj.type, valueobj.value, valueobj.le, { ...options, quote: true, nullstr: true })
                 node = {
                     title: key + ': ' + value,
                     key: nanoid()
@@ -367,8 +371,9 @@ function Vector ({
     
     return <div className='vector'>
         { ctx !== 'webview' && <div className='info'>
-            <span className='name'>{info.name || (info.form === DdbForm.set ? 'set' : 'vector')}</span>
-            <span className='desc'>{info.rows} rows { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+            <span className='type'>{ info.form === DdbForm.set ? t('集合') : t('向量') }</span>
+            { info.name && <span className='name'>{info.name}</span> }
+            <span className='desc'>{info.rows} {t('个元素')} { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
         </div> }
         
         <AntTable
@@ -392,7 +397,6 @@ function Vector ({
         
         <div className='bottom-bar'>
             <div className='actions'>
-                {/* @ts-ignore */}
                 {(ctx === 'page' || ctx === 'embed') && <Icon
                     className='icon-link'
                     title={t('在新窗口中打开')}
@@ -447,38 +451,23 @@ class VectorColumn implements TableColumnType <number> {
         this.key = this.index
     }
     
-    render = (value: any, row: number, index: number) => 
-        <Cell
-            obj={this.obj || this.objref.obj}
-            options={this.options}
-            index={
-                (this.obj || this.form === DdbForm.set ? 
-                    this.page_size * this.page_index
-                :
-                    0
-                ) + this.ncols * index + this.index
-            }
-        />
-}
-
-
-function Cell ({
-    obj,
-    index,
-    options,
-}: {
-    /** vector */
-    obj: DdbVectorObj
-    
-    index: number
-    options?: InspectOptions
-}) {
-    if (!obj || index >= obj.rows)
-        return null
-    
-    const str = formati(obj, index, options)
-    
-    return str === 'null' ? null : <>{str}</>
+    render = (value: any, row: number, index: number) => {
+        const obj = this.obj || this.objref.obj
+        
+        if (!obj)
+            return null
+        
+        // 在 obj 中的 index
+        const index_ = 
+            (this.obj || this.form === DdbForm.set ? this.page_size * this.page_index : 0) + // 之前页的 items 数量
+            this.ncols * index + // 之前行的 items 数量
+            this.index
+        
+        return index_ < obj.rows ?
+            formati(obj, index_, this.options)
+        :
+            null
+    }
 }
 
 
@@ -510,15 +499,15 @@ function StreamingCell ({
     for (let i = segments.length - 1;  i >= 0;  i--) {
         const segment = segments[i]
         
-        if (irow < _rows + segment.rows) {  // irow 位于这个 segment 中
+        const { rows } = segment.value[0]  // 当前 segment 所包含的 rows
+        
+        if (irow < _rows + rows) {  // irow 位于这个 segment 中
             const col = segment.value[icol]
             
-            const str = formati(col, col.rows - 1 - (irow - _rows), options)
-            
-            return str === 'null' ? null : <>{str}</>
+            return <>{formati(col, col.rows - 1 - (irow - _rows), options)}</>
         }
         
-        _rows += segment.rows
+        _rows += rows
     }
     
     return null
@@ -602,8 +591,9 @@ function Table ({
     
     return <div className='table'>
         { ctx !== 'webview' && <div className='info'>
-            <span className='name'>{info.name || 'table'}</span>
-            <span className='desc'>{info.rows}r × {info.cols}c  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+            <span className='type'>{t('表格')}</span>
+            { info.name && <span className='name'>{info.name}</span> }
+            <span className='desc'>{info.rows} {t('行')} {info.cols} {t('列')}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
         </div> }
         
         <AntTable
@@ -626,7 +616,6 @@ function Table ({
         
         <div className='bottom-bar'>
             <div className='actions'>
-                {/* @ts-ignore */}
                 {(ctx === 'page' || ctx === 'embed') && <Icon
                     className='icon-link'
                     title={t('在新窗口中打开')}
@@ -679,6 +668,10 @@ export function StreamingTable ({
     
     let rauto_append = useRef<boolean>(false)
     
+    let rappended = useRef<number>(0)
+    
+    let rreceived = useRef<number>(0)
+    
     const default_rate = 0 as const
     
     /** 刷新率 (ms): 0 实时更新, -1 暂停, > 0 刷新间隔 */
@@ -710,7 +703,14 @@ export function StreamingTable ({
                     handler (message) {
                         console.log(message)
                         
+                        if (message.error) {
+                            console.error(message.error)
+                            return
+                        }
+                        
                         const time = new Date().getTime()
+                        
+                        rreceived.current += message.rows
                         
                         // 冻结或者未到更新时间
                         if (rrate.current === -1 || time - rlast.current < rrate.current)
@@ -772,14 +772,13 @@ export function StreamingTable ({
     }, [rauto_append.current])
     
     
-    if (!rddb.current?.streaming.schema || !rddbapi.current)
+    if (!rddb.current?.streaming.data || !rddbapi.current)
         return null
     
     const {
         current: {
             streaming: {
                 data,
-                schema,
                 window: {
                     rows: winrows,
                     offset,
@@ -795,8 +794,8 @@ export function StreamingTable ({
     for (let i = 0;  i < page_size;  i++)
         rows[i] = i;
     
-    let cols = new Array<StreamingTableColumn>(schema.cols)
-    for (let i = 0;  i < schema.cols;  i++)
+    let cols = new Array<StreamingTableColumn>(data.rows)
+    for (let i = 0;  i < data.rows;  i++)
         cols[i] = new StreamingTableColumn({
             streaming,
             index: i,
@@ -806,16 +805,28 @@ export function StreamingTable ({
         })
     
     
-    async function append_data () {
+    async function append_data (n = 3) {
+        rappended.current += n
+        
         await rddbapi.current.eval(
-            'append!(\n' +
-            '    prices,\n' +
-            '    table([\n' +
-            '        [now(), timestamp(now() + 10), timestamp(now() + 20)] as time,\n' +
-            "        ['MSFT', 'FUTU', 'MSFT'] as stock,\n" +
-            '        [1.0, 2.0, 3.0] as price\n' +
-            '    ])\n' +
-            ')\n'
+            n === 3 ?
+                'append!(\n' +
+                '    prices,\n' +
+                '    table([\n' +
+                '        [now(), timestamp(now() + 10), timestamp(now() + 20)] as time,\n' +
+                "        ['MSFT', 'FUTU', 'MSFT'] as stock,\n" +
+                '        [1.0, 2.0, 3.0] as price\n' +
+                '    ])\n' +
+                ')\n'
+            :
+                'append!(\n' +
+                '    prices,\n' +
+                '    table([\n' +
+                '        [now()] as time,\n' +
+                "        ['MSFT'] as stock,\n" +
+                '        [1.0] as price\n' +
+                '    ])\n' +
+                ')\n'
         )
     }
     
@@ -823,8 +834,84 @@ export function StreamingTable ({
     return <div>
         <div><Button onClick={async () => {
             rlast.current = 0
-            return append_data()
-        }}>向流表中添加数据</Button></div>
+            await append_data()
+        }}>向流表中添加三条数据</Button></div>
+        
+        <div><Button onClick={async () => {
+            rlast.current = 0
+            await append_data(1)
+        }}>向流表中添加一条数据</Button></div>
+        
+        <div><Button onClick={async () => {
+            rlast.current = 0
+            rappended.current += 2000 * 5
+            
+            await rddbapi.current.eval(
+                'n = 2000\n' +
+                '\n' +
+                'for (i in 0..4)\n' +
+                '    append!(\n' +
+                '        prices,\n' +
+                '        table([\n' +
+                '            (now() + 0..(n-1)) as time,\n' +
+                "            take(['MSFT', 'FUTU'], n) as stock,\n" +
+                '            (0..(n-1) \\ 10) as price\n' +
+                '        ])\n' +
+                '    )\n'
+            )
+        }}>测试插入 2000 条数据 5 次</Button></div>
+        
+        <div><Button onClick={async () => {
+            rlast.current = 0
+            rappended.current += 1_0000 * 10
+            
+            await rddbapi.current.eval(
+                'n = 10000\n' +
+                '\n' +
+                'for (i in 0..9)\n' +
+                '    append!(\n' +
+                '        prices,\n' +
+                '        table([\n' +
+                '            (now() + 0..(n-1)) as time,\n' +
+                "            take(['MSFT', 'FUTU'], n) as stock,\n" +
+                '            (0..(n-1) \\ 10) as price\n' +
+                '        ])\n' +
+                '    )\n'
+            )
+        }}>测试插入 1_0000 条数据 10 次</Button></div>
+        
+        <div><Button onClick={async () => {
+            rlast.current = 0
+            rappended.current += 10_0000 * 10
+            
+            await rddbapi.current.eval(
+                'n = 100000\n' +
+                '\n' +
+                'for (i in 0..9)\n' +
+                '    append!(\n' +
+                '        prices,\n' +
+                '        table([\n' +
+                '            (now() + 0..(n-1)) as time,\n' +
+                "            take(['MSFT', 'FUTU'], n) as stock,\n" +
+                '            (0..(n-1) \\ 10) as price\n' +
+                '        ])\n' +
+                '    )\n'
+            )
+        }}>测试插入 10_0000 条数据 10 次</Button></div>
+        
+        <div><Button onClick={async () => {
+            rlast.current = 0
+            rappended.current += 2000
+            await rddbapi.current.eval(
+                'n = 2000\n' +
+                'for (i in 0..(n-1))\n' +
+                "    insert into prices values (now(), 'MSFT', rand(100, 1)[0])\n"
+            )
+        }}>测试添加一条数据 2000 次</Button></div>
+        
+        <div>应添加行数: {rappended.current}</div>
+        <div>实际的行数: {rreceived.current}</div>
+        <div>上面两个应该相等</div>
         
         <div style={{ margin: '10px 0px' }}>
             自动添加数据: <Switch onChange={(checked) => {
@@ -836,8 +923,9 @@ export function StreamingTable ({
         
         <div className='table'>
             { ctx !== 'webview' && <div className='info'>
-                <span className='name'>{t('流表')}: {table}</span>
-                <span className='desc'>{t('窗口')}: {winsize}r × {schema.cols}c, {t('偏移量')}: {offset}</span>
+                <span className='type'>{t('流表')}</span>
+                <span className='name'>{table}</span>
+                <span className='desc'>{t('窗口')}: {winsize} {t('行')} {data.rows} {t('列')}, {t('偏移量')}: {offset}</span>
             </div> }
             
             <AntTable
@@ -862,7 +950,6 @@ export function StreamingTable ({
         
         <div className='bottom-bar'>
             <div className='actions'>
-                {/* @ts-ignore */}
                 {(ctx === 'page' || ctx === 'embed') && <Icon
                     className='icon-link'
                     title={t('在新窗口中打开')}
@@ -947,11 +1034,12 @@ class StreamingTableColumn implements TableColumnType <number> {
         
         this.key = this.index
         
-        this.col = this.streaming.schema.value[this.index]
+        this.col = this.streaming.data.value[this.index]
+        assert(this.col.form === DdbForm.vector, t('this.streaming.data 中的元素应该是 vector'))
         
         this.title = <Tooltip
                 title={DdbType[this.col.type === DdbType.symbol_extended ? DdbType.symbol : this.col.type]}
-            >{this.col.name}</Tooltip>
+            >{this.streaming.colnames[this.index]}</Tooltip>
         
         this.align = TableColumn.left_align_types.has(this.col.type) ? 'left' : 'right'
     }
@@ -1018,18 +1106,21 @@ class TableColumn implements TableColumnType <number> {
         this.align = TableColumn.left_align_types.has(this.col.type) ? 'left' : 'right'
     }
     
-    render = (irow: number) => 
-        <Cell
-            obj={this.col}
-            options={this.options}
-            index={
-                (this.obj ?
-                    this.page_size * this.page_index
-                :
-                    0
-                ) + irow
-            }
-        />
+    render = (irow: number) => {
+        const obj = this.col
+        
+        if (!obj)
+            return null
+        
+        const index = 
+            (this.obj ? this.page_size * this.page_index : 0) + // 之前页的 items 数量
+            irow
+        
+        return index < obj.rows ?
+            formati(obj, index, this.options)
+        :
+            null
+    }
 }
 
 
@@ -1080,7 +1171,7 @@ function Matrix ({
             
             const script = `${name}[${offset}:${Math.min(offset + page_size, rows)},]`
             
-            console.log('matrix.fetch', script)
+            console.log('matrix.fetch:', script)
             
             if (ddb)
                 objref.obj = await ddb.eval(script)
@@ -1109,8 +1200,9 @@ function Matrix ({
     
     return <div className='matrix'>
         { ctx !== 'webview' && <div className='info'>
-            <span className='name'>{info.name || 'matrix'}</span>
-            <span className='desc'>{info.rows}r × {info.cols}c  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+            <span className='type'>{t('矩阵')}</span>
+            { info.name && <span className='name'>{info.name}</span> }
+            <span className='desc'>{info.rows} {t('行')} {info.cols} {t('列')}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
         </div> }
         
         <AntTable
@@ -1133,7 +1225,10 @@ function Matrix ({
                         const rows = (obj || objref.obj)?.value.rows
                         
                         return rows ?
-                                formati(rows, i, options)
+                                i < rows.rows ?
+                                    formati(rows, i, options)
+                                :
+                                    ''
                             :
                                 i
                     }
@@ -1144,7 +1239,6 @@ function Matrix ({
         
         <div className='bottom-bar'>
             <div className='actions'>
-                {/* @ts-ignore */}
                 {(ctx === 'page' || ctx === 'embed') && <Icon
                     className='icon-link'
                     title={t('在新窗口中打开')}
@@ -1210,23 +1304,34 @@ class MatrixColumn implements TableColumnType <number> {
         if (!obj)
             return null
         
-        return <Cell
-            obj={
-                new DdbObj({
-                    form: obj.form,
-                    type: obj.type,
-                    rows: obj.cols * obj.rows,
-                    value: obj.value.data
-                })
-            }
-            options={this.options}
-            index={
-                this.obj ?
-                    obj.rows * this.index + this.page_size * this.page_index + irow
-                :
-                    obj.rows * this.index + irow
-            }
-        />
+        const irow_ = this.obj ? 
+                this.page_size * this.page_index + irow
+            :
+                irow
+        
+        if (irow_ >= obj.rows)
+            return null
+        
+        const nitems = obj.cols * obj.rows
+        
+        // this.index 列之前所有列的元素 + this.index 列之前分页中的列内的元素 + 当前元素下标
+        const index = this.obj ?
+            obj.rows * this.index + this.page_size * this.page_index + irow
+        :
+            obj.rows * this.index + irow
+        
+        assert(index < nitems, 'index < obj.cols * obj.rows')
+        
+        return formati(
+            new DdbObj({
+                form: DdbForm.vector,
+                type: obj.type,
+                rows: nitems,
+                value: obj.value.data
+            }),
+            index,
+            this.options
+        )
     }
 }
 
@@ -1651,7 +1756,7 @@ function Chart ({
                         }}
                         meta={{
                             row: {
-                                formatter: (value, index) => data[index].row_ 
+                                formatter: (value, index) => format(obj.value.data.value.rows.type, value, obj.le)
                             },
                             vol: {
                                 alias: t('成交量'),
@@ -1686,7 +1791,7 @@ function Chart ({
                                     if (type === 'x') {
                                         const item = items[0]
                                         textContent = item ? item.data.row_ : defaultContent
-                                    } else 
+                                    } else
                                         textContent = defaultContent.toFixed(2)
                                     
                                     return {
@@ -1731,7 +1836,6 @@ function Chart ({
         
         <div className='bottom-bar'>
             <div className='actions'>
-                {/* @ts-ignore */}
                 {(ctx === 'page' || ctx === 'embed') && <Icon
                     className='icon-link'
                     title={t('在新窗口中打开')}

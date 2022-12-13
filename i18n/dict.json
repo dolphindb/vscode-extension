@@ -113,7 +113,88 @@
     "不要取消": {
         "en": "Do Not Cancel"
     },
-    "已连接":{
+    "已连接": {
         "en": "Connected"
+    },
+    "词典": {
+        "en": "dict"
+    },
+    "个键": {
+        "en": "keys"
+    },
+    "集合": {
+        "en": "set"
+    },
+    "向量": {
+        "en": "vector"
+    },
+    "个元素": {
+        "en": "items"
+    },
+    "在新窗口中打开": {
+        "en": "Open in new window"
+    },
+    "表格": {
+        "en": "table"
+    },
+    "行": {
+        "en": "rows"
+    },
+    "列": {
+        "en": "columns"
+    },
+    "流表": {
+        "en": "streaming table"
+    },
+    "窗口": {
+        "en": "window"
+    },
+    "偏移量": {
+        "en": "offset"
+    },
+    "继续显示流表更新": {
+        "en": "continue to show flow table updates"
+    },
+    "暂停显示流表更新": {
+        "en": "pause showing flow table updates"
+    },
+    "实时": {
+        "en": "real time"
+    },
+    "this.streaming.data 中的元素应该是 vector": {
+        "en": "Elements in this.streaming.data should be vector"
+    },
+    "矩阵": {
+        "en": "matrix"
+    },
+    "成交量": {
+        "en": "vol"
+    },
+    "开盘价": {
+        "en": "open"
+    },
+    "收盘价": {
+        "en": "close"
+    },
+    "最高价": {
+        "en": "high"
+    },
+    "最低价": {
+        "en": "low"
+    },
+    "用户已取消设置小数位数": {
+        "en": "User has abandoned decimal places settings"
+    },
+    "DolphinDB 终端": {
+        "en": "DolphinDB Terminal"
+    },
+    "如:": {
+        "en": "e.g."
+    },
+    "DolphinDB 插件初始化成功": {
+        "en": "DolphinDB plugin initialized successfully"
+    },
+    "DolphinDB 插件的 http 服务器启动成功，正在监听:": {
+        "en": "The http server of the DolphinDB plugin started successfully and is listening:"
     }
 }

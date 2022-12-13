@@ -1,8 +1,4 @@
-import 'antd/dist/antd.css'
-
 import 'xshell/scroll-bar.sass'
-
-import './myfont.sass'
 
 import './index.sass'
 
@@ -10,12 +6,12 @@ import './index.sass'
 import { default as React, useEffect } from 'react'
 import { createRoot as create_root } from 'react-dom/client'
 
-import { ConfigProvider } from 'antd'
-import zh from 'antd/lib/locale/zh_CN.js'
-import en from 'antd/lib/locale/en_US.js'
-import ja from 'antd/lib/locale/ja_JP.js'
-import ko from 'antd/lib/locale/ko_KR.js'
-const locales = { zh, en, ja, ko }
+import {
+    ConfigProvider,
+    
+    // @ts-ignore 使用了 antd-with-locales 之后 window.antd 变量中有 locales 属性
+    locales
+} from 'antd'
 
 import { Model } from 'react-object-model'
 
@@ -26,6 +22,15 @@ import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
 import { language } from '../i18n/index.js'
 
 import { Obj, DdbObjRef, open_obj } from './obj.js'
+
+
+const locale_names = {
+    zh: 'zh_CN',
+    en: 'en_US',
+    ja: 'ja_JP',
+    ko: 'ko_KR'
+} as const
+
 
 let remote = new Remote({ url: `ws://${location.host}` })
 
@@ -115,7 +120,7 @@ function DataView () {
     
     const { type, data } = result
     
-    return <ConfigProvider locale={locales[language] as any} autoInsertSpaceInButton={false}>{
+    return <ConfigProvider locale={locales[locale_names[language]]} autoInsertSpaceInButton={false}>{
         <div className='result page'>{
             type === 'object' ?
                 <Obj obj={data} remote={remote} ctx='page' options={options} />

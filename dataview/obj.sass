@@ -19,15 +19,14 @@ $line-number-foreground-color: var(--vscode-editorLineNumber-foreground, #000000
 $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForeground, #000000)
 
 
-// $font-family: var(--vscode-editor-font-family, 'MyFont')
-
-
 .vector, .table, .matrix
+    user-select: text
+    
     .ant-table-wrapper
         overflow-x: auto
     
     .pagination
-        margin: 8px 0px
+        margin: 2px 0px
     
     table
         text-align: right
@@ -39,6 +38,9 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
     .row-head
         background-color: $table-head-color !important
         font-weight: bold
+        
+        // table 中的 height 等价于 min-height: https://stackoverflow.com/questions/19432092/can-i-use-a-min-height-for-table-tr-or-td
+        height: 22px
     
     thead
         th.ant-table-cell
@@ -54,8 +56,6 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
             padding: 4px 8px
     
 .bottom-bar
-    padding-top: 4px
-    
     display: flex
     
     align-items: center
@@ -81,9 +81,6 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
         
         
     .ant-pagination
-        .ant-pagination-item
-            font-family: MyFont
-        
         .ant-pagination-item a
             color: $color !important
         
@@ -174,11 +171,14 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
     
     .info
         font-size: 16px
-        margin-bottom: 8px
+        margin-bottom: 2px
         
         .name
+            margin-left: 8px
             font-weight: bold
-            margin-right: 20px
+            
+        .desc
+            margin-left: 32px
     
     .ant-table
         background-color: $background-color !important
@@ -238,6 +238,9 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
         min-height: 0px
     
 .dict
+    .ant-tree-node-content-wrapper
+        user-select: text
+    
     .ant-tree-show-line .ant-tree-indent-unit::before
         border-right: unset !important
     

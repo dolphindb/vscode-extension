@@ -1,8 +1,4 @@
-import 'antd/dist/antd.css'
-
 import 'xshell/scroll-bar.sass'
-
-import './myfont.sass'
 
 import './window.sass'
 
@@ -10,11 +6,12 @@ import './window.sass'
 import { default as React, useEffect } from 'react'
 import { createRoot as create_root } from 'react-dom/client'
 
-import { ConfigProvider } from 'antd'
-import zh from 'antd/lib/locale/zh_CN.js'
-import en from 'antd/lib/locale/en_US.js'
-import ja from 'antd/lib/locale/ja_JP.js'
-import ko from 'antd/lib/locale/ko_KR.js'
+import {
+    ConfigProvider,
+    
+    // @ts-ignore 使用了 antd-with-locales 之后 window.antd 变量中有 locales 属性
+    locales
+} from 'antd'
 
 
 import { Model } from 'react-object-model'
@@ -35,7 +32,12 @@ import {
 } from './obj.js'
 
 
-const locales = { zh, en, ja, ko }
+const locale_names = {
+    zh: 'zh_CN',
+    en: 'en_US',
+    ja: 'ja_JP',
+    ko: 'ko_KR'
+} as const
 
 
 export class WindowModel extends Model<WindowModel> {
@@ -94,10 +96,7 @@ function DdbObjWindow () {
     if (!obj && !objref)
         return <div>DolphinDB Window</div>
     
-    return <ConfigProvider
-        locale={locales[language] as any}
-        autoInsertSpaceInButton={false}
-    >{
+    return <ConfigProvider locale={locales[locale_names[language]]} autoInsertSpaceInButton={false}>{
         <div className='result window'>
             <Obj obj={obj} objref={objref} ctx='window' remote={remote} ddb={ddb} options={options} />
         </div>
