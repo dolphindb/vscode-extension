@@ -6,7 +6,11 @@ node_modules/
 /docs.en.json
 /*.js
 /*.js.map
+
 /i18n/*.js
 /i18n/*.js.map
 /i18n/stats.json
 /i18n/untranslateds.json
+
+/*.zip
+/*.vsix
