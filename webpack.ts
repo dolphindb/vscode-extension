@@ -9,7 +9,7 @@ import type { Options as SassOptions } from 'sass-loader'
 import sass from 'sass'
 
 
-import { fwrite, fcopy } from 'xshell'
+import { fwrite, fcopy, request, MyProxy, fmkdir, fexists } from 'xshell'
 import type { Item } from 'xshell/i18n/index.js'
 
 
@@ -28,6 +28,67 @@ export const fpd_dataview = `${fpd_root}dataview/`
 export const fpd_out = `${fpd_root}out/` as const
 
 export const fpd_out_dataview = `${fpd_out}dataview/`
+
+
+async function get_proxy () {
+    try {
+        const proxy = process.env.http_proxy || MyProxy.socks5
+        
+        await request('https://cdn.jsdelivr.net/', {
+            timeout: 1000,
+            proxy,
+        })
+        
+        console.log(`将会使用 http 代理 ${proxy} 从 jsdelivr 下载依赖库`)
+        
+        return proxy
+    } catch (error) {
+        console.log('将会不使用 http 代理从 jsdelivr 下载依赖库')
+        
+        return null
+    }
+}
+
+
+export async function get_vendors (upgrade = false) {
+    const fpd_vendors = `${fpd_out_dataview}vendors/`
+    const fpd_cdn = 'https://cdn.jsdelivr.net/npm/'
+    
+    const proxy = await get_proxy()
+    
+    await fmkdir(fpd_vendors)
+    
+    await Promise.all([
+        'react/umd/react.production.min.js',
+        'react-dom/umd/react-dom.production.min.js',
+        'dayjs/dayjs.min.js',
+        'lodash/lodash.min.js',
+        'xterm/lib/xterm.min.js',
+        'antd/dist/antd-with-locales.min.js',
+        'antd/dist/antd-with-locales.min.js.map',
+        '@ant-design/icons/dist/index.umd.min.js',
+        '@ant-design/plots/dist/plots.min.js',
+        '@ant-design/plots/dist/plots.min.js.map',
+    ].map(async fp_lib => {
+        let fname = fp_lib.fname
+        
+        if (fp_lib === '@ant-design/icons/dist/index.umd.min.js')
+            fname = 'antd-icons.umd.min.js'
+        
+        const fp = `${fpd_vendors}${fname}`
+        
+        if (!upgrade && fexists(fp))
+            return
+        
+        return fwrite(
+            fp,
+            await request(`${fpd_cdn}${fp_lib}`, {
+                encoding: 'binary',
+                retries: true,
+                proxy
+            }))
+    }))
+}
 
 
 export async function copy_files () {
@@ -598,6 +659,15 @@ let dataview_config: Configuration = {
     
     target: ['web', 'es2022'],
     
+    externals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
+        lodash: '_',
+        antd: 'antd',
+        dayjs: 'dayjs',
+        '@ant-design/icons': 'icons',
+        '@ant-design/plots': 'Plots',
+    },
     
     resolve: {
         extensions: ['.js'],
@@ -685,10 +755,6 @@ let dataview_config: Configuration = {
         ],
     },
     
-    optimization: {
-        minimize: false
-    },
-    
     plugins: [
         // new Webpack.DefinePlugin({
         //     process: { env: { }, argv: [] }
@@ -698,11 +764,19 @@ let dataview_config: Configuration = {
         // new BundleAnalyzerPlugin({ analyzerPort: 8880, openAnalyzer: false }),
     ],
     
+    
+    optimization: {
+        minimize: false
+    },
+    
     performance: {
         hints: false,
     },
     
-    cache: false,
+    cache: {
+        type: 'filesystem',
+        compression: 'brotli'
+    },
     
     ignoreWarnings: [
         /Failed to parse source map/
@@ -737,8 +811,10 @@ export let dataview_webpack = {
     
     
     async build (production: boolean) {
-        if (production)
+        if (production) {
             dataview_config.mode = 'production'
+            dataview_config.cache = false
+        }
         
         this.compiler = Webpack(dataview_config)
         
@@ -846,7 +922,10 @@ let ext_config: Configuration = {
         minimize: false,
     },
     
-    cache: false,
+    cache: {
+        type: 'filesystem',
+        compression: 'brotli'
+    },
     
     ignoreWarnings: [
         /Failed to parse source map/,
@@ -882,8 +961,10 @@ export const ext_webpack = {
     
     
     async build (production: boolean) {
-        if (production)
+        if (production) {
             ext_config.mode = 'production'
+            ext_config.cache = false
+        }
         
         this.compiler = Webpack(ext_config)
         

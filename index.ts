@@ -311,7 +311,7 @@ let dataview = {
                     view.webview.onDidReceiveMessage(dataview.handle, dataview)
                     view.webview.html = (
                         await fread(`${fpd_ext}dataview/webview.html`)
-                    ).replace('{script}', `http://localhost:${server.port}/webview.js`)
+                    ).replaceAll('{host}', `localhost:${server.port}`)
                     .replace('{language}', language)
                 }
             },
@@ -771,7 +771,7 @@ export async function activate (ctx: ExtensionContext) {
     
     dataview.register()
     
-    console.log(t('DolphinDB 插件已初始化'))
+    console.log(t('DolphinDB 插件初始化成功'))
 }
 
 
@@ -1622,14 +1622,12 @@ class DdbServer extends Server {
     
     web_url = 'http://localhost:8321/'
     
-    server_ws: WebSocketServer
-    
     subscribers_repl = [ ] as ((message: DdbMessage, ddb: DDB, options?: InspectOptions) => void)[]
     
     subscribers_inspection = [ ] as ((ddbvar: Partial<DdbVar>, open: boolean, options?: InspectOptions, buffer?: Uint8Array, le?: boolean) => any)[]
     
     
-    remote = new Remote ({
+    override remote = new Remote ({
         funcs: {
             async subscribe_repl ({ id }, websocket) {
                 console.log(t('page 已订阅 repl'))
@@ -1693,7 +1691,7 @@ class DdbServer extends Server {
     
     constructor () {
         // 实际上重写了 start 方法, this.port = 8321 未使用
-        super(8321, { rpc: false })
+        super(8321)
     }
     
     override async start () {
@@ -1789,7 +1787,7 @@ class DdbServer extends Server {
                 })
                 this.port = port
                 this.web_url = `http://localhost:${port}/`
-                console.log('dolphindb http server started:', this.web_url)
+                console.log(t('DolphinDB 插件的 http 服务器启动成功，正在监听:'), this.web_url)
                 break
             } catch (error) {
                 if (error.code !== 'EADDRINUSE')
@@ -1817,27 +1815,23 @@ class DdbServer extends Server {
     
     
     override async router (ctx: Context) {
-        let {
-            request: { path }
-        } = ctx
+        let { request } = ctx
         
-        if (path === '/')
-            path = '/index.html'
+        if (request.path === '/')
+            request.path = '/index.html'
         
-        if (path === '/window')
-            path = '/window.html'
+        if (request.path === '/window')
+            request.path = '/window.html'
         
-        if (path === '/webview')
-            path = '/webview.html'
+        if (request.path === '/webview')
+            request.path = '/webview.html'
         
-        return this.try_send(
-            ctx,
-            path,
-            {
-                root: `${fpd_ext}dataview/`,
-                log_404: false
-            }
-        )
+        const { path } = request
+        
+        return this.try_send(ctx, path, {
+            root: `${fpd_ext}dataview/`,
+            log_404: true
+        })
     }
 }
 

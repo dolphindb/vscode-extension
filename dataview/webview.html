@@ -3,21 +3,16 @@
     <head>
         <title>DolphinDB</title>
         <meta charset='utf-8' />
-        <style>
-            @font-face {
-                font-family: 'MyFont';
-                src: local('MyFont'), url('http://{host}/myfont.woff2');
-            }
-            
-            @font-face {
-                font-family: 'MyFont';
-                src: local('MyFont Bold'), url('http://{host}/myfontb.woff2');
-                font-weight: bold;
-            }
-        </style>
         <script>
             window.language = '{language}'
         </script>
+        <script src='http://{host}/vendors/react.production.min.js' defer></script>
+        <script src='http://{host}/vendors/react-dom.production.min.js' defer></script>
+        <script src='http://{host}/vendors/lodash.min.js' defer></script>
+        <script src='http://{host}/vendors/dayjs.min.js' defer></script>
+        <script src='http://{host}/vendors/antd-with-locales.min.js' defer></script>
+        <script src='http://{host}/vendors/antd-icons.umd.min.js' defer></script>
+        <script src='http://{host}/vendors/plots.min.js' defer></script>
         <script src='http://{host}/webview.js' defer></script>
     </head>
     <body>
