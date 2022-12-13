@@ -202,7 +202,7 @@ let formatter = {
         })
         
         if (value === undefined) {  // 通过按 esc 取消
-            console.log('formatter.prompt: cancelled')
+            console.log(t('用户已取消设置小数位数'))
             return
         }
         
@@ -311,7 +311,7 @@ let dataview = {
                     view.webview.onDidReceiveMessage(dataview.handle, dataview)
                     view.webview.html = (
                         await fread(`${fpd_ext}dataview/webview.html`)
-                    ).replace(/\{host\}/g, `localhost:${server.port}`)
+                    ).replace('{script}', `http://localhost:${server.port}/webview.js`)
                     .replace('{language}', language)
                 }
             },
@@ -412,7 +412,7 @@ async function _execute (text: string) {
                 pty: {
                     open (init_dimensions: TerminalDimensions | undefined) {
                         printer.fire(
-                            'DolphinDB Shell\r\n' +
+                            `${t('DolphinDB 终端')}\r\n` +
                             `${web_url}\r\n`
                         )
                         resolve()
@@ -444,10 +444,12 @@ async function _execute (text: string) {
     let { ddb } = connection
     let { printer } = term
     
+    // let timer = new Timer()
     const time_start = dayjs()
     
     printer.fire(
         '\r\n' +
+        // `${new Date(timer.started).to_time_str(true)}  ${connection.name}\r\n`
         `${time_start.format('YYYY.MM.DD HH:mm:ss.SSS')}  ${connection.name}\r\n`
     )
     
@@ -497,6 +499,7 @@ async function _execute (text: string) {
                     }
                 }
              })() +
+             // timer.getstr() + '\r\n'
             `(${delta2str(dayjs().diff(time_start))})\r\n`
         )
         
@@ -584,7 +587,8 @@ const ddb_commands = [
         
         const fp_remote = await window.showInputBox({
             title: t('上传到服务器端的路径'),
-            value: extctx.globalState.get(key_fp_remote)
+            value: extctx.globalState.get(key_fp_remote),
+            placeHolder: `${t('如:')} /data/server/modules/trade.dos`
         })
         
         if (!fp_remote)
@@ -640,8 +644,6 @@ export async function activate (ctx: ExtensionContext) {
                         startIndex: match.index,
                         length: str.length,
                         tooltip:
-                            // LOCAL
-                            // `https://dolphindb.cn/cn/help/ErrorCodeList/${id}/index.html`,
                             (language === 'zh' ? 'https://dolphindb.cn/cn/' : 'https://dolphindb.com/') +
                             `help/ErrorCode${ language === 'zh' ? 'List' : 'Reference' }/${id}/index.html`,
                     })
@@ -790,7 +792,7 @@ const token_map = {
 const token_ends = new Set(Object.values(token_map))
 
 function get_func_md (keyword: string) {
-    const func_doc = docs[keyword]
+    const func_doc = docs[keyword] || docs[keyword + '!']
     
     if (!func_doc)
         return
@@ -908,7 +910,7 @@ function find_func_start (
 }
 
 
-/** 根据函数参数开始位置分析参数语义，提取出当前参数索引  */
+/** 根据函数参数开始位置分析参数语义，提取出当前参数索引 */
 function find_active_param_index (
     document: TextDocument,
     position: Position,
@@ -970,7 +972,7 @@ function find_active_param_index (
 }
 
 
-/** 根据函数名提取出相应的文件对象，提取出函数signature和参数 */
+/** 根据函数名提取出相应的文件对象，提取出函数 signature 和参数 */
 function get_signature_and_params (func_name: string): {
     signature: string
     params: string[]
@@ -1082,6 +1084,8 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
     }
 }
 
+const pyobjs = new Set(['list', 'tuple', 'dict', 'set', '_ddb', 'Exception', 'AssertRaise', 'PyBox'])
+
 
 class DdbConnection extends TreeItem {
     // --- 配置参数
@@ -1129,7 +1133,12 @@ class DdbConnection extends TreeItem {
         this.iconPath = icon_empty
         this.contextValue = 'disconnected'
         
-        this.ddb = new DDB(this.url)
+        this.ddb = new DDB(this.url, {
+            autologin: this.autologin,
+            username: this.username,
+            password: this.password,
+            python: this.python,
+        })
         
         this.command = {
             command: 'dolphindb.set_connection',
@@ -1226,13 +1235,7 @@ class DdbConnection extends TreeItem {
             }))
             .filter(v => 
                 v.name !== 'pnode_run' && 
-                !(v.form === DdbForm.object && (
-                    v.name === 'list' ||
-                    v.name === 'tuple' ||
-                    v.name === 'dict' ||
-                    v.name === 'set' ||
-                    v.name === '_ddb'
-                ))
+                !(v.form === DdbForm.object && pyobjs.has(v.name))
             )
         
         let imutables = vars_data.filter(v =>
