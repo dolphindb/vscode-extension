@@ -2,21 +2,14 @@ import { fileURLToPath } from 'url'
 
 import path from 'upath'
 
-import {
-    default as Webpack,
-    type Configuration,
-    type Compiler,
-    type Watching,
-    type Resolver,
-    type Stats,
-} from 'webpack'
+import { default as Webpack, type Configuration, type Compiler, type Resolver, type Stats } from 'webpack'
 
 import type { Options as TSLoaderOptions } from 'ts-loader'
 import type { Options as SassOptions } from 'sass-loader'
 import sass from 'sass'
 
 
-import { fwrite, fcopy, fexists } from 'xshell'
+import { fwrite, fcopy } from 'xshell'
 import type { Item } from 'xshell/i18n/index.js'
 
 
@@ -47,15 +40,6 @@ export async function copy_files () {
         ] as const).map(async fname =>
             fcopy(fpd_root + fname, fpd_out + fname, { overwrite: true })
         ),
-        
-        ... (['myfont.woff2', 'myfontb.woff2'] as const).map(async fname => {
-            const fp_out = fpd_out_dataview + fname
-            
-            if (fexists(fp_out))
-                return
-            
-            return fcopy(`${fpd_root}node_modules/xshell/${fname}`, fp_out)
-        }),
         
         ... ([
             'index.html',
@@ -288,7 +272,7 @@ export async function build_package_json () {
         publisher: 'dolphindb',
         
         categories: ['Programming Languages', 'Other', 'Linters', 'Snippets'],
-        keywords: ['DataBase', 'database', 'dolphindb', 'DolphinDB', 'Time Series', 'timeseries', 'Stream Computition', 'Programing language'],
+        keywords: ['dolphindb', 'DolphinDB', 'DataBase', 'database', 'Time Series', 'timeseries', 'Programing Language'],
         homepage: 'https://github.com/dolphindb/vscode-extension/',
         bugs: {
             url: 'https://github.com/dolphindb/vscode-extension/issues'
@@ -718,10 +702,7 @@ let dataview_config: Configuration = {
         hints: false,
     },
     
-    cache: {
-        type: 'filesystem',
-        compression: 'brotli',
-    },
+    cache: false,
     
     ignoreWarnings: [
         /Failed to parse source map/
@@ -898,8 +879,6 @@ let ext_config: Configuration = {
 
 export const ext_webpack = {
     compiler: null as Compiler,
-    
-    watcher: null as Watching,
     
     
     async build (production: boolean) {
