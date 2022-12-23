@@ -28,7 +28,7 @@
         "antd": "^5.1.0",
         "css-loader": "^6.7.3",
         "dayjs": "^1.11.7",
-        "dolphindb": "^2.0.908",
+        "dolphindb": "^2.0.909",
         "koa": "^2.14.1",
         "koa-compress": "^5.1.0",
         "koa-useragent": "^4.1.0",
@@ -45,6 +45,6 @@
         "upath": "^2.0.1",
         "webpack": "^5.75.0",
         "ws": "^8.11.0",
-        "xshell": "^0.0.74"
+        "xshell": "^0.0.75"
     }
 }
