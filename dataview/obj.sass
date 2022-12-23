@@ -62,12 +62,21 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
     
     min-height: 0px
     
+    .info
+        font-size: 16px
+        
+        display: flex
+        
+        .name
+            margin-left: 8px
+            font-weight: bold
+            
     .actions
         display: flex
         
         align-items: center
         
-        margin-left: -4px
+        margin-left: 10px
         
         .icon-link, .pause-play
             color: #888888
@@ -81,6 +90,8 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
         
         
     .ant-pagination
+        margin-left: 10px
+        
         .ant-pagination-item a
             color: $color !important
         
@@ -171,17 +182,6 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
     height: 100%
     
     overflow-y: auto
-    
-    .info
-        font-size: 16px
-        margin-bottom: 2px
-        
-        .name
-            margin-left: 8px
-            font-weight: bold
-            
-        .desc
-            margin-left: 32px
     
     .ant-table
         background-color: $background-color !important

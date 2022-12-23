@@ -23,7 +23,7 @@ const Icon: typeof _Icon.default = _Icon as any
 
 import { Line, Pie, Bar, Column, Scatter, Area, DualAxes, Histogram, Stock } from '@ant-design/plots'
 
-import { nanoid } from 'nanoid'
+import { genid } from 'xshell/utils.browser.js'
 
 
 import {
@@ -206,11 +206,6 @@ function Dict ({
         return null
     
     return <div className='dict'>
-        { ctx !== 'webview' && <div className='info'>
-            <span className='type'>{t('词典')}</span>
-            <span className='desc'>{_obj.rows} {t('个键')} { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
-        </div> }
-        
         <Tree
             treeData={build_tree_data(_obj, { remote, ddb, ctx, options })}
             defaultExpandAll
@@ -219,6 +214,13 @@ function Dict ({
             showLine
             motion={null}
         />
+        
+        { ctx !== 'webview' && <div className='bottom-bar'>
+            <div className='info'>
+                <span className='desc'>{_obj.rows} {t('个键')} { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+                <span className='type'>{t('的词典')}</span>
+            </div> 
+        </div> }
     </div>
 }
 
@@ -242,25 +244,25 @@ function build_tree_data (
             if (valueobj.form === DdbForm.dict) 
                 node = {
                     title: key + ': ',
-                    key: nanoid(),
+                    key: genid(),
                     children: build_tree_data(valueobj, { remote, ctx, ddb })
                 }
              else if (valueobj.form === DdbForm.scalar) {
                 let value = format(valueobj.type, valueobj.value, valueobj.le, { ...options, quote: true, nullstr: true })
                 node = {
                     title: key + ': ' + value,
-                    key: nanoid()
+                    key: genid()
                 }
             } else {
                 const View = views[valueobj.form] || Default
                 
                 node = {
                     title: key + ':',
-                    key: nanoid(),
+                    key: genid(),
                     children: [
                         {
                             title: <View obj={valueobj} ctx={ctx} ddb={ddb} remote={remote} />,
-                            key: nanoid()
+                            key: genid()
                         }
                     ]
                 }
@@ -268,7 +270,7 @@ function build_tree_data (
          else
             node = {
                 title: key + ': ' + formati(dict_value, i, options),
-                key: nanoid()
+                key: genid()
             }
         
         tree_data.push(node)
@@ -370,12 +372,6 @@ function Vector ({
         })
     
     return <div className='vector'>
-        { ctx !== 'webview' && <div className='info'>
-            <span className='type'>{ info.form === DdbForm.set ? t('集合') : t('向量') }</span>
-            { info.name && <span className='name'>{info.name}</span> }
-            <span className='desc'>{info.rows} {t('个元素')} { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
-        </div> }
-        
         <AntTable
             dataSource={rows as any[]}
             rowKey={x => x}
@@ -396,16 +392,11 @@ function Vector ({
         />
         
         <div className='bottom-bar'>
-            <div className='actions'>
-                {(ctx === 'page' || ctx === 'embed') && <Icon
-                    className='icon-link'
-                    title={t('在新窗口中打开')}
-                    component={SvgLink}
-                    onClick={async () => {
-                        await open_obj({ obj, objref, remote, ddb, options })
-                    }}
-                />}
-            </div>
+            { ctx !== 'webview' && <div className='info'>
+                <span className='desc'>{info.rows} {t('个元素')} { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+                <span className='type'>{ info.form === DdbForm.set ? t('的集合') : t('的向量') }</span>
+                { info.name && <span className='name'>{info.name}</span> }
+            </div> }
             
             <Pagination
                 className='pagination'
@@ -423,6 +414,17 @@ function Vector ({
                     set_page_index(page_index - 1)
                 }}
             />
+            
+            <div className='actions'>
+                {(ctx === 'page' || ctx === 'embed') && <Icon
+                    className='icon-link'
+                    title={t('在新窗口中打开')}
+                    component={SvgLink}
+                    onClick={async () => {
+                        await open_obj({ obj, objref, remote, ddb, options })
+                    }}
+                />}
+            </div>
         </div>
     </div>
 }
@@ -590,12 +592,6 @@ function Table ({
         
     
     return <div className='table'>
-        { ctx !== 'webview' && <div className='info'>
-            <span className='type'>{t('表格')}</span>
-            { info.name && <span className='name'>{info.name}</span> }
-            <span className='desc'>{info.rows} {t('行')} {info.cols} {t('列')}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
-        </div> }
-        
         <AntTable
             dataSource={rows as any[]}
             rowKey={x => x}
@@ -615,16 +611,11 @@ function Table ({
         />
         
         <div className='bottom-bar'>
-            <div className='actions'>
-                {(ctx === 'page' || ctx === 'embed') && <Icon
-                    className='icon-link'
-                    title={t('在新窗口中打开')}
-                    component={SvgLink}
-                    onClick={async () => {
-                        await open_obj({ obj, objref, remote, ddb, options })
-                    }}
-                />}
-            </div>
+            { ctx !== 'webview' && <div className='info'>
+                <span className='desc'>{ info.rows ? `${info.rows} ${t('行')} ` : ' ' }{info.cols} {t('列')}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+                <span className='type'>{t('的表格')}</span>
+                { info.name && <span className='name'>{info.name}</span> }
+            </div> }
             
             <Pagination
                 className='pagination'
@@ -642,20 +633,29 @@ function Table ({
                     set_page_index(page_index - 1)
                 }}
             />
+            
+            <div className='actions'>
+                {(ctx === 'page' || ctx === 'embed') && <Icon
+                    className='icon-link'
+                    title={t('在新窗口中打开')}
+                    component={SvgLink}
+                    onClick={async () => {
+                        await open_obj({ obj, objref, remote, ddb, options })
+                    }}
+                />}
+            </div>
         </div>
     </div>
 }
 
 
 export function StreamingTable ({
-    url,
     table,
     action,
     autologin = false,
     ctx,
     options,
 }: {
-    url: string
     table: string
     action?: string
     autologin?: boolean
@@ -695,7 +695,7 @@ export function StreamingTable ({
     
     useEffect(() => {
         ;(async () => {
-            let ddb = rddb.current = new DDB(url, {
+            let ddb = rddb.current = new DDB(undefined, {
                 autologin,
                 streaming: {
                     table,
@@ -722,7 +722,7 @@ export function StreamingTable ({
                 }
             })
             
-            let ddbapi = rddbapi.current = new DDB(url)
+            let ddbapi = rddbapi.current = new DDB()
             
             // LOCAL: 创建流表
             await ddbapi.eval(
@@ -922,12 +922,6 @@ export function StreamingTable ({
         
         
         <div className='table'>
-            { ctx !== 'webview' && <div className='info'>
-                <span className='type'>{t('流表')}</span>
-                <span className='name'>{table}</span>
-                <span className='desc'>{t('窗口')}: {winsize} {t('行')} {data.rows} {t('列')}, {t('偏移量')}: {offset}</span>
-            </div> }
-            
             <AntTable
                 dataSource={rows as any[]}
                 rowKey={x => x}
@@ -949,6 +943,29 @@ export function StreamingTable ({
         </div>
         
         <div className='bottom-bar'>
+            { ctx !== 'webview' && <div className='info'>
+                <span className='desc'>{t('窗口')}: {winsize} {t('行')} {data.rows} {t('列')}, {t('偏移量')}: {offset}</span>
+                <span className='type'>{t('的流表')}</span>
+                <span className='name'>{table}</span>
+            </div> }
+            
+            <Pagination
+                className='pagination'
+                total={winsize}
+                current={page_index + 1}
+                pageSize={page_size}
+                pageSizeOptions={page_sizes}
+                size='small'
+                showSizeChanger
+                showQuickJumper
+                hideOnSinglePage={page_size <= 50}
+                
+                onChange={(page_index, page_size) => {
+                    set_page_size(page_size)
+                    set_page_index(page_index - 1)
+                }}
+            />
+            
             <div className='actions'>
                 {(ctx === 'page' || ctx === 'embed') && <Icon
                     className='icon-link'
@@ -988,23 +1005,6 @@ export function StreamingTable ({
                     <Select.Option value={60 * 1000}>60 s</Select.Option>
                 </Select>
             </div>
-            
-            <Pagination
-                className='pagination'
-                total={winsize}
-                current={page_index + 1}
-                pageSize={page_size}
-                pageSizeOptions={page_sizes}
-                size='small'
-                showSizeChanger
-                showQuickJumper
-                hideOnSinglePage={page_size <= 50}
-                
-                onChange={(page_index, page_size) => {
-                    set_page_size(page_size)
-                    set_page_index(page_index - 1)
-                }}
-            />
         </div>
     </div>
 }
@@ -1199,12 +1199,6 @@ function Matrix ({
         })
     
     return <div className='matrix'>
-        { ctx !== 'webview' && <div className='info'>
-            <span className='type'>{t('矩阵')}</span>
-            { info.name && <span className='name'>{info.name}</span> }
-            <span className='desc'>{info.rows} {t('行')} {info.cols} {t('列')}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
-        </div> }
-        
         <AntTable
             dataSource={rows as any[]}
             rowKey={x => x}
@@ -1238,16 +1232,11 @@ function Matrix ({
         />
         
         <div className='bottom-bar'>
-            <div className='actions'>
-                {(ctx === 'page' || ctx === 'embed') && <Icon
-                    className='icon-link'
-                    title={t('在新窗口中打开')}
-                    component={SvgLink}
-                    onClick={async () => {
-                        await open_obj({ obj, objref, remote, ddb, options })
-                    }}
-                />}
-            </div>
+            { ctx !== 'webview' && <div className='info'>
+                <span className='desc'>{info.rows} {t('行')} {info.cols} {t('列')}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+                <span className='type'>{t('的矩阵')}</span>
+                { info.name && <span className='name'>{info.name}</span> }
+            </div> }
             
             <Pagination
                 className='pagination'
@@ -1265,6 +1254,18 @@ function Matrix ({
                     set_page_index(page_index - 1)
                 }}
             />
+            
+            <div className='actions'>
+                {(ctx === 'page' || ctx === 'embed') && <Icon
+                    className='icon-link'
+                    title={t('在新窗口中打开')}
+                    component={SvgLink}
+                    onClick={async () => {
+                        await open_obj({ obj, objref, remote, ddb, options })
+                    }}
+                />}
+            </div>
+            
         </div>
     </div>
 }
