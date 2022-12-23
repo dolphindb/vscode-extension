@@ -144,7 +144,7 @@ export async function open_obj ({
     ddb?: DDB
     options?: InspectOptions
 }) {
-    let win = window.open('./window', new Date().toString(), 'left=100,top=100,width=1000,height=640,popup')
+    let win = window.open('./window.html', new Date().toString(), 'left=100,top=100,width=1000,height=640,popup')
     
     await new Promise<void>(resolve => {
         (win as any).resolve = resolve
@@ -215,12 +215,12 @@ function Dict ({
             motion={null}
         />
         
-        { ctx !== 'webview' && <div className='bottom-bar'>
+        <div className='bottom-bar'>
             <div className='info'>
                 <span className='desc'>{_obj.rows} {t('个键')} { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
                 <span className='type'>{t('的词典')}</span>
             </div> 
-        </div> }
+        </div>
     </div>
 }
 
@@ -392,11 +392,11 @@ function Vector ({
         />
         
         <div className='bottom-bar'>
-            { ctx !== 'webview' && <div className='info'>
+            <div className='info'>
                 <span className='desc'>{info.rows} {t('个元素')} { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
                 <span className='type'>{ info.form === DdbForm.set ? t('的集合') : t('的向量') }</span>
                 { info.name && <span className='name'>{info.name}</span> }
-            </div> }
+            </div>
             
             <Pagination
                 className='pagination'
@@ -611,11 +611,11 @@ function Table ({
         />
         
         <div className='bottom-bar'>
-            { ctx !== 'webview' && <div className='info'>
+            <div className='info'>
                 <span className='desc'>{ info.rows ? `${info.rows} ${t('行')} ` : ' ' }{info.cols} {t('列')}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
                 <span className='type'>{t('的表格')}</span>
                 { info.name && <span className='name'>{info.name}</span> }
-            </div> }
+            </div>
             
             <Pagination
                 className='pagination'
@@ -943,11 +943,11 @@ export function StreamingTable ({
         </div>
         
         <div className='bottom-bar'>
-            { ctx !== 'webview' && <div className='info'>
+            <div className='info'>
                 <span className='desc'>{t('窗口')}: {winsize} {t('行')} {data.rows} {t('列')}, {t('偏移量')}: {offset}</span>
                 <span className='type'>{t('的流表')}</span>
                 <span className='name'>{table}</span>
-            </div> }
+            </div>
             
             <Pagination
                 className='pagination'
@@ -1232,11 +1232,11 @@ function Matrix ({
         />
         
         <div className='bottom-bar'>
-            { ctx !== 'webview' && <div className='info'>
+            <div className='info'>
                 <span className='desc'>{info.rows} {t('行')} {info.cols} {t('列')}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
                 <span className='type'>{t('的矩阵')}</span>
                 { info.name && <span className='name'>{info.name}</span> }
-            </div> }
+            </div>
             
             <Pagination
                 className='pagination'
