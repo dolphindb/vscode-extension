@@ -866,7 +866,7 @@ let ext_config: Configuration = {
         }
     },
     
-    target: ['node18', 'es2022'],
+    target: ['node19', 'es2022'],
     
     resolve: {
         extensions: ['.js'],
