@@ -442,14 +442,14 @@ class VectorColumn implements TableColumnType <number> {
     page_index: number
     page_size: number
     
-    title: number
+    title: string
     key: number
     
     options?: InspectOptions
     
     constructor (data: Partial<VectorColumn>) {
         Object.assign(this, data)
-        this.title = this.index
+        this.title = String(this.index)
         this.key = this.index
     }
     
@@ -1279,7 +1279,7 @@ class MatrixColumn implements TableColumnType <number> {
     page_index: number
     page_size: number
     
-    title: number | string
+    title: string
     key: number
     
     options?: InspectOptions
@@ -1287,7 +1287,7 @@ class MatrixColumn implements TableColumnType <number> {
     constructor (data: Partial<MatrixColumn>) {
         Object.assign(this, data)
         
-        this.title = this.index
+        this.title = String(this.index)
         this.key = this.index
         
         let obj = this.obj || this.objref.obj
