@@ -88,7 +88,7 @@ function DdbObjWindow () {
             
             window.resizeTo(
                 Math.min($table.offsetWidth + 40, screen.width - 100),
-                Math.min($table.offsetHeight + 200,  screen.height - 100),
+                Math.min($table.offsetHeight + 140,  screen.height - 100),
             )
         })()
     }, [obj, objref])
