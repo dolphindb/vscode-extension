@@ -109,6 +109,10 @@ export async function copy_files () {
             'logo.png'
         ] as const).map(async fname =>
             fcopy(fpd_dataview + fname, fpd_out_dataview + fname, { overwrite: true })
+        ),
+        
+        ... (['zh', 'en']).map(async (language) => 
+            fcopy(`${fpd_root}node_modules/dolphindb/docs.${language}.json`, `${fpd_out}docs.${language}.json`, { overwrite: true })
         )
     ])
 }

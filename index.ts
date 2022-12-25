@@ -65,6 +65,7 @@ import {
     fread,
     genid,
     assert,
+    fread_json,
 } from 'xshell'
 import { Server } from 'xshell/server.js'
 import {
@@ -81,8 +82,6 @@ import {
     type InspectOptions,
 } from 'dolphindb'
 
-import docs_zh from 'dolphindb/docs.zh.json'
-import docs_en from 'dolphindb/docs.en.json'
 import { constants, keywords } from 'dolphindb/language.js'
 
 import { language, t } from './i18n/index.js'
@@ -96,12 +95,14 @@ const fpd_ext = path.normalizeTrim(
 
 set_inspect_options()
 
-const docs = language === 'zh' ? docs_zh : docs_en
 
 const constants_lower = constants.map(constant => constant.toLowerCase())
 
-const funcs = Object.keys(docs)
-const funcs_lower = funcs.map(func => func.toLowerCase())
+
+let docs = { }
+
+let funcs: string[] = [ ]
+let funcs_lower: string[] = [ ]
 
 const icon_empty = `${fpd_ext}icons/radio.empty.svg`
 const icon_checked = `${fpd_ext}icons/radio.checked.svg`
@@ -624,6 +625,18 @@ export async function activate (ctx: ExtensionContext) {
     
     formatter.init()
     statbar.init()
+    
+    ;(async () => {
+        const fname = `docs.${ language === 'zh' ? 'zh' : 'en' }.json`
+        
+        docs = await fread_json(`${fpd_ext}${fname}`)
+        
+        funcs = Object.keys(docs)
+        funcs_lower = funcs.map(func => 
+            func.toLowerCase())
+        
+        console.log(t('函数文档 {{fname}} 已加载', { fname }))
+    })()
     
     // 监听配置，dispatch 修改 event
     workspace.onDidChangeConfiguration(event => {
