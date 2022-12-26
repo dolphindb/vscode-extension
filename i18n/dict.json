@@ -214,5 +214,8 @@
     },
     "的矩阵": {
         "en": " matrix"
+    },
+    "函数文档 {{fname}} 已加载": {
+        "en": "function documentation {{fname}} loaded"
     }
 }
