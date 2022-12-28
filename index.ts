@@ -423,6 +423,7 @@ async function _execute (text: string) {
                         console.log(t('dolphindb 终端被关闭'))
                         term.dispose()
                         printer.dispose()
+                        term = null
                     },
                     
                     onDidWrite: printer.event,

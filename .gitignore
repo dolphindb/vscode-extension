@@ -14,3 +14,5 @@ node_modules/
 
 /*.zip
 /*.vsix
+
+/.vscode/settings.json
