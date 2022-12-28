@@ -1,13 +1,14 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "ddb.ext",
-            "type": "extensionHost",
-            "request": "launch",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceRoot}/out/"
-            ],
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ddb.ext",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--disable-extensions",
+        "--extensionDevelopmentPath=${workspaceRoot}/out/"
+      ]
+    }
+  ]
 }
