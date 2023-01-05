@@ -33,7 +33,7 @@ export const fpd_out_dataview = `${fpd_out}dataview/`
 
 
 export async function copy_files () {
-    const fpd_vendors = `${fpd_out}vendors/`
+    const fpd_vendors = `${fpd_out_dataview}vendors/`
     
     return Promise.all([
         ... ([
