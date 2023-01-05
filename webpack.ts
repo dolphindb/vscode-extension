@@ -9,7 +9,7 @@ import type { Options as SassOptions } from 'sass-loader'
 import sass from 'sass'
 
 
-import { fwrite, fcopy, request, MyProxy, fmkdir, fexists } from 'xshell'
+import { fwrite, fcopy } from 'xshell'
 import type { Item } from 'xshell/i18n/index.js'
 
 
@@ -23,6 +23,8 @@ import package_json from './package.json' assert { type: 'json' }
 
 export const fpd_root = `${path.dirname(fileURLToPath(import.meta.url))}/`
 
+export const fpd_node_modules = `${fpd_root}node_modules/`
+
 export const fpd_dataview = `${fpd_root}dataview/`
 
 export const fpd_out = `${fpd_root}out/` as const
@@ -30,69 +32,23 @@ export const fpd_out = `${fpd_root}out/` as const
 export const fpd_out_dataview = `${fpd_out}dataview/`
 
 
-async function get_proxy () {
-    try {
-        const proxy = process.env.http_proxy || MyProxy.socks5
-        
-        await request('https://cdn.jsdelivr.net/', {
-            timeout: 1000,
-            proxy,
-        })
-        
-        console.log(`将会使用 http 代理 ${proxy} 从 jsdelivr 下载依赖库`)
-        
-        return proxy
-    } catch (error) {
-        console.log('将会不使用 http 代理从 jsdelivr 下载依赖库')
-        
-        return null
-    }
-}
-
-
-export async function get_vendors (upgrade = false) {
-    const fpd_vendors = `${fpd_out_dataview}vendors/`
-    const fpd_cdn = 'https://cdn.jsdelivr.net/npm/'
-    
-    const proxy = await get_proxy()
-    
-    await fmkdir(fpd_vendors)
-    
-    await Promise.all([
-        'react/umd/react.production.min.js',
-        'react-dom/umd/react-dom.production.min.js',
-        'dayjs/dayjs.min.js',
-        'lodash/lodash.min.js',
-        'xterm/lib/xterm.min.js',
-        'antd/dist/antd-with-locales.min.js',
-        'antd/dist/antd-with-locales.min.js.map',
-        '@ant-design/icons/dist/index.umd.min.js',
-        '@ant-design/plots/dist/plots.min.js',
-        '@ant-design/plots/dist/plots.min.js.map',
-    ].map(async fp_lib => {
-        let fname = fp_lib.fname
-        
-        if (fp_lib === '@ant-design/icons/dist/index.umd.min.js')
-            fname = 'antd-icons.umd.min.js'
-        
-        const fp = `${fpd_vendors}${fname}`
-        
-        if (!upgrade && fexists(fp))
-            return
-        
-        return fwrite(
-            fp,
-            await request(`${fpd_cdn}${fp_lib}`, {
-                encoding: 'binary',
-                retries: true,
-                proxy
-            }))
-    }))
-}
-
-
 export async function copy_files () {
+    const fpd_vendors = `${fpd_out}vendors/`
+    
     return Promise.all([
+        ... ([
+            'react/umd/react.production.min.js',
+            'react-dom/umd/react-dom.production.min.js',
+            'dayjs/dayjs.min.js',
+            'lodash/lodash.min.js',
+            'antd/dist/antd-with-locales.min.js',
+            'antd/dist/antd-with-locales.min.js.map',
+            '@ant-design/icons/dist/index.umd.min.js',
+            '@ant-design/plots/dist/plots.min.js',
+            '@ant-design/plots/dist/plots.min.js.map',
+        ] as const).map(async fp => 
+            fcopy(`${fpd_node_modules}${fp}`, `${fpd_vendors}${fp}`)),
+        
         ... ([
             'README.md',
             'README.zh.md',
@@ -111,9 +67,9 @@ export async function copy_files () {
             fcopy(fpd_dataview + fname, fpd_out_dataview + fname, { overwrite: true })
         ),
         
-        ... (['zh', 'en']).map(async (language) => 
-            fcopy(`${fpd_root}node_modules/dolphindb/docs.${language}.json`, `${fpd_out}docs.${language}.json`, { overwrite: true })
-        )
+        ... (['zh', 'en'] as const).map(async (language) => 
+            fcopy(`${fpd_node_modules}dolphindb/docs.${language}.json`, `${fpd_out}docs.${language}.json`, { overwrite: true })
+        ),
     ])
 }
 
@@ -126,7 +82,7 @@ export async function build_tm_language () {
 }
 
 
-export async function build_package_json () {
+export async function build_package_json (production: boolean) {
     const { name, type, version, engines, scripts, devDependencies } = package_json
     
     const ext_commands = [
@@ -177,7 +133,7 @@ export async function build_package_json () {
                 zh: '断开连接',
                 en: 'Disconnect'
             },
-            icon: './icons/disconnect.svg'
+            icon: `${ production ? '.' : '..' }/icons/disconnect.svg`,
         },
         {
             command: 'inspect_variable',
@@ -276,8 +232,8 @@ export async function build_package_json () {
             type: 'boolean',
             default: false,
             description: {
-                zh: '使用 Python Parser 来解释执行脚本, 默认 false',
-                en: 'Use Python Parser to interpret and execute scripts, the default is false'
+                zh: '(需要 v2.10.0 以上的 DolphinDB Server) 使用 Python Parser 来解释执行脚本, 默认 false',
+                en: '(DolphinDB Server version must be above v2.10.0) Use Python Parser to interpret and execute scripts, the default is false'
             },
         },
     ]
@@ -362,8 +318,8 @@ export async function build_package_json () {
                     aliases: ['DolphinDB', 'dolphindb'],
                     configuration: './dolphindb.language-configuration.json',
                     icon: {
-                        dark: './icons/file.svg',
-                        light: './icons/file.svg',
+                        dark: `${ production ? '.' : '..' }/icons/file.svg`,
+                        light: `${ production ? '.' : '..' }/icons/file.svg`,
                     }
                 }
             ],
@@ -462,7 +418,7 @@ export async function build_package_json () {
                     {
                         id: 'ddbpanel',
                         title: 'DolphinDB',
-                        icon: './icons/object.svg'
+                        icon: `${ production ? '.' : '..' }/icons/object.svg`,
                     }
                 ]
             },
@@ -481,7 +437,7 @@ export async function build_package_json () {
                         id: 'dolphindb.dataview',
                         name: '%configs.ddbpanel.name%',
                         contextualTitle: 'DolphinDB',
-                        icon: './icons/object.svg',
+                        icon: `${ production ? '.' : '..' }/icons/object.svg`,
                         visibility: 'visible',
                     }
                 ]
@@ -802,7 +758,13 @@ let dataview_config: Configuration = {
         
         timings: true,
         
-        children: true,
+        children: false,
+        
+        assets: true,
+        assetsSpace: 20,
+        
+        modules: false,
+        modulesSpace: 20,
         
         cachedAssets: false,
         cachedModules: false,
@@ -825,7 +787,10 @@ export let dataview_webpack = {
         await new Promise<Stats>((resolve, reject) => {
             this.compiler.run((error, stats) => {
                 if (stats)
-                    console.log(stats.toString(dataview_config.stats))
+                    console.log(
+                        stats.toString(dataview_config.stats)
+                            .replace(/\n\s*.*DdbDataview.* compiled .*successfully.* in (.*)/, '\nDdbDataview 编译成功，用时 $1'.green)
+                    )
                 
                 if (error)
                     reject(error)
@@ -952,7 +917,13 @@ let ext_config: Configuration = {
         
         timings: true,
         
-        children: true,
+        children: false,
+        
+        assets: true,
+        assetsSpace: 20,
+        
+        modules: false,
+        modulesSpace: 20,
         
         cachedAssets: false,
         cachedModules: false,
@@ -975,7 +946,10 @@ export const ext_webpack = {
         await new Promise<Stats>((resolve, reject) => {
             this.compiler.run((error, stats) => {
                 if (stats)
-                    console.log(stats.toString(ext_config.stats))
+                    console.log(
+                        stats.toString(ext_config.stats)
+                            .replace(/\n\s*.*DdbExt.* compiled .*successfully.* in (.*)/, '\nDdbExt 编译成功，用时 $1'.green)
+                    )
                 
                 if (error)
                     reject(error)

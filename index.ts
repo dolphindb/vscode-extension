@@ -1,6 +1,7 @@
 import zlib from 'zlib'
 import { createServer, type IncomingMessage } from 'http'
 import type { Duplex } from 'stream'
+import util from 'util'
 
 import {
     window,
@@ -10,7 +11,7 @@ import {
     
     languages,
     
-    extensions, ExtensionKind,
+    extensions, ExtensionKind, ExtensionMode,
     
     ThemeIcon, ThemeColor,
     
@@ -87,13 +88,19 @@ import { constants, keywords } from 'dolphindb/language.js'
 import { language, t } from './i18n/index.js'
 import { get_text } from './utils.js'
 
+if (util.inspect.styles.number !== 'green')
+    set_inspect_options()
 
+
+/** 插件运行目录: 可能是 out 文件夹或实际安装文件夹 */
 const fpd_ext = path.normalizeTrim(
     extensions.getExtension('dolphindb.dolphindb-vscode').extensionPath
 ) + '/'
 
+/** 开发模式下才有，为项目根文件夹 */
+const fpd_src = fpd_ext.fdir
 
-set_inspect_options()
+const fpd_node_modules = `${fpd_src}node_modules/`
 
 
 const constants_lower = constants.map(constant => constant.toLowerCase())
@@ -104,11 +111,14 @@ let docs = { }
 let funcs: string[] = [ ]
 let funcs_lower: string[] = [ ]
 
-const icon_empty = `${fpd_ext}icons/radio.empty.svg`
-const icon_checked = `${fpd_ext}icons/radio.checked.svg`
+let icon_empty: string
+let icon_checked: string
 
 
 let extctx: ExtensionContext
+
+/** 是否处于开发模式 */
+let dev = false
 
 let server: DdbServer
 
@@ -311,7 +321,7 @@ let dataview = {
                     view.webview.options = { enableCommandUris: true, enableScripts: true }
                     view.webview.onDidReceiveMessage(dataview.handle, dataview)
                     view.webview.html = (
-                        await fread(`${fpd_ext}dataview/webview.html`)
+                        await fread(`${ dev ? fpd_src : fpd_ext }dataview/webview.html`)
                     ).replaceAll('{host}', `localhost:${server.port}`)
                     .replace('{language}', language)
                 }
@@ -614,6 +624,13 @@ const ddb_commands = [
 export async function activate (ctx: ExtensionContext) {
     extctx = ctx
     
+    dev = ctx.extensionMode === ExtensionMode.Development
+    console.log(t('dolphindb 插件运行在{{mode}}模式下', { mode: dev ? t('开发') : t('生产') }))
+    
+    icon_empty = `${ dev ? fpd_src : fpd_ext }icons/radio.empty.svg`
+    icon_checked = `${ dev ? fpd_src : fpd_ext }icons/radio.checked.svg`
+    
+    
     // 命令注册
     for (const func of ddb_commands)
         ctx.subscriptions.push(commands.registerCommand(`dolphindb.${func.name}`, func))
@@ -630,7 +647,7 @@ export async function activate (ctx: ExtensionContext) {
     ;(async () => {
         const fname = `docs.${ language === 'zh' ? 'zh' : 'en' }.json`
         
-        docs = await fread_json(`${fpd_ext}${fname}`)
+        docs = await fread_json(dev ? `${fpd_node_modules}dolphindb/${fname}` : `${fpd_ext}${fname}`)
         
         funcs = Object.keys(docs)
         funcs_lower = funcs.map(func => 
@@ -1166,7 +1183,12 @@ class DdbConnection extends TreeItem {
     
     
     async connect () {
-        await this.ddb.connect(this)
+        this.ddb.autologin = this.autologin
+        this.ddb.username = this.username
+        this.ddb.password = this.password
+        this.ddb.python = this.python
+        await this.ddb.connect()
+        
         console.log(`${t('连接成功:')} ${this.name}`)
         this.description = this.url + ' ' + t('已连接')
         
@@ -1423,7 +1445,7 @@ class DdbVarForm extends TreeItem {
         this.connection = connection
         this.shared = shared
         this.form = form
-        this.iconPath = `${fpd_ext}icons/${DdbForm[form]}.svg`
+        this.iconPath = `${ dev ? fpd_src : fpd_ext }icons/${DdbForm[form]}.svg`
     }
     
     update (vars: DdbVar[]) {
@@ -1625,15 +1647,6 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
 
 
 class DdbServer extends Server {
-    static libs = {
-        'react.production.min.js': 'react/umd/react.production.min.js',
-        'react-dom.production.min.js': 'react-dom/umd/react-dom.production.min.js',
-        'antd.css': 'antd/dist/antd.css',
-        'antd.js': 'antd/dist/antd.js',
-    } as const
-    
-    static dev = fpd_ext === 'd:/1/ddb/ext/out/'
-    
     web_url = 'http://localhost:8321/'
     
     subscribers_repl = [ ] as ((message: DdbMessage, ddb: DDB, options?: InspectOptions) => void)[]
@@ -1841,6 +1854,18 @@ class DdbServer extends Server {
             request.path = '/webview.html'
         
         const { path } = request
+        
+        if (dev && path.startsWith('/vendors/'))
+            return this.try_send(ctx, path.slice('/vendors/'.length), {
+                root: fpd_node_modules,
+                log_404: true
+            })
+        
+        if (dev && await this.try_send(ctx, path, {
+            root: `${fpd_src}dataview/`,
+            log_404: false
+        }))
+            return true
         
         return this.try_send(ctx, path, {
             root: `${fpd_ext}dataview/`,
