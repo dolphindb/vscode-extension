@@ -49,12 +49,7 @@ export async function copy_files () {
         ] as const).map(async fp => 
             fcopy(`${fpd_node_modules}${fp}`, `${fpd_vendors}${fp}`)),
         
-        ... ([
-            'README.md',
-            'README.zh.md',
-            '.vscodeignore',
-            'icons/',
-        ] as const).map(async fname =>
+        ... (['README.md', 'README.zh.md', 'icons/'] as const).map(async fname =>
             fcopy(fpd_root + fname, fpd_out + fname, { overwrite: true })
         ),
         
