@@ -36,6 +36,9 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
         background-color: $table-head-color !important
         font-weight: bold
         
+        border-bottom: 1px solid $border-color !important
+        border-right: 1px solid $border-color !important
+        
         // table 中的 height 等价于 min-height: https://stackoverflow.com/questions/19432092/can-i-use-a-min-height-for-table-tr-or-td
         height: 22px
     
@@ -186,6 +189,9 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
     
     .ant-table
         background-color: $background-color !important
+    
+    .ant-table-thead > tr > td::before
+        content: none !important
     
     .ant-table-thead > tr > th,
     .ant-table-tbody > tr > td,

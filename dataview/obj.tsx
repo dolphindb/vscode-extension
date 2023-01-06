@@ -217,7 +217,7 @@ function Dict ({
         
         <div className='bottom-bar'>
             <div className='info'>
-                <span className='desc'>{_obj.rows} {t('个键')} { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+                <span className='desc'>{_obj.rows} {t('个键')} { objref ? `(${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
                 <span className='type'>{t('的词典')}</span>
             </div> 
         </div>
