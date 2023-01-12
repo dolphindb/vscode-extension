@@ -80,7 +80,7 @@ export class MockRuntime extends EventEmitter {
 	}
 	
 	private updateCurrentLine() {
-		if (this.currentLine < this.sourceLines.length) {
+		if (this.currentLine < this.sourceLines.length - 1) {
 			this.currentLine++;
 			return false;
 		} else {

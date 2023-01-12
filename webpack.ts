@@ -528,6 +528,12 @@ export async function build_package_json (production: boolean) {
                             type: 'mock',
                             request: "launch",
                             program: '${file}',
+                        },
+                        {
+                            name: 'Debug DA with server',
+                            type: 'mock',
+                            request: "launch",
+                            program: '${file}',
                             debugServer: 4711,
                         }
                     ]
