@@ -7,6 +7,15 @@ export interface IRuntimeBreakpoint {
 	verified: boolean;
 }
 
+interface IRuntimeStackFrame {
+	index: number;
+	name: string;
+	file: string;
+	line: number;
+	column?: number;
+	instruction?: number;
+}
+
 /**
  * A Mock runtime with minimal debugger functionality.
  * MockRuntime is a hypothetical (aka "Mock") "execution engine with debugging support":
@@ -61,8 +70,17 @@ export class MockRuntime extends EventEmitter {
 		}
 	}
 	
+	public next() {
+		while (!this.updateCurrentLine()) {
+			if (this.getLine(this.currentLine).length) {
+				this.sendEvent('stopOnStep');
+				break;
+			}
+		}
+	}
+	
 	private updateCurrentLine() {
-		if (this.currentLine < this.sourceLines.length - 1) {
+		if (this.currentLine < this.sourceLines.length) {
 			this.currentLine++;
 			return false;
 		} else {
@@ -80,6 +98,15 @@ export class MockRuntime extends EventEmitter {
 		} else {
 			return false;
 		}
+	}
+	
+	public stackTrace(): IRuntimeStackFrame[] {
+		return [{
+			index: 0,
+			name: this.getLine(),
+			file: this.sourceFile,
+			line: this.currentLine,
+		}];
 	}
   
   private sendEvent(event: string, ... args: any[]): void {

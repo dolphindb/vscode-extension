@@ -5,11 +5,12 @@
 import {
 	Breakpoint,
   BreakpointEvent,
-  DebugSession, InitializedEvent, StoppedEvent, TerminatedEvent, Thread
+  DebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { MockRuntime, type IRuntimeBreakpoint } from './mockRuntime.js';
 import { FileAccessor } from '../index.js';
+import { basename } from 'path';
 
 /**
  * This interface describes the mock-debug specific launch attributes
@@ -53,6 +54,9 @@ export class MockDebugSession extends DebugSession {
 		
 		this._runtime.on('stopOnBreakpoint', () => {
 			this.sendEvent(new StoppedEvent('breakpoint', MockDebugSession.threadID));
+		});
+		this._runtime.on('stopOnStep', () => {
+			this.sendEvent(new StoppedEvent('step', MockDebugSession.threadID));
 		});
 		this._runtime.on('terminated', () => {
 			this.sendEvent(new TerminatedEvent());
@@ -185,17 +189,30 @@ export class MockDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 	
+	protected override stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): void {
+		const frames = this._runtime.stackTrace();
+		response.body = {
+			stackFrames: frames.map(f => new StackFrame(f.index, f.name, this.createSource(f.file), this.convertDebuggerLineToClient(f.line), 0)),
+			totalFrames: frames.length
+		};
+		this.sendResponse(response);
+	}
+	
 	protected override continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
 		this._runtime.continue();
 		this.sendResponse(response);
 	}
 	
 	protected override nextRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.NextArguments): void {
-		this._runtime.continue();
+		this._runtime.next();
 		this.sendResponse(response);
 	}
 	
 	protected override disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request): void {
 		console.log(`disconnectRequest suspend: ${args.suspendDebuggee}, terminate: ${args.terminateDebuggee}`);
+	}
+	
+	private createSource(filePath: string): Source {
+		return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'mock-adapter-data');
 	}
 }
