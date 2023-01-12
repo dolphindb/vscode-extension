@@ -499,7 +499,40 @@ export async function build_package_json (production: boolean) {
                         group: 'navigation',
                     }
                 ],
-            }
+            },
+            
+            breakpoints: [{ language: 'dolphindb' }],
+            debuggers: [
+                {
+                    type: 'mock',
+                    label: 'dos mock debug',
+                    languages: ['dolphindb'],
+                    program: './debugAdapter.cjs',
+                    runtime: 'node',
+                    configurationAttributes: {
+                        launch: {
+                            required: ['program'],
+                            properties: {
+                                program: {
+                                    type: 'string',
+                                    description: 'Absolute path to a text file.',
+                                    default: '${file}',
+                                },
+                                // TODO: 添加更多配置项例如stopOnEntry
+                            }
+                        }
+                    },
+                    initialConfigurations: [
+                        {
+                            name: 'Debug for current file',
+                            type: 'mock',
+                            request: "launch",
+                            program: '${file}',
+                            debugServer: 4711,
+                        }
+                    ]
+                }
+            ]
         }
     }
     
@@ -814,6 +847,7 @@ let ext_config: Configuration = {
     
     entry: {
         'index.cjs': './index.ts',
+        'debugAdapter.cjs': './debugAdapter/index.ts',
     },
     
     experiments: {

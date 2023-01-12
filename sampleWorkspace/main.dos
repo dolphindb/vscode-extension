@@ -1,0 +1,10 @@
+id=take(`AB`CX`YZ, 6).sort!()
+time=take(2015.01M..2015.03M,6)
+price=norm(100,10,3) join norm(50,5,3)
+
+volume=norm(2000,400,3) join norm(1000,300,3);
+data=table(id, time, price.round(2) as price, volume.round(0) as volume);
+data;
+
+data2 = table(select avg(volume) as avgVolume, min(volume) as minVolume, max(volume) as maxVolume from data group by id);
+data2;

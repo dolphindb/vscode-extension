@@ -7,8 +7,36 @@
             "request": "launch",
             "args": [
                 "--disable-extensions",
-                "--extensionDevelopmentPath=${workspaceRoot}/out/"
-            ]
-        }
-    ]
+                "--extensionDevelopmentPath=${workspaceRoot}/out/",
+                "${workspaceFolder}/sampleWorkspace"
+            ],
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.cjs",
+                "!**/node_modules/**"
+            ],
+            // "preLaunchTask": "npm: build"
+        },
+        {
+			"name": "DebugServer",
+			"type": "node",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"program": "${workspaceFolder}/debugAdapter/index.ts",
+			"args": [
+				"--server=4711"
+			],
+			"outFiles": [
+				"${workspaceFolder}/out/**/*.cjs",
+                "!**/node_modules/**"
+			],
+			// "preLaunchTask": "npm: build"
+		},
+    ],
+    "compounds": [
+		{
+			"name": "Extension + DebugServer",
+			"configurations": [ "ddb.ext", "DebugServer" ]
+		}
+	]
 }

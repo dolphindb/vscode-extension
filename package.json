@@ -25,6 +25,7 @@
         "@types/react-dom": "^18.0.10",
         "@types/vscode": "^1.68.0",
         "@types/ws": "^8.5.4",
+        "@vscode/debugadapter": "^1.58.0",
         "antd": "^5.1.2",
         "css-loader": "^6.7.3",
         "dayjs": "^1.11.7",

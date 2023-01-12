@@ -1,5 +1,5 @@
 {
-    "files": [
+    "include": [
         "./build.ts",
         
         "./index.ts",
@@ -7,6 +7,8 @@
         "./dataview/index.tsx",
         "./dataview/window.tsx",
         "./dataview/webview.tsx",
+        
+        "./debugAdapter/index.ts",
     ],
     
     "compilerOptions": {
