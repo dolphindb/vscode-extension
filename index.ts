@@ -88,6 +88,8 @@ import { constants, keywords } from 'dolphindb/language.js'
 import { language, t } from './i18n/index.js'
 import { get_text } from './utils.js'
 
+import { activateDebug } from './debugAdapter/activate.js'
+
 if (util.inspect.styles.number !== 'green')
     set_inspect_options()
 
@@ -803,6 +805,8 @@ export async function activate (ctx: ExtensionContext) {
     dataview.register()
     
     console.log(t('DolphinDB 插件初始化成功'))
+    
+    activateDebug(ctx, explorer)
 }
 
 
@@ -1025,7 +1029,7 @@ function get_signature_and_params (func_name: string): {
 
 
 
-class DdbExplorer implements TreeDataProvider<TreeItem> {
+export class DdbExplorer implements TreeDataProvider<TreeItem> {
     view: TreeView<TreeItem>
     
     refresher: EventEmitter<TreeItem | undefined | void> = new EventEmitter<TreeItem | undefined | void>()

@@ -518,6 +518,21 @@ export async function build_package_json (production: boolean) {
                                     description: 'Absolute path to a text file.',
                                     default: '${file}',
                                 },
+                                url: {
+                                    type: 'string',
+                                    description: 'url of the DolphinDB server',
+                                    // default: 'localhost:8848',
+                                },
+                                username: {
+                                    type: 'string',
+                                    description: 'username to login the DolphinDB server',
+                                    // default: 'admin',
+                                },
+                                password: {
+                                    type: 'string',
+                                    description: 'password to login the DolphinDB server',
+                                    // default: '123456',
+                                },
                                 // TODO: 添加更多配置项例如stopOnEntry
                             }
                         }
