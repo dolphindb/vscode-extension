@@ -7,8 +7,6 @@
         "./dataview/index.tsx",
         "./dataview/window.tsx",
         "./dataview/webview.tsx",
-        
-        "./debugAdapter/index.ts",
     ],
     
     "compilerOptions": {

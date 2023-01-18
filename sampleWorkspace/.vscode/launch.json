@@ -6,13 +6,13 @@
   "configurations": [
     {
       "name": "Debug for current file",
-      "type": "mock",
+      "type": "dolphindb",
       "request": "launch",
       "program": "${file}"
     },
     {
-      "name": "Debug DA with server",
-      "type": "mock",
+      "name": "Debug with Server",
+      "type": "dolphindb",
       "request": "launch",
       "program": "${file}",
       "debugServer": 4711

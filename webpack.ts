@@ -504,8 +504,8 @@ export async function build_package_json (production: boolean) {
             breakpoints: [{ language: 'dolphindb' }],
             debuggers: [
                 {
-                    type: 'mock',
-                    label: 'dos mock debug',
+                    type: 'dolphindb',
+                    label: 'dos debug',
                     languages: ['dolphindb'],
                     program: './debugAdapter.cjs',
                     runtime: 'node',
@@ -525,13 +525,13 @@ export async function build_package_json (production: boolean) {
                     initialConfigurations: [
                         {
                             name: 'Debug for current file',
-                            type: 'mock',
+                            type: 'dolphindb',
                             request: "launch",
                             program: '${file}',
                         },
                         {
-                            name: 'Debug DA with server',
-                            type: 'mock',
+                            name: 'Debug with Server',
+                            type: 'dolphindb',
                             request: "launch",
                             program: '${file}',
                             debugServer: 4711,
