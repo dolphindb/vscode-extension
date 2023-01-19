@@ -1,4 +1,4 @@
-import type { FileAccessor } from '../index.js';
+import { normalizePathAndCasing, loadSource } from '../utils.js';
 import { EventEmitter } from 'events';
 
 export interface IRuntimeBreakpoint {
@@ -34,6 +34,8 @@ export class MockRuntime extends EventEmitter {
   
   // the contents (= lines) of the one and only file
 	private sourceLines: string[] = [];
+	private sourceLoaded: Promise<void>;
+	private resolveSourceLoaded: (value: void) => void;
 
   // This is the next line that will be 'executed'
 	private _currentLine = 0;
@@ -47,8 +49,9 @@ export class MockRuntime extends EventEmitter {
   // Array of breakpoints
 	private breakPoints = new Array<IRuntimeBreakpoint>();
   
-  constructor(private fileAccessor: FileAccessor) {
+  constructor() {
 		super();
+		this.sourceLoaded = new Promise(resolve => this.resolveSourceLoaded = resolve);
 		console.log('MockRuntime created');
 	}
   
@@ -56,7 +59,9 @@ export class MockRuntime extends EventEmitter {
 	 * Start executing the given program.
 	 */
 	public async start(program: string): Promise<void> {
-		await this.loadSource(this.normalizePathAndCasing(program));
+		this._sourceFile = normalizePathAndCasing(program);
+		this.sourceLines = (await loadSource(program)).split(/\r?\n/);
+		this.resolveSourceLoaded();
 	}
 	
 	/**
@@ -130,7 +135,8 @@ export class MockRuntime extends EventEmitter {
 		return this.sourceLines[line === undefined ? this.currentLine : line].trim();
 	}
 	
-	private verifyBreakpoints() {
+	private async verifyBreakpoints() {
+		await this.sourceLoaded;
 		this.breakPoints.forEach(bp => {
 			if (!bp.verified && bp.line < this.sourceLines.length) {
 				const srcLine = this.getLine(bp.line);
@@ -145,24 +151,5 @@ export class MockRuntime extends EventEmitter {
 				}
 			}
 		});
-	}
-  
-  private async loadSource(file: string): Promise<void> {
-		if (this._sourceFile !== file) {
-			this._sourceFile = this.normalizePathAndCasing(file);
-			this.initializeContents(await this.fileAccessor.readFile(file));
-		}
-	}
-  
-  private initializeContents(memory: Uint8Array) {
-		this.sourceLines = new TextDecoder().decode(memory).split(/\r?\n/);
-	}
-  
-  private normalizePathAndCasing(path: string) {
-		if (this.fileAccessor.isWindows) {
-			return path.replace(/\//g, '\\').toLowerCase();
-		} else {
-			return path.replace(/\\/g, '/');
-		}
 	}
 }

@@ -4,12 +4,10 @@
  */
 import {
 	Breakpoint,
-  BreakpointEvent,
   DebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
-import { MockRuntime, type IRuntimeBreakpoint } from './mockRuntime.js';
-import { FileAccessor } from '../index.js';
+import { MockRuntime } from './mockRuntime.js';
 import { basename } from 'path';
 
 /**
@@ -41,7 +39,7 @@ export class MockDebugSession extends DebugSession {
 	private _configurationDone: Promise<any>;
 	private _resolveConfigurationDone: (value: any) => void;
 	
-	constructor(fileAccessor: FileAccessor) {
+	constructor() {
 		super();
 		
 		// this debugger uses zero-based lines and columns
@@ -50,7 +48,7 @@ export class MockDebugSession extends DebugSession {
 		
 		this._configurationDone = new Promise(resolve => this._resolveConfigurationDone = resolve);
 		
-		this._runtime = new MockRuntime(fileAccessor);
+		this._runtime = new MockRuntime();
 		
 		this._runtime.on('stopOnBreakpoint', () => {
 			this.sendEvent(new StoppedEvent('breakpoint', MockDebugSession.threadID));
@@ -165,7 +163,7 @@ export class MockDebugSession extends DebugSession {
 		const clientLines = args.lines || [];
 
 		// set and verify breakpoint locations
-		const actualBreakpoints = this._runtime.setBreakPoints(
+		const actualBreakpoints = await this._runtime.setBreakPoints(
 			clientLines.map(l => this.convertClientLineToDebugger(l))	
 		).map((bp) => {
 			const { verified, id, line} = bp;
