@@ -5,7 +5,7 @@
 import {
 	Breakpoint,
   BreakpointEvent,
-	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread
+	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, OutputEvent
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
@@ -174,7 +174,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	protected override async launchRequest(response: DebugProtocol.LaunchResponse, args: DdbLaunchRequestArguments) {
 		// 登录
-		this._remote = new Remote(args);
+		this._remote = new Remote(args.url, args.username, args.password);
 		this._remote.call('login', {
 			username: args.username,
 			password: args.password
@@ -205,6 +205,10 @@ export class DdbDebugSession extends LoggingDebugSession {
 		});
 		
 		// TODO: 向_remote注册server推送事件的回调
+		this._remote.on('pause', this.handlePause.bind(this));
+		this._remote.on('newBreakpointLocations', this.handleNewBreakpointLocations.bind(this));
+		this._remote.on('terminate', this.handleTerminate.bind(this));
+		this._remote.on('output', this.handleOutput.bind(this));
 		
 		await Promise.all([
 			this._prerequisites.wait('configurationDone'),
@@ -303,5 +307,29 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	private createSource(filePath: string): Source {
 		return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'ddb-da-data');
+	}
+	
+	// 以下为server主动推送事件的回调 TODO: 类型声明
+	private handlePause({ reason }: { reason: string }): void {
+		this.sendEvent(new StoppedEvent(reason, DdbDebugSession.threadID));
+	}
+	
+	private handleNewBreakpointLocations({ locations }: { locations: any[] }): void {
+		this._breakpointLocations = locations.map((bp: any) => {
+			return {
+				line: this.convertDebuggerLineToClient(bp.line),
+				column: this.convertDebuggerColumnToClient(bp.column),
+				endLine: this.convertDebuggerLineToClient(bp.endLine),
+				endColumn: this.convertDebuggerColumnToClient(bp.endColumn),
+			}
+		});
+	}
+	
+	private handleTerminate(): void {
+		this.sendEvent(new TerminatedEvent());
+	}
+	
+	private handleOutput({ text }: { text: string }): void {
+		this.sendEvent(new OutputEvent(text));
 	}
 }

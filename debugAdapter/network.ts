@@ -65,23 +65,21 @@ export type MessageHandler = (
   被调方在创建 remote 对象时传入 funcs 注册处理函数，并使用 remote.handle 方法处理 websocket message  
   未连接时自动连接，断开后自动重连 */
 export class Remote {
-  url: string;
-
-  websocket?: WebSocket;
+  private websocket?: WebSocket;
 
   /** server侧主动推送事件触发的函数 */
-  events: Record<string, MessageHandler>;
+  private events: Record<string, MessageHandler>;
 
   /** map<id, message handler>: 通过 rpc message.id 找到对应的 handler, unary rpc 接收方不需要设置 handlers, 发送方需要 */
-  handlers = new Map<number, MessageHandler>();
+  private handlers = new Map<number, MessageHandler>();
   
-  connecting: Promise<void> | undefined;
+  private connecting: Promise<void> | undefined;
 
   get connected() {
     return this.websocket?.readyState === WebSocket.OPEN;
   }
   
-  static pack(message: SendMessage) {
+  public static pack(message: SendMessage) {
     const arg = json2DdbDict(message).pack();
     
     let dv = new DataView(new ArrayBuffer(4));
@@ -90,7 +88,7 @@ export class Remote {
     return concat([dv, arg]);
   }
   
-  static parse(array_buffer: ArrayBuffer) {
+  public static parse(array_buffer: ArrayBuffer) {
     const buf = new Uint8Array(array_buffer as ArrayBuffer);
     const dv = new DataView(array_buffer);
 
@@ -114,18 +112,9 @@ export class Remote {
    * @url server地址
    * @events server events 
    */
-  constructor({
-    url,
-    events = {},
-  }: {
-    url: string;
-    events?: Remote["events"];
-  }) {
-    this.url = url;
-    this.events = events;
-  }
+  constructor(private url: string, private username: string, private password: string) {}
 
-  async connect() {
+  private async connect() {
     if (this.connected) {
       return;
     }
@@ -149,14 +138,15 @@ export class Remote {
     }
   }
 
-  disconnect() {
+  public disconnect() {
     this.websocket?.close();
   }
 
-  async send(message: SendMessage) {
+  private async send(message: SendMessage) {
     try {
       if (!this.websocket) {
         await this.connect();
+        await this.call('login', { username: this.username, password: this.password });
       }
       if (this.websocket!.readyState !== WebSocket.OPEN) {
         throw new Error("remote.send(): websocket client 已断开");
@@ -168,7 +158,7 @@ export class Remote {
     }
   }
 
-  async handle(event: { data: ArrayBuffer }, websocket: WebSocket) {
+  private async handle(event: { data: ArrayBuffer }, websocket: WebSocket) {
     const message = Remote.parse(event.data) as ReceiveMessage;
 
     const { id, func, event: serverEvent } = message;
@@ -205,13 +195,18 @@ export class Remote {
       console.log(error);
     }
   }
+  
+  /** 注册 server 事件 */
+  public on(event: string, handler: MessageHandler) {
+    this.events[event] = handler;
+  }
 
   /**
    * 调用 remote 中的 func
    * @func 要调用的函数名
    * @args 文档中的data部分(number | string | boolean | object | array)
    */
-  async call(func: string, args?: any) {
+  public async call(func: string, args?: any) {
     return new Promise<any>(async (resolve, reject) => {
       const id = genid();
 
