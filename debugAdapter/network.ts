@@ -14,8 +14,11 @@ export interface Message {
    */
   id?: number;
   
-  /* 由client发起时标识调用的函数名称，由server主动推送时标识事件名称 */
+  /* 由client发起时标识调用的函数名称 */
   func?: string;
+  
+  /* 由server主动推送时标识事件名称 */
+  event?: string;
 
   /** 通过这个 flag 主动表明这是发往对方的最后一个 message, 对方可以销毁 handler 了  
       并非强制，可以不说明，由双方的函数自己约定
@@ -27,7 +30,7 @@ export interface Message {
   error?: Error;
 
   /* 外层包装成DdbDict，data为数据内容 */
-  data?: DdbObj | any; // TODO: 收到的消息引入类型定义
+  data?: any; // TODO: 收到的消息引入类型定义
 
   /** bins: data 中哪些下标对应的原始值是 Uint8Array 类型的，如: [0, 3] */
   bins?: number[];
@@ -37,20 +40,14 @@ export interface SendMessage extends Message {
   id: number;
   
   func: string;
-  
-  data: DdbObj;
 }
 
 export interface ReturnMessage extends Message {
   id: number;
-  
-  data: any;
 }
 
 export interface EventMessage extends Message {
-  func: string;
-  
-  data: any;
+  event: string;
 }
 
 export type ReceiveMessage = ReturnMessage | EventMessage;
@@ -73,7 +70,7 @@ export class Remote {
   websocket?: WebSocket;
 
   /** server侧主动推送事件触发的函数 */
-  funcs: Record<string, MessageHandler>;
+  events: Record<string, MessageHandler>;
 
   /** map<id, message handler>: 通过 rpc message.id 找到对应的 handler, unary rpc 接收方不需要设置 handlers, 发送方需要 */
   handlers = new Map<number, MessageHandler>();
@@ -115,17 +112,17 @@ export class Remote {
   /**
    * 连接并注册server推送事件的回调
    * @url server地址
-   * @funcs server events 
+   * @events server events 
    */
   constructor({
     url,
-    funcs = {},
+    events = {},
   }: {
     url: string;
-    funcs?: Remote["funcs"];
+    events?: Remote["events"];
   }) {
     this.url = url;
-    this.funcs = funcs;
+    this.events = events;
   }
 
   async connect() {
@@ -174,12 +171,14 @@ export class Remote {
   async handle(event: { data: ArrayBuffer }, websocket: WebSocket) {
     const message = Remote.parse(event.data) as ReceiveMessage;
 
-    const { id, func } = message;
+    const { id, func, event: serverEvent } = message;
 
     let handler: MessageHandler | undefined;
 
     if (func) {
-      handler = this.funcs[func];
+      handler = this.events[func];
+    } else if (serverEvent) {
+      handler = this.events[serverEvent];
     } else {
       handler = this.handlers.get(id!);
     }
@@ -187,7 +186,7 @@ export class Remote {
     try {
       if (handler) {
         // TODO: 存在返回给服务端的情况
-        await handler(message, websocket);
+        await handler(message.data);
         // if (data) {
         //   await this.send({ id, data });
         // }
@@ -212,8 +211,8 @@ export class Remote {
    * @func 要调用的函数名
    * @args 文档中的data部分(number | string | boolean | object | array)
    */
-  async call(func: string, args: any) {
-    return new Promise<ReturnMessage>(async (resolve, reject) => {
+  async call(func: string, args?: any) {
+    return new Promise<any>(async (resolve, reject) => {
       const id = genid();
 
       this.handlers.set(id, (message) => {
