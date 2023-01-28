@@ -88,7 +88,7 @@ import { constants, keywords } from 'dolphindb/language.js'
 import { language, t } from './i18n/index.js'
 import { get_text } from './utils.js'
 
-import { activateDebug } from './debugAdapter/activate.js'
+import { activateDebug } from './debugAdapter/configProvider.js'
 
 if (util.inspect.styles.number !== 'green')
     set_inspect_options()
