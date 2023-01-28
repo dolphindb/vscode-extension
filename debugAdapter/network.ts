@@ -30,7 +30,7 @@ export interface Message {
   error?: Error;
 
   /* 外层包装成DdbDict，data为数据内容 */
-  data?: any; // TODO: 收到的消息引入类型定义
+  data?: any; // TODO: 收到的消息引入类型定义？
 
   /** bins: data 中哪些下标对应的原始值是 Uint8Array 类型的，如: [0, 3] */
   bins?: number[];
@@ -161,13 +161,11 @@ export class Remote {
   private async handle(event: { data: ArrayBuffer }, websocket: WebSocket) {
     const message = Remote.parse(event.data) as ReceiveMessage;
 
-    const { id, func, event: serverEvent } = message;
+    const { id, event: serverEvent } = message;
 
     let handler: MessageHandler | undefined;
 
-    if (func) {
-      handler = this.events[func];
-    } else if (serverEvent) {
+    if (serverEvent) {
       handler = this.events[serverEvent];
     } else {
       handler = this.handlers.get(id!);
@@ -175,7 +173,7 @@ export class Remote {
 
     try {
       if (handler) {
-        // TODO: 存在返回给服务端的情况
+        // TODO: 是否存在需要返回给服务端的情况
         await handler(message.data);
         // if (data) {
         //   await this.send({ id, data });
@@ -185,7 +183,7 @@ export class Remote {
       } else {
         throw new Error(
           `"找不到 rpc handler":${
-            func ? `func: ${func}` : `id: ${id}`
+            serverEvent ? `event: ${serverEvent}` : `id: ${id}`
           }`
         );
       }

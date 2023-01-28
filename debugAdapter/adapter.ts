@@ -3,14 +3,13 @@
  * See more details: https://github.com/Microsoft/vscode-mock-debug
  */
 import {
-	Breakpoint,
-  BreakpointEvent,
-	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, OutputEvent
+	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, OutputEvent, Breakpoint
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
 import { basename } from 'path';
 import { normalizePathAndCasing, loadSource } from './utils.js';
+import { BreakpointLocation, LoginResponseData, BreakPoint, PauseEventData, NewBpLocationsEventData } from './requestTypes.js';
 
 interface DdbLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	/** An absolute path to the "program" to debug. */
@@ -178,7 +177,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._remote.call('login', {
 			username: args.username,
 			password: args.password
-		}).then(res => {
+		}).then((res: LoginResponseData) => {
 			// TODO: 登录失败抛出error
 			this._prerequisites.resolve('login');
 		});
@@ -192,19 +191,24 @@ export class DdbDebugSession extends LoggingDebugSession {
 			await this._prerequisites.wait('login');
 			
 			const res = await this._remote.call('resolveScript', this._source);
-			// TODO: BreakpointLocations类型声明
-			this._breakpointLocations = res.map((bp: any) => {
-				return {
+			this._breakpointLocations = res.map((bp: BreakpointLocation) => {
+				let resBp: BreakpointLocation = {
 					line: this.convertDebuggerLineToClient(bp.line),
-					column: this.convertDebuggerColumnToClient(bp.column),
-					endLine: this.convertDebuggerLineToClient(bp.endLine),
-					endColumn: this.convertDebuggerColumnToClient(bp.endColumn),
 				}
+				if (bp.column !== undefined) {
+					resBp.column = this.convertDebuggerColumnToClient(bp.column);
+				}
+				if (bp.endLine !== undefined) {
+					resBp.endLine = this.convertDebuggerLineToClient(bp.endLine);
+				}
+				if (bp.endColumn !== undefined) {
+					resBp.endColumn = this.convertDebuggerColumnToClient(bp.endColumn);
+				}
+				return resBp;
 			});
 			this._prerequisites.resolve('scriptResolved');
 		});
 		
-		// TODO: 向_remote注册server推送事件的回调
 		this._remote.on('pause', this.handlePause.bind(this));
 		this._remote.on('newBreakpointLocations', this.handleNewBreakpointLocations.bind(this));
 		this._remote.on('terminate', this.handleTerminate.bind(this));
@@ -229,12 +233,11 @@ export class DdbDebugSession extends LoggingDebugSession {
 		await this._prerequisites.wait('scriptResolved');
 		const res = await this._remote.call('setBreakPoints', requestData);
 		
-		// TODO: Breakpoint类型声明
-		const actualBreakpoints = res.map((bp: any) => {
-			const { verified, id, line } = bp;
-			const bbp = new Breakpoint(verified, this.convertDebuggerLineToClient(line)) as DebugProtocol.Breakpoint;
-			bbp.id = id;
-			return bbp;
+		const actualBreakpoints = res.map((bp: BreakPoint) => {
+			const { verified, line, id } = bp;
+			const resBp = new Breakpoint(verified, this.convertDebuggerLineToClient(line!)) as DebugProtocol.Breakpoint;
+			resBp.id = id;
+			return resBp;
 		});
 		
 		response.body = {
@@ -246,7 +249,11 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	protected override async breakpointLocationsRequest(response: DebugProtocol.BreakpointLocationsResponse, args: DebugProtocol.BreakpointLocationsArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
 		await this._prerequisites.wait('scriptResolved');
-		// TODO：支持endline, column等参数（但是vsc什么时候会这样请求？）
+		let resBpLocations = [...this._breakpointLocations];
+		args.endLine = args.endLine || args.line;
+		resBpLocations = resBpLocations.filter(bp => bp.line >= args.line && bp.line <= args.endLine!);
+		// TODO: 处理column(vsc会在什么情况下询问column?)
+		
 		response.body = {
 			breakpoints: this._breakpointLocations,
 		};
@@ -267,10 +274,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 		});
 		
 		response.body = {
-			// TODO: stackFrame类型声明
-			stackFrames: res.stackFrames.map((frame: any) => {
-				const { id, name, source, line, column } = frame;
-				return new StackFrame(id, name, this.createSource(source), this.convertDebuggerLineToClient(line), this.convertDebuggerColumnToClient(column));
+			stackFrames: res.stackFrames.map((frame: StackFrame) => {
+				const { id, name, line, column } = frame;
+				return new StackFrame(id, name, this.createSource(this._sourcePath), this.convertDebuggerLineToClient(line), this.convertDebuggerColumnToClient(column));
 			}),
 			totalFrames: res.totalFrames,
 		};
@@ -309,19 +315,26 @@ export class DdbDebugSession extends LoggingDebugSession {
 		return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'ddb-da-data');
 	}
 	
-	// 以下为server主动推送事件的回调 TODO: 类型声明
-	private handlePause({ reason }: { reason: string }): void {
+	// 以下为server主动推送事件的回调
+	private handlePause({ reason }: PauseEventData): void {
 		this.sendEvent(new StoppedEvent(reason, DdbDebugSession.threadID));
 	}
 	
-	private handleNewBreakpointLocations({ locations }: { locations: any[] }): void {
-		this._breakpointLocations = locations.map((bp: any) => {
-			return {
+	private handleNewBreakpointLocations({ locations }: NewBpLocationsEventData): void {
+		this._breakpointLocations = locations.map((bp: BreakpointLocation) => {
+			let resBp: BreakpointLocation = {
 				line: this.convertDebuggerLineToClient(bp.line),
-				column: this.convertDebuggerColumnToClient(bp.column),
-				endLine: this.convertDebuggerLineToClient(bp.endLine),
-				endColumn: this.convertDebuggerColumnToClient(bp.endColumn),
 			}
+			if (bp.column !== undefined) {
+				resBp.column = this.convertDebuggerColumnToClient(bp.column);
+			}
+			if (bp.endLine !== undefined) {
+				resBp.endLine = this.convertDebuggerLineToClient(bp.endLine);
+			}
+			if (bp.endColumn !== undefined) {
+				resBp.endColumn = this.convertDebuggerColumnToClient(bp.endColumn);
+			}
+			return resBp;
 		});
 	}
 	
