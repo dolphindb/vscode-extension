@@ -1,7 +1,7 @@
 import { DdbObj } from "dolphindb";
-import { connect_websocket } from "xshell/net.browser";
-import { concat, genid } from "xshell/utils.browser.js";
-import { json2DdbDict } from "./utils";
+import { connect_websocket } from "xshell";
+import { concat, genid } from "xshell";
+import { json2DdbDict } from "./utils.js";
 
 const decoder = new TextDecoder();
 
@@ -65,7 +65,7 @@ export type MessageHandler = (
   被调方在创建 remote 对象时传入 funcs 注册处理函数，并使用 remote.handle 方法处理 websocket message  
   未连接时自动连接，断开后自动重连 */
 export class Remote {
-  private websocket?: WebSocket;
+  private websocket?: Awaited<ReturnType<typeof connect_websocket>>;
 
   /** server侧主动推送事件触发的函数 */
   private events: Record<string, MessageHandler>;

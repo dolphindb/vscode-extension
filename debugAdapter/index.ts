@@ -8,6 +8,7 @@
 */
 import { MockDebugSession } from './mock/mockDebug.js';
 import * as Net from 'net';
+import { Remote } from './network.js';
 
 function runDebugAdapter(debugSession: typeof MockDebugSession) {
 	let port = 0;
@@ -39,5 +40,11 @@ function runDebugAdapter(debugSession: typeof MockDebugSession) {
 		session.start(process.stdin, process.stdout);
 	}
 }
+
+console.log(Remote.pack({
+	data: { username: 'admin', password: 'admin' },
+	id: 0,
+	func: ''
+}));
 
 runDebugAdapter(MockDebugSession);
