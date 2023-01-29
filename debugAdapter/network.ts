@@ -84,8 +84,8 @@ export class Remote {
     
     let dv = new DataView(new ArrayBuffer(4));
     dv.setUint32(0, arg.length, true);
-        
-    return concat([dv, arg]);
+    
+    return concat([dv, encoder.encode('\n'), arg]);
   }
   
   public static parse(array_buffer: ArrayBuffer) {
