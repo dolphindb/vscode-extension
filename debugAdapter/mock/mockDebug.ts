@@ -163,10 +163,10 @@ export class MockDebugSession extends DebugSession {
 		const clientLines = args.lines || [];
 
 		// set and verify breakpoint locations
-		const actualBreakpoints = await this._runtime.setBreakPoints(
-			clientLines.map(l => this.convertClientLineToDebugger(l))	
-		).map((bp) => {
-			const { verified, id, line} = bp;
+		const actualBreakpoints = (await this._runtime.setBreakPoints(
+			clientLines.map(l => this.convertClientLineToDebugger(l))
+		)).map((bp) => {
+			const { verified, id, line } = bp;
 			const bbp = new Breakpoint(verified, this.convertDebuggerLineToClient(line)) as DebugProtocol.Breakpoint;
 			bbp.id = id;
 			return bbp;

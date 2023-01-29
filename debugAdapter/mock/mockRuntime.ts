@@ -120,14 +120,14 @@ export class MockRuntime extends EventEmitter {
 		}, 0);
 	}
 	
-  public setBreakPoints(lines: number[]) {
+  public async setBreakPoints(lines: number[]) {
 		const bps = lines.map<IRuntimeBreakpoint>((line) => ({
 			verified: false,
 			id: this.breakpointId++,
 			line,
 		}));
 		this.breakPoints = bps;
-		this.verifyBreakpoints();
+		await this.verifyBreakpoints();
 		return bps;
 	}
 	
