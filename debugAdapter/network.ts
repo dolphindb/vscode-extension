@@ -26,14 +26,14 @@ export interface Message {
   */
   done?: boolean;
 
-  /** 通知对方这里产生的错误，本质上类似 data 也是一种数据，并不代表 rpc 的结束，后续可能继续有 rpc message 交换 */
-  error?: Error;
-
   /* 外层包装成DdbDict，data为数据内容 */
   data?: any; // TODO: 收到的消息引入类型定义？
 
   /** bins: data 中哪些下标对应的原始值是 Uint8Array 类型的，如: [0, 3] */
   bins?: number[];
+  
+  /** 状态信息 */
+  status?: string;
 }
 
 export interface SendMessage extends Message {
@@ -178,8 +178,9 @@ export class Remote {
         // if (data) {
         //   await this.send({ id, data });
         // }
-      } else if (message.error) {
-        throw message.error;
+      } else if (message.status !== 'OK') {
+        throw message.status;
+        // TODO: 错误处理
       } else {
         throw new Error(
           `"找不到 rpc handler":${
@@ -209,8 +210,8 @@ export class Remote {
       const id = genid();
 
       this.handlers.set(id, (message) => {
-        const { error, data } = message;
-        error ? reject(error) : resolve(data);
+        const { status, data } = message;
+        status !== 'OK' ? reject(status) : resolve(data);
         this.handlers.delete(id);
       });
 
