@@ -393,7 +393,7 @@ function Vector ({
         
         <div className='bottom-bar'>
             <div className='info'>
-                <span className='desc'>{info.rows} {t('个元素')} { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+                <span className='desc'>{info.rows} {t('个元素')} { objref ? `(${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
                 <span className='type'>{ info.form === DdbForm.set ? t('的集合') : t('的向量') }</span>
                 { info.name && <span className='name'>{info.name}</span> }
             </div>
@@ -612,7 +612,7 @@ function Table ({
         
         <div className='bottom-bar'>
             <div className='info'>
-                <span className='desc'>{ info.rows ? `${info.rows} ${t('行')} ` : ' ' }{info.cols} {t('列')}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+                <span className='desc'>{ info.rows ? `${info.rows} ${t('行')} ` : ' ' }{info.cols} {t('列')} { objref ? `(${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
                 <span className='type'>{t('的表格')}</span>
                 { info.name && <span className='name'>{info.name}</span> }
             </div>
@@ -1233,7 +1233,7 @@ function Matrix ({
         
         <div className='bottom-bar'>
             <div className='info'>
-                <span className='desc'>{info.rows} {t('行')} {info.cols} {t('列')}  { objref ? `(${Number(objref.bytes).to_fsize_str()})` : '' }</span>
+                <span className='desc'>{info.rows} {t('行')} {info.cols} {t('列')} { objref ? `(${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
                 <span className='type'>{t('的矩阵')}</span>
                 { info.name && <span className='name'>{info.name}</span> }
             </div>
