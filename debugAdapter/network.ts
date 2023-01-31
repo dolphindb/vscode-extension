@@ -65,7 +65,7 @@ export type MessageHandler = (
 export class Remote {
   private static id = 0;
   
-  get id() {
+  static get nextId() {
     return Remote.id++;
   }
   
@@ -203,11 +203,13 @@ export class Remote {
       await this.call('login', { username: this.username, password: this.password });
     }
     return new Promise<any>(async (resolve, reject) => {
-      const id = Remote.id;
+      const id = Remote.nextId;
 
       this.handlers.set(id, (message) => {
-        const { status, data } = message;
-        status !== 'OK' ? reject(status) : resolve(data);
+        // TODO: 错误处理
+        // const { status, data } = message;
+        // status !== 'OK' ? reject(status) : resolve(data);
+        resolve(message);
         this.handlers.delete(id);
       });
 
