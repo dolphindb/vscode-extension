@@ -3,11 +3,13 @@ import {
   DdbDict,
   DdbString,
   DdbVectorString,
+  DdbVectorInt,
   DdbVectorAny,
   DdbInt,
   DdbBool,
   DdbForm,
   DdbType,
+  DdbVoid,
 } from 'dolphindb';
 import { promises as fs } from 'fs';
 
@@ -25,8 +27,33 @@ export function basicType2DdbObj(value: any): DdbObj {
   } else if (typeof value === 'boolean') {
     return new DdbBool(value);
   } else {
-    return new DdbString(''); // 空值
+    return new DdbVoid() as unknown as DdbObj;
   }
+}
+
+/**
+ * 数组转换为DdbVector
+ * @param arr 待转换数组
+ * @returns DdbVectorAny
+ */
+export function array2DdbVector(arr: Array<any>): DdbVectorAny {
+  const res: DdbObj[] = [];
+  // TODO： 类型判断，全是数字传VectorInt，之后可能会有这个功能
+  // if (arr.every(item => typeof item === 'string')) {
+  //   return new DdbVectorString(arr);
+  // } else if (arr.every(item => typeof item === 'number')) {
+  //   return new DdbVectorInt(arr);
+  // }
+  arr.forEach((item) => {
+    if (item instanceof Array) {
+      res.push(array2DdbVector(item));
+    } else if (typeof item === 'object') {
+      res.push(json2DdbDict(item));
+    } else {
+      res.push(basicType2DdbObj(item));
+    }
+  });
+  return new DdbVectorAny(res);
 }
 
 /**
@@ -39,16 +66,8 @@ export function json2DdbDict(data: Object): DdbDict {
 
   Object.entries(data).forEach(([key, value]) => {
     keys.push(key);
-    if (typeof value === 'object' && value instanceof Array) {
-      const arr: DdbObj[] = [];
-      value.forEach((item) => {
-        if (typeof item === 'object') {
-          arr.push(json2DdbDict(item));
-        } else {
-          arr.push(basicType2DdbObj(item));
-        }
-      });
-      values.push(new DdbVectorAny(arr));
+    if (value instanceof Array) {
+      values.push(array2DdbVector(value));
     } else if (typeof value === 'object') {
       values.push(json2DdbDict(value));
     } else {
