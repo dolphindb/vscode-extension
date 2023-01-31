@@ -6,10 +6,10 @@
 
 <p align='center'>
     <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode' target='_blank'>
-        <img alt='vscode extension version' src='https://vsmarketplacebadge.apphb.com/version/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
+        <img alt='vscode extension version' src='https://vsmarketplacebadges.dev/version/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
     </a>
     <a href='https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode' target='_blank'>
-        <img alt='vscode extension installs' src='https://vsmarketplacebadge.apphb.com/installs/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
+        <img alt='vscode extension installs' src='https://vsmarketplacebadges.dev/installs/dolphindb.dolphindb-vscode.svg?style=flat-square&color=39aaf2' />
     </a>
     <a href='https://github.com/dolphindb/api-javascript' target='_blank'>
         <img alt='vscode extension installs' src='https://img.shields.io/npm/v/dolphindb?color=brightgreen&label=api-javascript&style=flat-square' />
