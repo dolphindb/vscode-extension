@@ -1,6 +1,4 @@
-import { DdbObj } from "dolphindb";
-import { connect_websocket } from "xshell";
-import { concat, genid } from "xshell";
+import { concat, genid, WebSocket, connect_websocket } from "xshell";
 import { json2DdbDict } from "./utils.js";
 
 const decoder = new TextDecoder();
@@ -68,7 +66,7 @@ export class Remote {
   private websocket?: Awaited<ReturnType<typeof connect_websocket>>;
 
   /** server侧主动推送事件触发的函数 */
-  private events: Record<string, MessageHandler>;
+  private events = new Map<string, MessageHandler>();
 
   /** map<id, message handler>: 通过 rpc message.id 找到对应的 handler, unary rpc 接收方不需要设置 handlers, 发送方需要 */
   private handlers = new Map<number, MessageHandler>();
@@ -82,10 +80,7 @@ export class Remote {
   public static pack(message: SendMessage) {
     const arg = json2DdbDict(message).pack();
     
-    let dv = new DataView(new ArrayBuffer(4));
-    dv.setUint32(0, arg.length, true);
-    
-    return concat([dv, encoder.encode('\n'), arg]);
+    return concat([arg]);
   }
   
   public static parse(array_buffer: ArrayBuffer) {
@@ -144,10 +139,6 @@ export class Remote {
 
   private async send(message: SendMessage) {
     try {
-      if (!this.websocket) {
-        await this.connect();
-        await this.call('login', { username: this.username, password: this.password });
-      }
       if (this.websocket!.readyState !== WebSocket.OPEN) {
         throw new Error("remote.send(): websocket client 已断开");
       }
@@ -206,6 +197,12 @@ export class Remote {
    * @args 文档中的data部分(number | string | boolean | object | array)
    */
   public async call(func: string, args?: any) {
+    // 未连接时自动连接
+    if (!this.websocket) {
+      await this.connect();
+      // TODO: 登录失败抛出error
+      await this.call('login', { username: this.username, password: this.password });
+    }
     return new Promise<any>(async (resolve, reject) => {
       const id = genid();
 

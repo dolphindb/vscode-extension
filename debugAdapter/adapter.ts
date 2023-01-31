@@ -172,15 +172,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async launchRequest(response: DebugProtocol.LaunchResponse, args: DdbLaunchRequestArguments) {
-		// 登录
+		// 传入用户名密码，发送消息发现未登录时自动登录
 		this._remote = new Remote(args.url, args.username, args.password);
-		this._remote.call('login', {
-			username: args.username,
-			password: args.password
-		}).then((res: LoginResponseData) => {
-			// TODO: 登录失败抛出error
-			this._prerequisites.resolve('login');
-		});
 		
 		// 加载资源
 		this._sourcePath = normalizePathAndCasing(args.program);
