@@ -214,7 +214,11 @@ export class Remote {
       });
 
       try {
-        await this.send({ id, func, data: args });
+        if (args !== undefined) {
+          await this.send({ id, func, data: args });
+        } else {
+          await this.send({ id, func });
+        }
       } catch (error) {
         reject(error);
       }
