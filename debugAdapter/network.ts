@@ -1,4 +1,4 @@
-import { concat, genid, WebSocket, connect_websocket } from "xshell";
+import { WebSocket, connect_websocket } from "xshell";
 import { json2DdbDict } from "./utils.js";
 
 const decoder = new TextDecoder();
@@ -63,6 +63,12 @@ export type MessageHandler = (
   被调方在创建 remote 对象时传入 funcs 注册处理函数，并使用 remote.handle 方法处理 websocket message  
   未连接时自动连接，断开后自动重连 */
 export class Remote {
+  private static id = 0;
+  
+  get id() {
+    return Remote.id++;
+  }
+  
   private websocket?: Awaited<ReturnType<typeof connect_websocket>>;
 
   /** server侧主动推送事件触发的函数 */
@@ -80,7 +86,7 @@ export class Remote {
   public static pack(message: SendMessage) {
     const arg = json2DdbDict(message).pack();
     
-    return concat([arg]);
+    return arg;
   }
   
   public static parse(array_buffer: ArrayBuffer) {
@@ -197,7 +203,7 @@ export class Remote {
       await this.call('login', { username: this.username, password: this.password });
     }
     return new Promise<any>(async (resolve, reject) => {
-      const id = genid();
+      const id = Remote.id;
 
       this.handlers.set(id, (message) => {
         const { status, data } = message;
