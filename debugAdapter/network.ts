@@ -85,15 +85,8 @@ export class Remote {
   
   public static parse(array_buffer: ArrayBuffer) {
     const buf = new Uint8Array(array_buffer as ArrayBuffer);
-    const dv = new DataView(array_buffer);
 
-    const len_json = dv.getUint32(0, true);
-
-    let offset = 4 + len_json;
-
-    let message = JSON.parse(
-      decoder.decode(buf.subarray(4, offset))
-    );
+    let message = JSON.parse(decoder.decode(buf));
 
     if (message.error) {
       message.error = Object.assign(new Error(), message.error);
