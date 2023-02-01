@@ -206,9 +206,8 @@ export class Remote {
       const id = Remote.nextId;
 
       this.handlers.set(id, (message) => {
-        // TODO: 错误处理
-        // const { status, data } = message;
-        // status !== 'OK' ? reject(status) : resolve(data);
+        const { status, data } = message;
+        status !== 'OK' ? reject(status) : resolve(data);
         resolve(message);
         this.handlers.delete(id);
       });
