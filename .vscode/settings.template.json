@@ -1,7 +1,9 @@
 {
     "typescript.tsdk": "node_modules/typescript/lib",
     "files.trimTrailingWhitespace": false,
+    "editor.trimAutoWhitespace": false,
     "editor.formatOnSave": false,
     "editor.formatOnPaste": false,
-    "editor.trimAutoWhitespace": false
+    "prettier.tabWidth": 4,
+    "editor.tabSize": 4
 }
