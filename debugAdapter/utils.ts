@@ -38,12 +38,12 @@ export function basicType2DdbObj(value: any): DdbObj {
  */
 export function array2DdbVector(arr: Array<any>): DdbVectorAny {
   const res: DdbObj[] = [];
-  // TODO： 类型判断，全是数字传VectorInt，之后可能会有这个功能
-  // if (arr.every(item => typeof item === 'string')) {
-  //   return new DdbVectorString(arr);
-  // } else if (arr.every(item => typeof item === 'number')) {
-  //   return new DdbVectorInt(arr);
-  // }
+  // TODO：类型判断，全是数字传VectorInt，之后可能会有更复杂的类型判断或者取消这个feature
+  if (arr.every(item => typeof item === 'string')) {
+    return new DdbVectorString(arr);
+  } else if (arr.every(item => typeof item === 'number')) {
+    return new DdbVectorInt(arr);
+  }
   arr.forEach((item) => {
     if (item instanceof Array) {
       res.push(array2DdbVector(item));
