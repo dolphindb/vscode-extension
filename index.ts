@@ -321,7 +321,7 @@ let dataview = {
                     view.webview.options = { enableCommandUris: true, enableScripts: true }
                     view.webview.onDidReceiveMessage(dataview.handle, dataview)
                     view.webview.html = (
-                        await fread(`${ dev ? fpd_src : fpd_ext }dataview/webview.html`)
+                        await fread(`${ dev ? fpd_src : fpd_ext }dataview/webview${ dev ? '.dev' : '' }.html`)
                     ).replaceAll('{host}', `localhost:${server.port}`)
                     .replace('{language}', language)
                 }
@@ -1845,13 +1845,10 @@ class DdbServer extends Server {
         let { request } = ctx
         
         if (request.path === '/')
-            request.path = '/index.html'
+            request.path = dev ? '/index.dev.html' : '/index.html'
         
         if (request.path === '/window')
             request.path = '/window.html'
-        
-        if (request.path === '/webview')
-            request.path = '/webview.html'
         
         const { path } = request
         
