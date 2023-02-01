@@ -264,6 +264,15 @@ export async function build_package_json (production: boolean) {
         }
     }
     
+    const single_connection_mode = {
+        type: 'boolean',
+        default: false,
+        description: {
+            zh: '在左侧的连接面板切换到新的 DolphinDB 连接后自动断开原有连接',
+            en: 'Automatically disconnect the original connection after switching to a new DolphinDB connection in the connection panel on the left'
+        }
+    }
+    
     
     const package_json_ = {
         name,
@@ -387,7 +396,12 @@ export async function build_package_json (production: boolean) {
                     'dolphindb.decimals': {
                         ...decimals_property,
                         description: '%configs.decimals.description%'
-                    } as Schema
+                    } as Schema,
+                    
+                    'dolphindb.single_connection_mode': {
+                        ...single_connection_mode,
+                        description: '%configs.single_connection_mode.description%'
+                    } as Schema,
                 }
             },
             
@@ -531,16 +545,15 @@ export async function build_package_json (production: boolean) {
                     
                     'configs.decimals.description': decimals_property.description[language],
                     
+                    'configs.single_connection_mode.description': single_connection_mode[language],
+                    
                     'configs.ddbpanel.name': {
                         zh: '数据视图',
                         en: 'DataView'
                     }[language],
                     
                     ... Object.fromEntries(
-                        ext_commands.map(({ command, title }) => [
-                            `commands.${command}`,
-                            r(title, language)
-                        ])
+                        ext_commands.map(({ command, title }) => [`commands.${command}`, r(title, language)])
                     ),
                 },
             )

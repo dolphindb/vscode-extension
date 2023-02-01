@@ -1032,6 +1032,8 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
     
     onDidChangeTreeData: Event<void | TreeItem> = this.refresher.event
     
+    single_connection_mode: boolean = false
+    
     connections: DdbConnection[]
     
     connection: DdbConnection
@@ -1053,7 +1055,11 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
             for (const connection of this.connections)
                 connection.disconnect()
         
-        this.connections = workspace.getConfiguration('dolphindb')
+        const config = workspace.getConfiguration('dolphindb')
+        
+        this.single_connection_mode = config.get<boolean>('single_connection_mode')
+        
+        this.connections = config
             .get<Partial<DdbConnection>[]>('connections')
             .map(conn => new DdbConnection(conn))
         
@@ -1062,7 +1068,7 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
     }
     
     on_config_change (event: ConfigurationChangeEvent) {
-        if (event.affectsConfiguration('dolphindb.connections')) {
+        if (event.affectsConfiguration('dolphindb.connections') || event.affectsConfiguration('dolphindb.single_connection_mode')) {
             explorer.load_connections()
             explorer.refresher.fire()
         }
@@ -1073,8 +1079,12 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
             if (connection.name === name) {
                 connection.iconPath = icon_checked
                 this.connection = connection
-            } else
+            } else {
                 connection.iconPath = icon_empty
+                if (this.single_connection_mode)
+                    connection.disconnect()
+            }
+        
         
         console.log(t('切换连接:'), this.connection)
         
