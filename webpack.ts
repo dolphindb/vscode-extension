@@ -78,7 +78,7 @@ export async function build_tm_language () {
 
 
 export async function build_package_json (production: boolean) {
-    const { name, type, version, engines, scripts, devDependencies } = package_json
+    const { name, type, version, engines, scripts, dependencies, devDependencies } = package_json
     
     const ext_commands = [
         {
@@ -283,7 +283,11 @@ export async function build_package_json (production: boolean) {
         
         scripts,
         
-        devDependencies,
+        // 防止 vsce 检测 dependencies 对应的 node_modules 在 ./out/ 下是否安装
+        devDependencies: {
+            ... dependencies,
+            ... devDependencies
+        },
         
         publisher: 'dolphindb',
         
