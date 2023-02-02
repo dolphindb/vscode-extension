@@ -217,5 +217,29 @@
     },
     "函数文档 {{fname}} 已加载": {
         "en": "function documentation {{fname}} loaded"
+    },
+    "dolphindb 插件运行在{{mode}}模式下": {
+        "en": "The dolphindb plugin runs in {{mode}} mode"
+    },
+    "开发": {
+        "en": "development"
+    },
+    "生产": {
+        "en": "production"
+    },
+    "先尝试用浏览器访问对应的 server 地址，如: http://192.168.1.111:8848\n": {
+        "en": "First try to access the corresponding server address with a browser, e.g. http://192.168.1.111:8848\n"
+    },
+    "如果可以打开网页且正常使用，再检查:\n": {
+        "en": "If you can open the web page and use it normally, check again:\n"
+    },
+    "- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n": {
+        "en": "- Execute the `version()` function, the returned version of DolphinDB Server should not be lower than `1.30.16` or `2.00.4`\n"
+    },
+    "- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n": {
+        "en": "- If there is a configured system proxy, the proxy software and proxy server need to support WebSocket connections, otherwise please turn off the proxy in the system, or add the DolphinDB Server IP to the exclusion list, and then restart VSCode\n"
+    },
+    "调用栈:\n": {
+        "en": "call stack:\n"
     }
 }

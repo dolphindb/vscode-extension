@@ -77,6 +77,7 @@ import {
     DdbFunctionType,
     format,
     formati,
+    DdbConnectionError,
     type DdbMessage,
     type DdbFunctionDefValue,
     type DdbVectorValue,
@@ -1197,7 +1198,23 @@ class DdbConnection extends TreeItem {
         this.ddb.username = this.username
         this.ddb.password = this.password
         this.ddb.python = this.python
-        await this.ddb.connect()
+        
+        try {
+            await this.ddb.connect()
+        } catch (error) {
+            if (error instanceof DdbConnectionError)
+                window.showErrorMessage(error.message, {
+                    detail: t('先尝试用浏览器访问对应的 server 地址，如: http://192.168.1.111:8848\n') +
+                        t('如果可以打开网页且正常使用，再检查:\n') +
+                        t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
+                        t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n') +
+                        t('调用栈:\n') +
+                        error.stack,
+                    modal: true
+                })
+            throw error
+        }
+        
         
         console.log(`${t('连接成功:')} ${this.name}`)
         this.description = this.url + ' ' + t('已连接')
