@@ -545,7 +545,7 @@ export async function build_package_json (production: boolean) {
                     
                     'configs.decimals.description': decimals_property.description[language],
                     
-                    'configs.single_connection_mode.description': single_connection_mode[language],
+                    'configs.single_connection_mode.description': single_connection_mode.description[language],
                     
                     'configs.ddbpanel.name': {
                         zh: '数据视图',
