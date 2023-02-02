@@ -18,7 +18,7 @@
             // "preLaunchTask": "npm: build"
         },
         {
-			"name": "DebugServer",
+			"name": "DA Server",
 			"type": "node",
 			"request": "launch",
 			"cwd": "${workspaceFolder}",
@@ -30,13 +30,13 @@
 				"${workspaceFolder}/out/**/*.cjs",
                 "!**/node_modules/**"
 			],
-			// "preLaunchTask": "npm: build"
+			"preLaunchTask": "npm: build"
 		},
     ],
     "compounds": [
 		{
-			"name": "Extension + DebugServer",
-			"configurations": [ "ddb.ext", "DebugServer" ]
+			"name": "Ext + DA",
+			"configurations": [ "ddb.ext", "DA Server" ]
 		}
 	]
 }

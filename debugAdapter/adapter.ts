@@ -9,7 +9,7 @@ import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
 import { basename } from 'path';
 import { normalizePathAndCasing, loadSource } from './utils.js';
-import { BreakpointLocation, LoginResponseData, BreakPoint, PauseEventData, NewBpLocationsEventData } from './requestTypes.js';
+import { BreakpointLocation, BreakPoint, PauseEventData, NewBpLocationsEventData } from './requestTypes.js';
 
 interface DdbLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	/** An absolute path to the "program" to debug. */
@@ -83,7 +83,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._prerequisites = new Prerequisites();
 		this._prerequisites.create('configurationDone');
 		this._prerequisites.create('sourceLoaded');
-		this._prerequisites.create('login');
 		this._prerequisites.create('scriptResolved'); 
 		this._prerequisites.create('breakpointsSetted');
 	}
@@ -180,8 +179,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 		loadSource(args.program).then(async (source) => {
 			this._source = source;
 			this._prerequisites.resolve('sourceLoaded');
-			
-			await this._prerequisites.wait('login');
 			
 			const res = await this._remote.call('resolveScript', this._source);
 			this._breakpointLocations = res.map((bp: BreakpointLocation) => {

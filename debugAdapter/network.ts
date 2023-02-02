@@ -76,8 +76,6 @@ export class Remote {
 
   /** map<id, message handler>: 通过 rpc message.id 找到对应的 handler, unary rpc 接收方不需要设置 handlers, 发送方需要 */
   private handlers = new Map<number, MessageHandler>();
-  
-  private connecting: Promise<void> | undefined;
 
   get connected() {
     return this.websocket?.readyState === WebSocket.OPEN;
@@ -113,22 +111,16 @@ export class Remote {
       return;
     }
     
-    let resolve: () => void;
-    await this.connecting;
-    this.connecting = new Promise(async (_resolve) => {
-      resolve = _resolve;
-    });
-    
     try {
       this.websocket = await connect_websocket(this.url, {
         protocols: "debug",
         on_message: this.handle.bind(this),
       });
+      // TODO: 登录失败抛出error
+      await this.call('login', [ this.username, this.password ]);
     } catch (error) {
       this.websocket = undefined;
       throw error;
-    } finally {
-      resolve!();
     }
   }
 
@@ -164,7 +156,7 @@ export class Remote {
     try {
       if (handler) {
         // TODO: 是否存在需要返回给服务端的情况
-        await handler(message.data);
+        await handler(message);
         // if (data) {
         //   await this.send({ id, data });
         // }
@@ -199,8 +191,6 @@ export class Remote {
     // 未连接时自动连接
     if (!this.websocket) {
       await this.connect();
-      // TODO: 登录失败抛出error
-      await this.call('login', { username: this.username, password: this.password });
     }
     return new Promise<any>(async (resolve, reject) => {
       const id = Remote.nextId;
@@ -208,7 +198,6 @@ export class Remote {
       this.handlers.set(id, (message) => {
         const { status, data } = message;
         status !== 'OK' ? reject(status) : resolve(data);
-        resolve(message);
         this.handlers.delete(id);
       });
 

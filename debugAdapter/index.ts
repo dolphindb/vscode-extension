@@ -6,11 +6,11 @@
 	4. 在debugSession中，vsc会依次调用initialize、launch、setBreakpoints、configurationDone等，
 		这个过程中会连接服务端，并把用户脚本和断点情况发送过去，服务端验证断点返回，vsc等待用户下一步操作
 */
-import { MockDebugSession } from './mock/mockDebug.js';
+import { DdbDebugSession } from './adapter.js';
 import * as Net from 'net';
 import { Remote } from './network.js';
 
-function runDebugAdapter(debugSession: typeof MockDebugSession) {
+function runDebugAdapter(debugSession: typeof DdbDebugSession) {
 	let port = 0;
 	const args = process.argv.slice(2);
 	args.forEach((val) => {
@@ -41,10 +41,4 @@ function runDebugAdapter(debugSession: typeof MockDebugSession) {
 	}
 }
 
-console.log(Remote.pack({
-	data: { username: 'admin', password: 'admin' },
-	id: 0,
-	func: ''
-}));
-
-runDebugAdapter(MockDebugSession);
+runDebugAdapter(DdbDebugSession);
