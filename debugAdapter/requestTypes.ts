@@ -23,12 +23,17 @@ export type StackTraceResponseData = {
 
 export type Scope = DebugProtocol.Scope;
 
+export type PauseEventReceiveData = {
+  status: string;
+  line: number;
+}
+
 export type PauseEventData = {
   reason: 'step' | 'breakpoint' | 'exception' | 'pause' | 'entry' | 'goto'
   | 'function breakpoint' | 'data breakpoint' | 'instruction breakpoint';
   
   description?: string;
-}
+} & PauseEventReceiveData;
 
 export type NewBpLocationsEventData = {
   locations: BreakpointLocation[];

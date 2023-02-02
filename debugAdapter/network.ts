@@ -42,10 +42,15 @@ export interface SendMessage extends Message {
 
 export interface ReturnMessage extends Message {
   id: number;
+  
+  status: string;
 }
 
 export interface EventMessage extends Message {
   event: string;
+  
+  /** 状态信息 */
+  message: string;
 }
 
 export type ReceiveMessage = ReturnMessage | EventMessage;
@@ -120,6 +125,7 @@ export class Remote {
       await this.call('login', [ this.username, this.password ]);
     } catch (error) {
       this.websocket = undefined;
+      console.error(error);
       throw error;
     }
   }
@@ -178,8 +184,12 @@ export class Remote {
   }
   
   /** 注册 server 事件 */
-  public on(event: string, handler: MessageHandler) {
-    this.events[event] = handler;
+  public on(event: string, handler: Function) {
+    this.events[event] = (message: EventMessage) => {
+      const { message: status, data } = message;
+      // TODO: 错误处理
+      status === 'OK' ? handler(data) : console.log(status);
+    };
   }
 
   /**
@@ -197,7 +207,7 @@ export class Remote {
 
       this.handlers.set(id, (message) => {
         const { status, data } = message;
-        status !== 'OK' ? reject(status) : resolve(data);
+        status === 'OK' ? resolve(data) : reject(status) ;
         this.handlers.delete(id);
       });
 

@@ -3,13 +3,13 @@
  * See more details: https://github.com/Microsoft/vscode-mock-debug
  */
 import {
-	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, OutputEvent, Breakpoint
+	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, OutputEvent
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
 import { basename } from 'path';
 import { normalizePathAndCasing, loadSource } from './utils.js';
-import { BreakpointLocation, BreakPoint, PauseEventData, NewBpLocationsEventData } from './requestTypes.js';
+import { BreakpointLocation, PauseEventData, NewBpLocationsEventData, PauseEventReceiveData } from './requestTypes.js';
 
 interface DdbLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	/** An absolute path to the "program" to debug. */
@@ -72,6 +72,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private _breakpointLocations: DebugProtocol.BreakpointLocation[];
 	
 	private _prerequisites: Prerequisites;
+	private _lastStopLine: number;
 	
 	constructor() {
 		super();
@@ -106,7 +107,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		response.body.supportsCancelRequest = false;
 
 		// make VS Code send the breakpointLocations request (所有可能的断点位置)
-		response.body.supportsBreakpointLocationsRequest = true;
+		response.body.supportsBreakpointLocationsRequest = false; // TODO: 暂时不知道有什么用
 
 		// make VS Code provide "Step in Target" functionality
 		response.body.supportsStepInTargetsRequest = false;
@@ -163,8 +164,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 	 */
 	protected override configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
 		super.configurationDoneRequest(response, args);
-		
-		console.log('configurationDoneRequest');
 
 		// notify the launchRequest that configuration has finished
 		this._prerequisites.resolve('configurationDone');
@@ -177,31 +176,35 @@ export class DdbDebugSession extends LoggingDebugSession {
 		// 加载资源
 		this._sourcePath = normalizePathAndCasing(args.program);
 		loadSource(args.program).then(async (source) => {
-			this._source = source;
+			this._source = source.replace(/\r\n/g, '\n');
 			this._prerequisites.resolve('sourceLoaded');
 			
-			const res = await this._remote.call('resolveScript', this._source);
-			this._breakpointLocations = res.map((bp: BreakpointLocation) => {
+			const res = await this._remote.call('parseScriptWithDebug', [this._source]);
+			// TODO: 当前仅行号，后续添加更多信息
+			this._breakpointLocations = res.map((bp: /*BreakpointLocation*/ number) => {
 				let resBp: BreakpointLocation = {
-					line: this.convertDebuggerLineToClient(bp.line),
+					// line: this.convertDebuggerLineToClient(bp.line),
+					line: this.convertDebuggerLineToClient(bp),
 				}
-				if (bp.column !== undefined) {
-					resBp.column = this.convertDebuggerColumnToClient(bp.column);
-				}
-				if (bp.endLine !== undefined) {
-					resBp.endLine = this.convertDebuggerLineToClient(bp.endLine);
-				}
-				if (bp.endColumn !== undefined) {
-					resBp.endColumn = this.convertDebuggerColumnToClient(bp.endColumn);
-				}
+				// if (bp.column !== undefined) {
+				// 	resBp.column = this.convertDebuggerColumnToClient(bp.column);
+				// }
+				// if (bp.endLine !== undefined) {
+				// 	resBp.endLine = this.convertDebuggerLineToClient(bp.endLine);
+				// }
+				// if (bp.endColumn !== undefined) {
+				// 	resBp.endColumn = this.convertDebuggerColumnToClient(bp.endColumn);
+				// }
 				return resBp;
 			});
 			this._prerequisites.resolve('scriptResolved');
 		});
 		
-		this._remote.on('pause', this.handlePause.bind(this));
+		// this._remote.on('pause', this.handlePause.bind(this));
+		this._remote.on('BREAKPOINT', (data: PauseEventReceiveData) => this.handlePause({ reason: 'breakpoint', ...data }));
+		this._remote.on('STEP', (data: PauseEventReceiveData) => this.handlePause({ reason: 'step', ...data }));
 		this._remote.on('newBreakpointLocations', this.handleNewBreakpointLocations.bind(this));
-		this._remote.on('terminate', this.handleTerminate.bind(this));
+		this._remote.on('END', this.handleTerminate.bind(this));
 		this._remote.on('output', this.handleOutput.bind(this));
 		
 		await Promise.all([
@@ -209,7 +212,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			this._prerequisites.wait('breakpointsSetted'),
 		]);
 		
-		this._remote.call('run');
+		this._remote.call('runScriptWithDebug');
 	}
 	
 	protected override async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
@@ -221,33 +224,38 @@ export class DdbDebugSession extends LoggingDebugSession {
 			verified: false,
 		}));
 		await this._prerequisites.wait('scriptResolved');
-		const res = await this._remote.call('setBreakPoints', requestData);
+		// TODO: 目前只传行号，后续补充verified, id等信息
+		const res = await this._remote.call('setBreaks', [requestData.map(bp => bp.line)]) as number[];
 		
-		const actualBreakpoints = res.map((bp: BreakPoint) => {
-			const { verified, line, id } = bp;
-			const resBp = new Breakpoint(verified, this.convertDebuggerLineToClient(line!)) as DebugProtocol.Breakpoint;
-			resBp.id = id;
-			return resBp;
-		});
+		// const actualBreakpoints = res.map((bp: BreakPoint) => {
+		// 	const { verified, line, id } = bp;
+		// 	const resBp = new Breakpoint(verified, this.convertDebuggerLineToClient(line!)) as DebugProtocol.Breakpoint;
+		// 	resBp.id = id;
+		// 	return resBp;
+		// });
+		const actualBreakpoints = clientLines.map(line => ({
+			line,
+			verified: res.includes(this.convertClientLineToDebugger(line)),
+		}));
 		
 		response.body = {
 			breakpoints: actualBreakpoints,
 		};
 		this.sendResponse(response);
-		this._prerequisites.resolve('breakpointsSet');
+		this._prerequisites.resolve('breakpointsSetted');
 	}
 	
-	protected override async breakpointLocationsRequest(response: DebugProtocol.BreakpointLocationsResponse, args: DebugProtocol.BreakpointLocationsArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
-		await this._prerequisites.wait('scriptResolved');
-		let resBpLocations = [...this._breakpointLocations];
-		args.endLine = args.endLine || args.line;
-		resBpLocations = resBpLocations.filter(bp => bp.line >= args.line && bp.line <= args.endLine!);
-		// TODO: 处理column(vsc会在什么情况下询问column?)
+	// TODO: 暂时不知道这个request有什么用
+	// protected override async breakpointLocationsRequest(response: DebugProtocol.BreakpointLocationsResponse, args: DebugProtocol.BreakpointLocationsArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+	// 	await this._prerequisites.wait('scriptResolved');
+	// 	args.endLine = args.endLine || args.line;
+	// 	const resBpLocations = this._breakpointLocations.filter(bp => bp.line >= args.line && bp.line <= args.endLine!);
+	// 	// TODO: 处理column(vsc会在什么情况下询问column?)
 		
-		response.body = {
-			breakpoints: this._breakpointLocations,
-		};
-	}
+	// 	response.body = {
+	// 		breakpoints: resBpLocations,
+	// 	};
+	// }
 	
 	protected override threadsRequest(response: DebugProtocol.ThreadsResponse): void {
 		response.body = {
@@ -257,6 +265,13 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): Promise<void> {
+		response.body = {
+			stackFrames: [new StackFrame(0, 'stackFrame 1', this.createSource(this._sourcePath), this._lastStopLine, 0)],
+		}
+		this.sendResponse(response);
+		return;
+		
+		// TODO: 完整的栈帧解析
 		const res = await this._remote.call('stackTrace', {
 			startFrame: args.startFrame,
 			levels: args.levels,
@@ -306,7 +321,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	// 以下为server主动推送事件的回调
-	private handlePause({ reason }: PauseEventData): void {
+	private handlePause({ reason, status, line }: PauseEventData): void {
+		// TODO: 之后该信息由栈帧获取
+		this._lastStopLine = this.convertDebuggerLineToClient(line);
 		this.sendEvent(new StoppedEvent(reason, DdbDebugSession.threadID));
 	}
 	
@@ -333,6 +350,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	private handleOutput({ text }: { text: string }): void {
+		console.log(text);
 		this.sendEvent(new OutputEvent(text));
 	}
 }

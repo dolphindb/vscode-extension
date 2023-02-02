@@ -8,6 +8,7 @@ def toSelf(x){
   y5 = 5
   return x
 }
+
 toSelf(a);
 a;
 c = toSelf(b)

@@ -30,7 +30,7 @@
 				"${workspaceFolder}/out/**/*.cjs",
                 "!**/node_modules/**"
 			],
-			"preLaunchTask": "npm: build"
+			// "preLaunchTask": "npm: build"
 		},
     ],
     "compounds": [
