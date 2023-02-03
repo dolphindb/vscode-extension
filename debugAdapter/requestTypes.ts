@@ -38,3 +38,8 @@ export type PauseEventData = {
 export type NewBpLocationsEventData = {
   locations: BreakpointLocation[];
 }
+
+export type EndEventData = {
+  status: string;
+  line: number;
+}

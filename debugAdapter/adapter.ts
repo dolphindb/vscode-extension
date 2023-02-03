@@ -9,7 +9,7 @@ import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
 import { basename } from 'path';
 import { normalizePathAndCasing, loadSource } from './utils.js';
-import { BreakpointLocation, PauseEventData, NewBpLocationsEventData, PauseEventReceiveData } from './requestTypes.js';
+import { BreakpointLocation, PauseEventData, NewBpLocationsEventData, PauseEventReceiveData, EndEventData } from './requestTypes.js';
 
 interface DdbLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	/** An absolute path to the "program" to debug. */
@@ -111,6 +111,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 
 		// make VS Code provide "Step in Target" functionality
 		response.body.supportsStepInTargetsRequest = false;
+		
+		response.body.supportsRestartRequest = true;
 
 		// the adapter defines two exceptions filters, one with support for conditions.
 		response.body.supportsExceptionFilterOptions = false;
@@ -292,7 +294,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	// TODO: scopes and variables
 	
 	protected override continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
-		this._remote.call('continue');
+		this._remote.call('continueRun');
 	}
 	
 	protected override pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): void {
@@ -304,16 +306,19 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override stepInRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.StepInArguments): void {
-		this._remote.call('stepIn');
+		this._remote.call('stepInto');
 	}
 	
 	protected override stepOutRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.StepOutArguments): void {
 		this._remote.call('stepOut');
 	}
 	
+	protected override restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments, request?: DebugProtocol.Request | undefined): void {
+		this._remote.call('restartRun');
+	}
+	
 	protected override async disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request): Promise<void> {
-		await this._remote.call('terminate');
-		console.log(`disconnectRequest suspend: ${args.suspendDebuggee}, terminate: ${args.terminateDebuggee}`);
+		await this._remote.call('stopRun');
 	}
 	
 	private createSource(filePath: string): Source {
@@ -345,8 +350,12 @@ export class DdbDebugSession extends LoggingDebugSession {
 		});
 	}
 	
-	private handleTerminate(): void {
-		this.sendEvent(new TerminatedEvent());
+	private handleTerminate({status, line}: EndEventData): void {
+		if (status === 'FINISHED') {
+			this.sendEvent(new TerminatedEvent());
+		} else if (status === 'RESTARTED') {
+			this._lastStopLine = this.convertDebuggerLineToClient(line);
+		}
 	}
 	
 	private handleOutput({ text }: { text: string }): void {

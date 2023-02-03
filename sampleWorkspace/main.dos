@@ -13,3 +13,16 @@ toSelf(a);
 a;
 c = toSelf(b)
 c = sum(b)
+
+d = a
+a = 1
+b = 2
+c = 3
+d = a
+a = 1
+b = 2
+c = 3
+d = a
+a = 1
+b = 2
+c = 3
