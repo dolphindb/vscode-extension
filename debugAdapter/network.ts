@@ -1,5 +1,6 @@
-import { WebSocket, connect_websocket } from "xshell";
+import { WebSocket, connect_websocket, inspect } from "xshell";
 import { json2DdbDict } from "./utils.js";
+import { DdbObj } from "dolphindb";
 
 const decoder = new TextDecoder();
 
@@ -93,10 +94,30 @@ export class Remote {
   }
   
   public static parse(array_buffer: ArrayBuffer) {
-    const buf = new Uint8Array(array_buffer as ArrayBuffer);
+    const buf = new Uint8Array(array_buffer);
+    const dv = new DataView(array_buffer);
+    
+    const jsonLength = dv.getUint32(0, true);
+    let baseOffset = 4 + jsonLength;
+    
+    let message = JSON.parse(decoder.decode(buf.subarray(4, baseOffset)));
 
-    let message = JSON.parse(decoder.decode(buf));
-
+    if (message?.data instanceof Array) {
+      // 仅查询scope或变量时会出现
+      message.data.forEach((item: any) => {
+        if (item.offset) {
+          item.binValue = buf.subarray(baseOffset, baseOffset + item.offset);
+          item.ddbValue = DdbObj.parse(item.binValue, true);
+          item.value = inspect(item.ddbValue);
+          baseOffset += item.offset;
+        }
+      });
+    } else if (message?.data?.offset) {
+      message.data.binValue = buf.subarray(baseOffset, baseOffset + message.data.offset);
+      message.data.ddbValue = DdbObj.parse(message.data.binValue, true);
+      message.data.value = inspect(message.data.ddbValue);
+    }
+    
     if (message.error) {
       message.error = Object.assign(new Error(), message.error);
     }
