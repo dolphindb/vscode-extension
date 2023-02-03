@@ -1792,7 +1792,7 @@ class DdbServer extends Server {
         
         this.server_ws.on('connection', (websocket, request) => {
             websocket.addEventListener('message', event => {
-                this.remote.handle(event as { data: ArrayBuffer }, websocket)
+                this.remote.handle(event.data as ArrayBuffer, websocket)
             })
         })
         
