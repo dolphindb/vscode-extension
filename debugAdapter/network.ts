@@ -171,7 +171,7 @@ export class Remote {
     const { id, event } = msg;
 
     try {
-      if (event) {
+      if (event !== undefined) {
         const handler = this.events.get(event);
         if (msg.message !== 'OK') {
           // TODO: 用户脚本错误
@@ -181,7 +181,7 @@ export class Remote {
         } else {
           throw new Error(`"Unknown event from server": ${event}`);
         }
-      } else if (id) {
+      } else if (id !== undefined) {
         const handler = this.handlers.get(id);
         if (msg.message !== 'OK') {
           // TODO: 服务端/DA错误
