@@ -62,16 +62,17 @@ class Prerequisites {
 
 export class DdbDebugSession extends LoggingDebugSession {
   // 目前不支持多线程，threadID固定为1
-	private static threadID = 1;
+	private static readonly threadID = 1;
 	
 	// connect to server debugger
 	private _remote: Remote;
 	
+	private _prerequisites: Prerequisites;
+	
 	private _source: string;
 	private _sourcePath: string;
-	private _breakpointLocations: DebugProtocol.BreakpointLocation[];
 	
-	private _prerequisites: Prerequisites;
+	private _breakpointLocations: DebugProtocol.BreakpointLocation[];
 	
 	private _stackTraceCache: DebugProtocol.StackFrame[];
 	private _stackTraceChangeFlag: boolean = true;
@@ -323,6 +324,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request): Promise<void> {
+		this._remote.terminate();
 		await this._remote.call('stopRun');
 	}
 	
@@ -356,7 +358,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	private handleTerminate({status}: EndEventData): void {
 		if (status === 'FINISHED') {
-			// TODO: 优化，terminate之后不再发送任何请求 this._terminated = true;
+			this._remote.terminate();
 			this.sendEvent(new TerminatedEvent());
 		} else if (status === 'RESTARTED') {
 			return;

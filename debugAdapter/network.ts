@@ -75,6 +75,12 @@ export class Remote {
 
   /** map<id, message handler>: 通过 rpc message.id 找到对应的 handler, unary rpc 接收方不需要设置 handlers, 发送方需要 */
   private handlers = new Map<number, MessageHandler>();
+  
+  private _terminated = false;
+  public terminate() {
+    this._terminated = true;
+    this.websocket?.close();
+  }
 
   get connected() {
     return this.websocket?.readyState === WebSocket.OPEN;
@@ -209,6 +215,9 @@ export class Remote {
    * @args 文档中的data部分(number | string | boolean | object | array)
    */
   public async call(func: string, args?: any) {
+    if (this._terminated) {
+      return;
+    }
     // 未连接时自动连接
     if (!this.websocket) {
       await this.connect();
