@@ -32,42 +32,35 @@ export interface Message {
   bins?: number[];
   
   /** 状态信息 */
-  status?: string;
+  message?: string;
 }
 
 export interface SendMessage extends Message {
   id: number;
-  
-  func: string;
 }
 
 export interface ReturnMessage extends Message {
   id: number;
-  
-  status: string;
 }
 
 export interface EventMessage extends Message {
   event: string;
-  
-  /** 状态信息 */
-  message: string;
 }
 
-export type ReceiveMessage = ReturnMessage | EventMessage;
+export type ReceiveMessage = (ReturnMessage | EventMessage) & { message: string };
 
 /** 接收到消息后的处理函数  
     包含client发出请求的返回以及server主动推送的事件    
 */
 export type MessageHandler = (
-  message: ReceiveMessage,
+  msg: ReceiveMessage,
   websocket?: WebSocket
 ) => void | any[] | Promise<void | any[]>;    
 
 /** 通过创建 remote 对象对 websocket rpc 进行抽象  
   调用方使用 remote.call 进行调用  
   被调方在创建 remote 对象时传入 funcs 注册处理函数，并使用 remote.handle 方法处理 websocket message  
-  未连接时自动连接，断开后自动重连 */
+  未连接时自动连接 */
 export class Remote {
   private static id = 0;
   
@@ -87,42 +80,45 @@ export class Remote {
     return this.websocket?.readyState === WebSocket.OPEN;
   }
   
-  public static pack(message: SendMessage) {
-    const arg = json2DdbDict(message).pack();
+  public static pack(msg: SendMessage) {
+    const arg = json2DdbDict(msg).pack();
     
     return arg;
   }
   
   public static parse(array_buffer: ArrayBuffer) {
-    const buf = new Uint8Array(array_buffer);
-    const dv = new DataView(array_buffer);
-    
-    const jsonLength = dv.getUint32(0, true);
-    let baseOffset = 4 + jsonLength;
-    
-    let message = JSON.parse(decoder.decode(buf.subarray(4, baseOffset)));
+    try {
+      const buf = new Uint8Array(array_buffer);
+      const dv = new DataView(array_buffer);
+      
+      const jsonLength = dv.getUint32(0, true);
+      let baseOffset = 4 + jsonLength;
+      
+      // TODO: 错误处理（对后端数据校验）
+      let msg = JSON.parse(decoder.decode(buf.subarray(4, baseOffset)));
+      
+      console.debug("Receive message: ", msg);
 
-    if (message?.data instanceof Array) {
-      // 仅查询scope或变量时会出现
-      message.data.forEach((item: any) => {
-        if (item.offset) {
-          item.binValue = buf.subarray(baseOffset, baseOffset + item.offset);
-          item.ddbValue = DdbObj.parse(item.binValue, true);
-          item.value = inspect(item.ddbValue);
-          baseOffset += item.offset;
-        }
-      });
-    } else if (message?.data?.offset) {
-      message.data.binValue = buf.subarray(baseOffset, baseOffset + message.data.offset);
-      message.data.ddbValue = DdbObj.parse(message.data.binValue, true);
-      message.data.value = inspect(message.data.ddbValue);
+      if (msg?.data instanceof Array) {
+        // 仅查询scope或变量时会出现
+        msg.data.forEach((item: any) => {
+          if (item.offset) {
+            item.binValue = buf.subarray(baseOffset, baseOffset + item.offset);
+            item.ddbValue = DdbObj.parse(item.binValue, true);
+            item.value = inspect(item.ddbValue);
+            baseOffset += item.offset;
+          }
+        });
+      } else if (msg?.data?.offset) {
+        msg.data.binValue = buf.subarray(baseOffset, baseOffset + msg.data.offset);
+        msg.data.ddbValue = DdbObj.parse(msg.data.binValue, true);
+        msg.data.value = inspect(msg.data.ddbValue);
+      }
+      return msg;
+    } catch (error) {
+      console.debug("Parse message error: ", error);
+      throw error;
     }
-    
-    if (message.error) {
-      message.error = Object.assign(new Error(), message.error);
-    }
-
-    return message;
   }
 
   /**
@@ -142,11 +138,11 @@ export class Remote {
         protocols: "debug",
         on_message: this.handle.bind(this),
       });
-      // TODO: 登录失败抛出error
+      // TODO: 登录失败抛出error，但其实用户能登录插件应该也能登录debugger
       await this.call('login', [ this.username, this.password ]);
     } catch (error) {
       this.websocket = undefined;
-      console.error(error);
+      console.debug("Connect error: ", error);
       throw error;
     }
   }
@@ -155,62 +151,56 @@ export class Remote {
     this.websocket?.close();
   }
 
-  private async send(message: SendMessage) {
+  private async send(msg: SendMessage) {
     try {
       if (this.websocket!.readyState !== WebSocket.OPEN) {
-        throw new Error("remote.send(): websocket client 已断开");
+        throw new Error("Websocket is not connected");
       }
-      this.websocket!.send(Remote.pack(message));
+      console.debug("Send message: ", msg);
+      this.websocket!.send(Remote.pack(msg));
     } catch (error) {
-      this.handlers.delete(message.id);
+      console.debug("Send message error: ", error);
+      this.handlers.delete(msg.id);
       throw error;
     }
   }
 
-  private async handle(event: { data: ArrayBuffer }, websocket: WebSocket) {
-    const message = Remote.parse(event.data) as ReceiveMessage;
+  private async handle(socketEvent: { data: ArrayBuffer }, websocket: WebSocket) {
+    const msg = Remote.parse(socketEvent.data) as ReceiveMessage;
 
-    const { id, event: serverEvent } = message;
-
-    let handler: MessageHandler | undefined;
-
-    if (serverEvent) {
-      handler = this.events[serverEvent];
-    } else {
-      handler = this.handlers.get(id!);
-    }
+    const { id, event } = msg;
 
     try {
-      if (handler) {
-        // TODO: 是否存在需要返回给服务端的情况
-        await handler(message);
-        // if (data) {
-        //   await this.send({ id, data });
-        // }
-      } else if (message.status !== 'OK') {
-        throw message.status;
-        // TODO: 错误处理
-      } else {
-        throw new Error(
-          `"找不到 rpc handler":${
-            serverEvent ? `event: ${serverEvent}` : `id: ${id}`
-          }`
-        );
+      if (event) {
+        const handler = this.events.get(event);
+        if (msg.message !== 'OK') {
+          // TODO: 用户脚本错误
+          throw msg.message;
+        } else if (handler) {
+          await handler(msg);
+        } else {
+          throw new Error(`"Unknown event from server": ${event}`);
+        }
+      } else if (id) {
+        const handler = this.handlers.get(id);
+        if (msg.message !== 'OK') {
+          // TODO: 服务端/DA错误
+          throw msg.message;
+        } else if (handler) {
+          await handler(msg);
+        } else {
+          throw new Error(`"Unknown function id from server": ${id}`);
+        }
       }
     } catch (error) {
-      // TODO: 错误处理&多段消息处理
-      // 再往上层抛出错误没有意义了，上层调用栈是 websocket.on('message') 之类的
-      console.log(error);
+      console.debug("Handle message error: ", error);
+      throw error;
     }
   }
   
   /** 注册 server 事件 */
   public on(event: string, handler: Function) {
-    this.events[event] = (message: EventMessage) => {
-      const { message: status, data } = message;
-      // TODO: 错误处理
-      status === 'OK' ? handler(data) : console.log(status);
-    };
+    this.events[event] = (msg: EventMessage) => handler(msg.data);
   }
 
   /**
@@ -226,9 +216,9 @@ export class Remote {
     return new Promise<any>(async (resolve, reject) => {
       const id = Remote.nextId;
 
-      this.handlers.set(id, (message) => {
-        const { status, data } = message;
-        status === 'OK' ? resolve(data) : reject(status) ;
+      this.handlers.set(id, (msg) => {
+        const { message, data } = msg;
+        message === 'OK' ? resolve(data) : reject(message) ;
         this.handlers.delete(id);
       });
 
