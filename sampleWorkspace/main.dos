@@ -1,28 +1,18 @@
 a = `a`b`c
 b = [100,200,300];
 def toSelf(x){
-  y1 = 1
-  y2 = 2
-  y3 = 3
-  y4 = 4
-  y5 = 5
-  return x
+    y1 = 1
+    y2 = take(10, 1200);
+    y3 = 3
+    if(y3 == 1)
+      y6 = 1
+    else 
+      y7 = 1;
+    y4 = 4
+    y5 = 5
+    return x
 }
-
 toSelf(a);
 a;
 c = toSelf(b)
 c = sum(b)
-
-d = a
-a = 1
-b = 2
-c = 3
-d = a
-a = 1
-b = 2
-c = 3
-d = a
-a = 1
-b = 2
-c = 3

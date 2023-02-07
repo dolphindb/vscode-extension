@@ -72,7 +72,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private _breakpointLocations: DebugProtocol.BreakpointLocation[];
 	
 	private _prerequisites: Prerequisites;
-	private _lastStopLine: number;
+	
+	private _stackTraceCache: DebugProtocol.StackFrame[];
+	private _stackTraceChangeFlag: boolean = true;
 	
 	constructor() {
 		super();
@@ -267,25 +269,28 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): Promise<void> {
-		response.body = {
-			stackFrames: [new StackFrame(0, 'stackFrame 1', this.createSource(this._sourcePath), this._lastStopLine, 0)],
+		let res: StackFrame[];
+		if (this._stackTraceChangeFlag) {
+			res = await this._remote.call('stackTrace');
+			res.reverse();
+			this._stackTraceCache = res;
+			this._stackTraceChangeFlag = false;
+		} else {
+			res = this._stackTraceCache;
 		}
-		this.sendResponse(response);
-		return;
-		
-		// TODO: 完整的栈帧解析
-		const res = await this._remote.call('stackTrace', {
-			startFrame: args.startFrame,
-			levels: args.levels,
-			format: args.format,
-		});
+		const start = args.startFrame || 0;
+		let stackFrames: typeof res;
+		if (args.levels)
+			stackFrames = res.slice(start, start + args.levels);
+		else
+			stackFrames = res.slice(start);
 		
 		response.body = {
-			stackFrames: res.stackFrames.map((frame: StackFrame) => {
+			stackFrames: stackFrames.map((frame: StackFrame) => {
 				const { id, name, line, column } = frame;
-				return new StackFrame(id, name, this.createSource(this._sourcePath), this.convertDebuggerLineToClient(line), this.convertDebuggerColumnToClient(column));
+				return new StackFrame(id, name, this.createSource(this._sourcePath), this.convertDebuggerLineToClient(line), this.convertDebuggerColumnToClient(column ?? 0));
 			}),
-			totalFrames: res.totalFrames,
+			totalFrames: res.length,
 		};
 		
 		this.sendResponse(response);
@@ -326,9 +331,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	// 以下为server主动推送事件的回调
-	private handlePause({ reason, status, line }: PauseEventData): void {
-		// TODO: 之后该信息由栈帧获取
-		this._lastStopLine = this.convertDebuggerLineToClient(line);
+	private handlePause({ reason, line }: PauseEventData): void {
+		this._stackTraceChangeFlag = true;
 		this.sendEvent(new StoppedEvent(reason, DdbDebugSession.threadID));
 	}
 	
@@ -350,11 +354,12 @@ export class DdbDebugSession extends LoggingDebugSession {
 		});
 	}
 	
-	private handleTerminate({status, line}: EndEventData): void {
+	private handleTerminate({status}: EndEventData): void {
 		if (status === 'FINISHED') {
+			// TODO: 优化，terminate之后不再发送任何请求 this._terminated = true;
 			this.sendEvent(new TerminatedEvent());
 		} else if (status === 'RESTARTED') {
-			this._lastStopLine = this.convertDebuggerLineToClient(line);
+			return;
 		}
 	}
 	
