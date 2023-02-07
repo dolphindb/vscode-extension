@@ -43,3 +43,10 @@ export type EndEventData = {
   status: string;
   line: number;
 }
+
+export type StackFrameRes = {
+  stackFrameId: number;
+  line: number;
+  name?: string;
+  column?: number;
+}

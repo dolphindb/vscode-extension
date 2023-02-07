@@ -3,13 +3,13 @@
  * See more details: https://github.com/Microsoft/vscode-mock-debug
  */
 import {
-	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, OutputEvent
+	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, OutputEvent, Scope
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
 import { basename } from 'path';
 import { normalizePathAndCasing, loadSource } from './utils.js';
-import { BreakpointLocation, PauseEventData, NewBpLocationsEventData, PauseEventReceiveData, EndEventData } from './requestTypes.js';
+import { BreakpointLocation, PauseEventData, NewBpLocationsEventData, PauseEventReceiveData, EndEventData, StackFrameRes } from './requestTypes.js';
 
 interface DdbLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	/** An absolute path to the "program" to debug. */
@@ -70,11 +70,12 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private _prerequisites: Prerequisites;
 	
 	private _source: string;
+	private _sourceLines: string[];
 	private _sourcePath: string;
 	
 	private _breakpointLocations: DebugProtocol.BreakpointLocation[];
 	
-	private _stackTraceCache: DebugProtocol.StackFrame[];
+	private _stackTraceCache: StackFrame[];
 	private _stackTraceChangeFlag: boolean = true;
 	
 	constructor() {
@@ -182,6 +183,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._sourcePath = normalizePathAndCasing(args.program);
 		loadSource(args.program).then(async (source) => {
 			this._source = source.replace(/\r\n/g, '\n');
+			this._sourceLines = this._source.split('\n');
 			this._prerequisites.resolve('sourceLoaded');
 			
 			const res = await this._remote.call('parseScriptWithDebug', [this._source]);
@@ -270,28 +272,33 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): Promise<void> {
-		let res: StackFrame[];
 		if (this._stackTraceChangeFlag) {
-			res = await this._remote.call('stackTrace');
+			const res: StackFrameRes[] = await this._remote.call('stackTrace');
 			res.reverse();
-			this._stackTraceCache = res;
+			this._stackTraceCache = res.map((frame) => {
+				const { stackFrameId, name, line, column } = frame;
+				return new StackFrame(
+					stackFrameId,
+					name ?? `frame ${stackFrameId}`,
+					this.createSource(this._sourcePath),
+					this.convertDebuggerLineToClient(line),
+					this.convertDebuggerColumnToClient(column ?? 0)
+				);
+			});
 			this._stackTraceChangeFlag = false;
-		} else {
-			res = this._stackTraceCache;
 		}
+		
+		let stackFrames: StackFrame[];
 		const start = args.startFrame || 0;
-		let stackFrames: typeof res;
+		
 		if (args.levels)
-			stackFrames = res.slice(start, start + args.levels);
+			stackFrames = this._stackTraceCache.slice(start, start + args.levels);
 		else
-			stackFrames = res.slice(start);
+			stackFrames = this._stackTraceCache.slice(start);
 		
 		response.body = {
-			stackFrames: stackFrames.map((frame: StackFrame) => {
-				const { id, name, line, column } = frame;
-				return new StackFrame(id, name, this.createSource(this._sourcePath), this.convertDebuggerLineToClient(line), this.convertDebuggerColumnToClient(column ?? 0));
-			}),
-			totalFrames: res.length,
+			stackFrames,
+			totalFrames: this._stackTraceCache.length,
 		};
 		
 		this.sendResponse(response);
