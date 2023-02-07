@@ -200,7 +200,7 @@ export class Remote {
   
   /** 注册 server 事件 */
   public on(event: string, handler: Function) {
-    this.events[event] = (msg: EventMessage) => handler(msg.data);
+    this.events.set(event, (msg) => handler(msg.data));
   }
 
   /**
