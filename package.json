@@ -17,8 +17,7 @@
         "@svgr/webpack": "^6.5.1",
         "@types/koa": "^2.13.5",
         "@types/koa-compress": "^4.0.3",
-        "@types/koa-useragent": "^2.1.2",
-        "@types/node": "^18.11.18",
+        "@types/node": "^18.13.0",
         "@types/react": "^18.0.27",
         "@types/react-dom": "^18.0.10",
         "@types/vscode": "^1.68.0",
@@ -33,11 +32,11 @@
         "webpack": "^5.75.0"
     },
     "dependencies": {
-        "@ant-design/plots": "^1.2.4",
+        "@ant-design/plots": "^1.2.5",
         "@koa/cors": "^4.0.0",
         "antd": "^5.1.7",
         "dayjs": "^1.11.7",
-        "dolphindb": "^2.0.920",
+        "dolphindb": "^2.0.922",
         "koa": "^2.14.1",
         "koa-compress": "^5.1.0",
         "koa-useragent": "^4.1.0",

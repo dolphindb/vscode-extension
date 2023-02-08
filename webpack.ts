@@ -644,8 +644,6 @@ let dataview_config: Configuration = {
     resolve: {
         extensions: ['.js'],
         
-        symlinks: false,
-        
         plugins: [ts_resolver],
         
         fallback: {
@@ -851,8 +849,6 @@ let ext_config: Configuration = {
     
     resolve: {
         extensions: ['.js'],
-        
-        symlinks: false,
         
         plugins: [ts_resolver]
     },
