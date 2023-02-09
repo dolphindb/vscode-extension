@@ -1,5 +1,6 @@
 # Change Log (更新日志)
-[2.0.900] - 2023.02.09
+
+## [2.0.900] - 2023.02.09
 -   优化连接出现报错的显示信息  
     Enhanced message for connection error. 
 
