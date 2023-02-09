@@ -35,7 +35,7 @@
         "@ant-design/icons": "^5.0.1",
         "@ant-design/plots": "^1.2.5",
         "@koa/cors": "^4.0.0",
-        "antd": "^5.1.7",
+        "antd": "^5.2.0",
         "dayjs": "^1.11.7",
         "dolphindb": "^2.0.922",
         "koa": "^2.14.1",
