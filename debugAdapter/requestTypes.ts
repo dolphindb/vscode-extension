@@ -1,4 +1,5 @@
 import { DebugProtocol } from '@vscode/debugprotocol';
+import { DdbObj } from 'dolphindb';
 
 export type LoginResponseData = {
   status: number; // TODO
@@ -49,4 +50,20 @@ export type StackFrameRes = {
   line: number;
   name?: string;
   column?: number;
+}
+
+export type VariableRes = {
+  name: string;
+  type: string;
+  form: string;
+  rows?: number;
+  columns?: number;
+  bytes: number;
+  vid: number;
+  data?: any;
+  extra?: any;
+  binValue?: Uint8Array;
+  offset?: number;
+  ddbValue?: DdbObj;
+  value?: string;
 }

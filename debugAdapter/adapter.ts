@@ -9,7 +9,7 @@ import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
 import { basename } from 'path';
 import { normalizePathAndCasing, loadSource } from './utils.js';
-import { BreakpointLocation, PauseEventData, NewBpLocationsEventData, PauseEventReceiveData, EndEventData, StackFrameRes } from './requestTypes.js';
+import { BreakpointLocation, PauseEventData, NewBpLocationsEventData, PauseEventReceiveData, EndEventData, StackFrameRes, VariableRes } from './requestTypes.js';
 
 interface DdbLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	/** An absolute path to the "program" to debug. */
@@ -77,6 +77,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	private _stackTraceCache: StackFrame[];
 	private _stackTraceChangeFlag: boolean = true;
+	
+	private _scopeCache: Map<number, DebugProtocol.Variable[]> = new Map();
 	
 	constructor() {
 		super();
@@ -279,7 +281,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 				const { stackFrameId, name, line, column } = frame;
 				return new StackFrame(
 					stackFrameId,
-					name ?? `frame ${stackFrameId}`,
+					name ?? this._sourceLines[line].trim(),
 					this.createSource(this._sourcePath),
 					this.convertDebuggerLineToClient(line),
 					this.convertDebuggerColumnToClient(column ?? 0)
@@ -304,7 +306,75 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this.sendResponse(response);
 	}
 	
-	// TODO: scopes and variables
+	protected override scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments, request?: DebugProtocol.Request | undefined): void {
+		const frame = this._stackTraceCache.find(frame => frame.id === args.frameId);
+		if (!frame) {
+			this.sendResponse(response);
+			return;
+		}
+		response.body = {
+			scopes: [
+				new Scope(
+					frame.name ?? `scope ${frame.id}`,
+					frame.id,
+					false
+				),
+			],
+		};
+		this.sendResponse(response);
+	}
+	
+	/* 
+		由于对scope的查询和对复杂变量的查询被DAP认为是同一种查询
+		服务端确定一个变量是通过frameId和vid来确定的
+		我们通过这样的方式来构造一个用于DAP的 variable reference
+		variable reference除符号位最高位表示是scope还是variable，0表示是scope，1表示是variable
+		表示变量时，共31位（符号位不能用），除首位，其中高14位是frameId，低16位是vid（debug mode下肯定够用叭qwq）
+		返回的variable reference = 0 表示是一个基本类型的已知变量，vsc不会再做额外请求
+	*/
+	protected override async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+		const reduceVariables = (variables: VariableRes[], frameId: number): DebugProtocol.Variable[] => {
+			return variables.map(variable => {
+				const { name, value, data, vid, type, form } = variable;
+				const resvar: DebugProtocol.Variable = {
+					name,
+					value: value ?? '',
+					variablesReference: 0,
+				};
+				if (value === undefined) {
+					// 根据network handle处理，有offset一定有value
+					if (data === undefined) {
+						resvar.value = (form && type) ? `${form}<${type}>` : '';
+						resvar.presentationHint = { lazy: true };
+						resvar.variablesReference = (1 << 30) | (frameId << 16) | vid;
+					} else {
+						resvar.value = data.toString();
+					}
+				}
+				return resvar;
+			})
+		};
+		
+		if (args.variablesReference & (1 << 30)) {
+			const frameId = (args.variablesReference >> 16) & 0x3fff;
+			const vid = args.variablesReference & 0xffff;
+			const vName = this._scopeCache.get(frameId)?.find(v => v.variablesReference === args.variablesReference)?.name;
+			const res: VariableRes = await this._remote.call('getVariable', [frameId, vid, vName]);
+			response.body = {
+				variables: reduceVariables([res], frameId),
+			};
+		} else {
+			const frameId = args.variablesReference;
+			const res: VariableRes[] = await this._remote.call('getStackVariables', [frameId]);
+			const resVars = reduceVariables(res, frameId);
+			this._scopeCache.set(args.variablesReference, resVars);
+			response.body = {
+				variables: resVars,
+			};
+		}
+		
+		this.sendResponse(response);
+	}
 	
 	protected override continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
 		this._remote.call('continueRun');
@@ -340,7 +410,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	// 以下为server主动推送事件的回调
-	private handlePause({ reason, line }: PauseEventData): void {
+	private handlePause({ reason }: PauseEventData): void {
 		this._stackTraceChangeFlag = true;
 		this.sendEvent(new StoppedEvent(reason, DdbDebugSession.threadID));
 	}
