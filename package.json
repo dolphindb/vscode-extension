@@ -23,6 +23,7 @@
         "@types/vscode": "^1.68.0",
         "@types/ws": "^8.5.4",
         "@vscode/debugadapter": "^1.58.0",
+        "@vscode/debugprotocol": "^1.59.0",
         "css-loader": "^6.7.3",
         "sass": "^1.58.0",
         "sass-loader": "^13.2.0",

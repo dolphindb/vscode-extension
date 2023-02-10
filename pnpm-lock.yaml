@@ -78,6 +78,12 @@ devDependencies:
   '@types/ws':
     specifier: ^8.5.4
     version: 8.5.4
+  '@vscode/debugadapter':
+    specifier: ^1.58.0
+    version: 1.59.0
+  '@vscode/debugprotocol':
+    specifier: ^1.59.0
+    version: 1.59.0
   css-loader:
     specifier: ^6.7.3
     version: 6.7.3(webpack@5.75.0)
@@ -2047,6 +2053,17 @@ packages:
     resolution: {integrity: sha512-zdQDHKUgcX/zBc4GrwsE/7dVdAD8JR4EuiAXiiUhhfyIJXXb2+PrGshFyeXWQPMmmZ2XxgaqclgpIC7eTXc1mg==}
     dependencies:
       '@types/node': 18.13.0
+    dev: true
+
+  /@vscode/debugadapter@1.59.0:
+    resolution: {integrity: sha512-KfrQ/9QhTxBumxkqIWs9rsFLScdBIqEXx5pGbTXP7V9I3IIcwgdi5N55FbMxQY9tq6xK3KfJHAZLIXDwO7YfVg==}
+    engines: {node: '>=14'}
+    dependencies:
+      '@vscode/debugprotocol': 1.59.0
+    dev: true
+
+  /@vscode/debugprotocol@1.59.0:
+    resolution: {integrity: sha512-Ks8NiZrCvybf9ebGLP8OUZQbEMIJYC8X0Ds54Q/szpT/SYEDjTksPvZlcWGTo7B9t5abjvbd0jkNH3blYaSuVw==}
     dev: true
 
   /@webassemblyjs/ast@1.11.1:
