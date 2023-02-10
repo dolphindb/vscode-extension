@@ -5,10 +5,6 @@ export type LoginResponseData = {
   status: number; // TODO
 }
 
-export type BreakpointLocation = DebugProtocol.BreakpointLocation;
-
-export type ResolveScriptResponseData = BreakpointLocation[];
-
 export type BreakPoint = DebugProtocol.Breakpoint;
 
 export type SetBreakpointsResponseData = BreakPoint[];
@@ -35,10 +31,6 @@ export type PauseEventData = {
   
   description?: string;
 } & PauseEventReceiveData;
-
-export type NewBpLocationsEventData = {
-  locations: BreakpointLocation[];
-}
 
 export type EndEventData = {
   status: string;

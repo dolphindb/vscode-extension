@@ -9,7 +9,7 @@ import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
 import { basename } from 'path';
 import { normalizePathAndCasing, loadSource } from './utils.js';
-import { BreakpointLocation, PauseEventData, NewBpLocationsEventData, PauseEventReceiveData, EndEventData, StackFrameRes, VariableRes } from './requestTypes.js';
+import { PauseEventData, PauseEventReceiveData, EndEventData, StackFrameRes, VariableRes } from './requestTypes.js';
 
 interface DdbLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	/** An absolute path to the "program" to debug. */
@@ -73,8 +73,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private _sourceLines: string[];
 	private _sourcePath: string;
 	
-	private _breakpointLocations: DebugProtocol.BreakpointLocation[];
-	
 	private _stackTraceCache: StackFrame[];
 	private _stackTraceChangeFlag: boolean = true;
 	
@@ -113,7 +111,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 		response.body.supportsCancelRequest = false;
 
 		// make VS Code send the breakpointLocations request (所有可能的断点位置)
-		response.body.supportsBreakpointLocationsRequest = false; // TODO: 暂时不知道有什么用
+		// 暂时不知道vsc如何调用这个request，相关代码已删除，可以在commit搜breakpointLocations
+		response.body.supportsBreakpointLocationsRequest = false;
 
 		// make VS Code provide "Step in Target" functionality
 		response.body.supportsStepInTargetsRequest = false;
@@ -188,33 +187,15 @@ export class DdbDebugSession extends LoggingDebugSession {
 			this._sourceLines = this._source.split('\n');
 			this._prerequisites.resolve('sourceLoaded');
 			
-			const res = await this._remote.call('parseScriptWithDebug', [this._source]);
-			// TODO: 当前仅行号，后续添加更多信息
-			this._breakpointLocations = res.map((bp: /*BreakpointLocation*/ number) => {
-				let resBp: BreakpointLocation = {
-					// line: this.convertDebuggerLineToClient(bp.line),
-					line: this.convertDebuggerLineToClient(bp),
-				}
-				// if (bp.column !== undefined) {
-				// 	resBp.column = this.convertDebuggerColumnToClient(bp.column);
-				// }
-				// if (bp.endLine !== undefined) {
-				// 	resBp.endLine = this.convertDebuggerLineToClient(bp.endLine);
-				// }
-				// if (bp.endColumn !== undefined) {
-				// 	resBp.endColumn = this.convertDebuggerColumnToClient(bp.endColumn);
-				// }
-				return resBp;
-			});
+			await this._remote.call('parseScriptWithDebug', [this._source]);
 			this._prerequisites.resolve('scriptResolved');
 		});
 		
 		// this._remote.on('pause', this.handlePause.bind(this));
 		this._remote.on('BREAKPOINT', (data: PauseEventReceiveData) => this.handlePause({ reason: 'breakpoint', ...data }));
 		this._remote.on('STEP', (data: PauseEventReceiveData) => this.handlePause({ reason: 'step', ...data }));
-		this._remote.on('newBreakpointLocations', this.handleNewBreakpointLocations.bind(this));
 		this._remote.on('END', this.handleTerminate.bind(this));
-		this._remote.on('output', this.handleOutput.bind(this));
+		this._remote.on('OUTPUT', this.handleOutput.bind(this));
 		
 		await Promise.all([
 			this._prerequisites.wait('configurationDone'),
@@ -253,18 +234,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this.sendResponse(response);
 		this._prerequisites.resolve('breakpointsSetted');
 	}
-	
-	// TODO: 暂时不知道这个request有什么用
-	// protected override async breakpointLocationsRequest(response: DebugProtocol.BreakpointLocationsResponse, args: DebugProtocol.BreakpointLocationsArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
-	// 	await this._prerequisites.wait('scriptResolved');
-	// 	args.endLine = args.endLine || args.line;
-	// 	const resBpLocations = this._breakpointLocations.filter(bp => bp.line >= args.line && bp.line <= args.endLine!);
-	// 	// TODO: 处理column(vsc会在什么情况下询问column?)
-		
-	// 	response.body = {
-	// 		breakpoints: resBpLocations,
-	// 	};
-	// }
 	
 	protected override threadsRequest(response: DebugProtocol.ThreadsResponse): void {
 		response.body = {
@@ -415,25 +384,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this.sendEvent(new StoppedEvent(reason, DdbDebugSession.threadID));
 	}
 	
-	private handleNewBreakpointLocations({ locations }: NewBpLocationsEventData): void {
-		this._breakpointLocations = locations.map((bp: BreakpointLocation) => {
-			let resBp: BreakpointLocation = {
-				line: this.convertDebuggerLineToClient(bp.line),
-			}
-			if (bp.column !== undefined) {
-				resBp.column = this.convertDebuggerColumnToClient(bp.column);
-			}
-			if (bp.endLine !== undefined) {
-				resBp.endLine = this.convertDebuggerLineToClient(bp.endLine);
-			}
-			if (bp.endColumn !== undefined) {
-				resBp.endColumn = this.convertDebuggerColumnToClient(bp.endColumn);
-			}
-			return resBp;
-		});
-	}
-	
-	private handleTerminate({status}: EndEventData): void {
+	private handleTerminate({ status }: EndEventData): void {
 		if (status === 'FINISHED') {
 			this._remote.terminate();
 			this.sendEvent(new TerminatedEvent());

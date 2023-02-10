@@ -76,6 +76,7 @@ export class Remote {
   /** map<id, message handler>: 通过 rpc message.id 找到对应的 handler, unary rpc 接收方不需要设置 handlers, 发送方需要 */
   private handlers = new Map<number, MessageHandler>();
   
+  /** debug会话不在开启状态时禁止发送请求 */
   private _terminated = false;
   public terminate() {
     this._terminated = true;
