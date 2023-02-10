@@ -77,6 +77,7 @@ import {
     DdbFunctionType,
     format,
     formati,
+    DdbConnectionError,
     type DdbMessage,
     type DdbFunctionDefValue,
     type DdbVectorValue,
@@ -323,7 +324,7 @@ let dataview = {
                     view.webview.options = { enableCommandUris: true, enableScripts: true }
                     view.webview.onDidReceiveMessage(dataview.handle, dataview)
                     view.webview.html = (
-                        await fread(`${ dev ? fpd_src : fpd_ext }dataview/webview.html`)
+                        await fread(`${ dev ? fpd_src : fpd_ext }dataview/webview${ dev ? '.dev' : '' }.html`)
                     ).replaceAll('{host}', `localhost:${server.port}`)
                     .replace('{language}', language)
                 }
@@ -1036,6 +1037,8 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     
     onDidChangeTreeData: Event<void | TreeItem> = this.refresher.event
     
+    single_connection_mode: boolean = false
+    
     connections: DdbConnection[]
     
     connection: DdbConnection
@@ -1057,7 +1060,11 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
             for (const connection of this.connections)
                 connection.disconnect()
         
-        this.connections = workspace.getConfiguration('dolphindb')
+        const config = workspace.getConfiguration('dolphindb')
+        
+        this.single_connection_mode = config.get<boolean>('single_connection_mode')
+        
+        this.connections = config
             .get<Partial<DdbConnection>[]>('connections')
             .map(conn => new DdbConnection(conn))
         
@@ -1066,7 +1073,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     }
     
     on_config_change (event: ConfigurationChangeEvent) {
-        if (event.affectsConfiguration('dolphindb.connections')) {
+        if (event.affectsConfiguration('dolphindb.connections') || event.affectsConfiguration('dolphindb.single_connection_mode')) {
             explorer.load_connections()
             explorer.refresher.fire()
         }
@@ -1077,8 +1084,12 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
             if (connection.name === name) {
                 connection.iconPath = icon_checked
                 this.connection = connection
-            } else
+            } else {
                 connection.iconPath = icon_empty
+                if (this.single_connection_mode)
+                    connection.disconnect()
+            }
+        
         
         console.log(t('切换连接:'), this.connection)
         
@@ -1191,7 +1202,23 @@ class DdbConnection extends TreeItem {
         this.ddb.username = this.username
         this.ddb.password = this.password
         this.ddb.python = this.python
-        await this.ddb.connect()
+        
+        try {
+            await this.ddb.connect()
+        } catch (error) {
+            if (error instanceof DdbConnectionError)
+                window.showErrorMessage(error.message, {
+                    detail: t('先尝试用浏览器访问对应的 server 地址，如: http://192.168.1.111:8848\n') +
+                        t('如果可以打开网页且正常使用，再检查:\n') +
+                        t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
+                        t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n') +
+                        t('调用栈:\n') +
+                        error.stack,
+                    modal: true
+                })
+            throw error
+        }
+        
         
         console.log(`${t('连接成功:')} ${this.name}`)
         this.description = this.url + ' ' + t('已连接')
@@ -1769,7 +1796,7 @@ class DdbServer extends Server {
         
         this.server_ws.on('connection', (websocket, request) => {
             websocket.addEventListener('message', event => {
-                this.remote.handle(event as { data: ArrayBuffer }, websocket)
+                this.remote.handle(event.data as ArrayBuffer, websocket)
             })
         })
         
@@ -1849,13 +1876,10 @@ class DdbServer extends Server {
         let { request } = ctx
         
         if (request.path === '/')
-            request.path = '/index.html'
+            request.path = dev ? '/index.dev.html' : '/index.html'
         
         if (request.path === '/window')
             request.path = '/window.html'
-        
-        if (request.path === '/webview')
-            request.path = '/webview.html'
         
         const { path } = request
         

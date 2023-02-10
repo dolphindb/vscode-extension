@@ -1,4 +1,43 @@
 # Change Log (更新日志)
+
+## [2.0.900] - 2023.02.09
+-   优化连接出现报错的显示信息  
+    Enhanced message for connection error. 
+
+-   左侧面板的连接管理中，在连接后面展示成功连接的状态（已连接） 
+    Added new label “Connected“ next to the name of established connections in the “DOLPHINDB“ view. 
+
+-   优化右上角运行按钮显示内容  
+    Enhanced the layout of buttons for script execution.
+
+-   同步官网用户手册中的函数文档至最新  
+    The function documentation popup is now up to date with the DolphinDB official manual online.
+
+-   优化数据视图显示：表格底部显示表的行、列、类型信息；表内容高度溢出时，总是显示水平滚动条  
+    “DATAVIEW” view enhancements: (1) column, row and data type information is displayed below each table; (2) enhanced horizontal scroll bar to display full table.
+
+-   DolphinDB 终端被关闭后，再次执行脚本会自动打开  
+    Killed DolphinDB terminal will reopen when you run a DolphinDB script again.
+
+-   服务器连接配置为 python 连接增加提示信息  
+    Added tooltip for the `python` attribute of the configuration item dolphindb.connections.
+
+-   VSCode 设置中新增 `dolphindb.single_connection_mode` 配置项，用于设置在切换连接时，是否断开原有连接  
+    New configuration item `dolphindb.single_connection_mode` for specifying whether the old connection will be closed when you switch to a new one.
+
+-   支持显示 decimal32/64 数据及由其组成的 array vector  
+    Support for displaying Decimal32/64 values and array vectors of these two data types.
+
+-   修复终端和数据视图中时间显示不正确的问题  
+    Fixed time display issue in the terminal and “DATAVIEW” view.
+
+-   修复 python session 无法取消作业的问题  
+    Fixed job cancellation issue in Python sessions.
+
+-   关键字高亮逻辑修改，解决 set(), values() 函数被高亮的问题  
+    Enhanced syntax highlighting logic; Fixed highlighting issues with set() and values().
+
+
 ## [2.0.802] - 2022.09.28
 -   数据视图（数组、表格、图等）**支持自适应 VSCode 主题颜色**  
     Bottom data view (array, table, graph, etc.) **Supports adaptive VSCode theme colors**

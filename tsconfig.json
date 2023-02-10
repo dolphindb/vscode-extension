@@ -4,6 +4,7 @@
         
         "./index.ts",
         
+        "./dataview/global.d.ts",
         "./dataview/index.tsx",
         "./dataview/window.tsx",
         "./dataview/webview.tsx",
@@ -42,7 +43,7 @@
         // --- features
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "preserveSymlinks": true,
+        "preserveSymlinks": false,
         "jsx": "react",
         "removeComments": false,
         "preserveConstEnums": true,
