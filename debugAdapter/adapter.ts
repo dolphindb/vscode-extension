@@ -78,6 +78,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	private _scopeCache: Map<number, DebugProtocol.Variable[]> = new Map();
 	
+	private _compileErrorFlag: boolean = false;
+	private _exceptionInfo: DebugProtocol.ExceptionInfoResponse['body'];
+	
 	constructor() {
 		super();
 		
@@ -140,7 +143,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		// ];
 
 		// make VS Code send exceptionInfo request
-		response.body.supportsExceptionInfoRequest = false;
+		response.body.supportsExceptionInfoRequest = true;
 
 		// make VS Code send setVariable request
 		response.body.supportsSetVariable = false;
@@ -191,10 +194,12 @@ export class DdbDebugSession extends LoggingDebugSession {
 			this._prerequisites.resolve('scriptResolved');
 		});
 		
-		// this._remote.on('pause', this.handlePause.bind(this));
-		this._remote.on('BREAKPOINT', (data: PauseEventReceiveData) => this.handlePause({ reason: 'breakpoint', ...data }));
-		this._remote.on('STEP', (data: PauseEventReceiveData) => this.handlePause({ reason: 'step', ...data }));
-		this._remote.on('END', this.handleTerminate.bind(this));
+		// 因为syntax和error服务端返回写到了外层message中，其余事件数据都在data中，这里注册的时候不是很优雅
+		this._remote.on('SYNTAX', this.handleSyntaxErr.bind(this));
+		this._remote.on('ERROR', this.handleException.bind(this));
+		this._remote.on('BREAKPOINT', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'breakpoint', ...data }));
+		this._remote.on('STEP', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'step', ...data }));
+		this._remote.on('END', ({ data }: { data: EndEventData }) => this.handleTerminate(data));
 		this._remote.on('OUTPUT', this.handleOutput.bind(this));
 		
 		await Promise.all([
@@ -246,13 +251,13 @@ export class DdbDebugSession extends LoggingDebugSession {
 		if (this._stackTraceChangeFlag) {
 			const res: StackFrameRes[] = await this._remote.call('stackTrace');
 			res.reverse();
-			this._stackTraceCache = res.map((frame) => {
+			this._stackTraceCache = res.map((frame, index) => {
 				const { stackFrameId, name, line, column } = frame;
 				return new StackFrame(
 					stackFrameId,
-					name ?? this._sourceLines[line].trim(),
+					name ?? index == res.length - 1 ? 'shared' : `line ${line}: ${this._sourceLines[line].trim()}`,
 					this.createSource(this._sourcePath),
-					this.convertDebuggerLineToClient(line),
+					index == res.length - 1 ? 0 : this.convertDebuggerLineToClient(line),
 					this.convertDebuggerColumnToClient(column ?? 0)
 				);
 			});
@@ -266,12 +271,21 @@ export class DdbDebugSession extends LoggingDebugSession {
 			stackFrames = this._stackTraceCache.slice(start, start + args.levels);
 		else
 			stackFrames = this._stackTraceCache.slice(start);
+			
+		if (this._compileErrorFlag) {
+			stackFrames = this._stackTraceCache.slice(-1, this._stackTraceCache.length);
+		}
 		
 		response.body = {
 			stackFrames,
 			totalFrames: this._stackTraceCache.length,
 		};
 		
+		this.sendResponse(response);
+	}
+	
+	protected override exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments, request?: DebugProtocol.Request | undefined): void {
+		response.body = this._exceptionInfo;
 		this.sendResponse(response);
 	}
 	
@@ -396,5 +410,20 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private handleOutput({ text }: { text: string }): void {
 		console.log(text);
 		this.sendEvent(new OutputEvent(text));
+	}
+	
+	private handleSyntaxErr(msg: { message: string }): void {
+		this._compileErrorFlag = true;
+		this.handleException(msg);
+	}
+	
+	private handleException({ message }: { message: string }): void {
+		this._stackTraceChangeFlag = true;
+		this._exceptionInfo = {
+			exceptionId: 'Exception',
+			description: message,
+			breakMode: 'always',
+		}
+		this.sendEvent(new StoppedEvent('exception', DdbDebugSession.threadID, message));
 	}
 }

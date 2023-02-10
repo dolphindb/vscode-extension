@@ -180,10 +180,10 @@ export class Remote {
     try {
       if (event !== undefined) {
         const handler = this.events.get(event);
-        if (msg.message !== 'OK') {
-          // TODO: 用户脚本错误
+        if (msg.message !== 'OK' && !(event === 'ERROR' || event === 'SYNTAX')) {
           throw msg.message;
-        } else if (handler) {
+        }
+        if (handler) {
           await handler(msg);
         } else {
           throw new Error(`"Unknown event from server": ${event}`);
@@ -198,16 +198,17 @@ export class Remote {
         } else {
           throw new Error(`"Unknown function id from server": ${id}`);
         }
+      } else {
+        throw new Error(`"Unknown message from server": ${msg}`);
       }
     } catch (error) {
       console.debug("Handle message error: ", error);
-      throw error;
     }
   }
   
   /** 注册 server 事件 */
   public on(event: string, handler: Function) {
-    this.events.set(event, (msg) => handler(msg.data));
+    this.events.set(event, (msg) => handler(msg));
   }
 
   /**

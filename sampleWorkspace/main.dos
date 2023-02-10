@@ -7,13 +7,14 @@ def toSelf(x){
       y4 = 1;
     return x
 }
+// syntaxErrorrrr
 a = `a`b`c
 b = [100, 200, 300];
 toSelf(a);
 a;
 c = toSelf(b)
 c = sum(b)
-
+// throw "runtime exception!";
 scalar = take(`ABC`XYZ, 6).sort!()
 bigArray = take(1..10000, 10000)
 time = take(2015.01M..2015.03M, 6)
