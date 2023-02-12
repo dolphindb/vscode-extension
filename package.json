@@ -49,5 +49,11 @@
         "upath": "^2.0.1",
         "ws": "^8.12.0",
         "xshell": "^1.0.7"
+    },
+    "pnpm": {
+        "patchedDependencies": {
+            "koa@2.14.1": "patches/koa@2.14.1.patch",
+            "webpack@5.75.0": "patches/webpack@5.75.0.patch"
+        }
     }
 }

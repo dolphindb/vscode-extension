@@ -295,7 +295,10 @@ export async function build_package_json (production: boolean) {
         // 防止 vsce 检测 dependencies 对应的 node_modules 在 ./out/ 下是否安装
         devDependencies: {
             ... dependencies,
-            ... devDependencies
+            ... devDependencies,
+            
+            // 在本地使用最新的 vscode api 而不修改 engines 中的硬性条件（绕过 vsce 检测）
+            '@types/vscode': '^1.68.0'
         },
         
         publisher: 'dolphindb',
