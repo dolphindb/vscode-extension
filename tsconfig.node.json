@@ -8,6 +8,6 @@
         "esModuleInterop": true,
         "outDir": "./",
         "incremental": true,
-        "tsBuildInfoFile": "./out/.tsbuildinfo.node.json"
+        "tsBuildInfoFile": "./node_modules/.tsbuildinfo.node.json"
     }
 }
