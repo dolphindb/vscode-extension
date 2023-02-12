@@ -17,8 +17,8 @@ dependencies:
     specifier: ^1.11.7
     version: 1.11.7
   dolphindb:
-    specifier: ^2.0.922
-    version: 2.0.922(react-dom@18.2.0)
+    specifier: ^2.0.923
+    version: 2.0.923(react-dom@18.2.0)
   koa:
     specifier: ^2.14.1
     version: 2.14.1
@@ -38,8 +38,8 @@ dependencies:
     specifier: ^18.2.0
     version: 18.2.0(react@18.2.0)
   react-object-model:
-    specifier: ^1.0.0
-    version: 1.0.0(react@18.2.0)
+    specifier: ^1.0.1
+    version: 1.0.1(react@18.2.0)
   tslib:
     specifier: ^2.5.0
     version: 2.5.0
@@ -50,8 +50,8 @@ dependencies:
     specifier: ^8.12.0
     version: 8.12.0
   xshell:
-    specifier: ^1.0.6
-    version: 1.0.6(react-dom@18.2.0)
+    specifier: ^1.0.7
+    version: 1.0.7(react-dom@18.2.0)
 
 devDependencies:
   '@svgr/webpack':
@@ -67,13 +67,13 @@ devDependencies:
     specifier: ^18.13.0
     version: 18.13.0
   '@types/react':
-    specifier: ^18.0.27
-    version: 18.0.27
+    specifier: ^18.0.28
+    version: 18.0.28
   '@types/react-dom':
     specifier: ^18.0.10
     version: 18.0.10
   '@types/vscode':
-    specifier: ^1.68.0
+    specifier: ^1.75.0
     version: 1.75.0
   '@types/ws':
     specifier: ^8.5.4
@@ -2017,11 +2017,11 @@ packages:
   /@types/react-dom@18.0.10:
     resolution: {integrity: sha512-E42GW/JA4Qv15wQdqJq8DL4JhNpB3prJgjgapN3qJT9K2zO5IIAQh4VXvCEDupoqAwnz0cY4RlXeC/ajX5SFHg==}
     dependencies:
-      '@types/react': 18.0.27
+      '@types/react': 18.0.28
     dev: true
 
-  /@types/react@18.0.27:
-    resolution: {integrity: sha512-3vtRKHgVxu3Jp9t718R9BuzoD4NcQ8YJ5XRzsSKxNDiDonD2MXIT1TmSkenxuCycZJoQT5d2vE8LwWJxBC1gmA==}
+  /@types/react@18.0.28:
+    resolution: {integrity: sha512-RD0ivG1kEztNBdoAK7lekI9M+azSnitIn85h4iOiaLjaTrMjzslhaqCGaI4IyCJ1RljWiLCEu4jyrLLgqxBTew==}
     dependencies:
       '@types/prop-types': 15.7.5
       '@types/scheduler': 0.16.2
@@ -3067,14 +3067,14 @@ packages:
     resolution: {integrity: sha512-53rsFbGdwMwlF7qvCt0ypLM5V5/Mbl0szB7GPN8y9NCcbknYOeVVXdrXEq+90IwAfrrzt6Hd+u2E2ntakICU8w==}
     dev: false
 
-  /dolphindb@2.0.922(react-dom@18.2.0):
-    resolution: {integrity: sha512-5ID5nWR/uTd+K/wSHaYQ6vsNR560JJqdFeEb1g/fDY9AarJBKJngtgGT4y6bry5nqu4Kl4IRI4gPoHbZNxeEuQ==}
+  /dolphindb@2.0.923(react-dom@18.2.0):
+    resolution: {integrity: sha512-QX1nLUaP9gU4Ut4wYQrysTZLvy//6hlXjouqPe9vbyqnTW1QRl/ZdiuRAvn6y5rDnMHyAoEOrR9sEMq/ZUa3Kw==}
     engines: {node: '>=19.3.0'}
     dependencies:
       dayjs: 1.11.7
       ipaddr.js: 2.0.1
       tslib: 2.5.0
-      xshell: 1.0.6(react-dom@18.2.0)
+      xshell: 1.0.7(react-dom@18.2.0)
     transitivePeerDependencies:
       - bufferutil
       - react-dom
@@ -5223,8 +5223,8 @@ packages:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
     dev: false
 
-  /react-object-model@1.0.0(react@18.2.0):
-    resolution: {integrity: sha512-ZmNDZZDo+PaHaSmyk+2RBjwL6Rt5/MAjM0yzgK/ffIgEgQGlRogqaYr5SLx2fdYix2FCFrBcSxVa19zOdk+Zlg==}
+  /react-object-model@1.0.1(react@18.2.0):
+    resolution: {integrity: sha512-XrvaJUx8bs+dAb9XjOeHsrhtsNlbBhPOi6jPIUe0JHmYrtgoPHG5MozfqkN8hxTfstZBrISToAuhtdgUqd/deA==}
     peerDependencies:
       react: ^18.2.0
     dependencies:
@@ -6361,8 +6361,8 @@ packages:
         optional: true
     dev: false
 
-  /xshell@1.0.6(react-dom@18.2.0):
-    resolution: {integrity: sha512-o8CD7iTCXnM1VX2LqMirjC5AV13aw2G/7FVFy6xtqdqfGbxEFrQoXP+T6vz5wK3LDj13+hJUlEtYSe6aBOHSVg==}
+  /xshell@1.0.7(react-dom@18.2.0):
+    resolution: {integrity: sha512-4zSB8FVheeuuD93TAWYhJTH0TC9pgUBcLT2knWa9p4D2wD4QktEi749FEozlDqbieM/AT/oU9AhsgdK7h2p2oA==}
     engines: {node: '>=19.5.0', vscode: '>=1.74.0'}
     hasBin: true
     dependencies:
@@ -6403,6 +6403,7 @@ packages:
       resolve-path: 1.4.0
       stream-buffers: 3.0.2
       strip-ansi: 7.0.1
+      through2: 4.0.2
       tough-cookie: 4.1.2
       tslib: 2.5.0
       typescript: 4.9.5

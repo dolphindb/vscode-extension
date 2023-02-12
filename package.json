@@ -18,9 +18,9 @@
         "@types/koa": "^2.13.5",
         "@types/koa-compress": "^4.0.3",
         "@types/node": "^18.13.0",
-        "@types/react": "^18.0.27",
+        "@types/react": "^18.0.28",
         "@types/react-dom": "^18.0.10",
-        "@types/vscode": "^1.68.0",
+        "@types/vscode": "^1.75.0",
         "@types/ws": "^8.5.4",
         "css-loader": "^6.7.3",
         "sass": "^1.58.0",
@@ -37,17 +37,17 @@
         "@koa/cors": "^4.0.0",
         "antd": "^5.2.0",
         "dayjs": "^1.11.7",
-        "dolphindb": "^2.0.922",
+        "dolphindb": "^2.0.923",
         "koa": "^2.14.1",
         "koa-compress": "^5.1.0",
         "koa-useragent": "^4.1.0",
         "lodash": "^4.17.21",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "react-object-model": "^1.0.0",
+        "react-object-model": "^1.0.1",
         "tslib": "^2.5.0",
         "upath": "^2.0.1",
         "ws": "^8.12.0",
-        "xshell": "^1.0.6"
+        "xshell": "^1.0.7"
     }
 }
