@@ -37,7 +37,7 @@
         "@koa/cors": "^4.0.0",
         "antd": "^5.2.1",
         "dayjs": "^1.11.7",
-        "dolphindb": "^2.0.924",
+        "dolphindb": "^2.0.926",
         "koa": "^2.14.1",
         "koa-compress": "^5.1.0",
         "koa-useragent": "^4.1.0",

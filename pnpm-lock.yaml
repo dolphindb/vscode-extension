@@ -25,8 +25,8 @@ dependencies:
     specifier: ^1.11.7
     version: 1.11.7
   dolphindb:
-    specifier: ^2.0.924
-    version: 2.0.924(react-dom@18.2.0)
+    specifier: ^2.0.926
+    version: 2.0.926(react-dom@18.2.0)
   koa:
     specifier: ^2.14.1
     version: 2.14.1(patch_hash=p7ybv54qzz4vmboaajk6ep5psi)
@@ -3075,8 +3075,8 @@ packages:
     resolution: {integrity: sha512-53rsFbGdwMwlF7qvCt0ypLM5V5/Mbl0szB7GPN8y9NCcbknYOeVVXdrXEq+90IwAfrrzt6Hd+u2E2ntakICU8w==}
     dev: false
 
-  /dolphindb@2.0.924(react-dom@18.2.0):
-    resolution: {integrity: sha512-Gy9ps89z26RfWwTKta2UlVVbuyfopZWgqxMiHVxZbfA+ewTF+7ZJcDQfBevB4+7X/+CeMKSBfsKhDGBhlXoSOQ==}
+  /dolphindb@2.0.926(react-dom@18.2.0):
+    resolution: {integrity: sha512-DiHeP94UHGQoTiYKLDwPSbNuTcQNO6Z1vdz/Q1V88bQ8T6QiTBGqCvfvI9SPppLJXfSE6adkphhicGGoBiK0kA==}
     engines: {node: '>=19.3.0'}
     dependencies:
       dayjs: 1.11.7
