@@ -1223,6 +1223,8 @@ class DdbConnection extends TreeItem {
                 modal: true
             })
             
+            this.ddb.disconnect()
+            
             throw error
         }
         
