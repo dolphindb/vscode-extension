@@ -38,10 +38,10 @@ export function basicType2DdbObj(value: any): DdbObj {
  */
 export function array2DdbVector(arr: Array<any>): DdbVectorAny {
   const res: DdbObj[] = [];
-  // TODO：类型判断，全是数字传VectorInt，之后可能会有更复杂的类型判断或者取消这个feature
-  if (arr.every(item => typeof item === 'string')) {
+  // 类型判断，全是数字传VectorInt，服务端说这样方便他们处理
+  if (arr.every((item) => typeof item === 'string')) {
     return new DdbVectorString(arr);
-  } else if (arr.every(item => typeof item === 'number')) {
+  } else if (arr.every((item) => typeof item === 'number')) {
     return new DdbVectorInt(arr);
   }
   arr.forEach((item) => {
@@ -62,7 +62,8 @@ export function array2DdbVector(arr: Array<any>): DdbVectorAny {
  * @returns DdbDict
  */
 export function json2DdbDict(data: Object): DdbDict {
-  const keys: string[] = [], values: DdbObj[] = [];
+  const keys: string[] = [],
+    values: DdbObj[] = [];
 
   Object.entries(data).forEach(([key, value]) => {
     keys.push(key);
@@ -89,19 +90,19 @@ export function json2DdbDict(data: Object): DdbDict {
 
 // 文件读写相关
 type FileAccessor = {
-	isWindows: boolean;
-	readFile(path: string): Promise<Uint8Array>;
-	writeFile(path: string, contents: Uint8Array): Promise<void>;
-}
+  isWindows: boolean;
+  readFile(path: string): Promise<Uint8Array>;
+  writeFile(path: string, contents: Uint8Array): Promise<void>;
+};
 
 const fsAccessor: FileAccessor = {
-	isWindows: process.platform === 'win32',
-	readFile(path: string): Promise<Uint8Array> {
-		return fs.readFile(path);
-	},
-	writeFile(path: string, contents: Uint8Array): Promise<void> {
-		return fs.writeFile(path, contents);
-	}
+  isWindows: process.platform === 'win32',
+  readFile(path: string): Promise<Uint8Array> {
+    return fs.readFile(path);
+  },
+  writeFile(path: string, contents: Uint8Array): Promise<void> {
+    return fs.writeFile(path, contents);
+  },
 };
 
 /**
