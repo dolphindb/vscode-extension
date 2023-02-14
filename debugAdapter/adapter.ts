@@ -16,6 +16,8 @@ interface DdbLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments
 	username: string;
 	
 	password: string;
+	
+	autologin: boolean;
 }
 
 /** 等待一些请求返回，用来阻塞依赖于这些请求的函数的锁 */
@@ -63,7 +65,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private _sourcePath: string;
 	
 	// 栈帧、变量等查询时的缓存，server会一次性返回，但vsc会分多次查询
-	private _stackTraceCache: StackFrame[];
+	private _stackTraceCache: StackFrame[] = [];
 	private _stackTraceChangeFlag: boolean = true;
 	private _scopeCache: Map<number, DebugProtocol.Variable[]> = new Map();
 	
@@ -114,7 +116,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	protected override async launchRequest(response: DebugProtocol.LaunchResponse, args: DdbLaunchRequestArguments) {
 		// 传入用户名密码，发送消息发现未登录时自动登录
-		this._remote = new Remote(args.url, args.username, args.password);
+		this._remote = new Remote(args.url, args.username, args.password, args.autologin);
 		
 		// 加载资源
 		this._sourcePath = normalizePathAndCasing(args.program);
@@ -134,6 +136,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._remote.on('STEP', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'step', ...data }));
 		this._remote.on('END', ({ data }: { data: EndEventData }) => this.handleTerminate(data));
 		this._remote.on('OUTPUT', this.handleOutput.bind(this));
+		this._remote.on('SERVER ERROR', this.handleServerError.bind(this));
 		
 		await Promise.all([
 			this._prerequisites.wait('configurationDone'),
@@ -360,5 +363,20 @@ export class DdbDebugSession extends LoggingDebugSession {
 			breakMode: 'always',
 		}
 		this.sendEvent(new StoppedEvent('exception', DdbDebugSession.threadID, message));
+	}
+	
+	// Server出错时对用户的信息展示，内部方法
+	private handleServerError(message: string): void {
+		this._compileErrorFlag = true;
+		this._stackTraceChangeFlag = false;
+		if (!this._stackTraceCache.length) {
+			this._stackTraceCache = [new StackFrame(0, '', this.createSource(this._sourcePath), 0, 0)];
+		}
+		this.sendEvent(new StoppedEvent('exception', DdbDebugSession.threadID, message));
+		this._exceptionInfo = {
+			exceptionId: 'Error',
+			description: message,
+			breakMode: 'always',
+		}
 	}
 }

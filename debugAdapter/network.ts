@@ -81,7 +81,8 @@ export class Remote {
   constructor(
     private url: string,
     private username: string,
-    private password: string
+    private password: string,
+    private autologin: boolean,
   ) {}
 
   get connected() {
@@ -148,7 +149,9 @@ export class Remote {
         protocols: 'debug',
         on_message: this.handle.bind(this),
       });
-      await this.call('login', [this.username, this.password]);
+      if (this.autologin) {
+        await this.call('login', [this.username ?? 'admin', this.password ?? '123456']);
+      }
     } catch (error) {
       this.websocket = undefined;
       console.debug('Connect error: ', error);
@@ -201,8 +204,8 @@ export class Remote {
       } else if (id !== undefined) {
         const handler = this.handlers.get(id);
         if (msg.message !== 'OK') {
-          // TODO: 错误处理，handler中mesaage不为OK时，一般认为是服务端/DA错误
-          throw msg.message;
+          // handler中mesaage不为OK时，一般认为是服务端/DA错误
+          throw new Error(msg.message);
         } else if (handler) {
           await handler(msg);
         } else {
@@ -213,6 +216,7 @@ export class Remote {
       }
     } catch (error) {
       console.debug('Handle message error: ', error);
+      this.events.get('SERVER ERROR')?.(error.message);
     }
   }
 

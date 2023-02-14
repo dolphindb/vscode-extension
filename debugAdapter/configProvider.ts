@@ -35,6 +35,7 @@ class DdbDebugConfigurationProvider implements vscode.DebugConfigurationProvider
     config.url ??= this._explorer.connection.url;
     config.username ??= this._explorer.connection.username;
     config.password ??= this._explorer.connection.password;
+    config.autologin = this._explorer.connection.autologin;
 
     // 并不能在这里限制非.dos文件被选中作为debugee，此时${file}还未被解析成绝对路径
     if (!config.program) {
