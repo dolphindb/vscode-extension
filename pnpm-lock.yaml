@@ -81,8 +81,8 @@ devDependencies:
     specifier: ^18.0.10
     version: 18.0.10
   '@types/vscode':
-    specifier: ^1.75.0
-    version: 1.75.0
+    specifier: ^1.75.1
+    version: 1.75.1
   '@types/ws':
     specifier: ^8.5.4
     version: 8.5.4
@@ -2047,8 +2047,8 @@ packages:
       '@types/node': 18.13.0
     dev: true
 
-  /@types/vscode@1.75.0:
-    resolution: {integrity: sha512-SAr0PoOhJS6FUq5LjNr8C/StBKALZwDVm3+U4pjF/3iYkt3GioJOPV/oB1Sf1l7lROe4TgrMyL5N1yaEgTWycw==}
+  /@types/vscode@1.75.1:
+    resolution: {integrity: sha512-emg7wdsTFzdi+elvoyoA+Q8keEautdQHyY5LNmHVM4PTpY8JgOTVADrGVyXGepJ6dVW2OS5/xnLUWh+nZxvdiA==}
     dev: true
 
   /@types/ws@8.5.4:
