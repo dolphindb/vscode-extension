@@ -176,10 +176,10 @@ export class Remote {
 
   /** 接受server传回的消息，根据id或event决定是返回还是推送的消息，并分发到对应handler */
   private async handle(
-    socketEvent: { data: ArrayBuffer },
+    socketEvent: ArrayBuffer,
     websocket: WebSocket
   ) {
-    const msg = Remote.parse(socketEvent.data) as ReceiveMessage;
+    const msg = Remote.parse(socketEvent) as ReceiveMessage;
 
     const { id, event } = msg;
 
