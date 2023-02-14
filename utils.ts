@@ -1,7 +1,9 @@
 import {
     window,
     Position,
-    Range
+    Range,
+    ConfigurationTarget,
+    commands
 } from 'vscode'
 
 /** 获取选择区域的文本，若选择为空，则根据 selector 确定 (当前 | 全部文本 | 空) */
@@ -76,3 +78,18 @@ export function get_text (selector:
         )
 }
 
+export function open_workbench_settings_ui(target: ConfigurationTarget, options?: {
+    query?: string
+}) {
+    if (target === ConfigurationTarget.Global) {
+        return commands.executeCommand('workbench.action.openSettings', options)
+    }
+    
+    if (target === ConfigurationTarget.Workspace) {
+        return commands.executeCommand('workbench.action.openWorkspaceSettings', options)
+    }
+    
+    if (target === ConfigurationTarget.WorkspaceFolder) {
+        return commands.executeCommand('workbench.action.openFolderSettings', options)
+    }
+}

@@ -86,7 +86,7 @@ import {
 import { constants, keywords } from 'dolphindb/language.js'
 
 import { language, t } from './i18n/index.js'
-import { get_text } from './utils.js'
+import { get_text, open_workbench_settings_ui } from './utils.js'
 
 if (util.inspect.styles.number !== 'green')
     set_inspect_options()
@@ -576,6 +576,29 @@ const ddb_commands = [
     function disconnect_connection (connection: DdbConnection) {
         console.log(t('断开 dolphindb 连接:'), connection)
         connection.disconnect()
+    },
+    
+    async function open_settings(extraQuery?: string) {
+        const configuration = workspace.getConfiguration('dolphindb')
+        const connectionsInspection = configuration.inspect('connections')
+        
+        let target = ConfigurationTarget.Global
+        const query = '@ext:dolphindb.dolphindb-vscode' + extraQuery ? ` ${extraQuery}` : ''
+        switch (true) {
+            case !!connectionsInspection.workspaceValue:
+                target = ConfigurationTarget.Workspace
+                break;
+            case !!connectionsInspection.workspaceFolderValue:
+                target = ConfigurationTarget.WorkspaceFolder
+                break;
+            default:
+                break;
+        }
+        await open_workbench_settings_ui(target, { query })
+    },
+    
+    async function open_connections_setting() {
+        commands.executeCommand('dolphindb.open_settings', 'connections')
     },
     
     async function inspect_variable (ddbvar: DdbVar) {
@@ -1074,7 +1097,7 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
         }
     }
     
-    set_connection (name: string) {
+    async set_connection (name: string) {
         for (let connection of this.connections)
             if (connection.name === name) {
                 connection.iconPath = icon_checked
@@ -1088,12 +1111,25 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
         
         console.log(t('切换连接:'), this.connection)
         
+        if (!this.connection.connected) {
+            this.connection.disconnect()
+            await this.connection.connect()
+        }
         statbar.set(this.connection.running)
         
+        await this.connection.update()
         this.refresher.fire()
     }
     
     getTreeItem (node: TreeItem): TreeItem | Thenable<TreeItem> {
+        if (node instanceof DdbVar) {
+            node.command = {
+                title: 'dolphindb.inspect_variable',
+                command: 'dolphindb.inspect_variable',
+                arguments: [node],
+            }
+        }
+        
         return node
     }
     
