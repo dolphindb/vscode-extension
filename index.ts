@@ -569,8 +569,8 @@ const ddb_commands = [
         await connection.ddb.cancel()
     },
     
-    function set_connection (name: string) {
-        explorer.set_connection(name)
+    async function set_connection (name: string) {
+        await explorer.set_connection(name)
     },
     
     function disconnect_connection (connection: DdbConnection) {
@@ -583,7 +583,7 @@ const ddb_commands = [
         const connectionsInspection = configuration.inspect('connections')
         
         let target = ConfigurationTarget.Global
-        const query = '@ext:dolphindb.dolphindb-vscode' + extraQuery ? ` ${extraQuery}` : ''
+        const query = `@ext:dolphindb.dolphindb-vscode${extraQuery ? ` ${extraQuery}` : ''}`
         switch (true) {
             case !!connectionsInspection.workspaceValue:
                 target = ConfigurationTarget.Workspace
@@ -1111,14 +1111,16 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
         
         console.log(t('切换连接:'), this.connection)
         
-        if (!this.connection.connected) {
-            this.connection.disconnect()
-            await this.connection.connect()
+        try {
+            if (!this.connection.connected) {
+                this.connection.disconnect()
+                await this.connection.connect()
+                await this.connection.update()
+            }
+        } finally {
+            statbar.set(this.connection.running)
+            this.refresher.fire()
         }
-        statbar.set(this.connection.running)
-        
-        await this.connection.update()
-        this.refresher.fire()
     }
     
     getTreeItem (node: TreeItem): TreeItem | Thenable<TreeItem> {
@@ -1238,7 +1240,7 @@ class DdbConnection extends TreeItem {
         try {
             await this.ddb.connect()
         } catch (error) {
-            window.showErrorMessage(error.message, {
+            const ret = await window.showErrorMessage(error.message, {
                 detail: t('连接数据库失败，当前连接配置为:\n') +
                     inspect(
                         {
@@ -1257,7 +1259,14 @@ class DdbConnection extends TreeItem {
                     t('调用栈:\n') +
                     error.stack,
                 modal: true
+            }, {
+                title: t('编辑配置'),
+                command: 'dolphindb.open_connections_setting'
             })
+            
+            if (ret && ret.command) {
+                commands.executeCommand(ret.command)
+            }
             
             this.ddb.disconnect()
             

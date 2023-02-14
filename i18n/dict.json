@@ -247,5 +247,8 @@
     },
     "如果可以打开网页且正常登录使用，再检查:\n": {
         "en": "If you can open the webpage and log in normally, check:"
+    },
+    "编辑配置": {
+        "en": "Edit Setting"
     }
 }
