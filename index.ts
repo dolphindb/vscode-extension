@@ -86,7 +86,7 @@ import {
 import { constants, keywords } from 'dolphindb/language.js'
 
 import { language, t } from './i18n/index.js'
-import { get_text } from './utils.js'
+import { get_text, open_workbench_settings_ui } from './utils.js'
 
 if (util.inspect.styles.number !== 'green')
     set_inspect_options()
@@ -569,13 +569,35 @@ const ddb_commands = [
         await connection.ddb.cancel()
     },
     
-    function set_connection (name: string) {
-        explorer.set_connection(name)
+    async function set_connection (name: string) {
+        await explorer.set_connection(name)
     },
     
     function disconnect_connection (connection: DdbConnection) {
         console.log(t('断开 dolphindb 连接:'), connection)
         connection.disconnect()
+    },
+    
+    async function open_settings (query?: string) {
+        const connectionsInspection = workspace.getConfiguration('dolphindb').inspect('connections')
+        
+        let target = ConfigurationTarget.Global
+        switch (true) {
+            case !!connectionsInspection.workspaceValue:
+                target = ConfigurationTarget.Workspace
+                break
+            case !!connectionsInspection.workspaceFolderValue:
+                target = ConfigurationTarget.WorkspaceFolder
+                break
+            default:
+                break
+        }
+        
+        await open_workbench_settings_ui(target, { query: `@ext:dolphindb.dolphindb-vscode${query ? ` ${query}` : ''}` })
+    },
+    
+    async function open_connection_settings () {
+        await commands.executeCommand('dolphindb.open_settings', 'connections')
     },
     
     async function inspect_variable (ddbvar: DdbVar) {
@@ -1074,7 +1096,7 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
         }
     }
     
-    set_connection (name: string) {
+    async set_connection (name: string) {
         for (let connection of this.connections)
             if (connection.name === name) {
                 connection.iconPath = icon_checked
@@ -1088,12 +1110,27 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
         
         console.log(t('切换连接:'), this.connection)
         
-        statbar.set(this.connection.running)
-        
-        this.refresher.fire()
+        try {
+            if (!this.connection.connected) {
+                this.connection.disconnect()
+                await this.connection.connect()
+                await this.connection.update()
+            }
+        } finally {
+            statbar.set(this.connection.running)
+            this.refresher.fire()
+        }
     }
     
     getTreeItem (node: TreeItem): TreeItem | Thenable<TreeItem> {
+        if (node instanceof DdbVar) {
+            node.command = {
+                title: 'dolphindb.inspect_variable',
+                command: 'dolphindb.inspect_variable',
+                arguments: [node],
+            }
+        }
+        
         return node
     }
     
@@ -1202,7 +1239,7 @@ class DdbConnection extends TreeItem {
         try {
             await this.ddb.connect()
         } catch (error) {
-            window.showErrorMessage(error.message, {
+            const ret = await window.showErrorMessage(error.message, {
                 detail: t('连接数据库失败，当前连接配置为:\n') +
                     inspect(
                         {
@@ -1221,7 +1258,13 @@ class DdbConnection extends TreeItem {
                     t('调用栈:\n') +
                     error.stack,
                 modal: true
+            }, {
+                title: t('编辑配置'),
+                command: 'dolphindb.open_connection_settings'
             })
+            
+            if (ret && ret.command)
+                commands.executeCommand(ret.command)
             
             this.ddb.disconnect()
             
