@@ -1239,29 +1239,37 @@ class DdbConnection extends TreeItem {
         try {
             await this.ddb.connect()
         } catch (error) {
-            const ret = await window.showErrorMessage(error.message, {
-                detail: t('连接数据库失败，当前连接配置为:\n') +
-                    inspect(
-                        {
-                            url: this.url,
-                            autologin: this.autologin,
-                            username: this.username,
-                            password: this.password,
-                            python: this.python,
-                        },
-                        { colors: false }
-                    ) + '\n' +
-                    t('先尝试用浏览器访问对应的 server 地址，如: http://192.168.1.111:8848\n') +
-                    t('如果可以打开网页且正常登录使用，再检查:\n') +
-                    t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
-                    t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n') +
-                    t('调用栈:\n') +
-                    error.stack,
-                modal: true
-            }, {
-                title: t('编辑配置'),
-                command: 'dolphindb.open_connection_settings'
-            })
+            const ret = await window.showErrorMessage(
+                error.message,
+                {
+                    detail: t('连接数据库失败，当前连接配置为:\n') +
+                        inspect(
+                            {
+                                url: this.url,
+                                autologin: this.autologin,
+                                username: this.username,
+                                password: this.password,
+                                python: this.python,
+                            },
+                            { colors: false }
+                        ) + '\n' +
+                        t('先尝试用浏览器访问对应的 server 地址，如: http://192.168.1.111:8848\n') +
+                        t('如果可以打开网页且正常登录使用，再检查:\n') +
+                        t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
+                        t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n') +
+                        t('调用栈:\n') +
+                        error.stack,
+                    modal: true
+                },
+                {
+                    title: t('确认'),
+                    isCloseAffordance: true
+                },
+                {
+                    title: t('编辑配置'),
+                    command: 'dolphindb.open_connection_settings'
+                }
+            )
             
             if (ret && ret.command)
                 commands.executeCommand(ret.command)
