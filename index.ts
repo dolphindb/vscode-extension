@@ -314,7 +314,7 @@ let dataview = {
     
     register () {
         window.registerWebviewViewProvider(
-            'dolphindb.dataview',
+            'ddbdataview',
             {
                 async resolveWebviewView (view, ctx, canceller) {
                     dataview.view = view
@@ -1123,14 +1123,6 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
     }
     
     getTreeItem (node: TreeItem): TreeItem | Thenable<TreeItem> {
-        if (node instanceof DdbVar) {
-            node.command = {
-                title: 'dolphindb.inspect_variable',
-                command: 'dolphindb.inspect_variable',
-                arguments: [node],
-            }
-        }
-        
         return node
     }
     
@@ -1650,6 +1642,12 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         this.contextValue = DdbVar.contexts[this.form] || 'var'
         
         this.iconPath = DdbVar.icon
+        
+        this.command = {
+            title: 'dolphindb.inspect_variable',
+            command: 'dolphindb.inspect_variable',
+            arguments: [this],
+        }
     }
     
     
@@ -1719,6 +1717,8 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         
         for (const subscriber of server.subscribers_inspection)
             subscriber(...args)
+        
+        await commands.executeCommand('workbench.view.extension.ddbpanel')
     }
     
     

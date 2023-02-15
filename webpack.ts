@@ -466,7 +466,7 @@ export async function build_package_json (production: boolean) {
                 ddbpanel: [
                     {
                         type: 'webview',
-                        id: 'dolphindb.dataview',
+                        id: 'ddbdataview',
                         name: '%configs.ddbpanel.name%',
                         contextualTitle: 'DolphinDB',
                         icon: `${ production ? '.' : '..' }/icons/object.svg`,
@@ -534,12 +534,12 @@ export async function build_package_json (production: boolean) {
                     {
                         command: 'dolphindb.reload_dataview',
                         group: 'navigation',
-                        when: 'view == dolphindb.dataview',
+                        when: 'view == ddbdataview',
                     },
                     {
                         command: 'dolphindb.open_variable',
                         group: 'navigation',
-                        when: 'view == dolphindb.dataview',
+                        when: 'view == ddbdataview',
                     }
                 ],
                 
