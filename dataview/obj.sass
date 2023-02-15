@@ -200,9 +200,11 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
         color: $font-color
         border-color: $border-color !important
 
-    .ant-table-thead > tr > th
+    .ant-table-thead > tr > th,
+    .ant-table-thead > tr > td
         text-align: center !important
-        
+        background-color: $table-head-color !important
+        border-color: $border-color !important
     
     .ant-table.ant-table-bordered > .ant-table-container > .ant-table-content > table,
     .ant-table.ant-table-bordered > .ant-table-container > .ant-table-header > table
@@ -220,9 +222,6 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
         
     .ant-table-tbody > tr > td
         transition: none
-
-    .ant-table-thead > tr > th
-        background-color: $table-head-color !important
         
     .ant-table table
         width: unset
