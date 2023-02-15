@@ -62,11 +62,11 @@ import {
     inspect,
     set_inspect_options,
     delay,
-    delta2str,
     fread,
     genid,
     assert,
     fread_json,
+    Timer,
 } from 'xshell'
 import { Server } from 'xshell/server.js'
 import {
@@ -456,23 +456,23 @@ async function _execute (text: string) {
     let { ddb } = connection
     let { printer } = term
     
-    // let timer = new Timer()
-    const time_start = dayjs()
+    let timer = new Timer()
     
     printer.fire(
         '\r\n' +
-        // `${new Date(timer.started).to_time_str(true)}  ${connection.name}\r\n`
-        `${time_start.format('YYYY.MM.DD HH:mm:ss.SSS')}  ${connection.name}\r\n`
+        `${dayjs(timer.started).format('HH:mm:ss.SSS')}  ${connection.name}\r\n`
     )
     
     connection.running = true
     statbar.set_running()
     
+    let obj: DdbObj
+    
     try {
-        // TEST
+        // TEST: 测试 RefId 错误链接
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
         
-        const obj = await ddb.eval(
+        obj = await ddb.eval(
             text.replace(/\r\n/g, '\n'),
             {
                 listener (message) {
@@ -488,53 +488,62 @@ async function _execute (text: string) {
                 }
             }
         )
-        
-        
-        let objstr: string
-        let auto_insepct = false
-        
-        switch (obj.form) {
-            case DdbForm.vector:
-            case DdbForm.set:
-            case DdbForm.matrix:
-            case DdbForm.table:
-            case DdbForm.chart:
-            case DdbForm.dict:
-                lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
-                auto_insepct = true
-                objstr = obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
-                break
-            
-            default:
-                objstr = obj.type === DdbType.void ?
-                        ''
-                    :
-                        inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
-        }
-        
-        
-        printer.fire(
-            objstr +
-             // timer.getstr() + '\r\n'
-            `(${delta2str(dayjs().diff(time_start))})\r\n`
-        )
-        
-        await connection.update()
-        
-        if (auto_insepct)
-            await lastvar.inspect()
     } catch (error) {
+        connection.running = false
+        if (connection === explorer.connection)  // 可能执行过程中切换了连接
+            statbar.set_idle()
+        
+        term.show(true)
+        
         console.log(error)
         let message = error.message as string
         if (message.includes('RefId:'))
             message = message.replaceAll(/RefId:\s*(\w+)/g, 'RefId: $1'.blue.underline)
         printer.fire(message.replaceAll('\n', '\r\n').red + '\r\n')
-        // 执行 ddb 脚本遇到错误是可以预期的，也做了处理，不需要再向上抛出
-    } finally {
-        connection.running = false
-        if (connection === explorer.connection)  // 可能执行过程中切换了连接
-            statbar.set_idle()
+        
+        // 执行 ddb 脚本遇到错误是可以预期的，也做了处理，不需要再向上抛出，直接返回
+        return
     }
+    
+    timer.stop()
+    
+    await connection.update()
+    
+    connection.running = false
+    if (connection === explorer.connection)  // 可能执行过程中切换了连接
+        statbar.set_idle()
+    
+    let to_inspect = false
+    let objstr: string
+    
+    switch (obj.form) {
+        case DdbForm.vector:
+        case DdbForm.set:
+        case DdbForm.matrix:
+        case DdbForm.table:
+        case DdbForm.chart:
+        case DdbForm.dict:
+            lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+            to_inspect = true
+            objstr = obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
+            break
+        
+        default:
+            term.show(true)
+            
+            objstr = obj.type === DdbType.void ?
+                    ''
+                :
+                    inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
+    }
+    
+    printer.fire(
+        objstr +
+        timer.getstr() + '\r\n'
+    )
+    
+    if (to_inspect)
+        await lastvar.inspect()
 }
 
 
@@ -1709,6 +1718,12 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         if (open && !server.subscribers_inspection.length) {
             await commands.executeCommand('vscode.open', server.web_url)
             await delay(3000)
+        }
+        
+        // 遇到 dataview 还未加载时，先等待其加载，再 inspect 变量
+        if (!dataview.view) {
+            await commands.executeCommand('workbench.view.extension.ddbpanel')
+            await delay(2000)
         }
         
         const args = [
