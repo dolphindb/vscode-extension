@@ -490,32 +490,39 @@ async function _execute (text: string) {
         )
         
         
+        let objstr: string
+        let auto_insepct = false
+        
+        switch (obj.form) {
+            case DdbForm.vector:
+            case DdbForm.set:
+            case DdbForm.matrix:
+            case DdbForm.table:
+            case DdbForm.chart:
+            case DdbForm.dict:
+                lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+                auto_insepct = true
+                objstr = obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
+                break
+            
+            default:
+                objstr = obj.type === DdbType.void ?
+                        ''
+                    :
+                        inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
+        }
+        
+        
         printer.fire(
-            (() => {
-                switch (obj.form) {
-                    case DdbForm.vector:
-                    case DdbForm.set:
-                    case DdbForm.matrix:
-                    case DdbForm.table:
-                    case DdbForm.chart:
-                    case DdbForm.dict: {
-                        lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
-                        return obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
-                    }
-                    
-                    default: {
-                        return obj.type === DdbType.void ?
-                                ''
-                            :
-                                inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
-                    }
-                }
-             })() +
+            objstr +
              // timer.getstr() + '\r\n'
             `(${delta2str(dayjs().diff(time_start))})\r\n`
         )
         
         await connection.update()
+        
+        if (auto_insepct)
+            await lastvar.inspect()
     } catch (error) {
         console.log(error)
         let message = error.message as string
@@ -602,8 +609,18 @@ const ddb_commands = [
     
     async function inspect_variable (ddbvar: DdbVar) {
         console.log(t('查看 dolphindb 变量:'), ddbvar)
-        lastvar = ddbvar
-        await ddbvar.inspect()
+        
+        switch (ddbvar.form) {
+            case DdbForm.vector:
+            case DdbForm.set:
+            case DdbForm.matrix:
+            case DdbForm.table:
+            case DdbForm.chart:
+            case DdbForm.dict:
+                lastvar = ddbvar
+                await ddbvar.inspect()
+                break
+        }
     },
     
     async function open_variable (ddbvar: DdbVar = lastvar) {
@@ -1718,7 +1735,7 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         for (const subscriber of server.subscribers_inspection)
             subscriber(...args)
         
-        await commands.executeCommand('workbench.view.extension.ddbpanel')
+        await commands.executeCommand('workbench.view.extension.ddbdataview')
     }
     
     
