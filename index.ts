@@ -1735,7 +1735,7 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         for (const subscriber of server.subscribers_inspection)
             subscriber(...args)
         
-        await commands.executeCommand('workbench.view.extension.ddbdataview')
+        await commands.executeCommand('workbench.view.extension.ddbpanel')
     }
     
     
