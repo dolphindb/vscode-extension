@@ -102,6 +102,8 @@ class DataViewModel extends Model<DataViewModel> {
             })
         
         remote.send({ id: id_inspection, func: 'subscribe_inspection' })
+        
+        await remote.call('ready', ['page'])
     }
 }
 

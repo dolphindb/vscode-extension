@@ -61,7 +61,6 @@ import {
     Remote,
     inspect,
     set_inspect_options,
-    delay,
     fread,
     genid,
     assert,
@@ -243,6 +242,10 @@ let term: DdbTerminal
 
 type ViewMessageHandler = (message: Message, view: WebviewView) => void | any[] | Promise<void | any[]>
 
+let pwebview_resolve: Function
+
+let pwebview = new Promise<void>(resolve => { pwebview_resolve = resolve })
+
 /** 基于 vscode webview 相关的消息函数 postMessage, onDidReceiveMessage, window.addEventListener('message', ...) 实现的 rpc  */
 let dataview = {
     view: null as WebviewView,
@@ -256,6 +259,12 @@ let dataview = {
     subscribers_repl: [ ] as ((message: DdbMessage, ddb: DDB, options?: InspectOptions) => void)[],
     
     subscribers_inspection: [ ] as ((ddbvar: Partial<DdbVar>, open: boolean, options?: InspectOptions, buffer?: Uint8Array, le?: boolean) => any)[],
+    
+    pwebview,
+    pwebview_resolve,
+    
+    ppage: Promise.resolve(),
+    ppage_resolve: () => { },
     
     
     /** 通过 rpc message.func 被调用的 rpc 函数 */
@@ -289,6 +298,7 @@ let dataview = {
             })
         },
         
+        
         async subscribe_inspection ({ id }, view) {
             console.log(t('webview 已订阅 inspection'))
             
@@ -304,10 +314,31 @@ let dataview = {
             })
         },
         
+        
         async eval ({ data: [node, script] }: Message<[string, string]>, view) {
             let { ddb } = explorer.connections.find(({ name }) => name === node)
             const { buffer, le } = await ddb.eval(script, { parse_object: false })
             return [buffer, le]
+        },
+        
+        
+        ready ({ data: [ctx] }: Message<[ctx: 'page' | 'webview']>, view) {
+            switch (ctx) {
+                case 'page':
+                    console.log(t('dataview 已准备就绪'))
+                    dataview.ppage_resolve()
+                    break
+                
+                case 'webview':
+                    console.log(t('dataview 已准备就绪'))
+                    dataview.pwebview_resolve()
+                    break
+                
+                default:
+                    throw new Error(`使用了未定义的 ctx 参数 (${ctx}) 调用 dataview.ready`)
+            }
+            
+            return [ ]
         }
     } as Record<string, ViewMessageHandler>,
     
@@ -1715,15 +1746,22 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     
     /** - open?: 是否在新窗口中打开 */
     async inspect (open = false) {
-        if (open && !server.subscribers_inspection.length) {
-            await commands.executeCommand('vscode.open', server.web_url)
-            await delay(3000)
-        }
-        
-        // 遇到 dataview 还未加载时，先等待其加载，再 inspect 变量
-        if (!dataview.view) {
-            await commands.executeCommand('workbench.view.extension.ddbpanel')
-            await delay(2000)
+        if (open) {
+            if (!server.subscribers_inspection) {
+                dataview.ppage = new Promise<void>(resolve => {
+                    dataview.ppage_resolve = resolve
+                })
+                
+                await commands.executeCommand('vscode.open', server.web_url)
+                
+                await dataview.ppage
+            }
+        } else {
+            // 遇到 dataview 还未加载时，先等待其加载，再 inspect 变量
+            if (!dataview.view)
+                await commands.executeCommand('workbench.view.extension.ddbpanel')
+            
+            await dataview.pwebview
         }
         
         const args = [
@@ -1750,7 +1788,8 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         for (const subscriber of server.subscribers_inspection)
             subscriber(...args)
         
-        await commands.executeCommand('workbench.view.extension.ddbpanel')
+        if (!open)
+            await commands.executeCommand('workbench.view.extension.ddbpanel')
     }
     
     
