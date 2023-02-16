@@ -68,6 +68,10 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private _stackTraceCache: StackFrame[] = [];
 	private _stackTraceChangeFlag: boolean = true;
 	private _scopeCache: Map<number, DebugProtocol.Variable[]> = new Map();
+	private _breakpoints: Array<{
+    line: number;
+    verified: boolean;
+	}> = [];
 	
 	// 初始化时compile error，则在文档首部显示异常展示错误信息
 	private _compileErrorFlag: boolean = false;
@@ -115,7 +119,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async launchRequest(response: DebugProtocol.LaunchResponse, args: DdbLaunchRequestArguments) {
-		// 传入用户名密码，发送消息发现未登录时自动登录
+		// 传入用户名密码，发送消息发现未连接时建立连接，同时根据autologin决定是否登录
 		this._remote = new Remote(args.url, args.username, args.password, args.autologin);
 		
 		// 加载资源
@@ -163,6 +167,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 			// 服务端会返回设置成功的断点，不成功的断点（如空行）直接标记为未命中
 			verified: res.includes(this.convertClientLineToDebugger(line)),
 		}));
+		
+		this._breakpoints = actualBreakpoints;
 		
 		response.body = {
 			breakpoints: actualBreakpoints,
@@ -296,28 +302,48 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this.sendResponse(response);
 	}
 	
-	protected override continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): void {
-		this._remote.call('continueRun');
+	protected override async continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments): Promise<void> {
+		await this._remote.call('continueRun');
+		this.sendResponse(response);
 	}
 	
-	protected override pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): void {
-		this._remote.call('pause');
+	protected override async pauseRequest(response: DebugProtocol.PauseResponse, args: DebugProtocol.PauseArguments): Promise<void> {
+		await this._remote.call('pauseRun');
+		this.sendResponse(response);
 	}
 	
-	protected override nextRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.NextArguments): void {
-		this._remote.call('stepOver');
+	protected override async nextRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.NextArguments): Promise<void> {
+		await this._remote.call('stepOver');
+		this.sendResponse(response);
 	}
 	
-	protected override stepInRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.StepInArguments): void {
-		this._remote.call('stepInto');
+	protected override async stepInRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.StepInArguments): Promise<void> {
+		await this._remote.call('stepInto');
+		this.sendResponse(response);
 	}
 	
-	protected override stepOutRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.StepOutArguments): void {
-		this._remote.call('stepOut');
+	protected override async stepOutRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.StepOutArguments): Promise<void> {
+		await this._remote.call('stepOut');
+		this.sendResponse(response);
 	}
 	
-	protected override restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments, request?: DebugProtocol.Request | undefined): void {
-		this._remote.call('restartRun');
+	protected override async restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+		// const newSource = await loadSource(this._sourcePath);
+		// this._source = newSource.replace(/\r\n/g, '\n');
+		// this._sourceLines = this._source.split('\n');
+		
+		// await this._remote.call('parseScriptWithDebug', [this._source]);
+		
+		// const res = await this._remote.call('setBreaks', [this._breakpoints.map(bp => bp.line)]) as number[]
+		// const actualBreakpoints = this._breakpoints.map(bp => ({
+		// 	line: bp.line,
+		// 	// 服务端会返回设置成功的断点，不成功的断点（如空行）直接标记为未命中
+		// 	verified: res.includes(this.convertClientLineToDebugger(bp.line)),
+		// }));
+		// this._breakpoints = actualBreakpoints;
+		
+		 await this._remote.call('restartRun');
+		this.sendResponse(response);
 	}
 	
 	protected override async disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request): Promise<void> {

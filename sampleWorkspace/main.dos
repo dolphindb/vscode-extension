@@ -19,6 +19,7 @@ scalar = take(`ABC`XYZ, 6).sort!()
 bigArray = take(1..10000, 10000)
 time = take(2015.01M..2015.03M, 6)
 price = norm(100, 10, 3) join norm(50, 5, 3)
+// sleep(5000);
 volume = norm(2000, 400, 3) join norm(1000, 300, 3);
 table = table(scalar, time, price.round(2) as price, volume.round(0) as volume);
 pair = 1:3 + 1;
