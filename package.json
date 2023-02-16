@@ -19,7 +19,7 @@
         "@types/koa-compress": "^4.0.3",
         "@types/node": "^18.13.0",
         "@types/react": "^18.0.28",
-        "@types/react-dom": "^18.0.10",
+        "@types/react-dom": "^18.0.11",
         "@types/vscode": "^1.75.1",
         "@types/ws": "^8.5.4",
         "css-loader": "^6.7.3",
