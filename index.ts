@@ -61,12 +61,11 @@ import {
     Remote,
     inspect,
     set_inspect_options,
-    delay,
-    delta2str,
     fread,
     genid,
     assert,
     fread_json,
+    Timer,
 } from 'xshell'
 import { Server } from 'xshell/server.js'
 import {
@@ -245,6 +244,10 @@ let term: DdbTerminal
 
 type ViewMessageHandler = (message: Message, view: WebviewView) => void | any[] | Promise<void | any[]>
 
+let pwebview_resolve: Function
+
+let pwebview = new Promise<void>(resolve => { pwebview_resolve = resolve })
+
 /** 基于 vscode webview 相关的消息函数 postMessage, onDidReceiveMessage, window.addEventListener('message', ...) 实现的 rpc  */
 let dataview = {
     view: null as WebviewView,
@@ -258,6 +261,12 @@ let dataview = {
     subscribers_repl: [ ] as ((message: DdbMessage, ddb: DDB, options?: InspectOptions) => void)[],
     
     subscribers_inspection: [ ] as ((ddbvar: Partial<DdbVar>, open: boolean, options?: InspectOptions, buffer?: Uint8Array, le?: boolean) => any)[],
+    
+    pwebview,
+    pwebview_resolve,
+    
+    ppage: Promise.resolve(),
+    ppage_resolve: () => { },
     
     
     /** 通过 rpc message.func 被调用的 rpc 函数 */
@@ -291,6 +300,7 @@ let dataview = {
             })
         },
         
+        
         async subscribe_inspection ({ id }, view) {
             console.log(t('webview 已订阅 inspection'))
             
@@ -306,10 +316,18 @@ let dataview = {
             })
         },
         
+        
         async eval ({ data: [node, script] }: Message<[string, string]>, view) {
             let { ddb } = explorer.connections.find(({ name }) => name === node)
             const { buffer, le } = await ddb.eval(script, { parse_object: false })
             return [buffer, le]
+        },
+        
+        
+        ready (message, view) {
+            console.log(t('dataview 已准备就绪'))
+            dataview.pwebview_resolve()
+            return [ ]
         }
     } as Record<string, ViewMessageHandler>,
     
@@ -458,23 +476,23 @@ async function _execute (text: string) {
     let { ddb } = connection
     let { printer } = term
     
-    // let timer = new Timer()
-    const time_start = dayjs()
+    let timer = new Timer()
     
     printer.fire(
         '\r\n' +
-        // `${new Date(timer.started).to_time_str(true)}  ${connection.name}\r\n`
-        `${time_start.format('YYYY.MM.DD HH:mm:ss.SSS')}  ${connection.name}\r\n`
+        `${dayjs(timer.started).format('HH:mm:ss.SSS')}  ${connection.name}\r\n`
     )
     
     connection.running = true
     statbar.set_running()
     
+    let obj: DdbObj
+    
     try {
-        // TEST
+        // TEST: 测试 RefId 错误链接
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
         
-        const obj = await ddb.eval(
+        obj = await ddb.eval(
             text.replace(/\r\n/g, '\n'),
             {
                 listener (message) {
@@ -490,53 +508,62 @@ async function _execute (text: string) {
                 }
             }
         )
-        
-        
-        let objstr: string
-        let auto_insepct = false
-        
-        switch (obj.form) {
-            case DdbForm.vector:
-            case DdbForm.set:
-            case DdbForm.matrix:
-            case DdbForm.table:
-            case DdbForm.chart:
-            case DdbForm.dict:
-                lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
-                auto_insepct = true
-                objstr = obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
-                break
-            
-            default:
-                objstr = obj.type === DdbType.void ?
-                        ''
-                    :
-                        inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
-        }
-        
-        
-        printer.fire(
-            objstr +
-             // timer.getstr() + '\r\n'
-            `(${delta2str(dayjs().diff(time_start))})\r\n`
-        )
-        
-        await connection.update()
-        
-        if (auto_insepct)
-            await lastvar.inspect()
     } catch (error) {
+        connection.running = false
+        if (connection === explorer.connection)  // 可能执行过程中切换了连接
+            statbar.set_idle()
+        
+        term.show(true)
+        
         console.log(error)
         let message = error.message as string
         if (message.includes('RefId:'))
             message = message.replaceAll(/RefId:\s*(\w+)/g, 'RefId: $1'.blue.underline)
         printer.fire(message.replaceAll('\n', '\r\n').red + '\r\n')
-        // 执行 ddb 脚本遇到错误是可以预期的，也做了处理，不需要再向上抛出
-    } finally {
-        connection.running = false
-        if (connection === explorer.connection)  // 可能执行过程中切换了连接
-            statbar.set_idle()
+        
+        // 执行 ddb 脚本遇到错误是可以预期的，也做了处理，不需要再向上抛出，直接返回
+        return
     }
+    
+    timer.stop()
+    
+    await connection.update()
+    
+    connection.running = false
+    if (connection === explorer.connection)  // 可能执行过程中切换了连接
+        statbar.set_idle()
+    
+    let to_inspect = false
+    let objstr: string
+    
+    switch (obj.form) {
+        case DdbForm.vector:
+        case DdbForm.set:
+        case DdbForm.matrix:
+        case DdbForm.table:
+        case DdbForm.chart:
+        case DdbForm.dict:
+            lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+            to_inspect = true
+            objstr = obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
+            break
+        
+        default:
+            term.show(true)
+            
+            objstr = obj.type === DdbType.void ?
+                    ''
+                :
+                    inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
+    }
+    
+    printer.fire(
+        objstr +
+        timer.getstr() + '\r\n'
+    )
+    
+    if (to_inspect)
+        await lastvar.inspect()
 }
 
 
@@ -1710,9 +1737,22 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     
     /** - open?: 是否在新窗口中打开 */
     async inspect (open = false) {
-        if (open && !server.subscribers_inspection.length) {
-            await commands.executeCommand('vscode.open', server.web_url)
-            await delay(3000)
+        if (open) {
+            if (!server.subscribers_inspection.length) {
+                dataview.ppage = new Promise<void>(resolve => {
+                    dataview.ppage_resolve = resolve
+                })
+                
+                await commands.executeCommand('vscode.open', server.web_url)
+                
+                await dataview.ppage
+            }
+        } else {
+            // 遇到 dataview 还未加载时，先等待其加载，再 inspect 变量
+            if (!dataview.view)
+                await commands.executeCommand('workbench.view.extension.ddbpanel')
+            
+            await dataview.pwebview
         }
         
         const args = [
@@ -1739,7 +1779,8 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         for (const subscriber of server.subscribers_inspection)
             subscriber(...args)
         
-        await commands.executeCommand('workbench.view.extension.ddbpanel')
+        if (!open)
+            await commands.executeCommand('workbench.view.extension.ddbpanel')
     }
     
     
@@ -1801,6 +1842,7 @@ class DdbServer extends Server {
                 websocket.addEventListener('close', on_close)
             },
             
+            
             async subscribe_inspection ({ id }, websocket) {
                 console.log(t('page 已订阅 inspection'))
                 
@@ -1819,10 +1861,18 @@ class DdbServer extends Server {
                 websocket.addEventListener('close', on_close)
             },
             
+            
             async eval ({ data: [node, script] }: Message<[string, string]>, websocket) {
                 let { ddb } = explorer.connections.find(({ name }) => name === node)
                 const { buffer, le } = await ddb.eval(script, { parse_object: false })
                 return [buffer, le]
+            },
+            
+            
+            ready (message, websocket) {
+                console.log(t('page 已准备就绪'))
+                dataview.ppage_resolve()
+                return [ ]
             }
         }
     })
@@ -1832,6 +1882,7 @@ class DdbServer extends Server {
         // 实际上重写了 start 方法, this.port = 8321 未使用
         super(8321)
     }
+    
     
     override async start () {
         // --- init koa app
@@ -1980,6 +2031,11 @@ class DdbServer extends Server {
             root: `${fpd_ext}dataview/`,
             log_404: true
         })
+    }
+    
+    
+    override async logger (ctx: Context) {
+        // 不需要打印文件请求日志
     }
 }
 

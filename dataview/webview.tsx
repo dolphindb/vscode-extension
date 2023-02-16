@@ -47,8 +47,7 @@ let vscode = acquireVsCodeApi()
     - 以上的 promise */
 type MessageHandler = (message: Message) => void | any[] | Promise<void | any[]>
 
-// LOCAL
-// let remote = new Remote({ url: 'ws://localhost/ddb' })
+
 let remote = {
     /** 通过 rpc message.func 被调用的 rpc 函数 */
     funcs: { } as Record<string, MessageHandler>,
@@ -210,6 +209,8 @@ class DataViewModel extends Model<DataViewModel> {
             })
         
         remote.send({ id: id_inspection, func: 'subscribe_inspection' })
+        
+        await remote.call('ready')
     }
 }
 
