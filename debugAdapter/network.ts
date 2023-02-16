@@ -83,6 +83,7 @@ export class Remote {
     private username: string,
     private password: string,
     private autologin: boolean,
+    private errorHandler: (error: Error) => void
   ) {}
 
   get connected() {
@@ -90,7 +91,7 @@ export class Remote {
   }
 
   /** call之前将参数打包成DdbDist */
-  public static pack(msg: SendMessage) {
+  public pack(msg: SendMessage) {
     return json2DdbDict(msg).pack();
   }
 
@@ -99,7 +100,7 @@ export class Remote {
    * 若为查看变量之类的消息，json中由offset标识ddb内置类型对应二进制位置
    * 此时调用js-api中的方法解析这段二进制数据并inspect成可供用户查看的格式
    */
-  public static parse(array_buffer: ArrayBuffer) {
+  public parse(array_buffer: ArrayBuffer) {
     try {
       const buf = new Uint8Array(array_buffer);
       const dv = new DataView(array_buffer);
@@ -134,7 +135,7 @@ export class Remote {
       return msg;
     } catch (error) {
       console.debug('Parse message error: ', error);
-      throw error;
+      this.errorHandler(error);
     }
   }
 
@@ -155,7 +156,7 @@ export class Remote {
     } catch (error) {
       this.websocket = undefined;
       console.debug('Connect error: ', error);
-      throw error;
+      this.errorHandler(error);
     }
   }
 
@@ -165,15 +166,15 @@ export class Remote {
 
   private async send(msg: SendMessage) {
     try {
-      if (this.websocket!.readyState !== WebSocket.OPEN) {
-        throw new Error('Websocket is not connected');
+      if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
+        throw new Error('Server is not connected');
       }
       console.debug('Send message: ', msg);
-      this.websocket!.send(Remote.pack(msg));
+      this.websocket!.send(this.pack(msg));
     } catch (error) {
       console.debug('Send message error: ', error);
       this.handlers.delete(msg.id);
-      throw error;
+      this.errorHandler(error);
     }
   }
 
@@ -182,7 +183,7 @@ export class Remote {
     socketEvent: ArrayBuffer,
     websocket: WebSocket
   ) {
-    const msg = Remote.parse(socketEvent) as ReceiveMessage;
+    const msg = this.parse(socketEvent) as ReceiveMessage;
 
     const { id, event } = msg;
 
@@ -216,7 +217,7 @@ export class Remote {
       }
     } catch (error) {
       console.debug('Handle message error: ', error);
-      this.events.get('SERVER ERROR')?.(error.message);
+      this.errorHandler(error);
     }
   }
 
