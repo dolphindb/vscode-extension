@@ -10,6 +10,7 @@ import {
     Button,
     Switch,
     Select,
+    Descriptions,
     
     type TableColumnType,
 } from 'antd'
@@ -217,7 +218,7 @@ function Dict ({
         
         <div className='bottom-bar'>
             <div className='info'>
-                <span className='desc'>{_obj.rows} {t('个键')} { objref ? `(${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
+                <span className='desc'>{_obj.rows} {t('个键')}{ objref ? ` (${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
                 <span className='type'>{t('的词典')}</span>
             </div> 
         </div>
@@ -393,7 +394,7 @@ function Vector ({
         
         <div className='bottom-bar'>
             <div className='info'>
-                <span className='desc'>{info.rows} {t('个元素')} { objref ? `(${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
+                <span className='desc'>{info.rows} {t('个元素')}{ objref ? ` (${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
                 <span className='type'>{ info.form === DdbForm.set ? t('的集合') : t('的向量') }</span>
                 { info.name && <span className='name'>{info.name}</span> }
             </div>
@@ -612,7 +613,7 @@ function Table ({
         
         <div className='bottom-bar'>
             <div className='info'>
-                <span className='desc'>{ info.rows ? `${info.rows} ${t('行')} ` : ' ' }{info.cols} {t('列')} { objref ? `(${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
+                <span className='desc'>{ info.rows ? `${info.rows} ${t('行')} ` : ' ' }{info.cols} {t('列')}{ objref ? ` (${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
                 <span className='type'>{t('的表格')}</span>
                 { info.name && <span className='name'>{info.name}</span> }
             </div>
@@ -651,14 +652,14 @@ function Table ({
 
 export function StreamingTable ({
     table,
-    action,
-    autologin = false,
+    username,
+    password,
     ctx,
     options,
 }: {
     table: string
-    action?: string
-    autologin?: boolean
+    username?: string
+    password?: string
     ctx: Context
     options?: InspectOptions
 }) {
@@ -694,36 +695,38 @@ export function StreamingTable ({
     
     
     useEffect(() => {
-        ;(async () => {
-            let ddb = rddb.current = new DDB(undefined, {
-                autologin,
-                streaming: {
-                    table,
-                    action,
-                    handler (message) {
-                        console.log(message)
-                        
-                        if (message.error) {
-                            console.error(message.error)
-                            return
-                        }
-                        
-                        const time = new Date().getTime()
-                        
-                        rreceived.current += message.rows
-                        
-                        // 冻结或者未到更新时间
-                        if (rrate.current === -1 || time - rlast.current < rrate.current)
-                            return
-                        
-                        rlast.current = time
-                        rerender({ })
+        let ddb = rddb.current = new DDB(undefined, {
+            autologin: Boolean(username),
+            username,
+            password,
+            streaming: {
+                table,
+                handler (message) {
+                    console.log(message)
+                    
+                    if (message.error) {
+                        console.error(message.error)
+                        return
                     }
+                    
+                    const time = new Date().getTime()
+                    
+                    rreceived.current += message.rows
+                    
+                    // 冻结或者未到更新时间
+                    if (rrate.current === -1 || time - rlast.current < rrate.current)
+                        return
+                    
+                    rlast.current = time
+                    rerender({ })
                 }
-            })
-            
-            let ddbapi = rddbapi.current = new DDB()
-            
+            }
+        })
+        
+        let ddbapi = rddbapi.current = new DDB()
+        
+        
+        ;(async () => {
             // LOCAL: 创建流表
             await ddbapi.eval(
                 'try {\n' +
@@ -750,6 +753,8 @@ export function StreamingTable ({
             
             rerender({ })
         })()
+        
+        return () => { ddb?.disconnect() }
     }, [ ])
     
     
@@ -944,7 +949,7 @@ export function StreamingTable ({
         
         <div className='bottom-bar'>
             <div className='info'>
-                <span className='desc'>{t('窗口')}: {winsize} {t('行')} {data.rows} {t('列')}, {t('偏移量')}: {offset}</span>
+                <span className='desc'>{t('窗口')}: {winsize} {t('行')} {data.rows} {t('列')}, {t('偏移量')}: {offset}</span> 
                 <span className='type'>{t('的流表')}</span>
                 <span className='name'>{table}</span>
             </div>
@@ -1233,7 +1238,7 @@ function Matrix ({
         
         <div className='bottom-bar'>
             <div className='info'>
-                <span className='desc'>{info.rows} {t('行')} {info.cols} {t('列')} { objref ? `(${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
+                <span className='desc'>{info.rows} {t('行')} {info.cols} {t('列')}{ objref ? ` (${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
                 <span className='type'>{t('的矩阵')}</span>
                 { info.name && <span className='name'>{info.name}</span> }
             </div>

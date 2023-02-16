@@ -131,6 +131,22 @@ export async function build_package_json (production: boolean) {
             icon: `${ production ? '.' : '..' }/icons/disconnect.svg`,
         },
         {
+            command: 'open_settings',
+            title: {
+                zh: 'DolphinDB: 打开设置',
+                en: 'DolphinDB: Open Settings'
+            },
+            icon: '$(gear)'
+        },
+        {
+            command: 'open_connection_settings',
+            title: {
+                zh: 'DolphinDB: 打开连接设置',
+                en: 'DolphinDB: Open Connection Settings'
+            },
+            icon: '$(gear)'
+        },
+        {
             command: 'inspect_variable',
             title: {
                 zh: 'DolphinDB: 查看变量',
@@ -295,7 +311,10 @@ export async function build_package_json (production: boolean) {
         // 防止 vsce 检测 dependencies 对应的 node_modules 在 ./out/ 下是否安装
         devDependencies: {
             ... dependencies,
-            ... devDependencies
+            ... devDependencies,
+            
+            // 在本地使用最新的 vscode api 而不修改 engines 中的硬性条件（绕过 vsce 检测）
+            '@types/vscode': '^1.68.0'
         },
         
         publisher: 'dolphindb',
@@ -447,7 +466,7 @@ export async function build_package_json (production: boolean) {
                 ddbpanel: [
                     {
                         type: 'webview',
-                        id: 'dolphindb.dataview',
+                        id: 'ddbdataview',
                         name: '%configs.ddbpanel.name%',
                         contextualTitle: 'DolphinDB',
                         icon: `${ production ? '.' : '..' }/icons/object.svg`,
@@ -464,15 +483,37 @@ export async function build_package_json (production: boolean) {
             ],
             
             menus: {
+                commandPalette: [
+                    {
+                        command: 'dolphindb.set_connection',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.disconnect_connection',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.open_connection_settings',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.inspect_variable',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.open_variable',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.reload_dataview',
+                        when: 'false',
+                    },
+                ],
+                
                 'view/item/context': [
                     {
                         command: 'dolphindb.disconnect_connection',
                         when: "view == dolphindb.explorer && viewItem == 'connected'",
-                        group: 'inline',
-                    },
-                    {
-                        command: 'dolphindb.inspect_variable',
-                        when: "view == dolphindb.explorer && viewItem == 'var'",
                         group: 'inline',
                     },
                     {
@@ -486,14 +527,19 @@ export async function build_package_json (production: boolean) {
                 // 在 vscode 源码中搜索 MenuId.ViewTitle 查看相关属性及用法
                 'view/title': [
                     {
+                        command: 'dolphindb.open_connection_settings',
+                        when: 'view == dolphindb.explorer',
+                        group: 'navigation',
+                    },
+                    {
                         command: 'dolphindb.reload_dataview',
                         group: 'navigation',
-                        when: 'view == dolphindb.dataview',
+                        when: 'view == ddbdataview',
                     },
                     {
                         command: 'dolphindb.open_variable',
                         group: 'navigation',
-                        when: 'view == dolphindb.dataview',
+                        when: 'view == ddbdataview',
                     }
                 ],
                 
@@ -697,6 +743,8 @@ let dataview_config: Configuration = {
     
     resolve: {
         extensions: ['.js'],
+        
+        symlinks: true,
         
         plugins: [ts_resolver],
         
@@ -904,6 +952,8 @@ let ext_config: Configuration = {
     
     resolve: {
         extensions: ['.js'],
+        
+        symlinks: true,
         
         plugins: [ts_resolver]
     },

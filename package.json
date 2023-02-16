@@ -1,7 +1,7 @@
 {
     "name": "dolphindb-vscode",
     "type": "module",
-    "version": "2.0.900",
+    "version": "2.0.910",
     "engines": {
         "vscode": ">=1.68.0"
     },
@@ -18,14 +18,14 @@
         "@types/koa": "^2.13.5",
         "@types/koa-compress": "^4.0.3",
         "@types/node": "^18.13.0",
-        "@types/react": "^18.0.27",
+        "@types/react": "^18.0.28",
         "@types/react-dom": "^18.0.10",
-        "@types/vscode": "^1.68.0",
+        "@types/vscode": "^1.75.1",
         "@types/ws": "^8.5.4",
         "@vscode/debugadapter": "^1.58.0",
         "@vscode/debugprotocol": "^1.59.0",
         "css-loader": "^6.7.3",
-        "sass": "^1.58.0",
+        "sass": "^1.58.1",
         "sass-loader": "^13.2.0",
         "source-map-loader": "^4.0.1",
         "style-loader": "^3.3.1",
@@ -37,19 +37,25 @@
         "@ant-design/icons": "^5.0.1",
         "@ant-design/plots": "^1.2.5",
         "@koa/cors": "^4.0.0",
-        "antd": "^5.2.0",
+        "antd": "^5.2.1",
         "dayjs": "^1.11.7",
-        "dolphindb": "^2.0.922",
+        "dolphindb": "^2.0.927",
         "koa": "^2.14.1",
         "koa-compress": "^5.1.0",
         "koa-useragent": "^4.1.0",
         "lodash": "^4.17.21",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "react-object-model": "^1.0.0",
+        "react-object-model": "^1.0.1",
         "tslib": "^2.5.0",
         "upath": "^2.0.1",
-        "ws": "^8.12.0",
-        "xshell": "^1.0.6"
+        "ws": "^8.12.1",
+        "xshell": "^1.0.7"
+    },
+    "pnpm": {
+        "patchedDependencies": {
+            "koa@2.14.1": "patches/koa@2.14.1.patch",
+            "webpack@5.75.0": "patches/webpack@5.75.0.patch"
+        }
     }
 }

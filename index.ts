@@ -77,7 +77,6 @@ import {
     DdbFunctionType,
     format,
     formati,
-    DdbConnectionError,
     type DdbMessage,
     type DdbFunctionDefValue,
     type DdbVectorValue,
@@ -87,7 +86,7 @@ import {
 import { constants, keywords } from 'dolphindb/language.js'
 
 import { language, t } from './i18n/index.js'
-import { get_text } from './utils.js'
+import { get_text, open_workbench_settings_ui } from './utils.js'
 
 import { activateDebug } from './debugAdapter/configProvider.js'
 
@@ -317,7 +316,7 @@ let dataview = {
     
     register () {
         window.registerWebviewViewProvider(
-            'dolphindb.dataview',
+            'ddbdataview',
             {
                 async resolveWebviewView (view, ctx, canceller) {
                     dataview.view = view
@@ -493,32 +492,39 @@ async function _execute (text: string) {
         )
         
         
+        let objstr: string
+        let auto_insepct = false
+        
+        switch (obj.form) {
+            case DdbForm.vector:
+            case DdbForm.set:
+            case DdbForm.matrix:
+            case DdbForm.table:
+            case DdbForm.chart:
+            case DdbForm.dict:
+                lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+                auto_insepct = true
+                objstr = obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
+                break
+            
+            default:
+                objstr = obj.type === DdbType.void ?
+                        ''
+                    :
+                        inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
+        }
+        
+        
         printer.fire(
-            (() => {
-                switch (obj.form) {
-                    case DdbForm.vector:
-                    case DdbForm.set:
-                    case DdbForm.matrix:
-                    case DdbForm.table:
-                    case DdbForm.chart:
-                    case DdbForm.dict: {
-                        lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
-                        return obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
-                    }
-                    
-                    default: {
-                        return obj.type === DdbType.void ?
-                                ''
-                            :
-                                inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
-                    }
-                }
-             })() +
+            objstr +
              // timer.getstr() + '\r\n'
             `(${delta2str(dayjs().diff(time_start))})\r\n`
         )
         
         await connection.update()
+        
+        if (auto_insepct)
+            await lastvar.inspect()
     } catch (error) {
         console.log(error)
         let message = error.message as string
@@ -572,8 +578,8 @@ const ddb_commands = [
         await connection.ddb.cancel()
     },
     
-    function set_connection (name: string) {
-        explorer.set_connection(name)
+    async function set_connection (name: string) {
+        await explorer.set_connection(name)
     },
     
     function disconnect_connection (connection: DdbConnection) {
@@ -581,10 +587,42 @@ const ddb_commands = [
         connection.disconnect()
     },
     
+    async function open_settings (query?: string) {
+        const connectionsInspection = workspace.getConfiguration('dolphindb').inspect('connections')
+        
+        let target = ConfigurationTarget.Global
+        switch (true) {
+            case !!connectionsInspection.workspaceValue:
+                target = ConfigurationTarget.Workspace
+                break
+            case !!connectionsInspection.workspaceFolderValue:
+                target = ConfigurationTarget.WorkspaceFolder
+                break
+            default:
+                break
+        }
+        
+        await open_workbench_settings_ui(target, { query: `@ext:dolphindb.dolphindb-vscode${query ? ` ${query}` : ''}` })
+    },
+    
+    async function open_connection_settings () {
+        await commands.executeCommand('dolphindb.open_settings', 'connections')
+    },
+    
     async function inspect_variable (ddbvar: DdbVar) {
         console.log(t('查看 dolphindb 变量:'), ddbvar)
-        lastvar = ddbvar
-        await ddbvar.inspect()
+        
+        switch (ddbvar.form) {
+            case DdbForm.vector:
+            case DdbForm.set:
+            case DdbForm.matrix:
+            case DdbForm.table:
+            case DdbForm.chart:
+            case DdbForm.dict:
+                lastvar = ddbvar
+                await ddbvar.inspect()
+                break
+        }
     },
     
     async function open_variable (ddbvar: DdbVar = lastvar) {
@@ -1079,7 +1117,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         }
     }
     
-    set_connection (name: string) {
+    async set_connection (name: string) {
         for (let connection of this.connections)
             if (connection.name === name) {
                 connection.iconPath = icon_checked
@@ -1093,9 +1131,16 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         
         console.log(t('切换连接:'), this.connection)
         
-        statbar.set(this.connection.running)
-        
-        this.refresher.fire()
+        try {
+            if (!this.connection.connected) {
+                this.connection.disconnect()
+                await this.connection.connect()
+                await this.connection.update()
+            }
+        } finally {
+            statbar.set(this.connection.running)
+            this.refresher.fire()
+        }
     }
     
     getTreeItem (node: TreeItem): TreeItem | Thenable<TreeItem> {
@@ -1140,15 +1185,15 @@ class DdbConnection extends TreeItem {
     name: string
     
     /** 参考 DDB.connect 方法 */
-    url: string
+    url = 'ws://127.0.0.1:8848'
     
-    autologin: boolean
+    autologin = true
     
-    username: string
+    username = 'admin'
     
-    password: string
+    password = '123456'
     
-    python: boolean
+    python = false
     
     // --- 状态
     
@@ -1198,6 +1243,7 @@ class DdbConnection extends TreeItem {
     
     
     async connect () {
+        this.ddb.url = this.url
         this.ddb.autologin = this.autologin
         this.ddb.username = this.username
         this.ddb.password = this.password
@@ -1206,16 +1252,43 @@ class DdbConnection extends TreeItem {
         try {
             await this.ddb.connect()
         } catch (error) {
-            if (error instanceof DdbConnectionError)
-                window.showErrorMessage(error.message, {
-                    detail: t('先尝试用浏览器访问对应的 server 地址，如: http://192.168.1.111:8848\n') +
-                        t('如果可以打开网页且正常使用，再检查:\n') +
+            const ret = await window.showErrorMessage(
+                error.message,
+                {
+                    detail: t('连接数据库失败，当前连接配置为:\n') +
+                        inspect(
+                            {
+                                url: this.url,
+                                autologin: this.autologin,
+                                username: this.username,
+                                password: this.password,
+                                python: this.python,
+                            },
+                            { colors: false }
+                        ) + '\n' +
+                        t('先尝试用浏览器访问对应的 server 地址，如: http://192.168.1.111:8848\n') +
+                        t('如果可以打开网页且正常登录使用，再检查:\n') +
                         t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
                         t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n') +
                         t('调用栈:\n') +
                         error.stack,
                     modal: true
-                })
+                },
+                {
+                    title: t('确认'),
+                    isCloseAffordance: true
+                },
+                {
+                    title: t('编辑配置'),
+                    command: 'dolphindb.open_connection_settings'
+                }
+            )
+            
+            if (ret && ret.command)
+                commands.executeCommand(ret.command)
+            
+            this.ddb.disconnect()
+            
             throw error
         }
         
@@ -1590,6 +1663,12 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         this.contextValue = DdbVar.contexts[this.form] || 'var'
         
         this.iconPath = DdbVar.icon
+        
+        this.command = {
+            title: 'dolphindb.inspect_variable',
+            command: 'dolphindb.inspect_variable',
+            arguments: [this],
+        }
     }
     
     
@@ -1659,6 +1738,8 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         
         for (const subscriber of server.subscribers_inspection)
             subscriber(...args)
+        
+        await commands.executeCommand('workbench.view.extension.ddbpanel')
     }
     
     
