@@ -253,5 +253,11 @@
     },
     "确认": {
         "en": "Confirm"
+    },
+    "dataview 已准备就绪": {
+        "en": "dataview is ready"
+    },
+    "page 已准备就绪": {
+        "en": "page is ready"
     }
 }
