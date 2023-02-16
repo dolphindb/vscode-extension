@@ -344,9 +344,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 		}
 	}
 	
-	private handleOutput({ text }: { text: string }): void {
-		console.log(text);
-		this.sendEvent(new OutputEvent(text));
+	private handleOutput({ data }: { data: string }): void {
+		console.log(data);
+		this.sendEvent(new OutputEvent(data));
 	}
 	
 	// SyntaxError与Exception被server区分开了，但这边统一合并为Exception便于展示
