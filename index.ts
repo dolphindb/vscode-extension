@@ -322,22 +322,9 @@ let dataview = {
         },
         
         
-        ready ({ data: [ctx] }: Message<[ctx: 'page' | 'webview']>, view) {
-            switch (ctx) {
-                case 'page':
-                    console.log(t('dataview 已准备就绪'))
-                    dataview.ppage_resolve()
-                    break
-                
-                case 'webview':
-                    console.log(t('dataview 已准备就绪'))
-                    dataview.pwebview_resolve()
-                    break
-                
-                default:
-                    throw new Error(`使用了未定义的 ctx 参数 (${ctx}) 调用 dataview.ready`)
-            }
-            
+        ready (message, view) {
+            console.log(t('dataview 已准备就绪'))
+            dataview.pwebview_resolve()
             return [ ]
         }
     } as Record<string, ViewMessageHandler>,
@@ -1747,7 +1734,7 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     /** - open?: 是否在新窗口中打开 */
     async inspect (open = false) {
         if (open) {
-            if (!server.subscribers_inspection) {
+            if (!server.subscribers_inspection.length) {
                 dataview.ppage = new Promise<void>(resolve => {
                     dataview.ppage_resolve = resolve
                 })
@@ -1851,6 +1838,7 @@ class DdbServer extends Server {
                 websocket.addEventListener('close', on_close)
             },
             
+            
             async subscribe_inspection ({ id }, websocket) {
                 console.log(t('page 已订阅 inspection'))
                 
@@ -1869,10 +1857,18 @@ class DdbServer extends Server {
                 websocket.addEventListener('close', on_close)
             },
             
+            
             async eval ({ data: [node, script] }: Message<[string, string]>, websocket) {
                 let { ddb } = explorer.connections.find(({ name }) => name === node)
                 const { buffer, le } = await ddb.eval(script, { parse_object: false })
                 return [buffer, le]
+            },
+            
+            
+            ready (message, websocket) {
+                console.log(t('page 已准备就绪'))
+                dataview.ppage_resolve()
+                return [ ]
             }
         }
     })
@@ -1882,6 +1878,7 @@ class DdbServer extends Server {
         // 实际上重写了 start 方法, this.port = 8321 未使用
         super(8321)
     }
+    
     
     override async start () {
         // --- init koa app
@@ -2030,6 +2027,11 @@ class DdbServer extends Server {
             root: `${fpd_ext}dataview/`,
             log_404: true
         })
+    }
+    
+    
+    override async logger (ctx: Context) {
+        // 不需要打印文件请求日志
     }
 }
 
