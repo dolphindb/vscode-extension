@@ -114,6 +114,17 @@ export class DdbDebugSession extends LoggingDebugSession {
 
 		response.body.supportTerminateDebuggee = true;
 		
+		// 目前server仅支持所有异常都展示或都不展示
+		response.body.supportsExceptionFilterOptions = true;
+		response.body.exceptionBreakpointFilters = [
+			{
+				filter: 'exceptions',
+				label: 'Exceptions',
+				description: 'Catch and show all exceptions',
+				default: false,
+			}
+		];
+
 		this.sendResponse(response);
 
 		this.sendEvent(new InitializedEvent());
@@ -180,6 +191,17 @@ export class DdbDebugSession extends LoggingDebugSession {
 		response.body = {
 			breakpoints: actualBreakpoints,
 		};
+		this.sendResponse(response);
+	}
+	
+	/** 区分不同类型断点，目前只有一种，这个方法用简单写法 */
+	protected override async setExceptionBreakPointsRequest(response: DebugProtocol.SetExceptionBreakpointsResponse, args: DebugProtocol.SetExceptionBreakpointsArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+		await this._prerequisites.wait('scriptResolved');
+		if (args.filterOptions?.length) {
+			await this._remote.call('setAllExceptionBreak', [true]);
+		} else {
+			await this._remote.call('setAllExceptionBreak', [false]);
+		}
 		this.sendResponse(response);
 	}
 	
