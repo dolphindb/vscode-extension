@@ -1,5 +1,5 @@
 import {
-	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, OutputEvent, Scope
+	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, OutputEvent, Scope, BreakpointEvent
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
@@ -68,7 +68,12 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private _stackTraceCache: StackFrame[] = [];
 	private _stackTraceChangeFlag: boolean = true;
 	private _scopeCache: Map<number, DebugProtocol.Variable[]> = new Map();
+	private static id: number = 0;
+	get genId() {
+		return DdbDebugSession.id++;
+	}
 	private _breakpoints: Array<{
+		id: number;
     line: number;
     verified: boolean;
 	}> = [];
@@ -108,7 +113,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		response.body.supportsExceptionInfoRequest = true;
 
 		response.body.supportTerminateDebuggee = true;
-
+		
 		this.sendResponse(response);
 
 		this.sendEvent(new InitializedEvent());
@@ -164,6 +169,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		const res = await this._remote.call('setBreaks', [requestData.map(bp => bp.line)]) as number[];
 		
 		const actualBreakpoints = clientLines.map(line => ({
+			id: this.genId,
 			line,
 			// 服务端会返回设置成功的断点，不成功的断点（如空行）直接标记为未命中
 			verified: res.includes(this.convertClientLineToDebugger(line)),
@@ -337,21 +343,24 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
-		// const newSource = await loadSource(this._sourcePath);
-		// this._source = newSource.replace(/\r\n/g, '\n');
-		// this._sourceLines = this._source.split('\n');
+		const newSource = await loadSource(this._sourcePath);
+		this._source = newSource.replace(/\r\n/g, '\n');
+		this._sourceLines = this._source.split('\n');
 		
-		// await this._remote.call('parseScriptWithDebug', [this._source]);
+		await this._remote.call('parseScriptWithDebug', [this._source]);
 		
-		// const res = await this._remote.call('setBreaks', [this._breakpoints.map(bp => bp.line)]) as number[]
-		// const actualBreakpoints = this._breakpoints.map(bp => ({
-		// 	line: bp.line,
-		// 	// 服务端会返回设置成功的断点，不成功的断点（如空行）直接标记为未命中
-		// 	verified: res.includes(this.convertClientLineToDebugger(bp.line)),
-		// }));
-		// this._breakpoints = actualBreakpoints;
+		const res = await this._remote.call('setBreaks', [this._breakpoints.map(bp => this.convertClientLineToDebugger(bp.line))]) as number[]
+		const actualBreakpoints = this._breakpoints.map(bp => ({
+			id: bp.id,
+			line: bp.line,
+			verified: res.includes(this.convertClientLineToDebugger(bp.line)),
+		}));
+		this._breakpoints = actualBreakpoints;
+		this._breakpoints.forEach(bp => this.sendEvent(new BreakpointEvent('changed', bp)));
 		
-		 await this._remote.call('restartRun');
+		// await this._remote.call('restartRun');
+		this._stackTraceChangeFlag = true;
+		await this._remote.call('runScriptWithDebug');
 		this.sendResponse(response);
 	}
 	

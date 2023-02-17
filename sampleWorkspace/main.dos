@@ -1,7 +1,7 @@
 def toSelf(x){
     y1 = 1
     y2 = 2
-    throw "runtime exception!";
+    // throw "runtime exception!";
     if(y2 == 1)
       y3 = 1
     else 
@@ -13,9 +13,10 @@ a = `a`b`c
 b = [100, 200, 300];
 toSelf(a);
 a;
+b;
 c = toSelf(b)
 c = sum(b)
-throw "runtime exception!";
+// throw "runtime exception!";
 scalar = take(`ABC`XYZ, 6).sort!()
 bigArray = take(1..10000, 10000)
 time = take(2015.01M..2015.03M, 6)
