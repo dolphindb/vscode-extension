@@ -76,6 +76,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 	// 初始化时compile error，则在文档首部显示异常展示错误信息
 	private _compileErrorFlag: boolean = false;
 	private _exceptionInfo: DebugProtocol.ExceptionInfoResponse['body'];
+	// 后端要求的，异常时可能查不到栈帧信息的处理
+	private _exceptionFlag: boolean = false;
+	private _exceptionLine: number = 0;
 	
 	constructor() {
 		super();
@@ -214,6 +217,15 @@ export class DdbDebugSession extends LoggingDebugSession {
 		// 初始编译错误造成的程序终止，vsc也会查询栈帧，此时返回一个停在第0行的指示即可
 		if (this._compileErrorFlag) {
 			stackFrames = this._stackTraceCache.slice(-1, this._stackTraceCache.length);
+		}
+		// 后端要求的，异常时可能查不到栈帧信息的处理
+		if (this._exceptionFlag) {
+			if (stackFrames.length === 0) {
+				stackFrames.push(new StackFrame(0, 'exception', this.createSource(this._sourcePath), this._exceptionLine, 0));
+			} else {
+				stackFrames[stackFrames.length - 1].line = this._exceptionLine;
+				stackFrames[stackFrames.length - 1].name = 'exception';
+			}
 		}
 		
 		response.body = {
@@ -377,11 +389,13 @@ export class DdbDebugSession extends LoggingDebugSession {
 	// SyntaxError与Exception被server区分开了，但这边统一合并为Exception便于展示
 	private handleSyntaxErr(msg: { message: string }): void {
 		this._compileErrorFlag = true;
-		this.handleException(msg);
+		this.handleException({ message: msg.message, data: { line: -1 } });
 	}
 	
-	private handleException({ message }: { message: string }): void {
+	private handleException({ message, data }: { message: string; data: { line?: number } }): void {
 		this._stackTraceChangeFlag = true;
+		this._exceptionFlag = true;
+		this._exceptionLine = this.convertDebuggerLineToClient(data.line ?? -1);
 		this._exceptionInfo = {
 			exceptionId: 'Exception',
 			description: message,
