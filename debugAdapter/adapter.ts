@@ -91,7 +91,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._prerequisites.create('configurationDone');
 		this._prerequisites.create('sourceLoaded');
 		this._prerequisites.create('scriptResolved'); 
-		this._prerequisites.create('breakpointsSetted');
 	}
 	
 	protected override initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
@@ -145,8 +144,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._remote.on('OUTPUT', this.handleOutput.bind(this));
 		
 		await Promise.all([
+			this._prerequisites.wait('scriptResolved'),
 			this._prerequisites.wait('configurationDone'),
-			this._prerequisites.wait('breakpointsSetted'),
 		]);
 		
 		this._remote.call('runScriptWithDebug');
@@ -176,7 +175,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 			breakpoints: actualBreakpoints,
 		};
 		this.sendResponse(response);
-		this._prerequisites.resolve('breakpointsSetted');
 	}
 	
 	protected override threadsRequest(response: DebugProtocol.ThreadsResponse): void {
