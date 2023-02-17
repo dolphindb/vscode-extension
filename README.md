@@ -27,6 +27,7 @@ DolphinDB has developed this VSCode extension for the DolphinDB database, adding
 - Code completion for keywords, constants, built-in functions
 - Documentation hints, parameter hints for built-in functions
 - The terminal can display the results of code execution and the messages output by the print function
+- Display the execution status in the bottom bar, click to cancel the job
 - Display data structures such as tables, vectors, matrices, etc. in tabular form in the bottom panel
 - Manage multiple database connections in the side panel, showing session variables
 - Display table in browser popup
@@ -51,17 +52,16 @@ After installing the plugin, please completely quit all windows of VSCode and re
 
 #### 3. View and edit server connection configuration
 ##### Connections can be viewed in the DolphinDB area of the EXPLORER panel on the left side of the VSCode editor
-After the plugin is successfully installed, the DOLPHIDB area below will be added to the EXPLORER panel
+After the plug-in is successfully installed, the following DOLPHINDB connection management area will be added in the Explorer (EXPLORER) panel
 
 <img src='./images/connections.png' width='400'>
 
 ##### Edit connections
-Click `File > Preferences > Settings` in the menu bar or press the shortcut `Ctrl + Comma` to open the VSCode settings  
-Enter dolphindb in the search box, click `edit in settings.json` below, and edit the `dolphindb.connections` configuration item in the `settings.json` configuration file jumped to.  
-The `dolphindb.connections` configuration item is an array of objects.  
-There are four connection configurations by default. You can modify or add connection objects according to the situation.
-`name` and `url` attributes are required (different connection objects must have different `name`), by default the admin account is automatically logged in.  
-Move the mouse over an attribute to view the description of the corresponding attribute.
+Click the `settings` button in the upper right corner, and then jump to the `settings.json` configuration file to edit the `dolphindb.connections` configuration item  
+`dolphindb.connections` configuration item is an object array, there are four connection configurations by default, you can modify or add connection objects according to the situation,  
+The `name` and `url` attributes are required (different connection objects must have different `name`), and the default is to automatically log in to the admin account ("autologin": true)  
+Move the mouse over the attribute to view the description of the corresponding attribute
+
 
 #### 4. Open or create a DolphinDB script file
 - If the script file name is suffixed with `.dos` (short for DolphinDB Script), the plugin will automatically recognize the DolphinDB language, and automatically enable syntax highlighting, code completion, and prompts
@@ -77,22 +77,26 @@ In the opened DolphinDB script file, you can press the shortcut key `Ctrl + E` t
 - If there is currently selected code, the selected code will be sent to DolphinDB Server for execution
 - If there is no currently selected code, the line where the current cursor is will be sent to DolphinDB Server for execution
 
-After the code is executed, there will be text-based output in the terminal below the VSCode editor. If the last statement of the executed code returns a table, array, or matrix, it will be displayed in the form of a table in the DolphinDB area of the lower panel of the VSCode editor. Data structures such as tables, vectors, matrices, etc. It is recommended to drag the content of the DolphinDB tab to the right side of the terminal, as shown below
+After the code is executed, there will be text-based output in the terminal below the VSCode editor. If the last statement of the executed code returns a table, array, or matrix, it will automatically switch to the DolphinDB area of the panel below the VSCode editor. Forms to display data structures such as tables, vectors, and matrices. It is recommended to drag the contents of the DolphinDB tab to the right side of the terminal, as shown in the figure below
 
 <img src='./images/drag-dataview.png' width='600'>
 
 <img src='./images/with-dataview.png' width='600'>
 
-If there is a server connection error (eg: `ws://192.168.1.111:8848` errored), you can first try to access the corresponding server address with a browser `http://192.168.1.111:8848`  
-If you can open the web page and use it normally, check again:
-- Execute the `version()` function, the returned version of DolphinDB Server should not be lower than `1.30.16` or `2.00.4`
-- If there is a configured system proxy, the proxy software and proxy server need to support WebSocket connections, otherwise please turn off the proxy in the system, or add the DolphinDB Server IP to the exclusion list, and then restart VSCode
+##### FAQ
 
-VSCode has a memory limit of about `1 GB`. It is recommended to use `limit` to limit the number of returned records; or assign the result to a variable, such as `a = select * from`, then click the button next to the sidebar variable to perform paging lazy loading, and retrieve a single page of data as needed
+- If there is an error like `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..`, please restart VSCode
 
-(If you need to customize the shortcut keys, you can also modify them in `File > Preferences > Keyboard Shortcuts` in VSCode, enter dolphindb, find `execute`, double-click, and enter the shortcut key you want)
+- If there is no automatic switch to the DolphinDB view at the bottom after executing the code and returning to the form, you need to reset the position of the DolphinDB view, as shown in the figure below
+<img src='./images/reset-location.png' width='400'>
 
-(In order to display data in the browser, each VSCode window will start a local HTTP server, whose ports can be configured through `dolphindb.ports` configuration. The default is` 8321-8420`. Suspend mouse on ports to view detailed explanation.)
+- If there is no response to the `Ctrl + E` shortcut key, it may be that the DolphinDB language is not associated (syntax highlighting does not take effect at this time), or the shortcut key conflicts with other plugins, and you need to customize the shortcut key:
+Go to `File > Preferences > Keyboard Shortcuts` (`File > Preferences > Keyboard Shortcuts`) of VSCode to modify, enter `ctrl+e` in the search box, and delete other plug-ins that conflict with `DolphinDB: Execute Code` hot key
+<img src='./images/key-bindings.png' width='600'>
+
+- VSCode has a memory limit of about `1 GB`. It is recommended to use `limit` to limit the number of returned records; or assign the result to a variable, such as `a = select * from`, and then click the button next to the variable in the sidebar to perform paging lazy loading and retrieve single page data on demand
+
+- In order to display tables and other data in the browser, each VSCode window will start a local HTTP server, and its available port range can be configured through `dolphindb.ports`, the default is `8321-8420`, hover the mouse over ports to view Detailed explanation
 
 #### 6. Switch connections and view session variables for connections in the DOLPHIDB area of the EXPLORER panel on the left side of the VSCode editor
 
@@ -115,6 +119,3 @@ When entering a DolphinDB built-in function in the VSCode editor, click the arro
 <img src='./images/expand-doc.png' width='800'>
 
 After the function input is complete, hover the mouse over the function name to view the function documentation
-
-## User Manual
-https://github.com/dolphindb/Tutorials_EN/blob/master/vscode_extension.md
