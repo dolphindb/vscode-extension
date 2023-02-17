@@ -432,10 +432,6 @@ export async function build_package_json (production: boolean) {
                 }
             },
             
-            configurationDefaults: {
-                'window.dialogStyle': 'custom'
-            },
-            
             commands: ext_commands.map(({ command, icon }) => ({
                 command: `dolphindb.${command}`,
                 title: `%commands.${command}%`,

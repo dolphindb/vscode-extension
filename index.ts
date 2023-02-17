@@ -692,6 +692,11 @@ export async function activate (ctx: ExtensionContext) {
         ctx.subscriptions.push(commands.registerCommand(`dolphindb.${func.name}`, func))
     
     
+    // 在 package.json 中设置 configurationDefaults 不生效，只好通过 api 修改
+    let config_window = workspace.getConfiguration('window')
+    if (config_window.get<'native' | 'custom'>('dialogStyle') === 'native')
+        await config_window.update('dialogStyle', 'custom', ConfigurationTarget.Global)
+    
     // 连接、变量管理
     explorer = new DdbExplorer()
     
