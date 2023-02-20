@@ -411,9 +411,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request): Promise<void> {
+		await this._remote.call('stopRun');
 		this._remote.terminate();
 		this._terminated = true;
-		await this._remote.call('stopRun');
 	}
 	
 	private createSource(filePath: string): Source {
