@@ -62,6 +62,9 @@ export class Remote {
   static get nextId() {
     return Remote.id++;
   }
+  
+  // 限制并发，TODO: 催后端改网络请求库
+  private _presult: Promise<any> = Promise.resolve();
 
   private websocket?: Awaited<ReturnType<typeof connect_websocket>>;
 
@@ -240,14 +243,30 @@ export class Remote {
     if (!this.websocket) {
       await this.connect();
     }
+    
+    // 限制并发，TODO: 催后端改网络请求库
+    const ptail = this._presult;
+    let _res: (value?: any) => void;
+    let _rej: (reason?: any) => void;
+    this._presult = new Promise((res, rej) => {
+      _res = res;
+      _rej = rej;
+    });
+    await ptail;
 
     return new Promise<any>(async (resolve, reject) => {
       const id = Remote.nextId;
 
       this.handlers.set(id, (msg) => {
-        const { message, data } = msg;
-        message === 'OK' ? resolve(data) : reject(message);
         this.handlers.delete(id);
+        const { message, data } = msg;
+        if (message === 'OK') {
+          _res();
+          resolve(data);
+        } else {
+          _rej();
+          reject(message);
+        }
       });
 
       try {
