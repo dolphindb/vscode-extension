@@ -27,6 +27,7 @@ DolphinDB 公司开发了这个针对 DolphinDB 数据库的 VSCode 插件，在
 - 关键字、常量、内置函数的代码补全
 - 内置函数的文档提示、参数提示
 - 终端可以展示代码执行结果以及 print 函数输出的消息
+- 在底栏中展示执行状态，点击后可取消作业
 - 在底部面板中以表格的形式展示表格、向量、矩阵等数据结构
 - 在侧边面板中管理多个数据库连接，展示会话变量
 - 在浏览器弹窗中显示表格
@@ -50,15 +51,14 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 
 #### 3. 查看、编辑服务器连接配置
 ##### 在 VSCode 编辑器左侧资源管理器 (EXPLORER) 面板的 DOLPHINDB 区域中可以查看连接
-成功安装插件后，会在资源管理器 (EXPLORER) 面板中新增下方的 DOLPHINDB 区域
+成功安装插件后，会在资源管理器 (EXPLORER) 面板中新增下方的 DOLPHINDB 连接管理区域
 
 <img src='./images/connections.png' width='400'>
 
 ##### 编辑连接
-点击菜单栏中的 `文件 > 首选项 > 设置` (`File > Preferences > Settings`) 或者按快捷键 `Ctrl + 逗号` 打开 VSCode 设置  
-在搜索框中输入 dolphindb, 点击下方的 `在 settings.json 中编辑`, 在跳转到的 `settings.json` 配置文件中编辑 `dolphindb.connections` 配置项  
+点击右上角的 `settings` 按钮, 然后跳转到 `settings.json` 配置文件中编辑 `dolphindb.connections` 配置项  
 `dolphindb.connections` 配置项是一个对象数组，默认有四个连接配置，可按情况修改或增加连接对象，
-`name` 和 `url` 属性是必填的 (不同的连接对象必须有不同的 `name`), 默认自动登录 admin 账号  
+`name` 和 `url` 属性是必填的 (不同的连接对象必须有不同的 `name`), 默认自动登录 admin 账号 ("autologin": true)  
 将鼠标移动到属性上可以查看对应属性的说明  
 
 
@@ -77,22 +77,26 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 - 如果当前有选中的代码，会将选中的代码发送至 DolphinDB Server 执行
 - 如果当前无选中的代码，会将当前光标所在的行发送至 DolphinDB Server 执行
 
-执行代码后，VSCode 编辑器下方的终端内会有基于文本的输出，如果执行的代码最后一条语句返回了表格、数组、矩阵，则会在 VSCode 编辑器下方面板的 DolphinDB 区域中以表格的形式展示表格、向量、矩阵等数据结构。建议将 DolphinDB 标签页的内容拖动到终端的右侧，如下图
+执行代码后，VSCode 编辑器下方的终端内会有基于文本的输出，如果执行的代码最后一条语句返回了表格、数组、矩阵，则会自动切换到 VSCode 编辑器下方面板的 DolphinDB 区域中以表格的形式展示表格、向量、矩阵等数据结构。建议将 DolphinDB 标签页的内容拖动到终端的右侧，如下图
 
 <img src='./images/drag-dataview.png' width='600'>
 
 <img src='./images/with-dataview.png' width='600'>
 
-如果出现服务器连接错误 (如：`ws://192.168.1.111:8848` errored)，可以先尝试用浏览器访问对应的 server 地址 `http://192.168.1.111:8848`  
-如果可以打开网页且正常使用，再检查:
-- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`
-- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode
+##### 常见问题
 
-VSCode 有大约为 `1 GB` 的内存限制。建议使用 `limit` 限制返回记录数；或者将结果赋给某个变量，如 `a = select * from`，后续通过点击侧边栏变量旁边的按钮进行分页懒加载，按需取回单页数据
+- 如果出现 `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..` 这样的错误，请重启 VSCode
 
-(如需自定义快捷键，也可以到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，输入 dolphindb, 找到 execute 后，双击，输入你想要的快捷键)
+- 如果出现执行代码并返回表格后，底部没有自动切换到 DolphinDB 视图的情况，需要重置 DolphinDB 视图的位置，如下图所示  
+<img src='./images/reset-location.png' width='400'>
 
-(为了在浏览器中展示表格等数据，每个 VSCode 窗口会启动一个本地 HTTP 服务器，其可用端口范围可以通过 `dolphindb.ports` 配置，默认为 `8321-8420`，鼠标悬浮在 ports 上可查看详细解释)
+- 如果出现 `Ctrl + E` 快捷键无反应，可能是未关联 DolphinDB 语言（此时语法高亮也未生效），或者快捷键与其他插件冲突了，需要自定义快捷键:  
+到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，在搜索框中输入 `ctrl+e`, 删除和 `DolphinDB: 执行代码` 冲突的其他插件的快捷键
+<img src='./images/key-bindings.png' width='600'>
+
+- VSCode 有大约为 `1 GB` 的内存限制。建议使用 `limit` 限制返回记录数；或者将结果赋给某个变量，如 `a = select * from`，后续通过点击侧边栏变量旁边的按钮进行分页懒加载，按需取回单页数据
+
+- 为了在浏览器中展示表格等数据，每个 VSCode 窗口会启动一个本地 HTTP 服务器，其可用端口范围可以通过 `dolphindb.ports` 配置，默认为 `8321-8420`，鼠标悬浮在 ports 上可查看详细解释
 
 #### 6. 在 DOLPHINDB 区域中切换连接及查看已连接会话的变量
 执行代码后，如下图所示，可以：
@@ -114,6 +118,3 @@ VSCode 有大约为 `1 GB` 的内存限制。建议使用 `limit` 限制返回�
 <img src='./images/expand-doc.png' width='800'>
 
 函数输入完成后，将鼠标悬浮于函数名称上，也可查看函数文档
-
-## 用户手册
-https://github.com/dolphindb/Tutorials_CN/blob/master/vscode_extension.md

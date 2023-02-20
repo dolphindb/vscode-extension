@@ -638,18 +638,8 @@ const ddb_commands = [
     
     async function inspect_variable (ddbvar: DdbVar) {
         console.log(t('查看 dolphindb 变量:'), ddbvar)
-        
-        switch (ddbvar.form) {
-            case DdbForm.vector:
-            case DdbForm.set:
-            case DdbForm.matrix:
-            case DdbForm.table:
-            case DdbForm.chart:
-            case DdbForm.dict:
-                lastvar = ddbvar
-                await ddbvar.inspect()
-                break
-        }
+        lastvar = ddbvar
+        await ddbvar.inspect()
     },
     
     async function open_variable (ddbvar: DdbVar = lastvar) {
@@ -703,6 +693,11 @@ export async function activate (ctx: ExtensionContext) {
     for (const func of ddb_commands)
         ctx.subscriptions.push(commands.registerCommand(`dolphindb.${func.name}`, func))
     
+    
+    // 在 package.json 中设置 configurationDefaults 不生效，只好通过 api 修改
+    let config_window = workspace.getConfiguration('window')
+    if (config_window.get<'native' | 'custom'>('dialogStyle') === 'native')
+        await config_window.update('dialogStyle', 'custom', ConfigurationTarget.Global)
     
     // 连接、变量管理
     explorer = new DdbExplorer()
@@ -1563,6 +1558,19 @@ class DdbVarLocation extends TreeItem {
 
 
 class DdbVarForm extends TreeItem {
+    static form_names = {
+        [DdbForm.scalar]: t('标量'),
+        [DdbForm.vector]: t('向量'),
+        [DdbForm.pair]: t('数对'),
+        [DdbForm.matrix]: t('矩阵'),
+        [DdbForm.set]: t('集合'),
+        [DdbForm.dict]: t('词典'),
+        [DdbForm.table]: t('表格'),
+        [DdbForm.chart]: t('绘图'),
+        [DdbForm.object]: t('对象'),
+    } as const
+    
+    
     connection: DdbConnection
     
     shared: boolean
@@ -1572,7 +1580,7 @@ class DdbVarForm extends TreeItem {
     vars: DdbVar[]
     
     constructor (connection: DdbConnection, shared: boolean, form: DdbForm) {
-        super(DdbForm[form], TreeItemCollapsibleState.Expanded)
+        super(DdbVarForm.form_names[form] || DdbForm[form], TreeItemCollapsibleState.Expanded)
         this.connection = connection
         this.shared = shared
         this.form = form
@@ -1641,19 +1649,19 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
                         return `<${tname}>`
                     
                     case DdbForm.vector:
-                        return `<${ 64 <= this.type && this.type < 128 ? `${DdbType[this.type - 64]}[]` : tname }> ${this.rows} rows`
+                        return `<${ 64 <= this.type && this.type < 128 ? `${DdbType[this.type - 64]}[]` : tname }> ${this.rows} ${t('个元素')}`
                     
                     case DdbForm.set:
-                        return `<${tname}> ${this.rows} keys`
+                        return `<${tname}> ${this.rows} ${t('个元素')}`
                     
                     case DdbForm.table:
-                        return ` ${this.rows}r × ${this.cols}c`
+                        return ` ${this.rows} ${t('行')} ${this.cols} ${t('列')}`
                     
                     case DdbForm.dict:
-                        return ` ${this.rows} keys`
+                        return ` ${this.rows} ${t('个键')}`
                     
                     case DdbForm.matrix:
-                        return `<${tname}> ${this.rows}r × ${this.cols}c`
+                        return `<${tname}> ${this.rows} ${t('行')} ${this.cols} ${t('列')}`
                     
                     case DdbForm.object:
                         return ''
@@ -1679,7 +1687,7 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
                         return ''
                     
                     default:
-                        return ` [${Number(this.bytes).to_fsize_str().replace(' ', '')}]`
+                        return ` (${Number(this.bytes).to_fsize_str()})`
                 }
             })()
             
