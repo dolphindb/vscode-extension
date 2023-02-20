@@ -120,8 +120,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			{
 				filter: 'exceptions',
 				label: 'Exceptions',
-				description: 'Catch and show all exceptions',
-				default: false,
+				description: 'Catch and show all exceptions'
 			}
 		];
 
