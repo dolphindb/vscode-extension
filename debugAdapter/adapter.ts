@@ -437,8 +437,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	private handleOutput({ data }: { data: string }): void {
-		console.log(data);
-		this.sendEvent(new OutputEvent(data));
+		console.debug(data);
+		this.sendEvent(new OutputEvent(data, 'conosole'));
+		this.sendEvent(new OutputEvent(data, 'stdout'));
 	}
 	
 	// SyntaxError与Exception被server区分开了，但这边统一合并为Exception便于展示
@@ -457,6 +458,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			breakMode: 'always',
 		}
 		this.sendEvent(new StoppedEvent('exception', DdbDebugSession.threadID, message));
+		this.sendEvent(new OutputEvent(message, 'stderr'));
 	}
 	
 	// Server出错时对用户的信息展示，内部方法
@@ -466,11 +468,12 @@ export class DdbDebugSession extends LoggingDebugSession {
 		if (!this._stackTraceCache.length) {
 			this._stackTraceCache = [new StackFrame(0, '', this.createSource(this._sourcePath), 0, 0)];
 		}
-		this.sendEvent(new StoppedEvent('exception', DdbDebugSession.threadID, error.message));
 		this._exceptionInfo = {
 			exceptionId: 'Error',
 			description: error.message,
 			breakMode: 'always',
 		}
+		this.sendEvent(new StoppedEvent('exception', DdbDebugSession.threadID, error.message));
+		this.sendEvent(new OutputEvent(error.message, 'stderr'));
 	}
 }
