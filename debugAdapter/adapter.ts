@@ -410,7 +410,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	private handleTerminate({ status }: EndEventData): void {
-		if (status === 'FINISHED') {
+		if (status === 'FINISHED' || status === 'STOPPED') {
 			this._remote.terminate();
 			this.sendEvent(new TerminatedEvent());
 		} else if (status === 'RESTARTED') {
