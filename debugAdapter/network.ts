@@ -146,10 +146,12 @@ export class Remote {
     }
 
     try {
+      console.debug('Connecting to: ', this.url);
       this.websocket = await connect_websocket(this.url, {
         protocols: 'debug',
         on_message: this.handle.bind(this),
       });
+      console.debug('Connected');
       if (this.autologin) {
         await this.call('login', [this.username ?? 'admin', this.password ?? '123456']);
       }

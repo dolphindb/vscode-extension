@@ -16,7 +16,11 @@ a;
 b;
 c = toSelf(b)
 c = sum(b)
-throw "runtime exception!";
+try {
+  1/`7
+} catch(ex) {
+  print "oops, please make sure they are all numbers"
+};
 scalar = take(`ABC`XYZ, 6).sort!()
 bigArray = take(1..10000, 10000)
 time = take(2015.01M..2015.03M, 6)

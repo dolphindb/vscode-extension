@@ -168,6 +168,14 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
+		// 不支持多文件调试，但在多个文件设置断点时，vsc会全部进行setBreakpoint请求，这里我们把其他文件的全返回false
+		if (!args.source.path || this._sourcePath != normalizePathAndCasing(args.source.path)) {
+			response.body = {
+				breakpoints: args.lines ? args.lines.map(line => ({ line, verified: false })) : [],
+			}
+			this.sendResponse(response);
+			return;
+		}
 		const clientLines = args.lines || [];
 		const serverLines = clientLines.map(line => this.convertClientLineToDebugger(line));
 		
