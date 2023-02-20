@@ -84,6 +84,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 	// 后端要求的，异常时可能查不到栈帧信息的处理
 	private _exceptionFlag: boolean = false;
 	private _exceptionLine: number = 0;
+	// 会话结束后，不应当继续发送其他网络请求
+	private _terminated: boolean = false;
 	
 	constructor() {
 		super();
@@ -167,6 +169,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
+		if (this._terminated) {
+			return;
+		}
 		// 不支持多文件调试，但在多个文件设置断点时，vsc会全部进行setBreakpoint请求，这里我们把其他文件的全返回false
 		if (!args.source.path || this._sourcePath != normalizePathAndCasing(args.source.path)) {
 			response.body = {
@@ -221,6 +226,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	/** 栈帧查询，vsc会根据每个栈帧中的line来展示当前执行到哪里、各函数入口位置等 */
 	protected override async stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments): Promise<void> {
+		if (this._terminated) {
+			return;
+		}
 		// 每次stop/restart之后清空stackTrace缓存
 		if (this._stackTraceChangeFlag) {
 			const res: StackFrameRes[] = await this._remote.call('stackTrace');
@@ -277,6 +285,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	/** 由于Ddb不区分stackTrace和scope，该返回信息与stackTrace一致（认为一个stackTrace只有一个scope） */
 	protected override scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments, request?: DebugProtocol.Request | undefined): void {
+		if (this._terminated) {
+			return;
+		}
 		const frame = this._stackTraceCache.find(frame => frame.id === args.frameId);
 		if (!frame) {
 			this.sendResponse(response);
@@ -303,6 +314,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 		返回的variable reference = 0 表示是一个基本类型的已知变量，vsc不会再做额外请求
 	*/
 	protected override async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+		if (this._terminated) {
+			return;
+		}
 		const reduceVariables = (variables: VariableRes[], frameId: number): DebugProtocol.Variable[] => {
 			return variables.map(variable => {
 				const { name, value, data, vid, type, form } = variable;
@@ -372,6 +386,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+		if (this._terminated) {
+			return;
+		}
 		const newSource = await loadSource(this._sourcePath);
 		this._source = newSource.replace(/\r\n/g, '\n');
 		this._sourceLines = this._source.split('\n');
@@ -395,6 +412,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	protected override async disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request): Promise<void> {
 		this._remote.terminate();
+		this._terminated = true;
 		await this._remote.call('stopRun');
 	}
 	
@@ -411,6 +429,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private handleTerminate({ status }: EndEventData): void {
 		if (status === 'FINISHED' || status === 'STOPPED') {
 			this._remote.terminate();
+			this._terminated = true;
 			this.sendEvent(new TerminatedEvent());
 		} else if (status === 'RESTARTED') {
 			return;
