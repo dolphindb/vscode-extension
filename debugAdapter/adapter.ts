@@ -56,6 +56,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	// 与server交互的对象
 	private _remote: Remote;
+	private _launchArgs: DdbLaunchRequestArguments;
 	
 	private _prerequisites: Prerequisites;
 	
@@ -77,6 +78,7 @@ export class DdbDebugSession extends LoggingDebugSession {
     line: number;
     verified: boolean;
 	}> = [];
+	private _exceptionBreakpoint: boolean = false;
 	
 	// 初始化时compile error，则在文档首部显示异常展示错误信息
 	private _compileErrorFlag: boolean = false;
@@ -98,6 +100,16 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._prerequisites.create('configurationDone');
 		this._prerequisites.create('sourceLoaded');
 		this._prerequisites.create('scriptResolved'); 
+	}
+	
+	private registerEventHandlers() {
+		// 因为syntax和error服务端返回写到了外层message中，其余事件数据都在data中，这里注册的时候不是很优雅~~(都怪后端)~~
+		this._remote.on('SYNTAX', this.handleSyntaxErr.bind(this));
+		this._remote.on('ERROR', this.handleException.bind(this));
+		this._remote.on('BREAKPOINT', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'breakpoint', ...data }));
+		this._remote.on('STEP', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'step', ...data }));
+		this._remote.on('END', ({ data }: { data: EndEventData }) => this.handleTerminate(data));
+		this._remote.on('OUTPUT', this.handleOutput.bind(this));
 	}
 	
 	protected override initializeRequest(response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
@@ -140,6 +152,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	protected override async launchRequest(response: DebugProtocol.LaunchResponse, args: DdbLaunchRequestArguments) {
 		// 传入用户名密码，发送消息发现未连接时建立连接，同时根据autologin决定是否登录
 		this._remote = new Remote(args.url, args.username, args.password, args.autologin, this.handleServerError.bind(this));
+		this._launchArgs = args;
 		
 		// 加载资源
 		this._sourcePath = normalizePathAndCasing(args.program);
@@ -152,13 +165,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			this._prerequisites.resolve('scriptResolved');
 		});
 		
-		// 因为syntax和error服务端返回写到了外层message中，其余事件数据都在data中，这里注册的时候不是很优雅~~(都怪后端)~~
-		this._remote.on('SYNTAX', this.handleSyntaxErr.bind(this));
-		this._remote.on('ERROR', this.handleException.bind(this));
-		this._remote.on('BREAKPOINT', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'breakpoint', ...data }));
-		this._remote.on('STEP', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'step', ...data }));
-		this._remote.on('END', ({ data }: { data: EndEventData }) => this.handleTerminate(data));
-		this._remote.on('OUTPUT', this.handleOutput.bind(this));
+		this.registerEventHandlers();
 		
 		await Promise.all([
 			this._prerequisites.wait('scriptResolved'),
@@ -211,8 +218,10 @@ export class DdbDebugSession extends LoggingDebugSession {
 		await this._prerequisites.wait('scriptResolved');
 		if (args.filterOptions?.length) {
 			await this._remote.call('setAllExceptionBreak', [true]);
+			this._exceptionBreakpoint = true;
 		} else {
 			await this._remote.call('setAllExceptionBreak', [false]);
+			this._exceptionBreakpoint = false;
 		}
 		this.sendResponse(response);
 	}
@@ -393,6 +402,11 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._source = newSource.replace(/\r\n/g, '\n');
 		this._sourceLines = this._source.split('\n');
 		
+		this._remote.terminate();
+		const { url, username, password, autologin } = this._launchArgs;
+		this._remote = new Remote(url, username, password, autologin, this.handleServerError.bind(this));
+		this.registerEventHandlers();
+		
 		await this._remote.call('parseScriptWithDebug', [this._source]);
 		
 		const res = await this._remote.call('setBreaks', [this._breakpoints.map(bp => this.convertClientLineToDebugger(bp.line))]) as number[]
@@ -403,6 +417,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		}));
 		this._breakpoints = actualBreakpoints;
 		this._breakpoints.forEach(bp => this.sendEvent(new BreakpointEvent('changed', bp)));
+		await this._remote.call('setAllExceptionBreak', [this._exceptionBreakpoint]);
 		
 		// await this._remote.call('restartRun');
 		this._stackTraceChangeFlag = true;
@@ -411,7 +426,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request): Promise<void> {
-		await this._remote.call('stopRun');
 		this._remote.terminate();
 		this._terminated = true;
 	}
@@ -438,7 +452,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	private handleOutput({ data }: { data: string }): void {
 		console.debug(data);
-		this.sendEvent(new OutputEvent(data, 'conosole'));
 		this.sendEvent(new OutputEvent(data, 'stdout'));
 	}
 	

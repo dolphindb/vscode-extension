@@ -163,6 +163,8 @@ export class Remote {
   }
 
   public disconnect() {
+    this._terminated = true;
+    this.call('stopRun');
     this.websocket?.close();
   }
 
