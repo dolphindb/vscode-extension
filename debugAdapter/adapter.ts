@@ -173,6 +173,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		]);
 		
 		this._remote.call('runScriptWithDebug');
+		this.sendResponse(response);
 	}
 	
 	protected override async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
@@ -428,6 +429,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	protected override async disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request): Promise<void> {
 		this._remote.terminate();
 		this._terminated = true;
+		this.sendResponse(response);
 	}
 	
 	private createSource(filePath: string): Source {
