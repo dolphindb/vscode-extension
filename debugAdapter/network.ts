@@ -116,10 +116,13 @@ export class Remote {
 
       console.debug('Receive message: ', msg);
 
-      // 仅查询scope或单变量时会出现offset
+      // 仅查询scope或单变量时会出现offset TODO：这段代码最好挪到adapter.ts对应查询的函数内处理？
       if (msg?.data instanceof Array) {
         msg.data.forEach((item: any) => {
           if (item.offset) {
+            if (item.offset === -1) {
+              item.value = `${item.form}<${item.type}> Too large to display(${item.bytes} bytes)`
+            }
             item.binValue = buf.subarray(baseOffset, baseOffset + item.offset);
             item.ddbValue = DdbObj.parse(item.binValue, true);
             item.value = inspect(item.ddbValue);

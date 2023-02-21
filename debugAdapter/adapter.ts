@@ -323,6 +323,11 @@ export class DdbDebugSession extends LoggingDebugSession {
 		表示变量时，共31位（符号位不能用），除符号位与首位，剩余高14位是frameId，低16位是vid（debug mode下肯定够用叭qwq）
 		返回的variable reference = 0 表示是一个基本类型的已知变量，vsc不会再做额外请求
 	*/
+	/* 
+		返回结果如果有data就直接展示，没有data的话，vid一定不是0，然后会根据frameId, vid, variableName进行二次查询
+		另外，返回值里如果有offset的话，会优先根据offset处理，生成一个value字段直接展示
+		优先级：offset(value) > data > vid
+	*/
 	protected override async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
 		if (this._terminated) {
 			return;
