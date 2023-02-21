@@ -1,5 +1,5 @@
 import {
-	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, OutputEvent, Scope, BreakpointEvent
+	LoggingDebugSession, InitializedEvent, Source, StackFrame, StoppedEvent, TerminatedEvent, Thread, OutputEvent, Scope, BreakpointEvent, ContinuedEvent
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
@@ -428,6 +428,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		// await this._remote.call('restartRun');
 		this._stackTraceChangeFlag = true;
 		await this._remote.call('runScriptWithDebug');
+		this.sendEvent(new ContinuedEvent(DdbDebugSession.threadID, true));
 		this.sendResponse(response);
 	}
 	
