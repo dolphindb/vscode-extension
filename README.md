@@ -119,3 +119,28 @@ When entering a DolphinDB built-in function in the VSCode editor, click the arro
 <img src='./images/expand-doc.png' width='800'>
 
 After the function input is complete, hover the mouse over the function name to view the function documentation
+
+
+## Development
+```shell
+# Install the latest version of nodejs
+# https://nodejs.org/en/download/current/
+
+# Install the pnpm package manager
+corepack enable
+corepack prepare pnpm@latest --activate
+
+git clone https://github.com/dolphindb/vscode-extension.git
+
+cd vscode-extension
+
+# Install project dependencies
+pnpm install
+
+# Refer to scripts in package.json
+
+# Build the development version
+pnpm run dev
+
+# Switch to the debug panel in VSCode and start the ddb.ext debugging task (you need to disable or uninstall the installed dolphindb plugin first)
+```
