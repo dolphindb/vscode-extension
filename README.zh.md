@@ -118,3 +118,28 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 <img src='./images/expand-doc.png' width='800'>
 
 函数输入完成后，将鼠标悬浮于函数名称上，也可查看函数文档
+
+
+## 开发说明
+```shell
+# 安装最新版的 nodejs
+# https://nodejs.org/en/download/current/
+
+# 安装 pnpm 包管理器
+corepack enable
+corepack prepare pnpm@latest --activate
+
+git clone https://github.com/dolphindb/vscode-extension.git
+
+cd vscode-extension
+
+# 安装项目依赖
+pnpm install
+
+# 参考 package.json 中的 scripts
+
+# 构建开发版本
+pnpm run dev
+
+# 在 VSCode 中切换到调试面板，启动 ddb.ext 调试任务（需要先禁用或卸载已安装的 dolphindb 插件）
+```
