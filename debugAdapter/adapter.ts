@@ -61,9 +61,10 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private _prerequisites: Prerequisites;
 	
 	// 用户脚本路径
-	private _source: string;
-	private _sourceLines: string[];
-	private _sourcePath: string;
+	private _mainSourcePath: string;
+	private _sources: Map<string, string> = new Map();
+	private _sourceLines: Map<string, string[]> = new Map();
+	private _sourcePaths: string[];
 	
 	// 栈帧、变量等查询时的缓存，server会一次性返回，但vsc会分多次查询
 	private _stackTraceCache: StackFrame[] = [];
@@ -155,13 +156,13 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._launchArgs = args;
 		
 		// 加载资源
-		this._sourcePath = normalizePathAndCasing(args.program);
+		this._mainSourcePath = normalizePathAndCasing(args.program);
 		loadSource(args.program).then(async (source) => {
-			this._source = source.replace(/\r\n/g, '\n');
-			this._sourceLines = this._source.split('\n');
+			const src = this._sources[this._mainSourcePath] = source.replace(/\r\n/g, '\n');
+			this._sourceLines[this._mainSourcePath] = src.split('\n');
 			this._prerequisites.resolve('sourceLoaded');
 			
-			await this._remote.call('parseScriptWithDebug', [this._source]);
+			await this._remote.call('parseScriptWithDebug', [src]);
 			this._prerequisites.resolve('scriptResolved');
 		});
 		
@@ -180,8 +181,9 @@ export class DdbDebugSession extends LoggingDebugSession {
 		if (this._terminated) {
 			return;
 		}
+		// TODO: 多文件支持
 		// 不支持多文件调试，但在多个文件设置断点时，vsc会全部进行setBreakpoint请求，这里我们把其他文件的全返回false
-		if (!args.source.path || this._sourcePath != normalizePathAndCasing(args.source.path)) {
+		if (!args.source.path || this._mainSourcePath != normalizePathAndCasing(args.source.path)) {
 			response.body = {
 				breakpoints: args.lines ? args.lines.map(line => ({ line, verified: false })) : [],
 			}
@@ -248,8 +250,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 				// 除了shared作用域，一般是以当前行代码命名stackTrace
 				return new StackFrame(
 					stackFrameId,
-					name ?? index == res.length - 1 ? 'shared' : `line ${line}: ${this._sourceLines[line].trim()}`,
-					this.createSource(this._sourcePath),
+					name ?? index == res.length - 1 ? 'shared' : `line ${line}: ${this._sourceLines[this._mainSourcePath][line].trim()}`,
+					this.createSource(this._mainSourcePath),
 					index == res.length - 1 ? 0 : this.convertDebuggerLineToClient(line),
 					this.convertDebuggerColumnToClient(column ?? 0)
 				);
@@ -272,7 +274,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		// 后端要求的，异常时可能查不到栈帧信息的处理
 		if (this._exceptionFlag) {
 			if (stackFrames.length === 0) {
-				stackFrames.push(new StackFrame(0, 'exception', this.createSource(this._sourcePath), this._exceptionLine, 0));
+				stackFrames.push(new StackFrame(0, 'exception', this.createSource(this._mainSourcePath), this._exceptionLine, 0));
 			} else {
 				stackFrames[stackFrames.length - 1].line = this._exceptionLine;
 				stackFrames[stackFrames.length - 1].name = 'exception';
@@ -404,16 +406,16 @@ export class DdbDebugSession extends LoggingDebugSession {
 		if (this._terminated) {
 			return;
 		}
-		const newSource = await loadSource(this._sourcePath);
-		this._source = newSource.replace(/\r\n/g, '\n');
-		this._sourceLines = this._source.split('\n');
+		const newSource = (await loadSource(this._mainSourcePath)).replace(/\r\n/g, '\n');
+		this._sources[this._mainSourcePath] = newSource;
+		this._sourceLines[this._mainSourcePath] = newSource.split('\n');
 		
 		this._remote.terminate();
 		const { url, username, password, autologin } = this._launchArgs;
 		this._remote = new Remote(url, username, password, autologin, this.handleServerError.bind(this));
 		this.registerEventHandlers();
 		
-		await this._remote.call('parseScriptWithDebug', [this._source]);
+		await this._remote.call('parseScriptWithDebug', [newSource]);
 		
 		const res = await this._remote.call('setBreaks', [this._breakpoints.map(bp => this.convertClientLineToDebugger(bp.line))]) as number[]
 		const actualBreakpoints = this._breakpoints.map(bp => ({
@@ -487,7 +489,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._compileErrorFlag = true;
 		this._stackTraceChangeFlag = false;
 		if (!this._stackTraceCache.length) {
-			this._stackTraceCache = [new StackFrame(0, '', this.createSource(this._sourcePath), 0, 0)];
+			this._stackTraceCache = [new StackFrame(0, '', this.createSource(this._mainSourcePath), 0, 0)];
 		}
 		this._exceptionInfo = {
 			exceptionId: 'Error',
