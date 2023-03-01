@@ -1,7 +1,7 @@
 {
     "name": "dolphindb-vscode",
     "type": "module",
-    "version": "2.0.920",
+    "version": "2.0.921",
     "engines": {
         "vscode": ">=1.68.0"
     },
@@ -39,7 +39,7 @@
         "@vscode/debugprotocol": "^1.59.0",
         "antd": "^5.2.3",
         "dayjs": "^1.11.7",
-        "dolphindb": "^2.0.932",
+        "dolphindb": "^2.0.934",
         "koa": "^2.14.1",
         "koa-compress": "^5.1.0",
         "koa-useragent": "^4.1.0",
