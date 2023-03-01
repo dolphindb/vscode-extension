@@ -124,10 +124,9 @@ function initializeContents(memory: Uint8Array) {
 
 /**
  * Load the contents of a file.
- * @param file path to the file
+ * @param path path to the file
  * @returns string contents of the file
  */
-export async function loadSource(file: string) {
-  file = normalizePathAndCasing(file);
-  return initializeContents(await fsAccessor.readFile(file));
+export async function loadSource(path: string) {
+  return initializeContents(await fsAccessor.readFile(path));
 }
