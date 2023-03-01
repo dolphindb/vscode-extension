@@ -1,8 +1,8 @@
-import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from "./network.js";
+import { Source } from "@vscode/debugadapter";
 
 type SourceRef = {
-  source: DebugProtocol.Source;
+  source: Source;
   content?: string;
   lines?: string[];
 };
@@ -27,6 +27,10 @@ export class Sources {
       throw new Error(`Source not found for ref: ${ref}`);
     }
     return source;
+  }
+  
+  public getSource(ref: number): Source {
+    return this.get(ref).source;
   }
   
   public async getContent(ref: number): Promise<string> {
@@ -61,7 +65,7 @@ def myAdd(a, b){
     }
   }
   
-  public add(source: DebugProtocol.Source): number {
+  public add(source: Omit<Source, 'sourceReference'>): number {
     const ref = this.nextRefId;
     this._sourceRefs.set(ref, { source: {
       ...source,

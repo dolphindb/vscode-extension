@@ -64,6 +64,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	// 资源相关
 	private _sources: Sources;
 	private _mainSourceRef: number;
+	private _mainSourcePath: string;
 	
 	// 栈帧、变量等查询时的缓存，server会一次性返回，但vsc会分多次查询
 	private _stackTraceCache: StackFrame[] = [];
@@ -155,25 +156,27 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._launchArgs = args;
 		
 		// 加载主文件资源
-		const entryPath = normalizePathAndCasing(args.program);
+		const entryPath = this._mainSourcePath = normalizePathAndCasing(args.program);
 		loadSource(entryPath).then(async (source) => {
 			const src = source.replace(/\r\n/g, '\n');
 			this._mainSourceRef = this._sources.add({
-				name: entryPath.split('/').pop(),
+				name: entryPath.split('/').pop()!,
 				path: entryPath,
 			});
 			this._sources.addContent(this._mainSourceRef, src);
 			this._prerequisites.resolve('sourceLoaded');
 			
 			const res = await this._remote.call('parseScriptWithDebug', [src]);
-			// Object.entries(res.modules).forEach(([source, lines]) => {
-			// 	if (source !== '') {
-			// 		this.sendEvent(new LoadedSourceEvent('new', { 
-			// 			name: source,
-			// 			sourceReference: this.genId,
-			// 		}));
-			// 	}
-			// });
+			res.modules.forEach((path: string) => {
+				if (path !== '') {
+					const ref = this._sources.add({
+						name: path.split('/').pop()!,
+						path,
+					});
+					// FIXME: 没有出现"已载入的脚本"
+					this.sendEvent(new LoadedSourceEvent('new', this._sources.getSource(ref)));
+				}
+			});
 			this._prerequisites.resolve('scriptResolved');
 		});
 		
@@ -266,7 +269,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 					stackFrameId,
 					name ?? index == res.length - 1 ? 'shared' : `line ${line}: ${sourceLines[line].trim()}`,
 					// TODO: 多文件支持
-					this.createSource(this._sources.get(this._mainSourceRef).source.path!),
+					this._sources.getSource(this._mainSourceRef),
 					index == res.length - 1 ? 0 : this.convertDebuggerLineToClient(line),
 					this.convertDebuggerColumnToClient(column ?? 0)
 				);
@@ -292,7 +295,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 				stackFrames.push(new StackFrame(
 					0,
 					'exception',
-					this.createSource(this._sources.get(this._mainSourceRef).source.path!),
+					this._sources.getSource(this._mainSourceRef),
 					this._exceptionLine,
 					0
 				));
@@ -437,7 +440,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		const newSource = (await loadSource(entryPath)).replace(/\r\n/g, '\n');
 		this._sources = new Sources(this._remote);
 		this._mainSourceRef = this._sources.add({
-			name: entryPath.split('/').pop(),
+			name: entryPath.split('/').pop()!,
 			path: entryPath,
 		});
 		this._sources.addContent(this._mainSourceRef, newSource);
@@ -465,10 +468,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._remote.terminate();
 		this._terminated = true;
 		this.sendResponse(response);
-	}
-	
-	private createSource(filePath: string): Source {
-		return new Source(basename(filePath), this.convertDebuggerPathToClient(filePath), undefined, undefined, 'ddb-da-data');
 	}
 	
 	// 以下为server主动推送事件的回调
@@ -516,7 +515,13 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._compileErrorFlag = true;
 		this._stackTraceChangeFlag = false;
 		if (!this._stackTraceCache.length) {
-			this._stackTraceCache = [new StackFrame(0, '', this.createSource(this._sources.get(this._mainSourceRef).source.path!), 0, 0)];
+			this._stackTraceCache = [new StackFrame(
+				0,
+				'',
+				this._sources.getSource(this._mainSourceRef),
+				0,
+				0
+			)];
 		}
 		this._exceptionInfo = {
 			exceptionId: 'Error',
