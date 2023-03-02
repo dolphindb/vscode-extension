@@ -167,11 +167,11 @@ export class DdbDebugSession extends LoggingDebugSession {
 			this._prerequisites.resolve('sourceLoaded');
 			
 			const res = await this._remote.call('parseScriptWithDebug', [src]);
-			res.modules.forEach((path: string) => {
+			Object.entries(res.modules).forEach(([name, path]) => {
 				if (path !== '') {
 					const ref = this._sources.add({
-						name: path.split('/').pop()!,
-						path,
+						name,
+						path: path as string,
 					});
 					// FIXME: 没有出现"已载入的脚本"
 					this.sendEvent(new LoadedSourceEvent('new', this._sources.getSource(ref)));
@@ -196,16 +196,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 			return;
 		}
 		await this._prerequisites.wait('sourceLoaded');
-		// TODO: 多文件支持
-		if (!args.source.path ||
-			this._sources.get(this._mainSourceRef).source.path != normalizePathAndCasing(args.source.path))
-		{
-			response.body = {
-				breakpoints: args.lines ? args.lines.map(line => ({ line, verified: false })) : [],
-			}
-			this.sendResponse(response);
-			return;
-		}
 		const clientLines = args.lines || [];
 		const serverLines = clientLines.map(line => this.convertClientLineToDebugger(line));
 		
@@ -215,13 +205,14 @@ export class DdbDebugSession extends LoggingDebugSession {
 			line,
 			verified: false,
 		}));
-		const res = await this._remote.call('setBreaks', [requestData.map(bp => bp.line)]) as number[];
+		const path = args.source.path === this._mainSourcePath ? '' : args.source.path;
+		const res = await this._remote.call('setBreaks', [path, requestData.map(bp => bp.line)]) as [string, number[]];
 		
 		const actualBreakpoints = clientLines.map(line => ({
 			id: this.genId,
 			line,
 			// 服务端会返回设置成功的断点，不成功的断点（如空行）直接标记为未命中
-			verified: res.includes(this.convertClientLineToDebugger(line)),
+			verified: res[1].includes(this.convertClientLineToDebugger(line)),
 		}));
 		
 		this._breakpoints = actualBreakpoints;
