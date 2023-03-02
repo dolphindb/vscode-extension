@@ -427,7 +427,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._remote = new Remote(url, username, password, autologin, this.handleServerError.bind(this));
 		this.registerEventHandlers();
 		
-		const entryPath = this._sources.get(this._mainSourceRef).source.path!;
+		const entryPath = this._sources.getSource(this._mainSourceRef).path!;
 		const newSource = (await loadSource(entryPath)).replace(/\r\n/g, '\n');
 		this._sources = new Sources(this._remote);
 		this._mainSourceRef = this._sources.add({
