@@ -53,6 +53,7 @@ export type StackFrameRes = {
   line: number;
   name?: string;
   column?: number;
+  moduleName?: string;
 };
 
 export type VariableRes = {

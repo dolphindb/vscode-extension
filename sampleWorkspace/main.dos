@@ -33,6 +33,8 @@ pair = 1:3 + 1;
 matrix = matrix(INT, 3, 2, ,1);
 st = set(4 5 5 2 3 11 6);
 z= dict(1 2 3, 4.5 7.8 4.3);
+use MyModule
+print myAdd(1, 2)
 a;
 b;
 c;

@@ -252,19 +252,28 @@ export class DdbDebugSession extends LoggingDebugSession {
 		if (this._stackTraceChangeFlag) {
 			const res: StackFrameRes[] = await this._remote.call('stackTrace');
 			res.reverse();
-			const sourceLines = await this._sources.getLines(this._mainSourceRef);
-			this._stackTraceCache = res.map((frame, index) => {
+			this._stackTraceCache = await Promise.all(res.map(async (frame) => {
 				const { stackFrameId, name, line, column } = frame;
-				// 除了shared作用域，一般是以当前行代码命名stackTrace
+				let moduleName: number | string | undefined = frame.moduleName;
+				// 没有moduleName的栈帧是shared作用域
+				if (moduleName === undefined) {
+					return new StackFrame(stackFrameId, 'shared', this._sources.getSource(this._mainSourceRef), 0, 0);
+				}
+				// 特判，入口文件在Server端的moduleName为空
+				if (moduleName === '') {
+					moduleName = this._mainSourceRef;
+				}
+				// TODO: 是否该有个性能优化？
+				const sourceLines = await this._sources.getLines(moduleName);
+
 				return new StackFrame(
 					stackFrameId,
-					name ?? index == res.length - 1 ? 'shared' : `line ${line}: ${sourceLines[line].trim()}`,
-					// TODO: 多文件支持
-					this._sources.getSource(this._mainSourceRef),
-					index == res.length - 1 ? 0 : this.convertDebuggerLineToClient(line),
+					name ?? `line ${line}: ${sourceLines[line].trim()}`,
+					this._sources.getSource(moduleName),
+					this.convertDebuggerLineToClient(line),
 					this.convertDebuggerColumnToClient(column ?? 0)
 				);
-			});
+			}));
 			this._stackTraceChangeFlag = false;
 		}
 		
@@ -286,6 +295,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 				stackFrames.push(new StackFrame(
 					0,
 					'exception',
+					// TODO: exception来源文件
 					this._sources.getSource(this._mainSourceRef),
 					this._exceptionLine,
 					0
@@ -301,12 +311,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 			totalFrames: this._stackTraceCache.length,
 		};
 		
-		this.sendResponse(response);
-	}
-	
-	/** 异常信息由server推送的ERROR事件返回 */
-	protected override exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments, request?: DebugProtocol.Request | undefined): void {
-		response.body = this._exceptionInfo;
 		this.sendResponse(response);
 	}
 	
@@ -381,6 +385,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			};
 		} else {
 			const frameId = args.variablesReference;
+			// TODO: 根据_stackTraceChangeFlag去做一个缓存
 			const res: VariableRes[] = await this._remote.call('getStackVariables', [frameId]);
 			const resVars = reduceVariables(res, frameId);
 			this._scopeCache.set(args.variablesReference, resVars);
@@ -389,6 +394,21 @@ export class DdbDebugSession extends LoggingDebugSession {
 			};
 		}
 		
+		this.sendResponse(response);
+	}
+	
+	/** 异常信息由server推送的ERROR事件返回 */
+	protected override exceptionInfoRequest(response: DebugProtocol.ExceptionInfoResponse, args: DebugProtocol.ExceptionInfoArguments, request?: DebugProtocol.Request | undefined): void {
+		response.body = this._exceptionInfo;
+		this.sendResponse(response);
+	}
+	
+	protected override async sourceRequest(response: DebugProtocol.SourceResponse, args: DebugProtocol.SourceArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+		const content = await this._sources.getContent(args.sourceReference);
+		response.body = {
+			content,
+			mimeType: 'text/plain',
+		};
 		this.sendResponse(response);
 	}
 	

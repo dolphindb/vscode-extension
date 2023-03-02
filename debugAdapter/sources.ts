@@ -6,6 +6,9 @@ type SourceContents = {
   lines?: string[];
 };
 
+/**
+ * 用于管理debug会话开启后的所有资源
+ */
 export class Sources {
   // vscode debug adapter 使用ref来标识资源，要求是数字
   private _sources: Map<number, Source> = new Map();
@@ -25,6 +28,7 @@ export class Sources {
     this._remote = remote;
   }
   
+  /** 通过资源名或者数字ref获取整个source对象 */
   public getSource(ref: number | string): Source {
     if (typeof ref === 'string') {
       const srcRef = this._sourceRefMap.get(ref);
@@ -40,6 +44,7 @@ export class Sources {
     return source;
   }
   
+  /** 包含内容以及划分成行的内容 */
   private getContents(source: Source): SourceContents {
     const contents = this._sourceCache.get(source);
     if (!contents) {
@@ -48,27 +53,22 @@ export class Sources {
     return contents;
   }
   
-  public async getContent(ref: number): Promise<string> {
+  /** 获取资源内容 */
+  public async getContent(ref: number | string): Promise<string> {
     const contents = this.getContents(this.getSource(ref));
-    
     if (contents.content) {
       return contents.content;
     } else {
-      // const res = await this._remote.call("source");
-      // source.content = res.data;
-      // return source.content;
-      return `
-module AnotherModule
-
-def myAdd(a, b){
-  c = a+b
-  return c
-}
-`;
+      if (typeof ref === 'number') {
+        ref = this.getSource(ref).name;
+      }
+      // TODO: stackTrace也会做这个网络请求，在sourceRequest的请求时做一个deferred
+      contents.content = await this._remote.call("sourceRequest", ref) as string;
+      return contents.content;
     }
   }
   
-  public async getLines(ref: number): Promise<string[]> {
+  public async getLines(ref: number | string): Promise<string[]> {
     const contents = this.getContents(this.getSource(ref));
     
     if (contents.lines) {
