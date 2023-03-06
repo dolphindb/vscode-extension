@@ -205,8 +205,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 			line,
 			verified: false,
 		}));
-		const path = args.source.path === this._mainSourcePath ? '' : args.source.path;
-		const res = await this._remote.call('setBreaks', [path, requestData.map(bp => bp.line)]) as [string, number[]];
+		const moduleName = args.source.path === this._mainSourcePath ? '' : args.source.name;
+		const res = await this._remote.call('setBreaks', [moduleName, requestData.map(bp => bp.line)]) as [string, number[]];
 		
 		const actualBreakpoints = clientLines.map(line => ({
 			id: this.genId,
