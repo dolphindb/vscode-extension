@@ -36,5 +36,7 @@ z= dict(1 2 3, 4.5 7.8 4.3);
 use MyModule
 print myAdd(1, 2)
 a;
+use ModuleWithException
+print funcWithException()
 b;
 c;

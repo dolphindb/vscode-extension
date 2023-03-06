@@ -6,6 +6,12 @@ type SourceContents = {
   lines?: string[];
 };
 
+type BreakpointInfo = {
+  id: number;
+  line: number;
+  verified: boolean;
+};
+
 /**
  * 用于管理debug会话开启后的所有资源
  */
@@ -14,6 +20,8 @@ export class Sources {
   private _sources: Map<number, Source> = new Map();
   /** 资源内容缓存 */
   private _sourceCache: WeakMap<Source, SourceContents> = new WeakMap();
+  /** 断点缓存 */
+  private _breakpoints: WeakMap<Source, BreakpointInfo[]> = new WeakMap();
   /** 名字到ref的映射 */
   private _sourceRefMap: Map<string, number> = new Map();
   
@@ -28,11 +36,11 @@ export class Sources {
     this._remote = remote;
   }
   
-  /** 通过资源名或者数字ref获取整个source对象 */
+  /** 通过moduleName或者数字ref获取整个source对象 */
   public getSource(ref: number | string): Source {
     if (typeof ref === 'string') {
       const srcRef = this._sourceRefMap.get(ref);
-      if (!srcRef) {
+      if (srcRef === undefined) {
         throw new Error(`source ${ref} not found`);
       }
       ref = srcRef;
@@ -96,5 +104,15 @@ export class Sources {
     this._sourceCache.set(source, {
       content,
     });
+  }
+  
+  public getBreakpoints(ref: number | string) {
+    const source = this.getSource(ref);
+    return this._breakpoints.get(source) || [];
+  }
+  
+  public setBreakpoints(ref: number | string, lines: BreakpointInfo[]) {
+    const source = this.getSource(ref);
+    this._breakpoints.set(source, lines);
   }
 }

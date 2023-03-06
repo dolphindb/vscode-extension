@@ -71,3 +71,9 @@ export type VariableRes = {
   ddbValue?: DdbObj;
   value?: string;
 };
+
+
+export type ExceptionContext = {
+  line: number;
+  moduleName: string;
+};

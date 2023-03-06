@@ -5,7 +5,7 @@ import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
 import { basename } from 'path';
 import { normalizePathAndCasing, loadSource } from './utils.js';
-import { PauseEventData, PauseEventReceiveData, EndEventData, StackFrameRes, VariableRes } from './requestTypes.js';
+import { PauseEventData, PauseEventReceiveData, EndEventData, StackFrameRes, VariableRes, ExceptionContext } from './requestTypes.js';
 import { Sources } from './sources.js';
 
 interface DdbLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
@@ -74,11 +74,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 	get genId() {
 		return DdbDebugSession.id++;
 	}
-	private _breakpoints: Array<{
-		id: number;
-    line: number;
-    verified: boolean;
-	}> = [];
 	private _exceptionBreakpoint: boolean = false;
 	
 	// 初始化时compile error，则在文档首部显示异常展示错误信息
@@ -86,7 +81,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private _exceptionInfo: DebugProtocol.ExceptionInfoResponse['body'];
 	// 后端要求的，异常时可能查不到栈帧信息的处理
 	private _exceptionFlag: boolean = false;
-	private _exceptionLine: number = 0;
+	private _exceptionCtx: ExceptionContext = { line: 0, moduleName: '' };
 	// 会话结束后，不应当继续发送其他网络请求
 	private _terminated: boolean = false;
 	
@@ -191,6 +186,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this.sendResponse(response);
 	}
 	
+	// TODO: 从server加载的文件断点由vsc缓存处理
 	protected override async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
 		if (this._terminated) {
 			return;
@@ -205,7 +201,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			line,
 			verified: false,
 		}));
-		const moduleName = args.source.name;
+		const moduleName = args.source.path === this._mainSourcePath ? '' : args.source.name!;
 		const res = await this._remote.call('setBreaks', [moduleName, requestData.map(bp => bp.line)]) as [string, number[]];
 		
 		const actualBreakpoints = clientLines.map(line => ({
@@ -214,8 +210,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			// 服务端会返回设置成功的断点，不成功的断点（如空行）直接标记为未命中
 			verified: res[1].includes(this.convertClientLineToDebugger(line)),
 		}));
-		
-		this._breakpoints = actualBreakpoints;
+		this._sources.setBreakpoints(moduleName, actualBreakpoints);
 		
 		response.body = {
 			breakpoints: actualBreakpoints,
@@ -263,7 +258,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 				if (moduleName === '') {
 					moduleName = this._mainSourceRef;
 				}
-				// TODO: 是否该有个性能优化？
+				// TODO: 是否该有个性能优化？（stackTrace查询文件时一定会查询到lines）
 				const sourceLines = await this._sources.getLines(moduleName);
 
 				return new StackFrame(
@@ -295,13 +290,13 @@ export class DdbDebugSession extends LoggingDebugSession {
 				stackFrames.push(new StackFrame(
 					0,
 					'exception',
-					// TODO: exception来源文件
-					this._sources.getSource(this._mainSourceRef),
-					this._exceptionLine,
+					this._sources.getSource(this._exceptionCtx.moduleName),
+					this._exceptionCtx.line,
 					0
 				));
 			} else {
-				stackFrames[stackFrames.length - 1].line = this._exceptionLine;
+				stackFrames[stackFrames.length - 1].line = this._exceptionCtx.line;
+				stackFrames[stackFrames.length - 1].source = this._sources.getSource(this._exceptionCtx.moduleName);
 				stackFrames[stackFrames.length - 1].name = 'exception';
 			}
 		}
@@ -407,7 +402,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 		const content = await this._sources.getContent(args.sourceReference);
 		response.body = {
 			content,
-			mimeType: 'text/plain',
 		};
 		this.sendResponse(response);
 	}
@@ -447,25 +441,32 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._remote = new Remote(url, username, password, autologin, this.handleServerError.bind(this));
 		this.registerEventHandlers();
 		
+		// TODO: 主模块之外的其他断点信息
+		const oldBps = this._sources.getBreakpoints('');
+		
 		const entryPath = this._sources.getSource(this._mainSourceRef).path!;
 		const newSource = (await loadSource(entryPath)).replace(/\r\n/g, '\n');
 		this._sources = new Sources(this._remote);
 		this._mainSourceRef = this._sources.add({
-			name: entryPath.split('/').pop()!,
+			name: '',
 			path: entryPath,
 		});
 		this._sources.addContent(this._mainSourceRef, newSource);
 		
 		await this._remote.call('parseScriptWithDebug', [newSource]);
 		
-		const res = await this._remote.call('setBreaks', [this._breakpoints.map(bp => this.convertClientLineToDebugger(bp.line))]) as number[]
-		const actualBreakpoints = this._breakpoints.map(bp => ({
+		const bps = await this._remote.call(
+			'setBreaks',
+			['', oldBps.map(bp => this.convertClientLineToDebugger(bp.line))]
+		);
+		const actualBreakpoints = oldBps.map(bp => ({
 			id: bp.id,
 			line: bp.line,
-			verified: res.includes(this.convertClientLineToDebugger(bp.line)),
+			verified: bps[1].includes(this.convertClientLineToDebugger(bp.line)),
 		}));
-		this._breakpoints = actualBreakpoints;
-		this._breakpoints.forEach(bp => this.sendEvent(new BreakpointEvent('changed', bp)));
+		// TODO: 主模块之外的其他断点信息
+		this._sources.setBreakpoints('', actualBreakpoints);
+		actualBreakpoints.forEach(bp => this.sendEvent(new BreakpointEvent('changed', bp)));
 		await this._remote.call('setAllExceptionBreak', [this._exceptionBreakpoint]);
 		
 		// await this._remote.call('restartRun');
@@ -505,13 +506,16 @@ export class DdbDebugSession extends LoggingDebugSession {
 	// SyntaxError与Exception被server区分开了，但这边统一合并为Exception便于展示
 	private handleSyntaxErr(msg: { message: string }): void {
 		this._compileErrorFlag = true;
-		this.handleException({ message: msg.message, data: { line: -1 } });
+		this.handleException({ message: msg.message, data: { line: -1, moduleName: '' } });
 	}
 	
-	private handleException({ message, data }: { message: string; data: { line?: number } }): void {
+	private handleException({ message, data }: { message: string; data: ExceptionContext }): void {
 		this._stackTraceChangeFlag = true;
 		this._exceptionFlag = true;
-		this._exceptionLine = this.convertDebuggerLineToClient(data.line ?? -1);
+		this._exceptionCtx = {
+			line: this.convertDebuggerLineToClient(data.line ?? -1),
+			moduleName: data.moduleName,
+		};
 		this._exceptionInfo = {
 			exceptionId: 'Exception',
 			description: message,
