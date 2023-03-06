@@ -160,7 +160,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		loadSource(entryPath).then(async (source) => {
 			const src = source.replace(/\r\n/g, '\n');
 			this._mainSourceRef = this._sources.add({
-				name: entryPath.split('/').pop()!,
+				name: '',
 				path: entryPath,
 			});
 			this._sources.addContent(this._mainSourceRef, src);
@@ -205,7 +205,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			line,
 			verified: false,
 		}));
-		const moduleName = args.source.path === this._mainSourcePath ? '' : args.source.name;
+		const moduleName = args.source.name;
 		const res = await this._remote.call('setBreaks', [moduleName, requestData.map(bp => bp.line)]) as [string, number[]];
 		
 		const actualBreakpoints = clientLines.map(line => ({
