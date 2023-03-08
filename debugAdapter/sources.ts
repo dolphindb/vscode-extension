@@ -10,7 +10,13 @@ type BreakpointInfo = {
   id: number;
   line: number;
   verified: boolean;
+  source: Source;
 };
+
+type BreakpointsCache = Array<{
+  moduleName: string;
+  bps: BreakpointInfo[]
+}>;
 
 /**
  * 用于管理debug会话开启后的所有资源
@@ -106,9 +112,18 @@ export class Sources {
     });
   }
   
-  public getBreakpoints(ref: number | string) {
-    const source = this.getSource(ref);
-    return this._breakpoints.get(source) || [];
+  public getBreakpoints(): BreakpointsCache {
+    const res: BreakpointsCache = [];
+    this._sources.forEach(source => {
+      const bps = this._breakpoints.get(source);
+      if (bps) {
+        res.push({
+          moduleName: source.name,
+          bps,
+        })
+      }
+    })
+    return res;
   }
   
   public setBreakpoints(ref: number | string, lines: BreakpointInfo[]) {

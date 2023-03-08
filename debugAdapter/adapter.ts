@@ -84,6 +84,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	private _exceptionCtx: ExceptionContext = { line: 0, moduleName: '' };
 	// 会话结束后，不应当继续发送其他网络请求
 	private _terminated: boolean = false;
+	private _restarting: boolean = false;
 	
 	constructor() {
 		super();
@@ -437,18 +438,21 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async restartRequest(response: DebugProtocol.RestartResponse, args: DebugProtocol.RestartArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
-		if (this._terminated) {
+		// 一些节流操作
+		if (this._terminated || this._restarting) {
 			return;
 		}
-		
+		this._restarting = true;
 		this._remote.terminate();
+		
+		// 重新开启一个与server交互的session
 		const { url, username, password, autologin } = this._launchArgs;
 		this._remote = new Remote(url, username, password, autologin, this.handleServerError.bind(this));
 		this.registerEventHandlers();
 		
-		// TODO: 主模块之外的其他断点信息
-		const oldBps = this._sources.getBreakpoints('');
-		
+		// 暂存原先的断点信息，TODO：多文件支持
+		const bpCache = this._sources.getBreakpoints();
+		// 重新读取最新的主模块内容，重开本地sources缓存
 		const entryPath = this._sources.getSource(this._mainSourceRef).path!;
 		const newSource = (await loadSource(entryPath)).replace(/\r\n/g, '\n');
 		this._sources = new Sources(this._remote);
@@ -457,27 +461,45 @@ export class DdbDebugSession extends LoggingDebugSession {
 			path: entryPath,
 		});
 		this._sources.addContent(this._mainSourceRef, newSource);
+		// 重新解析脚本，并分析可用模块
+		const res = await this._remote.call('parseScriptWithDebug', [newSource]);
+		Object.entries(res.modules).forEach(([name, path]) => {
+			if (path !== '') {
+				const ref = this._sources.add({
+					name,
+					path: path as string,
+				});
+				// FIXME: 没有出现"已载入的脚本"
+				this.sendEvent(new LoadedSourceEvent('new', this._sources.getSource(ref)));
+			}
+		});
 		
-		await this._remote.call('parseScriptWithDebug', [newSource]);
-		
-		const bps = await this._remote.call(
-			'setBreaks',
-			['', oldBps.map(bp => this.convertClientLineToDebugger(bp.line))]
-		);
-		const actualBreakpoints = oldBps.map(bp => ({
-			id: bp.id,
-			line: bp.line,
-			verified: bps[1].includes(this.convertClientLineToDebugger(bp.line)),
-		}));
-		// TODO: 主模块之外的其他断点信息
-		this._sources.setBreakpoints('', actualBreakpoints);
-		actualBreakpoints.forEach(bp => this.sendEvent(new BreakpointEvent('changed', bp)));
+		// 重设缓存的断点，TODO: 多文件支持，TODO：你们server什么时候能并行请求呀qwq
+		// const bpRequests: Promise<any>[] = [];
+		bpCache.forEach(async ({moduleName, bps}) => {
+			const resBps = await this._remote.call(
+				'setBreaks',
+				[
+					moduleName,
+					bps.map(bp => this.convertClientLineToDebugger(bp.line))
+				]
+			);
+			const actualBreakpoints = bps.map(bp => ({
+				id: bp.id,
+				line: bp.line,
+				verified: resBps[1].includes(this.convertClientLineToDebugger(bp.line)),
+				source: this._sources.getSource(moduleName),
+			}));
+			this._sources.setBreakpoints(moduleName, actualBreakpoints);
+		});
 		await this._remote.call('setAllExceptionBreak', [this._exceptionBreakpoint]);
 		
-		// await this._remote.call('restartRun');
+		// 重新开始执行至第一个断点处
 		this._stackTraceChangeFlag = true;
 		await this._remote.call('runScriptWithDebug');
 		this.sendEvent(new ContinuedEvent(DdbDebugSession.threadID, true));
+		
+		this._restarting = false;
 		this.sendResponse(response);
 	}
 	
