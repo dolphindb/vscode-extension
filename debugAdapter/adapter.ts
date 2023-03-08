@@ -186,7 +186,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this.sendResponse(response);
 	}
 	
-	// TODO: 从server加载的文件断点由vsc缓存处理
 	protected override async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): Promise<void> {
 		if (this._terminated) {
 			return;
@@ -201,7 +200,12 @@ export class DdbDebugSession extends LoggingDebugSession {
 			line,
 			verified: false,
 		}));
-		const moduleName = normalizePathAndCasing(args.source.path!) === this._mainSourcePath ? '' : args.source.name!;
+		let moduleName = normalizePathAndCasing(args.source.path!) === this._mainSourcePath ? '' : args.source.name!;
+		// vsc会缓存断点设置信息，下次debug会话开启时会直接调用setBreakPointsRequest
+		// thanks to DDB强制要求moduleName与文件名一致，这里可以简单处理获取moduleName
+		if (moduleName.endsWith('.dos')) {
+			moduleName = moduleName.slice(0, -4);
+		}
 		const res = await this._remote.call('setBreaks', [moduleName, requestData.map(bp => bp.line)]) as [string, number[]];
 		
 		const actualBreakpoints = clientLines.map(line => ({
@@ -209,6 +213,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			line,
 			// 服务端会返回设置成功的断点，不成功的断点（如空行）直接标记为未命中
 			verified: res[1].includes(this.convertClientLineToDebugger(line)),
+			source: this._sources.getSource(moduleName),
 		}));
 		this._sources.setBreakpoints(moduleName, actualBreakpoints);
 		

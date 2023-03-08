@@ -1,0 +1,6 @@
+module MyModule
+
+def myAdd(a, b){
+	c = a+b
+	return c
+}
