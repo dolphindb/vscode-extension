@@ -174,6 +174,15 @@ export class DdbDebugSession extends LoggingDebugSession {
 				}
 			});
 			this._prerequisites.resolve('scriptResolved');
+		}).catch(err => {
+			if (err.code === 'ENOENT') {
+				this.sendEvent(new OutputEvent(
+					`File '${entryPath}' not found at local, if you want to debug it at local, please create a local file first.`,
+					'stderr',
+				));
+				this.sendEvent(new TerminatedEvent());
+				this._remote.terminate();
+			}
 		});
 		
 		this.registerEventHandlers();
