@@ -259,7 +259,10 @@ export class DdbDebugSession extends LoggingDebugSession {
 			return;
 		}
 		// 每次stop/restart之后清空stackTrace缓存
+		// 这里用一个deferred和一个flag来阻止vsc重复请求栈帧以避免发送多次网络请求
+		await this._prerequisites.wait('stackTraceRequest');
 		if (this._stackTraceChangeFlag) {
+			this._prerequisites.create('stackTraceRequest');
 			const res: StackFrameRes[] = await this._remote.call('stackTrace');
 			res.reverse();
 			this._stackTraceCache = await Promise.all(res.map(async (frame) => {
@@ -273,7 +276,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 				if (moduleName === '') {
 					moduleName = this._mainSourceRef;
 				}
-				// TODO: 是否该有个性能优化？（stackTrace查询文件时一定会查询到lines）
 				const sourceLines = await this._sources.getLines(moduleName);
 
 				return new StackFrame(
@@ -285,11 +287,12 @@ export class DdbDebugSession extends LoggingDebugSession {
 				);
 			}));
 			this._stackTraceChangeFlag = false;
+			this._prerequisites.resolve('stackTraceRequest');
 		}
 		
+		// vsc做stackTrace查询时会传入startFrame和levels参数来限制范围
 		let stackFrames: StackFrame[];
 		const start = args.startFrame || 0;
-		
 		if (args.levels)
 			stackFrames = this._stackTraceCache.slice(start, start + args.levels);
 		else
@@ -459,7 +462,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._remote = new Remote(url, username, password, autologin, this.handleServerError.bind(this));
 		this.registerEventHandlers();
 		
-		// 暂存原先的断点信息，TODO：多文件支持
+		// 暂存原先的断点信息
 		const bpCache = this._sources.getBreakpoints();
 		// 重新读取最新的主模块内容，重开本地sources缓存
 		const entryPath = this._sources.getSource(this._mainSourceRef).path!;
@@ -483,7 +486,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			}
 		});
 		
-		// 重设缓存的断点，TODO: 多文件支持，TODO：你们server什么时候能并行请求呀qwq
+		// 重设缓存的断点，TODO：你们server什么时候能并行请求呀qwq
 		// const bpRequests: Promise<any>[] = [];
 		bpCache.forEach(async ({moduleName, bps}) => {
 			const resBps = await this._remote.call(

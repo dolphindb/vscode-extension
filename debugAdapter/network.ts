@@ -111,12 +111,12 @@ export class Remote {
       const jsonLength = dv.getUint32(0, true);
       let baseOffset = 4 + jsonLength;
 
-      // TODO: 错误处理（对后端数据校验）
+      // TODO: 错误处理（是否需要对后端数据校验？）
       let msg = JSON.parse(decoder.decode(buf.subarray(4, baseOffset)));
 
       console.debug('Receive message: ', msg);
 
-      // 仅查询scope或单变量时会出现offset TODO：这段代码最好挪到adapter.ts对应查询的函数内处理？
+      // 仅查询scope或单变量时会出现offset
       if (msg?.data instanceof Array) {
         msg.data.forEach((item: any) => {
           if (item.offset) {

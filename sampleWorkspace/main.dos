@@ -1,3 +1,4 @@
+#include "/home/jyxi/Desktop/DolphinDB/build/modules/includeScript.dos"
 def toSelf(x){
     y1 = 1
     y2 = 2
