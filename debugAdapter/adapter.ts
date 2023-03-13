@@ -3,7 +3,6 @@ import {
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
-import { basename } from 'path';
 import { normalizePathAndCasing, loadSource } from './utils.js';
 import { PauseEventData, PauseEventReceiveData, EndEventData, StackFrameRes, VariableRes, ExceptionContext } from './requestTypes.js';
 import { Sources } from './sources.js';
@@ -63,8 +62,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	// 资源相关
 	private _sources: Sources;
-	private _mainSourceRef: number;
-	private _mainSourcePath: string;
+	private _entrySourceRef: number;
+	private _entrySourcePath: string;
 	
 	// 栈帧、变量等查询时的缓存，server会一次性返回，但vsc会分多次查询
 	private _stackTraceCache: StackFrame[] = [];
@@ -152,14 +151,14 @@ export class DdbDebugSession extends LoggingDebugSession {
 		this._launchArgs = args;
 		
 		// 加载主文件资源
-		const entryPath = this._mainSourcePath = normalizePathAndCasing(args.program);
+		const entryPath = this._entrySourcePath = normalizePathAndCasing(args.program);
 		loadSource(entryPath).then(async (source) => {
 			const src = source.replace(/\r\n/g, '\n');
-			this._mainSourceRef = this._sources.add({
+			this._entrySourceRef = this._sources.add({
 				name: '',
 				path: entryPath,
 			});
-			this._sources.addContent(this._mainSourceRef, src);
+			this._sources.addContent(this._entrySourceRef, src);
 			this._prerequisites.resolve('sourceLoaded');
 			
 			const res = await this._remote.call('parseScriptWithDebug', [src]);
@@ -210,12 +209,27 @@ export class DdbDebugSession extends LoggingDebugSession {
 			line,
 			verified: false,
 		}));
-		let moduleName = normalizePathAndCasing(args.source.path!) === this._mainSourcePath ? '' : args.source.name!;
+		let moduleName = normalizePathAndCasing(args.source.path!) === this._entrySourcePath ? '' : args.source.name!;
 		// vsc会缓存断点设置信息，下次debug会话开启时会直接调用setBreakPointsRequest
 		// thanks to DDB强制要求moduleName与文件名一致，这里可以简单处理获取moduleName
 		if (moduleName.endsWith('.dos')) {
 			moduleName = moduleName.slice(0, -4);
 		}
+		
+		try {
+			this._sources.getSource(moduleName);
+		} catch (e) {
+			this.sendEvent(new OutputEvent(
+				`'${args.source.path!}' 是一个本地文件并且不是本次调试的不是入口文件，这个文件的断点将在本次调试中被忽略`,
+				'stderr',
+			));
+			response.body = {
+				breakpoints: requestData,
+			}
+			this.sendResponse(response);
+			return;
+		}
+		
 		const res = await this._remote.call('setBreaks', [moduleName, requestData.map(bp => bp.line)]) as [string, number[]];
 		
 		const actualBreakpoints = clientLines.map(line => ({
@@ -270,11 +284,11 @@ export class DdbDebugSession extends LoggingDebugSession {
 				let moduleName: number | string | undefined = frame.moduleName;
 				// 没有moduleName的栈帧是shared作用域
 				if (moduleName === undefined) {
-					return new StackFrame(stackFrameId, 'shared', this._sources.getSource(this._mainSourceRef), 0, 0);
+					return new StackFrame(stackFrameId, 'shared', this._sources.getSource(this._entrySourceRef), 0, 0);
 				}
 				// 特判，入口文件在Server端的moduleName为空
 				if (moduleName === '') {
-					moduleName = this._mainSourceRef;
+					moduleName = this._entrySourceRef;
 				}
 				const sourceLines = await this._sources.getLines(moduleName);
 
@@ -465,14 +479,14 @@ export class DdbDebugSession extends LoggingDebugSession {
 		// 暂存原先的断点信息
 		const bpCache = this._sources.getBreakpoints();
 		// 重新读取最新的主模块内容，重开本地sources缓存
-		const entryPath = this._sources.getSource(this._mainSourceRef).path!;
+		const entryPath = this._sources.getSource(this._entrySourceRef).path!;
 		const newSource = (await loadSource(entryPath)).replace(/\r\n/g, '\n');
 		this._sources = new Sources(this._remote);
-		this._mainSourceRef = this._sources.add({
+		this._entrySourceRef = this._sources.add({
 			name: '',
 			path: entryPath,
 		});
-		this._sources.addContent(this._mainSourceRef, newSource);
+		this._sources.addContent(this._entrySourceRef, newSource);
 		// 重新解析脚本，并分析可用模块
 		const res = await this._remote.call('parseScriptWithDebug', [newSource]);
 		Object.entries(res.modules).forEach(([name, path]) => {
@@ -572,7 +586,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			this._stackTraceCache = [new StackFrame(
 				0,
 				'',
-				this._sources.getSource(this._mainSourceRef),
+				this._sources.getSource(this._entrySourceRef),
 				0,
 				0
 			)];
