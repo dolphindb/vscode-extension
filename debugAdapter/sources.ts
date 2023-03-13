@@ -130,4 +130,8 @@ export class Sources {
     const source = this.getSource(ref);
     this._breakpoints.set(source, lines);
   }
+  
+  public getAllSources(): Source[] {
+    return Array.from(this._sources.values());
+  }
 }

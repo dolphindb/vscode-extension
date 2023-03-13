@@ -123,6 +123,8 @@ export class DdbDebugSession extends LoggingDebugSession {
 
 		response.body.supportTerminateDebuggee = true;
 		
+		response.body.supportsLoadedSourcesRequest = true;
+		
 		// 目前server仅支持所有异常都展示或都不展示
 		response.body.supportsExceptionFilterOptions = true;
 		response.body.exceptionBreakpointFilters = [
@@ -192,6 +194,13 @@ export class DdbDebugSession extends LoggingDebugSession {
 		]);
 		
 		this._remote.call('runScriptWithDebug');
+		this.sendResponse(response);
+	}
+	
+	protected override async loadedSourcesRequest(response: DebugProtocol.LoadedSourcesResponse, args: DebugProtocol.LoadedSourcesArguments, request?: DebugProtocol.Request | undefined): Promise<void> {
+		response.body = {
+			sources: this._sources.getAllSources().filter(source => source.path !== this._entrySourcePath),
+		};
 		this.sendResponse(response);
 	}
 	
