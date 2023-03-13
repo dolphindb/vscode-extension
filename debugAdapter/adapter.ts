@@ -220,7 +220,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			this._sources.getSource(moduleName);
 		} catch (e) {
 			this.sendEvent(new OutputEvent(
-				`'${args.source.path!}' 是一个本地文件并且不是本次调试的不是入口文件，这个文件的断点将在本次调试中被忽略`,
+				`'${args.source.path!}' will not be used in this debug session, breakpoints in it will not be set.\n`,
 				'stderr',
 			));
 			response.body = {
@@ -326,10 +326,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 					this._exceptionCtx.line,
 					0
 				));
-			} else {
-				stackFrames[stackFrames.length - 1].line = this._exceptionCtx.line;
-				stackFrames[stackFrames.length - 1].source = this._sources.getSource(this._exceptionCtx.moduleName);
-				stackFrames[stackFrames.length - 1].name = 'exception';
 			}
 		}
 		

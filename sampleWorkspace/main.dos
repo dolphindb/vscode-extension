@@ -38,6 +38,6 @@ use MyModule
 print myAdd(1, 2)
 a;
 use ModuleWithException
-print funcWithException()
+funcWithException()
 b;
 c;
