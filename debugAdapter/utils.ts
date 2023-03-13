@@ -12,6 +12,7 @@ import {
   DdbVoid,
 } from 'dolphindb';
 import { promises as fs } from 'fs';
+import { Sources } from './sources';
 
 // DDB数据类型转换相关
 /**
@@ -129,4 +130,22 @@ function initializeContents(memory: Uint8Array) {
  */
 export async function loadSource(path: string) {
   return initializeContents(await fsAccessor.readFile(path));
+}
+
+export async function checkFile(
+  moduleName: string,
+  localPath: string,
+  sources: Sources
+): Promise<boolean> {
+  if (sources.getIfSourceVerified(moduleName)) {
+    return true;
+  }
+  
+  const [localFile, remoteFile] = await Promise.all([
+    loadSource(localPath),
+    sources.getContent(moduleName),
+  ]);
+  
+  sources.setSourceVerified(moduleName, true);
+  return localFile === remoteFile;
 }

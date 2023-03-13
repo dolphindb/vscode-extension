@@ -1,9 +1,12 @@
 import { Remote } from "./network.js";
 import { Source } from "@vscode/debugadapter";
 
-type SourceContents = {
+type SourceData = {
   content?: string;
   lines?: string[];
+  // verified表示是否已经进行过本地与server的一致性验证
+  // 设置这个变量的目的是避免用户多次setBps时，系统多次进行校验
+  verified?: boolean;
 };
 
 type BreakpointInfo = {
@@ -25,7 +28,7 @@ export class Sources {
   // vscode debug adapter 使用ref来标识资源，要求是数字
   private _sources: Map<number, Source> = new Map();
   /** 资源内容缓存 */
-  private _sourceCache: WeakMap<Source, SourceContents> = new WeakMap();
+  private _sourceCache: WeakMap<Source, SourceData> = new WeakMap();
   /** 断点缓存 */
   private _breakpoints: WeakMap<Source, BreakpointInfo[]> = new WeakMap();
   /** 名字到ref的映射 */
@@ -59,7 +62,7 @@ export class Sources {
   }
   
   /** 包含内容以及划分成行的内容 */
-  private getContents(source: Source): SourceContents {
+  private getContents(source: Source): SourceData {
     const contents = this._sourceCache.get(source);
     if (!contents) {
       throw new Error(`source contents not found: ${source.name}`);
@@ -133,5 +136,23 @@ export class Sources {
   
   public getAllSources(): Source[] {
     return Array.from(this._sources.values());
+  }
+  
+  public getIfSourceVerified(ref: number | string): boolean {
+    const source = this.getSource(ref);
+    const contents = this._sourceCache.get(source);
+    if (!contents) {
+      return false;
+    }
+    return contents.verified || false;
+  }
+  
+  public setSourceVerified(ref: number | string, verified: boolean) {
+    const source = this.getSource(ref);
+    const contents = this._sourceCache.get(source);
+    if (!contents) {
+      return;
+    }
+    contents.verified = verified;
   }
 }

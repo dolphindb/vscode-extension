@@ -3,7 +3,7 @@ import {
 } from '@vscode/debugadapter';
 import { DebugProtocol } from '@vscode/debugprotocol';
 import { Remote } from './network.js';
-import { normalizePathAndCasing, loadSource } from './utils.js';
+import { normalizePathAndCasing, loadSource, checkFile } from './utils.js';
 import { PauseEventData, PauseEventReceiveData, EndEventData, StackFrameRes, VariableRes, ExceptionContext } from './requestTypes.js';
 import { Sources } from './sources.js';
 
@@ -178,7 +178,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		}).catch(err => {
 			if (err.code === 'ENOENT') {
 				this.sendEvent(new OutputEvent(
-					`File '${entryPath}' not found at local, if you want to debug it at local, please create a local file first.`,
+					`File '${entryPath}' not found at local, if you want to debug it at local, please create a local file first.\n`,
 					'stderr',
 				));
 				this.sendEvent(new TerminatedEvent());
@@ -218,25 +218,36 @@ export class DdbDebugSession extends LoggingDebugSession {
 			line,
 			verified: false,
 		}));
-		let moduleName = normalizePathAndCasing(args.source.path!) === this._entrySourcePath ? '' : args.source.name!;
+		const sourcePath = normalizePathAndCasing(args.source.path!);
+		let moduleName = sourcePath === this._entrySourcePath ? '' : args.source.name!;
 		// vsc会缓存断点设置信息，下次debug会话开启时会直接调用setBreakPointsRequest
 		// thanks to DDB强制要求moduleName与文件名一致，这里可以简单处理获取moduleName
+		// .dos结尾的认为是本地文件（server module已经在resolveScript处处理去除dos后缀），需要进行一次校验
 		if (moduleName.endsWith('.dos')) {
 			moduleName = moduleName.slice(0, -4);
-		}
-		
-		try {
-			this._sources.getSource(moduleName);
-		} catch (e) {
-			this.sendEvent(new OutputEvent(
-				`'${args.source.path!}' will not be used in this debug session, breakpoints in it will not be set.\n`,
-				'stderr',
-			));
-			response.body = {
-				breakpoints: requestData,
+			// 先排除本次debug中没有使用的文件
+			try {
+				this._sources.getSource(moduleName);
+			} catch (e) {
+				this.sendEvent(new OutputEvent(
+					`File '${args.source.path!}' will not be used in this debug session, breakpoints in it will not be set.\n`,
+					'stderr',
+				));
+				response.body = {
+					breakpoints: requestData,
+				}
+				this.sendResponse(response);
+				return;
 			}
-			this.sendResponse(response);
-			return;
+			// 校验本地文件与server侧是否一致
+			checkFile(moduleName, sourcePath, this._sources).then(valid => {
+				if (!valid) {
+					this.sendEvent(new OutputEvent(
+						`Some breakpoints was set in local file '${sourcePath}', but the content of this file is inconsistent with the same file on the server, this may cause unexpected results when setting breakpoints, please sync the file if necessary.\n`,
+						'stderr'
+					));
+				}
+			});
 		}
 		
 		const res = await this._remote.call('setBreaks', [moduleName, requestData.map(bp => bp.line)]) as [string, number[]];
@@ -558,7 +569,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 	
 	private handleOutput({ data }: { data: string }): void {
 		console.debug(data);
-		this.sendEvent(new OutputEvent(data, 'stdout'));
+		this.sendEvent(new OutputEvent(`${data}\n`, 'stdout'));
 	}
 	
 	// SyntaxError与Exception被server区分开了，但这边统一合并为Exception便于展示
@@ -580,7 +591,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			breakMode: 'always',
 		}
 		this.sendEvent(new StoppedEvent('exception', DdbDebugSession.threadID, message));
-		this.sendEvent(new OutputEvent(message, 'stderr'));
+		this.sendEvent(new OutputEvent(`${message}\n`, 'stderr'));
 	}
 	
 	// Server出错时对用户的信息展示，内部方法
@@ -602,6 +613,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 			breakMode: 'always',
 		}
 		this.sendEvent(new StoppedEvent('exception', DdbDebugSession.threadID, error.message));
-		this.sendEvent(new OutputEvent(error.message, 'stderr'));
+		this.sendEvent(new OutputEvent(`${error.message}\n`, 'stderr'));
 	}
 }
