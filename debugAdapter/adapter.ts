@@ -165,14 +165,10 @@ export class DdbDebugSession extends LoggingDebugSession {
 			
 			const res = await this._remote.call('parseScriptWithDebug', [src]);
 			Object.entries(res.modules).forEach(([name, path]) => {
-				if (path !== '') {
-					const ref = this._sources.add({
-						name,
-						path: path as string,
-					});
-					// FIXME: 没有出现"已载入的脚本"
-					this.sendEvent(new LoadedSourceEvent('new', this._sources.getSource(ref)));
-				}
+				this._sources.add({
+					name,
+					path: path as string,
+				});
 			});
 			this._prerequisites.resolve('scriptResolved');
 		}).catch(err => {
@@ -506,14 +502,10 @@ export class DdbDebugSession extends LoggingDebugSession {
 		// 重新解析脚本，并分析可用模块
 		const res = await this._remote.call('parseScriptWithDebug', [newSource]);
 		Object.entries(res.modules).forEach(([name, path]) => {
-			if (path !== '') {
-				const ref = this._sources.add({
-					name,
-					path: path as string,
-				});
-				// FIXME: 没有出现"已载入的脚本"
-				this.sendEvent(new LoadedSourceEvent('new', this._sources.getSource(ref)));
-			}
+			this._sources.add({
+				name,
+				path: path as string,
+			});			
 		});
 		
 		// 重设缓存的断点，TODO：你们server什么时候能并行请求呀qwq
@@ -546,8 +538,12 @@ export class DdbDebugSession extends LoggingDebugSession {
 	}
 	
 	protected override async disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments, request?: DebugProtocol.Request): Promise<void> {
-		this._remote.terminate();
+		if (this._terminated) {
+			return;
+		}
 		this._terminated = true;
+		await this._remote.call('stopRun');
+		this._remote.terminate();
 		this.sendResponse(response);
 	}
 	

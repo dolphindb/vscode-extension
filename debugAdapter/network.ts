@@ -168,12 +168,6 @@ export class Remote {
     }
   }
 
-  public disconnect() {
-    this._terminated = true;
-    this.call('stopRun');
-    this.websocket?.close();
-  }
-
   private async send(msg: SendMessage) {
     try {
       if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
