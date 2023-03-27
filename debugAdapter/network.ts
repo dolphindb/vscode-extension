@@ -122,20 +122,25 @@ export class Remote {
           if (item.offset) {
             if (item.offset === -1) {
               item.value = `${item.form}<${item.type}> Too large to display(${item.bytes} bytes)`
+            } else {
+              item.binValue = buf.subarray(baseOffset, baseOffset + item.offset);
+              item.ddbValue = DdbObj.parse(item.binValue, true);
+              item.value = inspect(item.ddbValue);
+              // item.value = item.value.replace(/\n/g, '');
+              baseOffset += item.offset; 
             }
-            item.binValue = buf.subarray(baseOffset, baseOffset + item.offset);
-            item.ddbValue = DdbObj.parse(item.binValue, true);
-            item.value = inspect(item.ddbValue);
-            baseOffset += item.offset;
           }
         });
       } else if (msg?.data?.offset) {
-        msg.data.binValue = buf.subarray(
-          baseOffset,
-          baseOffset + msg.data.offset
-        );
-        msg.data.ddbValue = DdbObj.parse(msg.data.binValue, true);
-        msg.data.value = inspect(msg.data.ddbValue);
+        const item = msg.data;
+        if (item.offset === -1) {
+          item.value = `${item.form}<${item.type}> Too large to display(${item.bytes} bytes)`
+        } else {
+          item.binValue = buf.subarray(baseOffset, baseOffset + item.offset);
+          item.ddbValue = DdbObj.parse(item.binValue, true);
+          item.value = inspect(item.ddbValue);
+          baseOffset += item.offset; 
+        }
       }
 
       return msg;
