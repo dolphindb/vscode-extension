@@ -176,7 +176,7 @@ export class Remote {
   private async send(msg: SendMessage) {
     try {
       if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) {
-        throw new Error('Server is not connected');
+        throw new Error('调试服务器连接失败\n');
       }
       console.debug('Send message: ', msg);
       this.websocket!.send(this.pack(msg));

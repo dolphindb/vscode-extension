@@ -6,6 +6,7 @@ import { Remote } from './network.js';
 import { normalizePathAndCasing, loadSource, checkFile } from './utils.js';
 import { PauseEventData, PauseEventReceiveData, EndEventData, StackFrameRes, VariableRes, ExceptionContext } from './requestTypes.js';
 import { Sources } from './sources.js';
+import { t } from '../i18n/index.js';
 
 interface DdbLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	/** 用户脚本路径 */
@@ -174,7 +175,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 		}).catch(err => {
 			if (err.code === 'ENOENT') {
 				this.sendEvent(new OutputEvent(
-					`File '${entryPath}' not found at local, if you want to debug it at local, please create a local file first.\n`,
+					t("本地找不到文件{{entryPath}}，请先将这个文件下载到本地再启动debug\n", { entryPath }),
 					'stderr',
 				));
 				this.sendEvent(new TerminatedEvent());
@@ -226,7 +227,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 				this._sources.getSource(moduleName);
 			} catch (e) {
 				this.sendEvent(new OutputEvent(
-					`File '${args.source.path!}' will not be used in this debug session, breakpoints in it will not be set.\n`,
+					t("文件{{sourcePath}}中设置了断点，但在本次debug会话的中不会被使用到，将自动忽略\n", { sourcePath: args.source.path }),
 					'stderr',
 				));
 				response.body = {
@@ -239,7 +240,7 @@ export class DdbDebugSession extends LoggingDebugSession {
 			checkFile(moduleName, sourcePath, this._sources).then(valid => {
 				if (!valid) {
 					this.sendEvent(new OutputEvent(
-						`Some breakpoints was set in local file '${sourcePath}', but the content of this file is inconsistent with the same file on the server, this may cause unexpected results when setting breakpoints, please sync the file if necessary.\n`,
+						t("本地文件{{sourcePath}}与服务器文件不一致，在本地文件中设置的断点可能导致未知错误，建议先同步文件\n", { sourcePath: args.source.path }),
 						'stderr'
 					));
 				}
@@ -609,6 +610,6 @@ export class DdbDebugSession extends LoggingDebugSession {
 			breakMode: 'always',
 		}
 		this.sendEvent(new StoppedEvent('exception', DdbDebugSession.threadID, error.message));
-		this.sendEvent(new OutputEvent(`${error.message}\n`, 'stderr'));
+		this.sendEvent(new OutputEvent(t(error.message), 'stderr'));
 	}
 }

@@ -8,11 +8,9 @@ import {
 import type { DdbExplorer } from '../index.js';
 
 class DdbDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
-  private _explorer: DdbExplorer;
-
-  constructor(explorer: DdbExplorer) {
-    this._explorer = explorer;
-  }
+  constructor(
+    private _explorer: DdbExplorer
+  ) {}
   /**
    * 在debug会话开始前提供一些预配置，主要填充用户缺失信息
    */
