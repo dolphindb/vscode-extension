@@ -60,7 +60,7 @@ let remote = {
     
     init () {
         window.addEventListener('message', ({ data }) => {
-            remote.handle(data)
+            remote.handle(new Uint8Array(data))
         })
     },
     
@@ -81,9 +81,10 @@ let remote = {
     
     /** 处理接收到的 websocket message 并解析, 根据 id dispatch 到对应的 handler 进行处理  
         如果 message.done == true 则清理 handler  
-        如果 handler 返回了值，则包装为 message 发送 */
-    async handle (buffer: ArrayBuffer) {
-        const message = Remote.parse(buffer)
+        如果 handler 返回了值，则包装为 message 发送  
+        使用 Uint8Array 作为参数更灵活 https://stackoverflow.com/a/74505197/7609214  */
+    async handle (data: Uint8Array) {
+        const message = Remote.parse(data)
         
         const { id, func, done } = message
         
@@ -113,10 +114,9 @@ let remote = {
             // handle 出错并不意味着 rpc 一定会结束，可能 error 是运行中的正常数据，所以不能清理 handler
             
             if (!message.error)  // 防止无限循环往对方发送 error, 只有在对方无错误时才可以发送
-                try { this.send({ id, error, /* 不能设置 done 清理对面 handler, 理由同上 */ }) } catch { }
+                this.send({ id, error, /* 不能设置 done 清理对面 handler, 理由同上 */ })
             
-            // 再往上层抛出错误没有意义了，上层调用栈是 websocket.on('message') 之类的
-            console.log(error)
+            throw error
         }
     },
     
@@ -135,7 +135,11 @@ let remote = {
                 this.handlers.delete(id)
             })
             
-            this.send({ id, func, data: args })  // 不需要 done: true, 因为对面的 remote.handlers 中不会有这个 id 的 handler
+            try {
+                this.send({ id, func, data: args })  // 不需要 done: true, 因为对面的 remote.handlers 中不会有这个 id 的 handler
+            } catch (error) {
+                reject(error)
+            }
         })
     }
 }

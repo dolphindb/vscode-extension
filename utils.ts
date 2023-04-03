@@ -6,6 +6,7 @@ import {
     commands
 } from 'vscode'
 
+
 /** 获取选择区域的文本，若选择为空，则根据 selector 确定 (当前 | 全部文本 | 空) */
 export function get_text (selector: 
     'all' | 
@@ -77,6 +78,7 @@ export function get_text (selector:
             new Range(line_text_start, start)
         )
 }
+
 
 export function open_workbench_settings_ui (target: ConfigurationTarget, options?: { query?: string }) {
     if (target === ConfigurationTarget.Global) 

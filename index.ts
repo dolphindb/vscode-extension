@@ -48,7 +48,7 @@ import {
 
 import path from 'upath'
 import dayjs from 'dayjs'
-import { WebSocket, WebSocketServer } from 'ws'
+import { WebSocketServer } from 'ws'
 import { default as Koa, type Context } from 'koa'
 
 // @ts-ignore
@@ -66,26 +66,32 @@ import {
     assert,
     fread_json,
     Timer,
+    defer,
 } from 'xshell'
 import { Server } from 'xshell/server.js'
+
 import {
     DDB,
     DdbForm,
     DdbObj,
     DdbType,
     DdbFunctionType,
-    format,
-    formati,
+    format, formati,
     type DdbMessage,
     type DdbFunctionDefValue,
     type DdbVectorValue,
     type InspectOptions,
+    type DdbOptions,
 } from 'dolphindb'
 
 import { constants, keywords } from 'dolphindb/language.js'
 
 import { language, t } from './i18n/index.js'
 import { get_text, open_workbench_settings_ui } from './utils.js'
+
+declare global {
+    const FPD_SRC: string
+}
 
 if (util.inspect.styles.number !== 'green')
     set_inspect_options()
@@ -95,11 +101,6 @@ if (util.inspect.styles.number !== 'green')
 const fpd_ext = path.normalizeTrim(
     extensions.getExtension('dolphindb.dolphindb-vscode').extensionPath
 ) + '/'
-
-/** 开发模式下才有，为项目根文件夹 */
-const fpd_src = fpd_ext.fdir
-
-const fpd_node_modules = `${fpd_src}node_modules/`
 
 
 const constants_lower = constants.map(constant => constant.toLowerCase())
@@ -118,6 +119,12 @@ let extctx: ExtensionContext
 
 /** 是否处于开发模式 */
 let dev = false
+
+/** 项目源代码根文件夹，dev 模式下才能用 */
+const fpd_src = FPD_SRC
+
+const fpd_node_modules = `${fpd_src}node_modules/`
+
 
 let server: DdbServer
 
@@ -242,9 +249,6 @@ let term: DdbTerminal
 
 type ViewMessageHandler = (message: Message, view: WebviewView) => void | any[] | Promise<void | any[]>
 
-let pwebview_resolve: Function
-
-let pwebview = new Promise<void>(resolve => { pwebview_resolve = resolve })
 
 /** 基于 vscode webview 相关的消息函数 postMessage, onDidReceiveMessage, window.addEventListener('message', ...) 实现的 rpc  */
 let dataview = {
@@ -260,11 +264,9 @@ let dataview = {
     
     subscribers_inspection: [ ] as ((ddbvar: Partial<DdbVar>, open: boolean, options?: InspectOptions, buffer?: Uint8Array, le?: boolean) => any)[],
     
-    pwebview,
-    pwebview_resolve,
+    pwebview: defer<void>(),
     
-    ppage: Promise.resolve(),
-    ppage_resolve: () => { },
+    ppage: defer<void>(),
     
     
     /** 通过 rpc message.func 被调用的 rpc 函数 */
@@ -324,7 +326,7 @@ let dataview = {
         
         ready (message, view) {
             console.log(t('dataview 已准备就绪'))
-            dataview.pwebview_resolve()
+            dataview.pwebview.resolve()
             return [ ]
         }
     } as Record<string, ViewMessageHandler>,
@@ -337,7 +339,12 @@ let dataview = {
                 async resolveWebviewView (view, ctx, canceller) {
                     dataview.view = view
                     view.webview.options = { enableCommandUris: true, enableScripts: true }
-                    view.webview.onDidReceiveMessage(dataview.handle, dataview)
+                    view.webview.onDidReceiveMessage(
+                        (message: ArrayBuffer) => {
+                            dataview.handle(new Uint8Array(message))
+                        },
+                        dataview
+                    )
                     view.webview.html = (
                         await fread(`${ dev ? fpd_src : fpd_ext }dataview/webview${ dev ? '.dev' : '' }.html`)
                     ).replaceAll('{host}', `localhost:${server.port}`)
@@ -363,11 +370,12 @@ let dataview = {
     },
     
     
-    /** 处理接收到的 websocket message 并解析, 根据 id dispatch 到对应的 handler 进行处理  
+    /** 处理接收到的 message 并解析, 根据 id dispatch 到对应的 handler 进行处理  
         如果 message.done == true 则清理 handler  
-        如果 handler 返回了值，则包装为 message 发送 */
-    async handle (buffer: ArrayBuffer) {
-        const message = Remote.parse(buffer)
+        如果 handler 返回了值，则包装为 message 发送  
+        使用 Uint8Array 作为参数更灵活 https://stackoverflow.com/a/74505197/7609214  */
+    async handle (data: Uint8Array) {
+        const message = Remote.parse(data)
         
         const { id, func, done } = message
         
@@ -392,20 +400,19 @@ let dataview = {
             } else if (message.error)
                 throw message.error
             else
-                throw new Error(`cannot find rpc handler: ${func ? `func: ${func.quote()}` : `id: ${id}`}`)
+                throw new Error(`${t('找不到 rpc handler')}: ${func ? `func: ${func.quote()}` : `id: ${id}`}`)
         } catch (error) {
             // handle 出错并不意味着 rpc 一定会结束，可能 error 是运行中的正常数据，所以不能清理 handler
             
             if (!message.error)  // 防止无限循环往对方发送 error, 只有在对方无错误时才可以发送
-                try { await this.send({ id, error, /* 不能设置 done 清理对面 handler, 理由同上 */ }) } catch { }
+                await this.send({ id, error, /* 不能设置 done 清理对面 handler, 理由同上 */ })
             
-            // 再往上层抛出错误没有意义了，上层调用栈是 websocket.on('message') 之类的
-            console.log(error)
+            throw error
         }
     },
     
     
-    /** 调用 remote 中的 func, 适用于最简单的一元 rpc (请求, 响应) */
+    /** 调用 remote 中的 func, 只适用于最简单的一元 rpc (请求, 响应) */
     async call <TReturn extends any[] = any[]> (func: string, args?: any[]) {
         return new Promise<TReturn>(async (resolve, reject) => {
             const id = genid()
@@ -419,7 +426,11 @@ let dataview = {
                 this.handlers.delete(id)
             })
             
-            await this.send({ id, func, data: args })  // 不需要 done: true, 因为对面的 remote.handlers 中不会有这个 id 的 handler
+            try {
+                await this.send({ id, func, data: args })  // 不需要 done: true, 因为对面的 remote.handlers 中不会有这个 id 的 handler
+            } catch (error) {
+                reject(error)
+            }
         })
     }
 }
@@ -466,10 +477,7 @@ async function _execute (text: string) {
     
     let { connection } = explorer
     
-    if (!connection.connected) {
-        connection.disconnect()
-        await connection.connect()
-    }
+    await connection.connect()
     
     let { ddb } = connection
     let { printer } = term
@@ -557,7 +565,7 @@ async function _execute (text: string) {
     
     printer.fire(
         objstr +
-        timer.getstr() + '\r\n'
+        timer.getstr(true) + '\r\n'
     )
     
     if (to_inspect)
@@ -565,10 +573,12 @@ async function _execute (text: string) {
 }
 
 
+/** 和 webpack 中的 commands 定义需要一一对应 */
 const ddb_commands = [
     async function execute() {
         await _execute(get_text('selection or line'))
     },
+    
     
     async function execute_selection_or_line () {
         try {
@@ -579,6 +589,7 @@ const ddb_commands = [
         }
     },
     
+    
     async function execute_file () {
         try {
             await _execute(get_text('all'))
@@ -586,6 +597,7 @@ const ddb_commands = [
             window.showErrorMessage(error.message)
         }
     },
+    
     
     async function cancel () {
         let { connection } = explorer
@@ -603,14 +615,26 @@ const ddb_commands = [
         await connection.ddb.cancel()
     },
     
-    async function set_connection (name: string) {
-        await explorer.set_connection(name)
+    
+    async function connect (connection: DdbConnection) {
+        await explorer.connect(connection)
     },
     
-    function disconnect_connection (connection: DdbConnection) {
-        console.log(t('断开 dolphindb 连接:'), connection)
-        connection.disconnect()
+    
+    function disconnect (connection: DdbConnection) {
+        explorer.disconnect(connection)
     },
+    
+    
+    async function reconnect () {
+        let { connection } = explorer
+        console.log(t('重连连接:'), connection)
+        explorer.disconnect(connection)
+        await explorer.connect(
+            explorer.connections.find(conn => conn.name === connection.name)
+        )
+    },
+    
     
     async function open_settings (query?: string) {
         const connectionsInspection = workspace.getConfiguration('dolphindb').inspect('connections')
@@ -630,9 +654,11 @@ const ddb_commands = [
         await open_workbench_settings_ui(target, { query: `@ext:dolphindb.dolphindb-vscode${query ? ` ${query}` : ''}` })
     },
     
+    
     async function open_connection_settings () {
         await commands.executeCommand('dolphindb.open_settings', 'connections')
     },
+    
     
     async function inspect_variable (ddbvar: DdbVar) {
         console.log(t('查看 dolphindb 变量:'), ddbvar)
@@ -640,15 +666,18 @@ const ddb_commands = [
         await ddbvar.inspect()
     },
     
+    
     async function open_variable (ddbvar: DdbVar = lastvar) {
         console.log(t('在新窗口查看变量:'), ddbvar)
         await ddbvar.inspect(true)
     },
     
+    
     function reload_dataview () {
         const { webview } = dataview.view
         webview.html = webview.html + ' '
     },
+    
     
     async function upload_file () {
         const key_fp_remote = 'dolphindb.fp_remote'
@@ -666,10 +695,24 @@ const ddb_commands = [
         
         extctx.globalState.update(key_fp_remote, fp_remote)
         
-        await _upload_file(explorer.connection, fp_remote, get_text('all'))
+        let { connection } = explorer
+        
+        await connection.connect()
+        
+        const fpd_remote = fp_remote.fdir
+        
+        let { ddb } = connection
+        
+        if (!(
+            await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])
+        ).value)
+            await ddb.call('mkdir', [fpd_remote])
+        
+        await ddb.call('saveTextFile', [get_text('all'), fp_remote])
         
         window.showInformationMessage(t('文件上传成功'))
     },
+    
     
     function set_decimals () {
         formatter.prompt()
@@ -1095,13 +1138,20 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
     
     single_connection_mode: boolean = false
     
+    /** 从 dolphindb.connections 连接配置生成的，在面板中的显示所有连接  
+        每个连接维护了一个 ddb api 的实际连接，当出错需要重置时，需要用新的连接替换出错连接 */
     connections: DdbConnection[]
     
+    /** 当前选中的连接 */
     connection: DdbConnection
+    
+    connecting = false
+    
     
     constructor () {
         this.load_connections()
     }
+    
     
     getParent (element: TreeItem): ProviderResult<TreeItem> {
         if (element instanceof DdbExplorer)
@@ -1110,6 +1160,7 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
         if (element instanceof DdbConnection)
             return explorer.view
     }
+    
     
     load_connections () {
         if (this.connections)
@@ -1121,12 +1172,13 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
         this.single_connection_mode = config.get<boolean>('single_connection_mode')
         
         this.connections = config
-            .get<Partial<DdbConnection>[]>('connections')
-            .map(conn => new DdbConnection(conn))
+            .get<{ url: string, name?: string }[]>('connections')
+            .map(({ url, name, ...options }) => new DdbConnection(url, name, options))
         
         this.connection = this.connections[0]
         this.connection.iconPath = icon_checked
     }
+    
     
     on_config_change (event: ConfigurationChangeEvent) {
         if (event.affectsConfiguration('dolphindb.connections') || event.affectsConfiguration('dolphindb.single_connection_mode')) {
@@ -1135,35 +1187,65 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
         }
     }
     
-    async set_connection (name: string) {
-        for (let connection of this.connections)
-            if (connection.name === name) {
-                connection.iconPath = icon_checked
-                this.connection = connection
-            } else {
-                connection.iconPath = icon_empty
+    
+    async connect (connection: DdbConnection) {
+        if (this.connecting) {
+            const message = t('正在连接中，请稍等')
+            window.showWarningMessage(message)
+            throw new Error(message)
+        }
+        
+        this.connecting = true
+        
+        connection.iconPath = icon_checked
+        this.connection = connection
+        
+        for (let _connection of this.connections)
+            if (_connection !== connection) {
+                _connection.iconPath = icon_empty
+                
                 if (this.single_connection_mode)
-                    connection.disconnect()
+                    this.disconnect(_connection)
             }
         
         
-        console.log(t('切换连接:'), this.connection)
+        console.log(t('连接:'), this.connection)
         
         try {
-            if (!this.connection.connected) {
-                this.connection.disconnect()
-                await this.connection.connect()
-                await this.connection.update()
-            }
+            await this.connection.connect()
+            await this.connection.update()
         } finally {
+            this.connecting = false
             statbar.set(this.connection.running)
             this.refresher.fire()
         }
     }
     
+    
+    disconnect (connection: DdbConnection) {
+        console.log(t('断开 dolphindb 连接:'), connection)
+        
+        /** 如果断开的是当前选中的连接，那么断开连接后恢复选中状态 */
+        const selected = connection.name === this.connection.name
+        
+        this.connection.disconnect()
+        
+        const index = this.connections.findIndex(conn => conn === connection)
+        this.connections[index] = new DdbConnection(connection.url, connection.name, connection.options)
+        
+        if (selected) {
+            this.connection = this.connections.find(conn => conn.name === connection.name)
+            this.connection.iconPath = icon_checked
+        }
+        
+        this.refresher.fire()
+    }
+    
+    
     getTreeItem (node: TreeItem): TreeItem | Thenable<TreeItem> {
         return node
     }
+    
     
     getChildren (node?: TreeItem) {
         switch (true) {
@@ -1185,6 +1267,7 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
         }
     }
     
+    
     async resolveTreeItem (item: TreeItem, element: TreeItem, canceller: CancellationToken): Promise<TreeItem> {
         if (!(item instanceof DdbVar))
             return
@@ -1193,29 +1276,36 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
     }
 }
 
+
 const pyobjs = new Set(['list', 'tuple', 'dict', 'set', '_ddb', 'Exception', 'AssertRaise', 'PyBox'])
 
 
+/** 维护一个 ddb api 连接 */
 class DdbConnection extends TreeItem {
-    // --- 配置参数
-    
     /** 连接名称 (连接 id)，如 local8848, controller, datanode0 */
     name: string
     
-    /** 参考 DDB.connect 方法 */
-    url = 'ws://127.0.0.1:8848'
+    url: string
     
-    autologin = true
-    
-    username = 'admin'
-    
-    password = '123456'
-    
-    python = false
+    /** 这里设置的值为默认值，需要和 webpack 中的属性默认值保持一致 */
+    options: DdbOptions = {
+        autologin: true,
+        
+        username: 'admin',
+        
+        password: '123456',
+        
+        python: false,
+        
+        verbose: false,
+    }
     
     // --- 状态
     
     ddb: DDB
+    
+    /** 和 ddb.connected 含义不同，这里表示是否连接成功过，用来区分错误提示 */
+    connected = false
     
     vars: DdbVar[]
     
@@ -1228,31 +1318,39 @@ class DdbConnection extends TreeItem {
     running = false
     
     
-    get connected () {
-        return this.ddb.websocket?.readyState === WebSocket.OPEN
-    }
-    
-    
-    constructor (data: Partial<DdbConnection>) {
-        super(`${data.name} `, TreeItemCollapsibleState.None)
+    constructor (url: string, name: string = url, options: DdbOptions = { }) {
+        super(`${name} `, TreeItemCollapsibleState.None)
         
-        Object.assign(this, data)
+        try {
+            assert(
+                url && typeof url === 'string' && (url.startsWith('ws://') || url.startsWith('wss://')),
+                t('dolphindb 连接配置中的 url 非法，类型应该是字符串，且以 ws:// 或 wss:// 开头')
+            )
+            
+            this.url = url
+        } catch (error) {
+            window.showErrorMessage(error.message)
+            throw error
+        }
+        
+        this.name = name
+        
+        for (const key in this.options) {
+            const value = options[key]
+            if (value !== undefined)
+                this.options[key] = value
+        }
         
         this.description = this.url
         this.iconPath = icon_empty
         this.contextValue = 'disconnected'
         
-        this.ddb = new DDB(this.url, {
-            autologin: this.autologin,
-            username: this.username,
-            password: this.password,
-            python: this.python,
-        })
+        this.ddb = new DDB(this.url, this.options)
         
         this.command = {
-            command: 'dolphindb.set_connection',
-            title: 'dolphindb.set_connection',
-            arguments: [this.name],
+            command: 'dolphindb.connect',
+            title: 'dolphindb.connect',
+            arguments: [this],
         }
         
         this.local = new DdbVarLocation(this, false)
@@ -1260,12 +1358,10 @@ class DdbConnection extends TreeItem {
     }
     
     
+    /** 调用 this.ddb.connect(), 确保和数据库的连接是正常的，更新连接显示状态 */
     async connect () {
-        this.ddb.url = this.url
-        this.ddb.autologin = this.autologin
-        this.ddb.username = this.username
-        this.ddb.password = this.password
-        this.ddb.python = this.python
+        if (this.ddb.connected)
+            return
         
         try {
             await this.ddb.connect()
@@ -1273,21 +1369,23 @@ class DdbConnection extends TreeItem {
             const ret = await window.showErrorMessage(
                 error.message,
                 {
-                    detail: t('连接数据库失败，当前连接配置为:\n') +
-                        inspect(
-                            {
-                                url: this.url,
-                                autologin: this.autologin,
-                                username: this.username,
-                                password: this.password,
-                                python: this.python,
-                            },
-                            { colors: false }
-                        ) + '\n' +
-                        t('先尝试用浏览器访问对应的 server 地址，如: http://192.168.1.111:8848\n') +
-                        t('如果可以打开网页且正常登录使用，再检查:\n') +
-                        t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
-                        t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n') +
+                    detail: 
+                        (this.connected ?
+                            t('数据库连接被断开，请检查网络是否稳定，网络转发节点是否会自动关闭 websocket 长连接\n')
+                        :
+                            t('连接数据库失败，当前连接配置为:\n') +
+                            inspect(
+                                {
+                                    name: this.name,
+                                    url: this.url,
+                                    ... this.options
+                                },
+                                { colors: false }
+                            ) + '\n' +
+                            t('先尝试用浏览器访问对应的 server 地址，如: http://192.168.1.111:8848\n') +
+                            t('如果可以打开网页且正常登录使用，再检查:\n') +
+                            t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
+                            t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n')) +
                         t('调用栈:\n') +
                         error.stack,
                     modal: true
@@ -1297,21 +1395,24 @@ class DdbConnection extends TreeItem {
                     isCloseAffordance: true
                 },
                 {
+                    title: t('重连'),
+                    command: 'dolphindb.reconnect',
+                },
+                {
                     title: t('编辑配置'),
                     command: 'dolphindb.open_connection_settings'
                 }
             )
             
             if (ret && ret.command)
-                commands.executeCommand(ret.command)
-            
-            this.ddb.disconnect()
+                await commands.executeCommand(ret.command)
             
             throw error
         }
         
         
         console.log(`${t('连接成功:')} ${this.name}`)
+        this.connected = true
         this.description = this.url + ' ' + t('已连接')
         
         this.collapsibleState = TreeItemCollapsibleState.Expanded
@@ -1329,6 +1430,7 @@ class DdbConnection extends TreeItem {
         explorer.refresher.fire(this)
     }
     
+    
     /**
          执行代码后更新变量面板  
          变量只获取 scalar 和 pair 这两中不可变类型的值  
@@ -1337,8 +1439,7 @@ class DdbConnection extends TreeItem {
          a = [1]
          (a, 0)  // 获取本地变量的值，展示在变量面板
          append!(a, 1)  // error: append!(a, 1) => Read only object or object without ownership can't be applied to mutable function append!
-         ```
-     */
+         ``` */
     async update () {
         const objs = await this.ddb.call('objs', [true])
         
@@ -1367,10 +1468,12 @@ class DdbConnection extends TreeItem {
                 ddb: this.ddb,
                 
                 name,
+                
                 type: (() => {
                     const _type = type.toLowerCase()
                     return _type.endsWith('[]') ? DdbType[_type.slice(0, -2)] + 64 : DdbType[_type]
                 })(),
+                
                 form: (() => {
                     const _form = form.toLowerCase()
                     switch (_form) {
@@ -1384,28 +1487,27 @@ class DdbConnection extends TreeItem {
                             return DdbForm[_form]
                     }
                 })(),
+                
                 rows,
                 cols: columns,
                 bytes,
                 shared,
                 extra,
                 obj: undefined as DdbObj
-            }))
-            .filter(v => 
+            })).filter(v => 
                 v.name !== 'pnode_run' && 
                 !(v.form === DdbForm.object && pyobjs.has(v.name))
             )
         
-        let imutables = vars_data.filter(v =>
-            v.form === DdbForm.scalar || v.form === DdbForm.pair)
+        let immutables = vars_data.filter(v => v.form === DdbForm.scalar || v.form === DdbForm.pair)
         
-        if (imutables.length) {
+        if (immutables.length) {
             const { value: values } = await this.ddb.eval<DdbObj<DdbObj[]>>(
-                `(${imutables.map(({ name }) => name).join(', ')}, 0)${ this.python ? '.toddb()' : '' }`
+                `(${immutables.map(({ name }) => name).join(', ')}, 0)${ this.options.python ? '.toddb()' : '' }`
             )
             
-            for (let i = 0;  i < values.length - 1;  i++)
-                imutables[i].obj = values[i]
+            for (let i = 0, len = values.length - 1;  i < len;  i++)
+                immutables[i].obj = values[i]
         }
         
         this.vars = vars_data.map(data => new DdbVar(data))
@@ -1575,6 +1677,7 @@ class DdbVarForm extends TreeItem {
     
     vars: DdbVar[]
     
+    
     constructor (connection: DdbConnection, shared: boolean, form: DdbForm) {
         super(DdbVarForm.form_names[form] || DdbForm[form], TreeItemCollapsibleState.Expanded)
         this.connection = connection
@@ -1582,6 +1685,7 @@ class DdbVarForm extends TreeItem {
         this.form = form
         this.iconPath = `${ dev ? fpd_src : fpd_ext }icons/${DdbForm[form]}.svg`
     }
+    
     
     update (vars: DdbVar[]) {
         this.vars = vars
@@ -1743,9 +1847,7 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     async inspect (open = false) {
         if (open) {
             if (!server.subscribers_inspection.length) {
-                dataview.ppage = new Promise<void>(resolve => {
-                    dataview.ppage_resolve = resolve
-                })
+                dataview.ppage = defer<void>()
                 
                 await commands.executeCommand('vscode.open', server.web_url)
                 
@@ -1875,7 +1977,7 @@ class DdbServer extends Server {
             
             ready (message, websocket) {
                 console.log(t('page 已准备就绪'))
-                dataview.ppage_resolve()
+                dataview.ppage.resolve()
                 return [ ]
             }
         }
@@ -1931,8 +2033,8 @@ class DdbServer extends Server {
         })
         
         this.server_ws.on('connection', (websocket, request) => {
-            websocket.addEventListener('message', event => {
-                this.remote.handle(event.data as ArrayBuffer, websocket)
+            websocket.addEventListener('message', ({ data }) => {
+                this.remote.handle(new Uint8Array(data as ArrayBuffer), websocket)
             })
         })
         
@@ -2041,24 +2143,5 @@ class DdbServer extends Server {
     override async logger (ctx: Context) {
         // 不需要打印文件请求日志
     }
-}
-
-
-async function _upload_file (connection: DdbConnection, fp_remote: string, ftext: string) {
-    if (!connection.connected) {
-        connection.disconnect()
-        await connection.connect()
-    }
-    
-    const fpd_remote = fp_remote.fdir
-    
-    const { ddb } = connection
-    
-    if (!(
-        await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])
-    ).value)
-        await ddb.call('mkdir', [fpd_remote])
-    
-    await ddb.call('saveTextFile', [ftext, fp_remote])
 }
 
