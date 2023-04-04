@@ -235,13 +235,13 @@ export class DdbDebugSession extends LoggingDebugSession {
         this._launchArgs = args
         
         // 加载主文件资源
-        const entryPath = (this._entrySourcePath = normalizePathAndCasing(args.program))
-        loadSource(entryPath)
+        const fp_main = (this._entrySourcePath = normalizePathAndCasing(args.program))
+        loadSource(fp_main)
             .then(async source => {
                 const src = source.replace(/\r\n/g, '\n')
                 this._entrySourceRef = this._sources.add({
                     name: '',
-                    path: entryPath
+                    path: fp_main
                 })
                 this._sources.addContent(this._entrySourceRef, src)
                 this._prerequisites.resolve('sourceLoaded')
@@ -257,7 +257,7 @@ export class DdbDebugSession extends LoggingDebugSession {
             })
             .catch(err => {
                 if (err.code === 'ENOENT') {
-                    this.sendEvent(new OutputEvent(t('本地找不到文件{{entryPath}}，请先将这个文件下载到本地再启动debug\n', { entryPath }), 'stderr'))
+                    this.sendEvent(new OutputEvent(t('本地找不到文件 {{fp_main}}，请先将这个文件下载到本地再启动调试\n', { fp_main }), 'stderr'))
                     this.sendEvent(new TerminatedEvent())
                     this._remote.terminate()
                 }
@@ -299,8 +299,8 @@ export class DdbDebugSession extends LoggingDebugSession {
             line,
             verified: false
         }))
-        const sourcePath = normalizePathAndCasing(args.source.path!)
-        let moduleName = sourcePath === this._entrySourcePath ? '' : args.source.name!
+        const fp_src = normalizePathAndCasing(args.source.path!)
+        let moduleName = fp_src === this._entrySourcePath ? '' : args.source.name!
         // vsc会缓存断点设置信息，下次debug会话开启时会直接调用setBreakPointsRequest
         // thanks to DDB强制要求moduleName与文件名一致，这里可以简单处理获取moduleName
         // .dos结尾的认为是本地文件（server module已经在resolveScript处处理去除dos后缀），需要进行一次校验
@@ -312,7 +312,7 @@ export class DdbDebugSession extends LoggingDebugSession {
             } catch (e) {
                 this.sendEvent(
                     new OutputEvent(
-                        t('文件{{sourcePath}}中设置了断点，但在本次debug会话的中不会被使用到，将自动忽略\n', { sourcePath: args.source.path }),
+                        t('文件 {{fp_src}} 中设置了断点，但在本次调试会话的中不会被使用到，将自动忽略\n', { fp_src: args.source.path }),
                         'stderr'
                     )
                 )
@@ -323,12 +323,12 @@ export class DdbDebugSession extends LoggingDebugSession {
                 return
             }
             // 校验本地文件与server侧是否一致
-            checkFile(moduleName, sourcePath, this._sources).then(valid => {
+            checkFile(moduleName, fp_src, this._sources).then(valid => {
                 if (!valid) 
                     this.sendEvent(
                         new OutputEvent(
-                            t('本地文件{{sourcePath}}与服务器文件不一致，在本地文件中设置的断点可能导致未知错误，建议先同步文件\n', {
-                                sourcePath: args.source.path
+                            t('本地文件 {{fp_src}} 与服务器文件不一致，在本地文件中设置的断点可能导致未知错误，建议先同步文件\n', {
+                                fp_src: args.source.path
                             }),
                             'stderr'
                         )
@@ -704,6 +704,6 @@ export class DdbDebugSession extends LoggingDebugSession {
             breakMode: 'always'
         }
         this.sendEvent(new StoppedEvent('exception', DdbDebugSession.threadID, error.message))
-        this.sendEvent(new OutputEvent(t(error.message), 'stderr'))
+        this.sendEvent(new OutputEvent(error.message, 'stderr'))
     }
 }

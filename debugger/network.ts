@@ -1,6 +1,9 @@
 import { WebSocket, connect_websocket, inspect } from 'xshell'
-import { json2DdbDict } from './utils.js'
+
 import { DdbDict, DdbObj } from 'dolphindb'
+
+import { json2DdbDict } from './utils.js'
+import { t } from '../i18n/index.js'
 
 const decoder = new TextDecoder()
 
@@ -173,7 +176,7 @@ export class Remote {
     private async send (msg: SendMessage) {
         try {
             if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) 
-                throw new Error('调试服务器连接失败\n')
+                throw new Error(t('调试服务器连接失败\n'))
             
             console.debug('Send message: ', msg)
             this.websocket!.send(this.pack(msg))

@@ -293,16 +293,16 @@
     "重连": {
         "en": "Reconnect"
     },
-    "本地找不到文件{{entryPath}}，请先将这个文件下载到本地再启动debug\n": {
-        "en": "File '{{entryPath}}' not found at local, if you want to debug it at local, please create a local file first.\n"
+    "本地找不到文件 {{fp_main}}，请先将这个文件下载到本地再启动调试\n": {
+        "en": "The file {{fp_main}} cannot be found locally, please download this file to the local and then start debugging\n"
     },
-    "文件{{sourcePath}}中设置了断点，但在本次debug会话的中不会被使用到，将自动忽略\n": {
-        "en": "File '{{sourcePath}}' will not be used in this debug session, breakpoints in it will not be set.\n"
+    "文件 {{fp_src}} 中设置了断点，但在本次调试会话的中不会被使用到，将自动忽略\n": {
+        "en": "A breakpoint is set in the file {{fp_src}}, but it will not be used in this debugging session and will be ignored\n"
     },
-    "本地文件{{sourcePath}}与服务器文件不一致，在本地文件中设置的断点可能导致未知错误，建议先同步文件\n": {
-        "en": "Some breakpoints was set in local file '{{sourcePath}}', but the content of this file is inconsistent with the same file on the server, this may cause unexpected results when setting breakpoints, please sync the file if necessary.\n"
+    "本地文件 {{fp_src}} 与服务器文件不一致，在本地文件中设置的断点可能导致未知错误，建议先同步文件\n": {
+        "en": "The local file {{fp_src}} is inconsistent with the server file. Breakpoints set in the local file may cause unknown errors. It is recommended to synchronize the file first\n"
     },
     "调试服务器连接失败\n": {
-        "en": "Debug server is not connected\n"
+        "en": "Failed to connect to debug server\n"
     }
 }
