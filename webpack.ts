@@ -1037,7 +1037,13 @@ export const ext_webpack = {
             
             cache: {
                 type: 'filesystem',
-                compression: 'brotli'
+                
+                ... ramdisk ? {
+                    cacheDirectory: `${fpd_ramdisk_root}webpack/`,
+                    compression: false
+                } : {
+                    compression: 'brotli',
+                }
             },
             
             ignoreWarnings: [
