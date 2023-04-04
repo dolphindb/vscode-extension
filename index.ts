@@ -1360,9 +1360,6 @@ class DdbConnection extends TreeItem {
     
     /** 调用 this.ddb.connect(), 确保和数据库的连接是正常的，更新连接显示状态 */
     async connect () {
-        if (this.ddb.connected)
-            return
-        
         try {
             await this.ddb.connect()
         } catch (error) {

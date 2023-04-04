@@ -37,7 +37,7 @@
         "@koa/cors": "^4.0.0",
         "@vscode/debugadapter": "^1.59.0",
         "@vscode/debugprotocol": "^1.59.0",
-        "antd": "^5.3.3",
+        "antd": "^5.4.0",
         "dayjs": "^1.11.7",
         "dolphindb": "^2.0.953",
         "koa": "^2.14.1",
