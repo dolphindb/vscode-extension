@@ -84,6 +84,7 @@ import {
     type DdbVectorValue,
     type InspectOptions,
     type DdbOptions,
+    DdbConnectionError,
 } from 'dolphindb'
 
 import { constants, keywords } from 'dolphindb/language.js'
@@ -526,10 +527,41 @@ async function _execute (text: string) {
         term.show(true)
         
         console.log(error)
+        
         let message = error.message as string
+        
         if (message.includes('RefId:'))
             message = message.replaceAll(/RefId:\s*(\w+)/g, 'RefId: $1'.blue.underline)
-        printer.fire(message.replaceAll('\n', '\r\n').red + '\r\n')
+        
+        printer.fire((
+            message.replaceAll('\n', '\r\n') + 
+            (connection === explorer.connection ? '' : ` (${connection.name})`) + 
+            '\r\n'
+        ).red)
+        
+        if (error instanceof DdbConnectionError) {
+            const ret = await window.showErrorMessage(
+                error.message,
+                {
+                    detail: t('数据库连接被断开，请检查网络是否稳定、网络转发节点是否会自动关闭 websocket 长连接、server 日志\n') +
+                        t('调用栈:\n') +
+                        error.stack,
+                    modal: true
+                },
+                {
+                    title: t('确认'),
+                    isCloseAffordance: true
+                },
+                {
+                    title: t('重连'),
+                    command: 'dolphindb.reconnect',
+                },
+            )
+            
+            if (ret?.command === 'dolphindb.reconnect')
+                await commands.executeCommand('dolphindb.reconnect', connection)
+        }
+        
         
         // 执行 ddb 脚本遇到错误是可以预期的，也做了处理，不需要再向上抛出，直接返回
         return
@@ -630,8 +662,7 @@ const ddb_commands = [
     },
     
     
-    async function reconnect () {
-        let { connection } = explorer
+    async function reconnect (connection: DdbConnection) {
         console.log(t('重连连接:'), connection)
         explorer.disconnect(connection)
         await explorer.connect(
@@ -1398,7 +1429,7 @@ class DdbConnection extends TreeItem {
                 {
                     detail: 
                         (this.connected ?
-                            t('数据库连接被断开，请检查网络是否稳定，网络转发节点是否会自动关闭 websocket 长连接\n')
+                            t('数据库连接被断开，请检查网络是否稳定、网络转发节点是否会自动关闭 websocket 长连接、server 日志\n')
                         :
                             t('连接数据库失败，当前连接配置为:\n') +
                             inspect(
@@ -1425,14 +1456,25 @@ class DdbConnection extends TreeItem {
                     title: t('重连'),
                     command: 'dolphindb.reconnect',
                 },
-                {
-                    title: t('编辑配置'),
-                    command: 'dolphindb.open_connection_settings'
-                }
+                ... this.connected ? [ ] : [
+                    {
+                        title: t('编辑配置'),
+                        command: 'dolphindb.open_connection_settings'
+                    }
+                ]
             )
             
             if (ret?.command)
-                await commands.executeCommand(ret.command)
+                switch (ret.command) {
+                    case 'dolphindb.reconnect':
+                        await commands.executeCommand('dolphindb.reconnect', this)
+                        break
+                        
+                    default:
+                        await commands.executeCommand('dolphindb.open_connection_settings')
+                        break
+                }
+                
             
             throw error
         }

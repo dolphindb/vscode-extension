@@ -287,8 +287,8 @@
     "dolphindb 连接配置中的 url 非法，类型应该是字符串，且以 ws:// 或 wss:// 开头": {
         "en": "The url in the dolphindb connection configuration is invalid, the type should be a string and start with ws:// or wss://"
     },
-    "数据库连接被断开，请检查网络是否稳定，网络转发节点是否会自动关闭 websocket 长连接\n": {
-        "en": "The database connection is disconnected, please check whether the network is stable, whether the network forwarding node will automatically close the long websocket connection\n"
+    "数据库连接被断开，请检查网络是否稳定、网络转发节点是否会自动关闭 websocket 长连接、server 日志\n": {
+        "en": "The database connection is disconnected, please check whether the network is stable, whether the network forwarding node will automatically close the websocket long connection, server log\n"
     },
     "重连": {
         "en": "Reconnect"
