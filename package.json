@@ -18,7 +18,7 @@
         "@types/koa": "^2.13.6",
         "@types/koa-compress": "^4.0.3",
         "@types/node": "^18.15.11",
-        "@types/react": "^18.0.32",
+        "@types/react": "^18.0.33",
         "@types/react-dom": "^18.0.11",
         "@types/vscode": "^1.77.0",
         "@types/ws": "^8.5.4",
