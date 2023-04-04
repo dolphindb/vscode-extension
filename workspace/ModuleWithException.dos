@@ -1,0 +1,8 @@
+module ModuleWithException
+
+def funcWithException(){
+	1;
+	2;
+	throw 'qwqwqwq'
+	return 3;
+}

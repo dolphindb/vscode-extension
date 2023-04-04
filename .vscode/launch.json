@@ -7,8 +7,36 @@
             "request": "launch",
             "args": [
                 "--disable-extensions",
-                "--extensionDevelopmentPath=${workspaceRoot}/out/"
-            ]
-        }
-    ]
+                "--extensionDevelopmentPath=${workspaceRoot}/out/",
+                "${workspaceFolder}/workspace/"
+            ],
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.cjs",
+                "!**/node_modules/**"
+            ],
+            // "preLaunchTask": "npm: build"
+        },
+        {
+			"name": "DA Server",
+			"type": "node",
+			"request": "launch",
+			"cwd": "${workspaceFolder}",
+			"program": "${workspaceFolder}/debugAdapter/index.ts",
+			"args": [
+				"--server=4711"
+			],
+			"outFiles": [
+				"${workspaceFolder}/out/**/*.cjs",
+                "!**/node_modules/**"
+			],
+			// "preLaunchTask": "npm: build"
+		},
+    ],
+    "compounds": [
+		{
+			"name": "Ext + DA",
+			"configurations": [ "ddb.ext", "DA Server" ]
+		}
+	]
 }

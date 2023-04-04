@@ -43,7 +43,9 @@ import {
     
     InputBoxValidationSeverity,
     
-    ConfigurationTarget, type ConfigurationChangeEvent,
+    ConfigurationTarget, type ConfigurationChangeEvent, 
+    
+    debug, type DebugConfiguration,
 } from 'vscode'
 
 import path from 'upath'
@@ -89,9 +91,11 @@ import { constants, keywords } from 'dolphindb/language.js'
 import { language, t } from './i18n/index.js'
 import { get_text, open_workbench_settings_ui } from './utils.js'
 
+
 declare global {
     const FPD_SRC: string
 }
+
 
 if (util.inspect.styles.number !== 'green')
     set_inspect_options()
@@ -906,6 +910,35 @@ export async function activate (ctx: ExtensionContext) {
     
     dataview.register()
     
+    
+    ctx.subscriptions.push(debug.registerDebugConfigurationProvider('dolphindb', {
+        resolveDebugConfiguration (folder, config, token): ProviderResult<DebugConfiguration> {
+            // if launch.json is missing or empty
+            if (!config.type && !config.request && !config.name) {
+                const editor = window.activeTextEditor
+                if (editor && editor.document.languageId === 'dolphindb') {
+                    config.type = 'dolphindb'
+                    config.name = 'Debug for current file'
+                    config.program = '${file}'
+                }
+            }
+            
+            // 默认使用当前插件连接的server作为debugger
+            config.url ??= explorer.connection.url
+            config.username ??= explorer.connection.options.username
+            config.password ??= explorer.connection.options.password
+            config.autologin = explorer.connection.options.autologin
+            
+            // 并不能在这里限制非.dos文件被选中作为debugee，此时${file}还未被解析成绝对路径
+            if (!config.program) 
+                return window.showInformationMessage('Cannot find a program to debug').then(_ => {
+                    return undefined // abort launch
+                })
+            
+            return config
+        },
+    }))
+    
     console.log(t('DolphinDB 插件初始化成功'))
 }
 
@@ -1129,7 +1162,7 @@ function get_signature_and_params (func_name: string): {
 
 
 
-class DdbExplorer implements TreeDataProvider<TreeItem> {
+export class DdbExplorer implements TreeDataProvider<TreeItem> {
     view: TreeView<TreeItem>
     
     refresher: EventEmitter<TreeItem | undefined | void> = new EventEmitter<TreeItem | undefined | void>()
