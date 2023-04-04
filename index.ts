@@ -565,7 +565,7 @@ async function _execute (text: string) {
     
     printer.fire(
         objstr +
-        timer.getstr(true) + '\r\n'
+        timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
     )
     
     if (to_inspect)
@@ -1145,8 +1145,6 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
     /** 当前选中的连接 */
     connection: DdbConnection
     
-    connecting = false
-    
     
     constructor () {
         this.load_connections()
@@ -1189,14 +1187,6 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
     
     
     async connect (connection: DdbConnection) {
-        if (this.connecting) {
-            const message = t('正在连接中，请稍等')
-            window.showWarningMessage(message)
-            throw new Error(message)
-        }
-        
-        this.connecting = true
-        
         connection.iconPath = icon_checked
         this.connection = connection
         
@@ -1209,13 +1199,15 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
             }
         
         
-        console.log(t('连接:'), this.connection)
+        console.log(t('连接:'), connection)
+        statbar.set(connection.running)
+        this.refresher.fire()
         
         try {
-            await this.connection.connect()
-            await this.connection.update()
+            await connection.connect()
+            await connection.update()
         } finally {
-            this.connecting = false
+            // 有可能此时 this.connection !== connection
             statbar.set(this.connection.running)
             this.refresher.fire()
         }
@@ -1228,9 +1220,11 @@ class DdbExplorer implements TreeDataProvider<TreeItem> {
         /** 如果断开的是当前选中的连接，那么断开连接后恢复选中状态 */
         const selected = connection.name === this.connection.name
         
-        this.connection.disconnect()
+        connection.disconnect()
         
         const index = this.connections.findIndex(conn => conn === connection)
+        assert(index !== -1)
+        
         this.connections[index] = new DdbConnection(connection.url, connection.name, connection.options)
         
         if (selected) {
@@ -1360,6 +1354,9 @@ class DdbConnection extends TreeItem {
     
     /** 调用 this.ddb.connect(), 确保和数据库的连接是正常的，更新连接显示状态 */
     async connect () {
+        if (this.ddb.connected)  // 这个方法后面有些操作会有副作用，已连接的话直接跳过吧
+            return
+        
         try {
             await this.ddb.connect()
         } catch (error) {
@@ -1401,7 +1398,7 @@ class DdbConnection extends TreeItem {
                 }
             )
             
-            if (ret && ret.command)
+            if (ret?.command)
                 await commands.executeCommand(ret.command)
             
             throw error
