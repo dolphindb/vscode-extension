@@ -302,6 +302,9 @@ let dataview = {
             view.onDidDispose(() => {
                 console.log(t('webview 的 repl 订阅被关闭，因为 dataview 被关闭'))
                 dataview.subscribers_repl = dataview.subscribers_repl.filter(s => s !== subscriber)
+                
+                dataview.view = null
+                dataview.pwebview = defer<void>()
             })
         },
         
@@ -1287,7 +1290,8 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         connection.disconnect()
         
         const index = this.connections.findIndex(conn => conn === connection)
-        assert(index !== -1)
+        if (index === -1)
+            return
         
         this.connections[index] = new DdbConnection(connection.url, connection.name, connection.options)
         
@@ -1955,7 +1959,7 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
             subscriber(...args)
         
         if (!open)
-            await commands.executeCommand('workbench.view.extension.ddbpanel')
+            dataview.view.show(true)
     }
     
     

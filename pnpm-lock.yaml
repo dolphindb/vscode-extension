@@ -4,9 +4,9 @@ patchedDependencies:
   koa@2.14.1:
     hash: p7ybv54qzz4vmboaajk6ep5psi
     path: patches/koa@2.14.1.patch
-  webpack@5.77.0:
+  webpack@5.78.0:
     hash: oyfbpynob4llk6lrrm2cafduym
-    path: patches/webpack@5.77.0.patch
+    path: patches/webpack@5.78.0.patch
 
 dependencies:
   '@ant-design/icons':
@@ -94,28 +94,28 @@ devDependencies:
     version: 8.5.4
   css-loader:
     specifier: ^6.7.3
-    version: 6.7.3(webpack@5.77.0)
+    version: 6.7.3(webpack@5.78.0)
   sass:
     specifier: ^1.60.0
     version: 1.60.0
   sass-loader:
     specifier: ^13.2.2
-    version: 13.2.2(sass@1.60.0)(webpack@5.77.0)
+    version: 13.2.2(sass@1.60.0)(webpack@5.78.0)
   source-map-loader:
     specifier: ^4.0.1
-    version: 4.0.1(webpack@5.77.0)
+    version: 4.0.1(webpack@5.78.0)
   style-loader:
     specifier: ^3.3.2
-    version: 3.3.2(webpack@5.77.0)
+    version: 3.3.2(webpack@5.78.0)
   ts-loader:
     specifier: ^9.4.2
-    version: 9.4.2(typescript@5.0.3)(webpack@5.77.0)
+    version: 9.4.2(typescript@5.0.3)(webpack@5.78.0)
   typescript:
     specifier: ^5.0.3
     version: 5.0.3
   webpack:
-    specifier: ^5.77.0
-    version: 5.77.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
+    specifier: ^5.78.0
+    version: 5.78.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
 
 packages:
 
@@ -2915,7 +2915,7 @@ packages:
       path-type: 4.0.0
     dev: true
 
-  /css-loader@6.7.3(webpack@5.77.0):
+  /css-loader@6.7.3(webpack@5.78.0):
     resolution: {integrity: sha512-qhOH1KlBMnZP8FzRO6YCH9UHXQhVMcEGLyNdb7Hv2cpcmJbW0YrddO+tG1ab5nT41KpHIYGsbeHqxB9xPu1pKQ==}
     engines: {node: '>= 12.13.0'}
     peerDependencies:
@@ -2929,7 +2929,7 @@ packages:
       postcss-modules-values: 4.0.0(postcss@8.4.21)
       postcss-value-parser: 4.2.0
       semver: 7.3.8
-      webpack: 5.77.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
+      webpack: 5.78.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
     dev: true
 
   /css-select@5.1.0:
@@ -5342,7 +5342,7 @@ packages:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
     dev: true
 
-  /sass-loader@13.2.2(sass@1.60.0)(webpack@5.77.0):
+  /sass-loader@13.2.2(sass@1.60.0)(webpack@5.78.0):
     resolution: {integrity: sha512-nrIdVAAte3B9icfBiGWvmMhT/D+eCDwnk+yA7VE/76dp/WkHX+i44Q/pfo71NYbwj0Ap+PGsn0ekOuU1WFJ2AA==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -5364,7 +5364,7 @@ packages:
       klona: 2.0.6
       neo-async: 2.6.2
       sass: 1.60.0
-      webpack: 5.77.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
+      webpack: 5.78.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
     dev: true
 
   /sass@1.60.0:
@@ -5469,7 +5469,7 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /source-map-loader@4.0.1(webpack@5.77.0):
+  /source-map-loader@4.0.1(webpack@5.78.0):
     resolution: {integrity: sha512-oqXpzDIByKONVY8g1NUPOTQhe0UTU5bWUl32GSkqK2LjJj0HmwTMVKxcUip0RgAYhY1mqgOxjbQM48a0mmeNfA==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -5478,7 +5478,7 @@ packages:
       abab: 2.0.6
       iconv-lite: 0.6.3
       source-map-js: 1.0.2
-      webpack: 5.77.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
+      webpack: 5.78.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
     dev: true
 
   /source-map-support@0.3.3:
@@ -5624,13 +5624,13 @@ packages:
       ansi-regex: 6.0.1
     dev: false
 
-  /style-loader@3.3.2(webpack@5.77.0):
+  /style-loader@3.3.2(webpack@5.78.0):
     resolution: {integrity: sha512-RHs/vcrKdQK8wZliteNK4NKzxvLBzpuHMqYmUVWeKa6MkaIQ97ZTOS0b+zapZhy6GcrgWnvWYCMHRirC3FsUmw==}
     engines: {node: '>= 12.13.0'}
     peerDependencies:
       webpack: ^5.0.0
     dependencies:
-      webpack: 5.77.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
+      webpack: 5.78.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
     dev: true
 
   /stylis@4.1.3:
@@ -5714,7 +5714,7 @@ packages:
       streamx: 2.13.2
     dev: false
 
-  /terser-webpack-plugin@5.3.6(webpack@5.77.0):
+  /terser-webpack-plugin@5.3.6(webpack@5.78.0):
     resolution: {integrity: sha512-kfLFk+PoLUQIbLmB1+PZDMRSZS99Mp+/MHqDNmMA6tOItzRt+Npe3E+fsMs5mfcM0wCtrrdU387UnV+vnSffXQ==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
@@ -5735,7 +5735,7 @@ packages:
       schema-utils: 3.1.1
       serialize-javascript: 6.0.1
       terser: 5.16.3
-      webpack: 5.77.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
+      webpack: 5.78.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
     dev: true
 
   /terser@5.16.3:
@@ -5823,7 +5823,7 @@ packages:
       url-parse: 1.5.10
     dev: false
 
-  /ts-loader@9.4.2(typescript@5.0.3)(webpack@5.77.0):
+  /ts-loader@9.4.2(typescript@5.0.3)(webpack@5.78.0):
     resolution: {integrity: sha512-OmlC4WVmFv5I0PpaxYb+qGeGOdm5giHU7HwDDUjw59emP2UYMHy9fFSDcYgSNoH8sXcj4hGCSEhlDZ9ULeDraA==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
@@ -5835,7 +5835,7 @@ packages:
       micromatch: 4.0.5
       semver: 7.3.8
       typescript: 5.0.3
-      webpack: 5.77.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
+      webpack: 5.78.0(patch_hash=oyfbpynob4llk6lrrm2cafduym)
     dev: true
 
   /tslib@1.14.1:
@@ -6074,8 +6074,8 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: true
 
-  /webpack@5.77.0(patch_hash=oyfbpynob4llk6lrrm2cafduym):
-    resolution: {integrity: sha512-sbGNjBr5Ya5ss91yzjeJTLKyfiwo5C628AFjEa6WSXcZa4E+F57om3Cc8xLb1Jh0b243AWuSYRf3dn7HVeFQ9Q==}
+  /webpack@5.78.0(patch_hash=oyfbpynob4llk6lrrm2cafduym):
+    resolution: {integrity: sha512-gT5DP72KInmE/3azEaQrISjTvLYlSM0j1Ezhht/KLVkrqtv10JoP/RXhwmX/frrutOPuSq3o5Vq0ehR/4Vmd1g==}
     engines: {node: '>=10.13.0'}
     hasBin: true
     peerDependencies:
@@ -6105,7 +6105,7 @@ packages:
       neo-async: 2.6.2
       schema-utils: 3.1.1
       tapable: 2.2.1
-      terser-webpack-plugin: 5.3.6(webpack@5.77.0)
+      terser-webpack-plugin: 5.3.6(webpack@5.78.0)
       watchpack: 2.4.0
       webpack-sources: 3.2.3
     transitivePeerDependencies:
