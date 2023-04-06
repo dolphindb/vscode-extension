@@ -1932,6 +1932,8 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
                 await commands.executeCommand('workbench.view.extension.ddbpanel')
             
             await dataview.pwebview
+            
+            dataview.view.show(true)
         }
         
         const args = [
@@ -1957,9 +1959,6 @@ class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         
         for (const subscriber of server.subscribers_inspection)
             subscriber(...args)
-        
-        if (!open)
-            dataview.view.show(true)
     }
     
     
