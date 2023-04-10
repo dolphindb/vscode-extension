@@ -46,6 +46,8 @@ import {
     ConfigurationTarget, type ConfigurationChangeEvent, 
     
     debug, type DebugConfiguration,
+    
+    ProgressLocation
 } from 'vscode'
 
 import path from 'upath'
@@ -69,6 +71,7 @@ import {
     fread_json,
     Timer,
     defer,
+    delay,
 } from 'xshell'
 import { Server } from 'xshell/server.js'
 
@@ -153,17 +156,17 @@ let statbar = {
         this.bar.command = 'dolphindb.cancel'
         this.bar.tooltip = t('取消作业')
         
-        this.set_idle()
-    },
-    
-    set_running () {
-        this.set(true)
-    },
-    
-    set_idle () {
         this.set(false)
     },
     
+    
+    /** 更新当前连接状态至状态栏 */
+    update () {
+        this.set(explorer.connection?.running)
+    },
+    
+    
+    /** @private */
     set (running: boolean) {
         this.bar.text = running ? t('执行中') : t('空闲中')
         this.bar.backgroundColor = running ? this.bgerr : null
@@ -447,7 +450,14 @@ let dataview = {
 let lastvar: DdbVar
 
 
-async function _execute (text: string) {
+async function execute (text: string) {
+    let { connection } = explorer
+    
+    if (connection.running) {
+        window.showWarningMessage(t('已有作业正在执行中，完成后才能执行下个作业'))
+        return
+    }
+    
     const { web_url } = server
     
     if (!term) {
@@ -483,8 +493,6 @@ async function _execute (text: string) {
         })
     }
     
-    let { connection } = explorer
-    
     await connection.connect()
     
     let { ddb } = connection
@@ -498,7 +506,7 @@ async function _execute (text: string) {
     )
     
     connection.running = true
-    statbar.set_running()
+    statbar.update()
     
     let obj: DdbObj
     
@@ -510,6 +518,9 @@ async function _execute (text: string) {
             text.replace(/\r\n/g, '\n'),
             {
                 listener (message) {
+                    if (connection.disconnected)
+                        return
+                    
                     const { type, data } = message
                     if (type === 'print')
                         printer.fire(data.replace(/\n/g, '\r\n') + '\r\n')
@@ -524,8 +535,7 @@ async function _execute (text: string) {
         )
     } catch (error) {
         connection.running = false
-        if (connection === explorer.connection)  // 可能执行过程中切换了连接
-            statbar.set_idle()
+        statbar.update()
         
         term.show(true)
         
@@ -572,11 +582,13 @@ async function _execute (text: string) {
     
     timer.stop()
     
+    if (connection.disconnected)
+        return
+    
     await connection.update()
     
     connection.running = false
-    if (connection === explorer.connection)  // 可能执行过程中切换了连接
-        statbar.set_idle()
+    statbar.update()
     
     let to_inspect = false
     let objstr: string
@@ -612,16 +624,83 @@ async function _execute (text: string) {
 }
 
 
+/** 执行代码后，如果超过 1s 还未完成，则显示进度 */
+async function execute_with_progress (text: string) {
+    let { connection } = explorer
+    
+    let done = false
+    
+    const pexecute = execute(text)
+    
+    // 1s 还未完成，则显示进度
+    ;(async () => {
+        await delay(1000)
+        
+        if (!done)
+            try {
+                await window.withProgress({
+                    cancellable: true,
+                    title: t('正在执行'),
+                    location: ProgressLocation.Notification,
+                }, async (progress, token) => {
+                    token.onCancellationRequested(async () => {
+                        if (connection.ddb.connected)
+                            await cancel(connection)
+                    })
+                    
+                    progress.report({ message: text })
+                    
+                    return pexecute
+                })
+            } catch {
+                // 忽略错误，下面已经 await pexecute 了
+            }
+    })()
+    
+    try {
+        await pexecute
+    } finally {
+        done = true
+    }
+}
+
+
+async function cancel (connection: DdbConnection = explorer.connection) {
+    if (!connection.running)
+        return
+    
+    const answer = await window.showWarningMessage(
+        t('是否取消执行中的作业？点击取消作业后，会发送指令并等待当前正在执行的子任务完成后停止'),
+        { title: t('取消作业') },
+        { title: t('断开连接') },
+        { title: t('不要取消'), isCloseAffordance: true }
+    )
+    
+    if (!connection.running || !answer)
+        return
+    
+    switch (answer.title) {
+        case t('取消作业'):
+            await connection.ddb.cancel()
+            break
+        
+        case t('断开连接'):
+            explorer.disconnect(connection)
+            break
+    }
+}
+
+
 /** 和 webpack 中的 commands 定义需要一一对应 */
 const ddb_commands = [
-    async function execute() {
-        await _execute(get_text('selection or line'))
+    async function execute () {
+        await execute_with_progress(get_text('selection or line'))
     },
     
     
     async function execute_selection_or_line () {
         try {
-            await _execute(get_text('selection or line'))
+            await execute_with_progress(get_text('selection or line'))
             // 点击图标执行 execute_ddb_line 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         } catch (error) {
             window.showErrorMessage(error.message)
@@ -631,28 +710,14 @@ const ddb_commands = [
     
     async function execute_file () {
         try {
-            await _execute(get_text('all'))
+            await execute_with_progress(get_text('all'))
         } catch (error) {
             window.showErrorMessage(error.message)
         }
     },
     
     
-    async function cancel () {
-        let { connection } = explorer
-        
-        if (!connection.running)
-            return
-        
-        const answer = await window.showWarningMessage(t('是否取消执行中的作业？'), t('取消作业'), t('不要取消'))
-        
-        if (answer !== t('取消作业') || !connection.running)
-            return
-        
-        // LOCAL
-        // await remote.call('cancel', [connection.name])
-        await connection.ddb.cancel()
-    },
+    cancel,
     
     
     async function connect (connection: DdbConnection) {
@@ -1241,7 +1306,8 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
             .map(({ url, name, ...options }) => new DdbConnection(url, name, options))
         
         this.connection = this.connections[0]
-        this.connection.iconPath = icon_checked
+        if (this.connection)
+            this.connection.iconPath = icon_checked
     }
     
     
@@ -1253,6 +1319,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     }
     
     
+    /** 执行连接操作后，如果超过 1s 还未完成，则显示进度 */
     async connect (connection: DdbConnection) {
         connection.iconPath = icon_checked
         this.connection = connection
@@ -1261,22 +1328,106 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
             if (_connection !== connection) {
                 _connection.iconPath = icon_empty
                 
-                if (this.single_connection_mode)
+                if (this.single_connection_mode && _connection.connected)
                     this.disconnect(_connection)
             }
         
         
         console.log(t('连接:'), connection)
-        statbar.set(connection.running)
+        statbar.update()
         this.refresher.fire()
         
+        let done = false
+        
+        const pconnect = (async () => {
+            try {
+                await connection.connect()
+                await connection.update()
+            } finally {
+                // 先在这里更新 done, 等后面 catch 了错误处理之后，可能会重试连接，会包含下一个连接进度
+                done = true
+                
+                statbar.update()
+                this.refresher.fire(connection)
+                this.view.reveal(connection, { expand: 3 })
+            }
+        })()
+        
+        // 1s 还未完成，则显示进度
+        ;(async () => {
+            await delay(1000)
+            
+            if (!done)
+                try {
+                    await window.withProgress({
+                        cancellable: false,
+                        title: t('正在连接'),
+                        location: ProgressLocation.Notification,
+                    }, async (progress, token) => {
+                        progress.report({ message: `${connection.name} (${connection.url})` })
+                        return pconnect
+                    })
+                } catch {
+                    // 忽略错误，下面已经 await pconnect 了
+                }
+        })()
+        
+        
         try {
-            await connection.connect()
-            await connection.update()
-        } finally {
-            // 有可能此时 this.connection !== connection
-            statbar.set(this.connection.running)
-            this.refresher.fire()
+            await pconnect
+        } catch (error) {
+            const answer = await window.showErrorMessage(
+                error.message,
+                {
+                    detail: 
+                        (connection.connected ?
+                            t('数据库连接被断开，请检查网络是否稳定、网络转发节点是否会自动关闭 websocket 长连接、server 日志\n')
+                        :
+                            t('连接数据库失败，当前连接配置为:\n') +
+                            inspect(
+                                {
+                                    name: connection.name,
+                                    url: connection.url,
+                                    ... connection.options
+                                },
+                                { colors: false }
+                            ) + '\n' +
+                            t('先尝试用浏览器访问对应的 server 地址，如: http://192.168.1.111:8848\n') +
+                            t('如果可以打开网页且正常登录使用，再检查:\n') +
+                            t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
+                            t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n')) +
+                        t('调用栈:\n') +
+                        error.stack,
+                    modal: true
+                },
+                {
+                    title: t('确认'),
+                    isCloseAffordance: true
+                },
+                {
+                    title: t('重连'),
+                    // review: 这里的 command 属性有什么用？后面还是要手动执行？
+                    command: 'dolphindb.reconnect',
+                },
+                ... connection.connected ? [ ] : [
+                    {
+                        title: t('编辑配置'),
+                        command: 'dolphindb.open_connection_settings'
+                    }
+                ]
+            )
+            
+            switch (answer?.command) {
+                case 'dolphindb.reconnect':
+                    await commands.executeCommand('dolphindb.reconnect', connection)
+                    break
+                    
+                case 'dolphindb.open_connection_settings':
+                    await commands.executeCommand('dolphindb.open_connection_settings')
+                    break
+            }
+            
+            throw error
         }
     }
     
@@ -1300,6 +1451,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
             this.connection.iconPath = icon_checked
         }
         
+        statbar.update()
         this.refresher.fire()
     }
     
@@ -1369,6 +1521,9 @@ class DdbConnection extends TreeItem {
     /** 和 ddb.connected 含义不同，这里表示是否连接成功过，用来区分错误提示 */
     connected = false
     
+    /** 是否调用了 connection.disconnect */
+    disconnected = false
+    
     vars: DdbVar[]
     
     // varsmap: Record<string, DdbVar>
@@ -1386,7 +1541,7 @@ class DdbConnection extends TreeItem {
         try {
             assert(
                 url && typeof url === 'string' && (url.startsWith('ws://') || url.startsWith('wss://')),
-                t('dolphindb 连接配置中的 url 非法，类型应该是字符串，且以 ws:// 或 wss:// 开头')
+                t('dolphindb 连接配置中的 url 非法: url 应该非空，类型是字符串，且以 ws:// 或 wss:// 开头')
             )
             
             this.url = url
@@ -1425,64 +1580,7 @@ class DdbConnection extends TreeItem {
         if (this.ddb.connected)  // 这个方法后面有些操作会有副作用，已连接的话直接跳过吧
             return
         
-        try {
-            await this.ddb.connect()
-        } catch (error) {
-            const ret = await window.showErrorMessage(
-                error.message,
-                {
-                    detail: 
-                        (this.connected ?
-                            t('数据库连接被断开，请检查网络是否稳定、网络转发节点是否会自动关闭 websocket 长连接、server 日志\n')
-                        :
-                            t('连接数据库失败，当前连接配置为:\n') +
-                            inspect(
-                                {
-                                    name: this.name,
-                                    url: this.url,
-                                    ... this.options
-                                },
-                                { colors: false }
-                            ) + '\n' +
-                            t('先尝试用浏览器访问对应的 server 地址，如: http://192.168.1.111:8848\n') +
-                            t('如果可以打开网页且正常登录使用，再检查:\n') +
-                            t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
-                            t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n')) +
-                        t('调用栈:\n') +
-                        error.stack,
-                    modal: true
-                },
-                {
-                    title: t('确认'),
-                    isCloseAffordance: true
-                },
-                {
-                    title: t('重连'),
-                    command: 'dolphindb.reconnect',
-                },
-                ... this.connected ? [ ] : [
-                    {
-                        title: t('编辑配置'),
-                        command: 'dolphindb.open_connection_settings'
-                    }
-                ]
-            )
-            
-            if (ret?.command)
-                switch (ret.command) {
-                    case 'dolphindb.reconnect':
-                        await commands.executeCommand('dolphindb.reconnect', this)
-                        break
-                        
-                    default:
-                        await commands.executeCommand('dolphindb.open_connection_settings')
-                        break
-                }
-                
-            
-            throw error
-        }
-        
+        await this.ddb.connect()
         
         console.log(`${t('连接成功:')} ${this.name}`)
         this.connected = true
@@ -1490,13 +1588,12 @@ class DdbConnection extends TreeItem {
         
         this.collapsibleState = TreeItemCollapsibleState.Expanded
         this.contextValue = 'connected'
-        explorer.refresher.fire(this)
-        explorer.view.reveal(this, { expand: 3 })
     }
     
     
     disconnect () {
         this.ddb.disconnect()
+        this.disconnected = true
         this.collapsibleState = TreeItemCollapsibleState.None
         this.contextValue = 'disconnected'
         this.description = this.url
