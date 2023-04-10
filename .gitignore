@@ -2,17 +2,20 @@ node_modules/
 
 /out/
 /test/
-/docs.zh.json
-/docs.en.json
+
 /*.js
 /*.js.map
+/*.zip
+/*.vsix
+
+/.vscode/settings.json
+
+/docs.zh.json
+/docs.en.json
 
 /i18n/*.js
 /i18n/*.js.map
 /i18n/stats.json
 /i18n/untranslateds.json
 
-/*.zip
-/*.vsix
-
-/.vscode/settings.json
+!/prepare.js

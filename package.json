@@ -6,6 +6,7 @@
         "vscode": ">=1.68.0"
     },
     "scripts": {
+        "prepare": "node ./prepare.js",
         "dev": "tsc --project ./tsconfig.node.json && node ./build.js",
         "build": "tsc --project ./tsconfig.node.json && node ./build.js --production",
         "scan": "i18n-scan --input \"**/*.{ts,tsx}\""
@@ -23,6 +24,7 @@
         "@types/vscode": "^1.77.0",
         "@types/ws": "^8.5.4",
         "css-loader": "^6.7.3",
+        "husky": "^8.0.3",
         "sass": "^1.61.0",
         "sass-loader": "^13.2.2",
         "source-map-loader": "^4.0.1",
