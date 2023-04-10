@@ -458,7 +458,7 @@ async function execute (text: string) {
     let { connection } = explorer
     
     if (connection.running) {
-        window.showWarningMessage(t('已有作业正在执行中，完成后才能执行下个作业'))
+        term.printer.fire(t('当前连接 ({{connection}}) 正在执行作业，请等待\r\n', { connection: connection.name }).yellow)
         return
     }
     
