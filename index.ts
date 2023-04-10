@@ -493,7 +493,6 @@ async function execute (text: string) {
         })
     }
     
-    await connection.connect()
     
     let { ddb } = connection
     let { printer } = term
@@ -511,6 +510,8 @@ async function execute (text: string) {
     let obj: DdbObj
     
     try {
+        await connection.connect()
+        
         // TEST: 测试 RefId 错误链接
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
         
