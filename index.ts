@@ -47,7 +47,9 @@ import {
     
     debug, type DebugConfiguration,
     
-    ProgressLocation
+    ProgressLocation,
+    
+    type MessageItem
 } from 'vscode'
 
 import path from 'upath'
@@ -99,6 +101,8 @@ import { get_text, open_workbench_settings_ui } from './utils.js'
 declare global {
     const FPD_SRC: string
 }
+
+type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }
 
 
 if (util.inspect.styles.number !== 'green')
@@ -554,7 +558,7 @@ async function execute (text: string) {
         ).red)
         
         if (error instanceof DdbConnectionError) {
-            const ret = await window.showErrorMessage(
+            const answer = await window.showErrorMessage<DdbMessageItem>(
                 error.message,
                 {
                     detail: t('数据库连接被断开，请检查网络是否稳定、网络转发节点是否会自动关闭 websocket 长连接、server 日志\n') +
@@ -568,12 +572,13 @@ async function execute (text: string) {
                 },
                 {
                     title: t('重连'),
-                    command: 'dolphindb.reconnect',
+                    async action () {
+                        await explorer.reconnect(connection)
+                    }
                 },
             )
             
-            if (ret?.command === 'dolphindb.reconnect')
-                await commands.executeCommand('dolphindb.reconnect', connection)
+            await answer?.action()
         }
         
         
@@ -670,25 +675,32 @@ async function cancel (connection: DdbConnection = explorer.connection) {
     if (!connection.running)
         return
     
-    const answer = await window.showWarningMessage(
+    const answer = await window.showWarningMessage<DdbMessageItem>(
         t('是否取消执行中的作业？点击取消作业后，会发送指令并等待当前正在执行的子任务完成后停止'),
-        { title: t('取消作业') },
-        { title: t('断开连接') },
+        {
+            title: t('取消作业'),
+            async action () {
+                await connection.ddb.cancel()
+            }
+        },
+        {
+            title: t('断开连接'),
+            action () {
+                explorer.disconnect(connection)
+            }
+        },
         { title: t('不要取消'), isCloseAffordance: true }
     )
     
-    if (!connection.running || !answer)
+    if (!connection.running)
         return
     
-    switch (answer.title) {
-        case t('取消作业'):
-            await connection.ddb.cancel()
-            break
-        
-        case t('断开连接'):
-            explorer.disconnect(connection)
-            break
-    }
+    await answer?.action()
+}
+
+
+async function open_connection_settings () {
+    await commands.executeCommand('dolphindb.open_settings', 'connections')
 }
 
 
@@ -732,11 +744,7 @@ const ddb_commands = [
     
     
     async function reconnect (connection: DdbConnection) {
-        console.log(t('重连连接:'), connection)
-        explorer.disconnect(connection)
-        await explorer.connect(
-            explorer.connections.find(conn => conn.name === connection.name)
-        )
+        await explorer.reconnect(connection)
     },
     
     
@@ -759,9 +767,7 @@ const ddb_commands = [
     },
     
     
-    async function open_connection_settings () {
-        await commands.executeCommand('dolphindb.open_settings', 'connections')
-    },
+    open_connection_settings,
     
     
     async function inspect_variable (ddbvar: DdbVar) {
@@ -1377,7 +1383,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         try {
             await pconnect
         } catch (error) {
-            const answer = await window.showErrorMessage(
+            const answer = await window.showErrorMessage<DdbMessageItem>(
                 error.message,
                 {
                     detail: 
@@ -1407,26 +1413,21 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
                 },
                 {
                     title: t('重连'),
-                    // review: 这里的 command 属性有什么用？后面还是要手动执行？
-                    command: 'dolphindb.reconnect',
+                    async action () {
+                        await explorer.reconnect(connection)
+                    },
                 },
                 ... connection.connected ? [ ] : [
                     {
                         title: t('编辑配置'),
-                        command: 'dolphindb.open_connection_settings'
+                        async action () {
+                            await open_connection_settings()
+                        },
                     }
                 ]
             )
             
-            switch (answer?.command) {
-                case 'dolphindb.reconnect':
-                    await commands.executeCommand('dolphindb.reconnect', connection)
-                    break
-                    
-                case 'dolphindb.open_connection_settings':
-                    await commands.executeCommand('dolphindb.open_connection_settings')
-                    break
-            }
+            await answer?.action()
             
             throw error
         }
@@ -1454,6 +1455,15 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         
         statbar.update()
         this.refresher.fire()
+    }
+    
+    
+    async reconnect (connection: DdbConnection) {
+        console.log(t('重连连接:'), connection)
+        explorer.disconnect(connection)
+        await explorer.connect(
+            explorer.connections.find(conn => conn.name === connection.name)
+        )
     }
     
     
