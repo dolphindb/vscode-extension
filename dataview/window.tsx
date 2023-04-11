@@ -67,7 +67,7 @@ function DdbObjWindow () {
                 i++
             }
             
-            ;(window as any).resolve()
+            (window as any).resolve()
         })()
     }, [ ])
     

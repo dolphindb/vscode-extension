@@ -95,9 +95,6 @@ devDependencies:
   css-loader:
     specifier: ^6.7.3
     version: 6.7.3(webpack@5.78.0)
-  husky:
-    specifier: ^8.0.3
-    version: 8.0.3
   sass:
     specifier: ^1.61.0
     version: 1.61.0
@@ -3634,12 +3631,6 @@ packages:
       statuses: 1.5.0
       toidentifier: 1.0.1
     dev: false
-
-  /husky@8.0.3:
-    resolution: {integrity: sha512-+dQSyqPh4x1hlO1swXBiNb2HzTDN1I2IGLQx1GrBuiqFJfoMrnZWwVmatvSiO+Iz8fBUnf+lekwNo4c2LlXItg==}
-    engines: {node: '>=14'}
-    hasBin: true
-    dev: true
 
   /i18next-scanner@4.2.0:
     resolution: {integrity: sha512-Qmty1KDZN0QpT58tseKJ48mM8pduXiY/WwQ5P+Qd+2oQLmcQJxohDPGEmN+dRfOhHTV6w2evO2beiz9sadP1Pw==}
