@@ -803,7 +803,7 @@ export function StreamingTable ({
     
     let rows = new Array<number>(page_size)
     for (let i = 0;  i < page_size;  i++)
-        rows[i] = i;
+        rows[i] = i
     
     let cols = new Array<StreamingTableColumn>(data.rows)
     for (let i = 0;  i < data.rows;  i++)
