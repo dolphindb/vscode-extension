@@ -30,6 +30,17 @@
     "rules": {
         "semi": "off",
         "@typescript-eslint/semi": ["error", "never"],
-        "@typescript-eslint/no-extra-semi": "error"
+        "@typescript-eslint/no-extra-semi": "error",
+        "semi-style": ["error", "first"],
+        
+        "curly": ["error", "multi"],
+        
+        "eqeqeq": "error",
+        
+        "object-curly-spacing": ["error", "always"],
+        
+        "spaced-comment": ["error", "always", { "markers": ["/"] }],
+        
+        "@typescript-eslint/space-before-function-paren": "error"
     }
 }
