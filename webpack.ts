@@ -65,7 +65,7 @@ export async function copy_files () {
             fcopy(fpd_dataview + fname, fpd_out_dataview + fname, { overwrite: true })
         ),
         
-        ... (['zh', 'en'] as const).map(async (language) => 
+        ... (['zh', 'en'] as const).map(async language => 
             fcopy(`${fpd_node_modules}dolphindb/docs.${language}.json`, `${fpd_out}docs.${language}.json`, { overwrite: true })
         ),
     ])

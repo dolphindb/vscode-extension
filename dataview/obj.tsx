@@ -925,7 +925,7 @@ export function StreamingTable ({
         <div>上面两个应该相等</div>
         
         <div style={{ margin: '10px 0px' }}>
-            自动添加数据: <Switch onChange={(checked) => {
+            自动添加数据: <Switch onChange={checked => {
                 rauto_append.current = checked
                 rerender({ })
             }}/>

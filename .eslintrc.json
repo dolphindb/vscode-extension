@@ -3,6 +3,8 @@
     
     "root": true,
     
+    "ignorePatterns": ["**/*.d.ts"],
+    
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
         "ecmaVersion": "latest",
@@ -37,10 +39,28 @@
         
         "eqeqeq": "error",
         
+        // ------------ 空格
+        // { a, b } 这样的对象，大括号里面要有空格
         "object-curly-spacing": ["error", "always"],
         
+        // a => { } 中箭头左右两边空格
+        "arrow-spacing": ["error"],
+        
+        // 注释双斜杠后面要有空格
         "spaced-comment": ["error", "always", { "markers": ["/"] }],
         
-        "@typescript-eslint/space-before-function-paren": "error"
+        // 函数声明中，名称后面要有空格
+        "@typescript-eslint/space-before-function-paren": "error",
+        
+        // { return true } 这样的 block 大括号里面要有空格
+        "block-spacing": ["error", "always"],
+        
+        "key-spacing": ["error", { "beforeColon": false, "afterColon": true, "mode": "minimum" }],
+        
+        
+        // a => { } 而不是 (a) => { }
+        "arrow-parens": ["error", "as-needed", { "requireForBlockBody": false }],
+        
+        "jsx-quotes": ["error", "prefer-single"]
     }
 }
