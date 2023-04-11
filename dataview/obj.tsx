@@ -195,7 +195,7 @@ function Dict ({
             
             const { node, name } = objref
             
-            console.log(`dict.fetch:`, name)
+            console.log('dict.fetch:', name)
             
             objref.obj = ddb ?
                 await ddb.eval<DdbDictObj>(name)
@@ -1686,7 +1686,7 @@ function Chart ({
                         radius={0.9}
                         label={{
                             type: 'spider',
-                            content: `{name}: {percentage}`,
+                            content: '{name}: {percentage}',
                         }}
                         padding='auto'
                     />

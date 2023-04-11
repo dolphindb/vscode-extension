@@ -35,11 +35,27 @@
         "@typescript-eslint/no-extra-semi": "error",
         "semi-style": ["error", "first"],
         
-        "curly": ["error", "multi"],
-        
+        // 使用 ===
         "eqeqeq": "error",
         
+        // 不要 return await promise, 直接 return promise, 除非外面有 try catch
+        "no-return-await": "error",
+        
+        // ------------ 括号
+        
+        // a => { } 而不是 (a) => { }
+        "arrow-parens": ["error", "as-needed", { "requireForBlockBody": false }],
+        
+        // 不要多余的大括号
+        // if (true)
+        //     console.log()
+        "curly": ["error", "multi"],
+        
+        // if 的 body 必须换行
+        "nonblock-statement-body-position": ["error", "below"],
+        
         // ------------ 空格
+        
         // { a, b } 这样的对象，大括号里面要有空格
         "object-curly-spacing": ["error", "always"],
         
@@ -55,12 +71,27 @@
         // { return true } 这样的 block 大括号里面要有空格
         "block-spacing": ["error", "always"],
         
+        // aaa: 123
         "key-spacing": ["error", { "beforeColon": false, "afterColon": true, "mode": "minimum" }],
         
+        // if ()
+        "keyword-spacing": ["error", { "before": true, "after": true }],
         
-        // a => { } 而不是 (a) => { }
-        "arrow-parens": ["error", "as-needed", { "requireForBlockBody": false }],
+        // a + b
+        "space-infix-ops": ["error"],
         
-        "jsx-quotes": ["error", "prefer-single"]
+        // 使用 \n 换行
+        "linebreak-style": ["error", "unix"],
+        
+        // ------------ 引号
+        
+        // 用单引号
+        "jsx-quotes": ["error", "prefer-single"],
+        
+        // 用单引号
+        "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": false }],
+        
+        // 不要冗余的引号包裹属性
+        "quote-props": ["error", "as-needed", { "keywords": false, "unnecessary": true }]
     }
 }

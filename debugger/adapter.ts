@@ -420,8 +420,10 @@ export class DdbDebugSession extends LoggingDebugSession {
         // vsc做stackTrace查询时会传入startFrame和levels参数来限制范围
         let stackFrames: StackFrame[]
         const start = args.startFrame || 0
-        if (args.levels) stackFrames = this._stackTraceCache.slice(start, start + args.levels)
-        else stackFrames = this._stackTraceCache.slice(start)
+        if (args.levels) 
+            stackFrames = this._stackTraceCache.slice(start, start + args.levels)
+        else 
+            stackFrames = this._stackTraceCache.slice(start)
         
         // 初始编译错误造成的程序终止，vsc也会查询栈帧，此时返回一个停在第0行的指示即可
         if (this._compileErrorFlag) 

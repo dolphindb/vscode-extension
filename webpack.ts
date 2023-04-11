@@ -636,13 +636,13 @@ export async function build_package_json (production: boolean) {
                         {
                             name: 'Debug for current file',
                             type: 'dolphindb',
-                            request: "launch",
+                            request: 'launch',
                             program: '${file}',
                         },
                         {
                             name: 'Debug with Server',
                             type: 'dolphindb',
-                            request: "launch",
+                            request: 'launch',
                             program: '${file}',
                             debugServer: 4711,
                         }
