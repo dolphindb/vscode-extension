@@ -1,0 +1,35 @@
+{
+    "$schema": "./.eslintrc.schema.json",
+    
+    "root": true,
+    
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
+    
+    "env": {
+        "node": true,
+        "browser": true
+    },
+    
+    "rules": {
+        "semi": "off",
+        "@typescript-eslint/semi": ["error", "never"],
+        "@typescript-eslint/no-extra-semi": "error"
+    }
+}

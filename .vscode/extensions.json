@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "MS-CEINTL.vscode-language-pack-zh-hans",
+        "mhutchie.git-graph",
+        "eamodio.gitlens",
+        "syler.sass-indented",
+        "dbaeumer.vscode-eslint"
+    ],
+    "unwantedRecommendations": []
+}
