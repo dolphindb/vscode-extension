@@ -1588,7 +1588,7 @@ class DdbConnection extends TreeItem {
     
     /** 调用 this.ddb.connect(), 确保和数据库的连接是正常的，更新连接显示状态 */
     async connect () {
-        if (this.ddb.connected)  // 这个方法后面有些操作会有副作用，已连接的话直接跳过吧
+        if (this.ddb.connected && /* 有可能 websocket 连接成功但 login 失败 */ this.connected)  // 这个方法后面有些操作会有副作用，已连接的话直接跳过吧
             return
         
         await this.ddb.connect()
