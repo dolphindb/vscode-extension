@@ -578,7 +578,7 @@ async function execute (text: string) {
                 },
             )
             
-            await answer?.action()
+            await answer?.action?.()
         }
         
         
@@ -695,7 +695,7 @@ async function cancel (connection: DdbConnection = explorer.connection) {
     if (!connection.running)
         return
     
-    await answer?.action()
+    await answer?.action?.()
 }
 
 
@@ -1427,7 +1427,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
                 ]
             )
             
-            await answer?.action()
+            await answer?.action?.()
             
             throw error
         }

@@ -17,7 +17,7 @@
         "@types/koa": "^2.13.6",
         "@types/koa-compress": "^4.0.3",
         "@types/node": "^18.15.11",
-        "@types/react": "^18.0.33",
+        "@types/react": "^18.0.35",
         "@types/react-dom": "^18.0.11",
         "@types/vscode": "^1.77.0",
         "@types/ws": "^8.5.4",
@@ -25,13 +25,13 @@
         "@typescript-eslint/parser": "^5.58.0",
         "css-loader": "^6.7.3",
         "eslint": "^8.38.0",
-        "sass": "^1.61.0",
+        "sass": "^1.62.0",
         "sass-loader": "^13.2.2",
         "source-map-loader": "^4.0.1",
         "style-loader": "^3.3.2",
         "ts-loader": "^9.4.2",
         "typescript": "^5.0.4",
-        "webpack": "^5.78.0"
+        "webpack": "^5.79.0"
     },
     "dependencies": {
         "@ant-design/icons": "^5.0.1",
@@ -39,10 +39,10 @@
         "@koa/cors": "^4.0.0",
         "@vscode/debugadapter": "^1.59.0",
         "@vscode/debugprotocol": "^1.59.0",
-        "antd": "^5.4.0",
+        "antd": "^5.4.2",
         "dayjs": "^1.11.7",
-        "dolphindb": "^2.0.954",
-        "koa": "^2.14.1",
+        "dolphindb": "^2.0.955",
+        "koa": "^2.14.2",
         "koa-compress": "^5.1.1",
         "koa-useragent": "^4.1.0",
         "lodash": "^4.17.21",
@@ -52,12 +52,12 @@
         "tslib": "^2.5.0",
         "upath": "^2.0.1",
         "ws": "^8.13.0",
-        "xshell": "^1.0.23"
+        "xshell": "^1.0.25"
     },
     "pnpm": {
         "patchedDependencies": {
-            "koa@2.14.1": "patches/koa@2.14.1.patch",
-            "webpack@5.78.0": "patches/webpack@5.78.0.patch"
+            "koa@2.14.2": "patches/koa@2.14.2.patch",
+            "webpack@5.79.0": "patches/webpack@5.79.0.patch"
         }
     }
 }
