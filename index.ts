@@ -654,7 +654,7 @@ async function execute_with_progress (text: string) {
                             await cancel(connection)
                     })
                     
-                    progress.report({ message: text })
+                    progress.report({ message: text.slice(0, 196) + (text.length > 196 ? '···' : '') })
                     
                     return pexecute
                 })
