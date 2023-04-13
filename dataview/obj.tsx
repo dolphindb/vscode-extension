@@ -564,19 +564,22 @@ function Table ({
             
             const offset = page_size * page_index
             
-            if (offset >= rows)
-                return
-            
-            const script = `${name}[${offset}:${Math.min(offset + page_size, rows)}]`
-            
-            console.log('table.fetch:', script)
-            
-            if (ddb)
-                objref.obj = await ddb.eval(script)
-            else
-                objref.obj = DdbObj.parse(... await remote.call<[Uint8Array, boolean]>('eval', [node, script])) as DdbTableObj
-            
-            render({ })
+            if (
+                // 允许在 rows 为 0 时拉一次空的 table[0:0] 获取 obj 用来显示列名
+                rows === 0 && offset === 0 ||
+                offset < rows
+            ) {
+                const script = `${name}[${offset}:${Math.min(offset + page_size, rows)}]`
+                
+                console.log('table.fetch:', script)
+                
+                if (ddb)
+                    objref.obj = await ddb.eval(script)
+                else
+                    objref.obj = DdbObj.parse(... await remote.call<[Uint8Array, boolean]>('eval', [node, script])) as DdbTableObj
+                
+                render({ })
+            }
         })()
     }, [obj, objref, page_index, page_size])
     
@@ -595,7 +598,7 @@ function Table ({
             page_size,
             options,
         })
-        
+    
     
     return <div className='table'>
         <AntTable
