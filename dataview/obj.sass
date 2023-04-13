@@ -220,6 +220,9 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
     .ant-table-tbody > tr.ant-table-placeholder:hover > td
         background-color: $background-color !important
         
+    .ant-table-wrapper .ant-table-tbody > tr.ant-table-placeholder
+        background-color: $background-color !important
+        
     .ant-table-tbody > tr > td
         transition: none
         
@@ -227,10 +230,17 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
         width: unset
     
     .ant-empty-normal
-         color: $font-color !important
-         
-         .ant-empty-img-simple-path, .ant-empty-img-simple-ellipse
+        color: $font-color !important
+        
+        .ant-empty-img-simple-path, .ant-empty-img-simple-ellipse
             fill: $background-color
+        
+        .ant-empty-description
+            color: $font-color !important
+            
+        .ant-empty-image
+            display: none
+        
     
 .chart
     height: 100%
