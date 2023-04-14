@@ -72,7 +72,11 @@
         "block-spacing": ["error", "always"],
         
         // aaa: 123
-        "key-spacing": ["error", { "beforeColon": false, "afterColon": true, "mode": "minimum" }],
+        "key-spacing": "off",
+        "@typescript-eslint/key-spacing": ["error", { "beforeColon": false, "afterColon": true, "mode": "minimum" }],
+        
+        // aaa: string
+        "@typescript-eslint/type-annotation-spacing": ["error"],
         
         // if ()
         "keyword-spacing": ["error", { "before": true, "after": true }],
