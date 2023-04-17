@@ -86,10 +86,10 @@ type FileAccessor = {
 
 const fsAccessor: FileAccessor = {
     isWindows: process.platform === 'win32',
-    readFile (path: string): Promise<Uint8Array> {
+    async readFile (path: string): Promise<Uint8Array> {
         return fs.readFile(path)
     },
-    writeFile (path: string, contents: Uint8Array): Promise<void> {
+    async writeFile (path: string, contents: Uint8Array): Promise<void> {
         return fs.writeFile(path, contents)
     }
 }

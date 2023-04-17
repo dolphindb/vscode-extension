@@ -115,7 +115,7 @@ class Prerequisites {
         this._prerequisites.set(name, { loaded, resolve })
     }
     
-    public wait (name: string) {
+    public async wait (name: string) {
         return this._prerequisites.get(name)?.loaded
     }
     
