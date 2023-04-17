@@ -107,6 +107,9 @@
         
         // ------------ 其它
         // boolean 属性不要冗余的 ={true} <Component boolprop />
-        "react/jsx-boolean-value": ["error", "never"]
+        "react/jsx-boolean-value": ["error", "never"],
+        
+        // 没有 children 的 Component 写成闭合标签 <Component />
+        "react/self-closing-comp": "error"
     }
 }
