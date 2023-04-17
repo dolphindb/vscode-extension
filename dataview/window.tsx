@@ -96,11 +96,11 @@ function DdbObjWindow () {
     if (!obj && !objref)
         return <div>DolphinDB Window</div>
     
-    return <ConfigProvider locale={locales[locale_names[language]]} autoInsertSpaceInButton={false}>{
+    return <ConfigProvider locale={locales[locale_names[language]]} autoInsertSpaceInButton={false}>
         <div className='result window'>
             <Obj obj={obj} objref={objref} ctx='window' remote={remote} ddb={ddb} options={options} />
         </div>
-    }</ConfigProvider>
+    </ConfigProvider>
 }
 
 create_root(

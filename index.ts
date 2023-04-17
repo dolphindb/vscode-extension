@@ -1700,7 +1700,7 @@ class DdbConnection extends TreeItem {
         
         // console.log(this.varsmap)
         
-        let locals : DdbVar[] = [ ]
+        let locals: DdbVar[] = [ ]
         let shareds: DdbVar[] = [ ]
         for (const v of this.vars)
             if (v.shared)

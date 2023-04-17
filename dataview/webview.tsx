@@ -233,14 +233,14 @@ function DataView () {
     
     const { type, data } = result
     
-    return <ConfigProvider locale={locales[locale_names[language]]} autoInsertSpaceInButton={false}>{
+    return <ConfigProvider locale={locales[locale_names[language]]} autoInsertSpaceInButton={false}>
         <div className='result webview'>{
             type === 'object' ?
                 <Obj obj={data} remote={remote} ctx='webview' options={options} />
             :
                 <Obj objref={data} remote={remote} ctx='webview' options={options} />
         }</div>
-    }</ConfigProvider>
+    </ConfigProvider>
 }
 
 

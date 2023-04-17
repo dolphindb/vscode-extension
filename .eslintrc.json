@@ -15,7 +15,8 @@
     },
     
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "react"
     ],
     
     "settings": {
@@ -50,6 +51,9 @@
         // if (true)
         //     console.log()
         "curly": ["error", "multi"],
+        
+        // 简单属性不要冗余的大括号 <Component prop='simple-value' />
+        "react/jsx-curly-brace-presence": ["error", "never"],
         
         // if 的 body 必须换行
         "nonblock-statement-body-position": ["error", "below"],
