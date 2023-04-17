@@ -110,6 +110,18 @@
         "react/jsx-boolean-value": ["error", "never"],
         
         // 没有 children 的 Component 写成闭合标签 <Component />
-        "react/self-closing-comp": "error"
+        "react/self-closing-comp": "error",
+        
+        // 单行类型声明用 `,` 分割，多行类型声明结尾不要加分号
+        "@typescript-eslint/member-delimiter-style": ["error", {
+            "multiline": {
+                "delimiter": "none",
+                "requireLast": false
+            },
+            "singleline": {
+                "delimiter": "comma",
+                "requireLast": false
+            }
+        }]
     }
 }
