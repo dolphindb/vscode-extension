@@ -198,7 +198,7 @@ export class Remote {
                 const handler = this.events.get(event)
                 // event中message不为OK时，一般认为是用户脚本的错误
                 if (msg.message !== 'OK' && !(event === 'ERROR' || event === 'SYNTAX')) 
-                    throw msg.message
+                    throw new Error(msg.message)
                 
                 if (handler) 
                     await handler(msg)

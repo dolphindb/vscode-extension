@@ -50,6 +50,10 @@
         "dot-notation": "off",
         "@typescript-eslint/dot-notation": "error",
         
+        // 必须 throw Error
+        "no-throw-literal": "off",
+        "@typescript-eslint/no-throw-literal": "error",
+        
         // ------------ async
         // 返回 Promise 的函数一定要标记为 async 函数
         "@typescript-eslint/promise-function-async": "error",
@@ -77,7 +81,16 @@
         // ------------ 空格
         
         // { a, b } 这样的对象，大括号里面要有空格
-        "object-curly-spacing": ["error", "always"],
+        "object-curly-spacing": "off",
+        "@typescript-eslint/object-curly-spacing": ["error", "always"],
+        
+        // [a, b, c]
+        "comma-spacing": "off",
+        "@typescript-eslint/comma-spacing": "error",
+        
+        // foo()
+        "func-call-spacing": "off",
+        "@typescript-eslint/func-call-spacing": "error",
         
         // a => { } 中箭头左右两边空格
         "arrow-spacing": ["error"],
@@ -86,6 +99,7 @@
         "spaced-comment": ["error", "always", { "markers": ["/"] }],
         
         // 函数声明中，名称后面要有空格
+        "space-before-function-paren": "off",
         "@typescript-eslint/space-before-function-paren": "error",
         
         // { return true } 这样的 block 大括号里面要有空格
@@ -102,7 +116,8 @@
         "keyword-spacing": ["error", { "before": true, "after": true }],
         
         // a + b
-        "space-infix-ops": ["error"],
+        "space-infix-ops": "off",
+        "@typescript-eslint/space-infix-ops": "error",
         
         // <Hello name={firstname} />
         "react/jsx-equals-spacing": ["error", "never"],

@@ -2093,7 +2093,7 @@ class DdbServer extends Server {
     subscribers_inspection = [ ] as ((ddbvar: Partial<DdbVar>, open: boolean, options?: InspectOptions, buffer?: Uint8Array, le?: boolean) => any)[]
     
     
-    override remote = new Remote ({
+    override remote = new Remote({
         funcs: {
             async subscribe_repl ({ id }, websocket) {
                 console.log(t('page 已订阅 repl'))
