@@ -43,6 +43,13 @@
         // 使用 ===
         "eqeqeq": "error",
         
+        // 父类尽量返回 this 类型
+        "@typescript-eslint/prefer-return-this-type": "error",
+        
+        // 尽量使用 . 访问属性而不是 []
+        "dot-notation": "off",
+        "@typescript-eslint/dot-notation": "error",
+        
         // ------------ async
         // 返回 Promise 的函数一定要标记为 async 函数
         "@typescript-eslint/promise-function-async": "error",
