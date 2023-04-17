@@ -100,6 +100,10 @@
         "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": false }],
         
         // 不要冗余的引号包裹属性
-        "quote-props": ["error", "as-needed", { "keywords": false, "unnecessary": true }]
+        "quote-props": ["error", "as-needed", { "keywords": false, "unnecessary": true }],
+        
+        // ------------ 其它
+        // boolean 属性不要冗余的 ={true} <Component boolprop />
+        "react/jsx-boolean-value": ["error", "never"]
     }
 }

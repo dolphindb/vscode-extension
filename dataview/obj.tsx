@@ -1626,7 +1626,7 @@ function Chart ({
                                 text: titles.y_axis
                             }
                         }}
-                        isGroup={true}
+                        isGroup
                         label={{
                             position: 'middle',
                             layout: [
