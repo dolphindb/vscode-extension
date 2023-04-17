@@ -88,6 +88,9 @@
         // a + b
         "space-infix-ops": ["error"],
         
+        // <Hello name={firstname} />
+        "react/jsx-equals-spacing": ["error", "never"],
+        
         // 使用 \n 换行
         "linebreak-style": ["error", "unix"],
         

@@ -1741,7 +1741,7 @@ function Chart ({
                         className='chart-body'
                         data={data}
                         binField='value'
-                        stackField= 'col'
+                        stackField='col'
                         { ... bin_count ? { binNumber: Number(bin_count.value) } : { } }
                         xAxis={{
                             title: {
