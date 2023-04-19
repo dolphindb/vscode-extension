@@ -104,7 +104,10 @@
         "@typescript-eslint/type-annotation-spacing": ["error"],
         
         // if ()
-        "keyword-spacing": ["error", { "before": true, "after": true }],
+        "@typescript-eslint/keyword-spacing": ["error", { "before": true, "after": true }],
+        
+        // if (1) { }
+        "@typescript-eslint/space-before-blocks": "error",
         
         // a + b
         "@typescript-eslint/space-infix-ops": "error",
