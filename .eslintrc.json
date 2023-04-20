@@ -109,6 +109,9 @@
         // if (1) { }
         "@typescript-eslint/space-before-blocks": "error",
         
+        // case 1: ...
+        "switch-colon-spacing": "error",
+        
         // a + b
         "@typescript-eslint/space-infix-ops": "error",
         
