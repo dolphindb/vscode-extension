@@ -311,10 +311,13 @@ function Vector ({
         (ctx === 'page' || ctx === 'window') ? 200 : 100
     )
     
-    const nrows = Math.min(
-        Math.ceil(info.rows / ncols),
-        page_size / ncols
-    )
+    const nrows = info.rows === 0 ? 
+            0
+        : 
+            Math.min(
+                Math.ceil(info.rows / ncols),
+                page_size / ncols
+            )
     
     const [page_index, set_page_index] = useState(0)
     
@@ -336,28 +339,34 @@ function Vector ({
             
             const offset = page_size * page_index
             
-            if (offset >= rows)
-                return
-            
-            const script = form === DdbForm.set ?
+            if (
+                // 允许在 rows 为 0 时拉一次空的 table[0:0] 获取 obj 用来显示列名
+                rows === 0 && offset === 0 ||
+                offset < rows
+            ) {
+                const script = form === DdbForm.set ?
                     name
                 :
                     `${name}[${offset}:${Math.min(offset + page_size, rows)}]`
             
-            console.log(`${DdbForm[form]}.fetch:`, script)
+                console.log(`${DdbForm[form]}.fetch:`, script)
             
-            objref.obj = ddb ?
-                await ddb.eval(script)
-            :
-                DdbObj.parse(... await remote.call<[Uint8Array, boolean]>('eval', [node, script])) as DdbObj<DdbObj[]>
+                objref.obj = ddb ?
+                    await ddb.eval(script)
+                :
+                    DdbObj.parse(... await remote.call<[Uint8Array, boolean]>('eval', [node, script])) as DdbObj<DdbObj[]>
             
-            render({ })
+                render({ })
+            }
         })()
     }, [obj, objref, page_index, page_size])
     
+    // 当 obj 为空的时候，我们需要等待其在 useEffect中重新拉取, 因此先返回null
+    if (!(obj || objref.obj)) 
+        return null
     
-    if (!info.rows)
-        return <>{ (obj || objref.obj).toString(options) }</>
+    if (!info.rows) 
+        return <>{(obj || objref.obj).toString(options)}</>
     
     let rows = new Array<number>(nrows)
     for (let i = 0;  i < nrows;  i++)
