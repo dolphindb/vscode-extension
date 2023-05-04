@@ -313,7 +313,7 @@ function Vector ({
     
     const nrows = info.rows === 0 ? 
             0
-        : 
+        :
             Math.min(
                 Math.ceil(info.rows / ncols),
                 page_size / ncols
@@ -361,12 +361,13 @@ function Vector ({
         })()
     }, [obj, objref, page_index, page_size])
     
-    // 当 obj 为空的时候，我们需要等待其在 useEffect中重新拉取, 因此先返回null
+    
+    // 当 obj 为空的时候，我们需要等待其在 useEffect 中重新拉取, 因此先返回 null
     if (!(obj || objref.obj)) 
         return null
     
-    if (!info.rows) 
-        return <>{(obj || objref.obj).toString(options)}</>
+    if (!info.rows)
+        return <>{ (obj || objref.obj).toString(options) }</>
     
     let rows = new Array<number>(nrows)
     for (let i = 0;  i < nrows;  i++)
