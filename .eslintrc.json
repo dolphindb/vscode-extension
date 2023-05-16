@@ -20,7 +20,8 @@
     
     "plugins": [
         "@typescript-eslint",
-        "react"
+        "react",
+        "xlint"
     ],
     
     "settings": {
@@ -35,6 +36,19 @@
     },
     
     "rules": {
+        "xlint/fold-jsdoc-comments": "error",
+        
+        // 取代 nonblock-statement-body-position
+        "xlint/nonblock-statement-body-position-with-indentation": "error",
+        
+        "xlint/empty-bracket-spacing": "error",
+        
+        // a + b**c
+        "xlint/space-infix-ops-except-exponentiation": "error",
+        
+        "xlint/space-in-for-statement": "error",
+        
+        
         "@typescript-eslint/semi": ["error", "never"],
         "@typescript-eslint/no-extra-semi": "error",
         "semi-style": ["error", "first"],
@@ -71,9 +85,6 @@
         // 简单属性不要冗余的大括号 <Component prop='simple-value' />
         "react/jsx-curly-brace-presence": ["error", "never"],
         
-        // if 的 body 必须换行
-        "nonblock-statement-body-position": ["error", "below"],
-        
         // ------------ 空格
         
         // { a, b } 这样的对象，大括号里面要有空格
@@ -101,7 +112,7 @@
         "@typescript-eslint/key-spacing": ["error", { "beforeColon": false, "afterColon": true, "mode": "minimum" }],
         
         // aaa: string
-        "@typescript-eslint/type-annotation-spacing": ["error"],
+        "@typescript-eslint/type-annotation-spacing": "error",
         
         // if ()
         "@typescript-eslint/keyword-spacing": ["error", { "before": true, "after": true }],
@@ -111,9 +122,6 @@
         
         // case 1: ...
         "switch-colon-spacing": "error",
-        
-        // a + b
-        "@typescript-eslint/space-infix-ops": "error",
         
         // <Hello name={firstname} />
         "react/jsx-equals-spacing": ["error", "never"],

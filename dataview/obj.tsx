@@ -786,7 +786,7 @@ export function StreamingTable ({
             return
         
         ;(async () => {
-            for (;  rauto_append.current;) {
+            for (  ;  rauto_append.current;  ) {
                 await append_data()
                 await delay(1000)
             }
@@ -1470,7 +1470,7 @@ function Chart ({
                 else {
                     // format 为 string
                     const arr = new Array(rows)
-                    for (let i = 0; i < rows; i++)
+                    for (let i = 0;  i < rows;  i++)
                         arr[i] = formati(rows_, i, options)
                     return arr
                 }
@@ -1482,10 +1482,10 @@ function Chart ({
             switch (charttype) {
                 case DdbChartType.line:
                     if (multi_y_axes)
-                        for (let j = 0; j < rows; j++) {
+                        for (let j = 0;  j < rows;  j++) {
                             let dataobj: any = { }
                             dataobj.row = row_labels[j]
-                            for (let i = 0; i < cols; i++) {
+                            for (let i = 0;  i < cols;  i++) {
                                 const col = col_labels[i]?.value?.name || col_labels[i]
                                 col_lables_[i] = col
                                 
@@ -1495,11 +1495,11 @@ function Chart ({
                             data_[j] = dataobj
                         }
                      else
-                        for (let i = 0; i < cols; i++) {
+                        for (let i = 0;  i < cols;  i++) {
                             const col = col_labels[i]?.value?.name || col_labels[i]
                             col_lables_[i] = col
                             
-                            for (let j = 0; j < rows; j++) {
+                            for (let j = 0;  j < rows;  j++) {
                                 const idata = i * rows + j
                                 data_[idata] = {
                                     row: row_labels[j],
@@ -1511,7 +1511,7 @@ function Chart ({
                     break
                     
                 case DdbChartType.kline:
-                    for (let j = 0; j < rows; j++) {
+                    for (let j = 0;  j < rows;  j++) {
                         let dataobj: any = { }
                         
                         dataobj.row = row_labels[j]
@@ -1531,11 +1531,11 @@ function Chart ({
                     break
                     
                 default:
-                    for (let i = 0; i < cols; i++) {
+                    for (let i = 0;  i < cols;  i++) {
                         const col = col_labels[i]?.value?.name || col_labels[i]
                         col_lables_[i] = col
                         
-                        for (let j = 0; j < rows; j++) {
+                        for (let j = 0;  j < rows;  j++) {
                             const idata = i * rows + j
                             data_[idata] = {
                                 row: row_labels[j],

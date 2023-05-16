@@ -11,12 +11,12 @@ import { Sources } from './sources'
 export function basicType2DdbObj (value: any): DdbObj {
     if (typeof value === 'string') 
         return new DdbString(value)
-     else if (typeof value === 'number') 
-        return new DdbInt(value)
-     else if (typeof value === 'boolean') 
-        return new DdbBool(value)
-     else 
-        return new DdbVoid() as unknown as DdbObj
+     else if (typeof value === 'number')
+         return new DdbInt(value)
+     else if (typeof value === 'boolean')
+         return new DdbBool(value)
+     else
+         return new DdbVoid() as unknown as DdbObj
     
 }
 
@@ -26,20 +26,20 @@ export function basicType2DdbObj (value: any): DdbObj {
     @returns DdbVectorAny
 */
 export function array2DdbVector (arr: Array<any>): DdbVectorAny {
-    const res: DdbObj[] = []
+    const res: DdbObj[] = [ ]
     // 类型判断，全是数字传VectorInt，服务端说这样方便他们处理
     if (arr.every(item => typeof item === 'string')) 
         return new DdbVectorString(arr)
-     else if (arr.every(item => typeof item === 'number')) 
-        return new DdbVectorInt(arr)
+     else if (arr.every(item => typeof item === 'number'))
+         return new DdbVectorInt(arr)
     
     arr.forEach(item => {
         if (item instanceof Array) 
             res.push(array2DdbVector(item))
-         else if (typeof item === 'object') 
-            res.push(json2DdbDict(item))
-         else 
-            res.push(basicType2DdbObj(item))
+         else if (typeof item === 'object')
+             res.push(json2DdbDict(item))
+         else
+             res.push(basicType2DdbObj(item))
         
     })
     return new DdbVectorAny(res)
@@ -51,17 +51,17 @@ export function array2DdbVector (arr: Array<any>): DdbVectorAny {
     @returns DdbDict
 */
 export function json2DdbDict (data: Object): DdbDict {
-    const keys: string[] = [],
-        values: DdbObj[] = []
+    const keys: string[] = [ ],
+        values: DdbObj[] = [ ]
         
     Object.entries(data).forEach(([key, value]) => {
         keys.push(key)
         if (value instanceof Array) 
             values.push(array2DdbVector(value))
-         else if (typeof value === 'object') 
-            values.push(json2DdbDict(value))
-         else 
-            values.push(basicType2DdbObj(value))
+         else if (typeof value === 'object')
+             values.push(json2DdbDict(value))
+         else
+             values.push(basicType2DdbObj(value))
         
     })
     

@@ -210,10 +210,10 @@ export class Remote {
                 if (msg.message !== 'OK') 
                     // handler中mesaage不为OK时，一般认为是服务端/DA错误
                     throw new Error(msg.message)
-                 else if (handler) 
-                    await handler(msg)
-                 else 
-                    throw new Error(`"Unknown function id from server": ${id}`)
+                 else if (handler)
+                     await handler(msg)
+                 else
+                     throw new Error(`"Unknown function id from server": ${id}`)
                 
             } else 
                 throw new Error(`"Unknown message from server": ${msg}`)

@@ -114,7 +114,7 @@ export class Sources {
     }
     
     public getBreakpoints (): BreakpointsCache {
-        const res: BreakpointsCache = []
+        const res: BreakpointsCache = [ ]
         this._sources.forEach(source => {
             const bps = this._breakpoints.get(source)
             if (bps) 

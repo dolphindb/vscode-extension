@@ -107,6 +107,9 @@ devDependencies:
   eslint-plugin-react:
     specifier: ^7.32.2
     version: 7.32.2(eslint@8.40.0)
+  eslint-plugin-xlint:
+    specifier: ^1.0.0
+    version: 1.0.0(eslint@8.40.0)(typescript@5.0.4)
   sass:
     specifier: ^1.62.1
     version: 1.62.1
@@ -2080,6 +2083,13 @@ packages:
       '@types/json-schema': 7.0.11
     dev: true
 
+  /@types/eslint@8.37.0:
+    resolution: {integrity: sha512-Piet7dG2JBuDIfohBngQ3rCt7MgO9xCO4xIMKxBThCq5PNRB91IjlJ10eJVwfoNtvTErmxLzwBZ7rHZtbOMmFQ==}
+    dependencies:
+      '@types/estree': 1.0.1
+      '@types/json-schema': 7.0.11
+    dev: true
+
   /@types/estree@1.0.1:
     resolution: {integrity: sha512-LG4opVs2ANWZ1TJoKc937iMmNstM/d0ae1vNbnBvBhqCSezgVUOzcLCqbI5elV8Vy6WKwKjaqR+zO9VKirBBCA==}
     dev: true
@@ -3596,6 +3606,19 @@ packages:
       resolve: 2.0.0-next.4
       semver: 6.3.0
       string.prototype.matchall: 4.0.8
+    dev: true
+
+  /eslint-plugin-xlint@1.0.0(eslint@8.40.0)(typescript@5.0.4):
+    resolution: {integrity: sha512-Nw+XeFxVRiK9/KE2tGmRDi2Yn/L/ltG/rybnVBc4tZS9tvYzXAvYeFM0gM9y1/RPcMlK/b4J0akwuG2669B7rQ==}
+    dependencies:
+      '@types/eslint': 8.37.0
+      '@types/estree': 1.0.1
+      '@types/node': 20.1.5
+      '@typescript-eslint/utils': 5.59.6(eslint@8.40.0)(typescript@5.0.4)
+    transitivePeerDependencies:
+      - eslint
+      - supports-color
+      - typescript
     dev: true
 
   /eslint-scope@5.1.1:

@@ -145,7 +145,7 @@ export class DdbDebugSession extends LoggingDebugSession {
     private _entrySourcePath: string
     
     // 栈帧、变量等查询时的缓存，server会一次性返回，但vsc会分多次查询
-    private _stackTraceCache: StackFrame[] = []
+    private _stackTraceCache: StackFrame[] = [ ]
     private _stackTraceChangeFlag: boolean = true
     private _scopeCache: Map<number, DebugProtocol.Variable[]> = new Map()
     private static id: number = 0
@@ -290,7 +290,7 @@ export class DdbDebugSession extends LoggingDebugSession {
             return
         
         await this._prerequisites.wait('sourceLoaded')
-        const clientLines = args.lines || []
+        const clientLines = args.lines || [ ]
         const serverLines = clientLines.map(line => this.convertClientLineToDebugger(line))
         
         await this._prerequisites.wait('scriptResolved')
