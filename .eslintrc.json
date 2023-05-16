@@ -48,6 +48,8 @@
         
         "xlint/space-in-for-statement": "error",
         
+        "xlint/jsx-no-redundant-parenthesis-in-return": "error",
+        
         
         "@typescript-eslint/semi": ["error", "never"],
         "@typescript-eslint/no-extra-semi": "error",

@@ -108,8 +108,8 @@ devDependencies:
     specifier: ^7.32.2
     version: 7.32.2(eslint@8.40.0)
   eslint-plugin-xlint:
-    specifier: ^1.0.0
-    version: 1.0.0(eslint@8.40.0)(typescript@5.0.4)
+    specifier: ^1.0.1
+    version: 1.0.1(eslint@8.40.0)(typescript@5.0.4)
   sass:
     specifier: ^1.62.1
     version: 1.62.1
@@ -3608,8 +3608,8 @@ packages:
       string.prototype.matchall: 4.0.8
     dev: true
 
-  /eslint-plugin-xlint@1.0.0(eslint@8.40.0)(typescript@5.0.4):
-    resolution: {integrity: sha512-Nw+XeFxVRiK9/KE2tGmRDi2Yn/L/ltG/rybnVBc4tZS9tvYzXAvYeFM0gM9y1/RPcMlK/b4J0akwuG2669B7rQ==}
+  /eslint-plugin-xlint@1.0.1(eslint@8.40.0)(typescript@5.0.4):
+    resolution: {integrity: sha512-ObuPWmpgnPWKphDTPv3MWbWT2HaOxxSlLm/bk+LBRWWWX1UqufH22n9aAmEXpPfgMnG5jbdOaIYiD9vQlbPOsQ==}
     dependencies:
       '@types/eslint': 8.37.0
       '@types/estree': 1.0.1
