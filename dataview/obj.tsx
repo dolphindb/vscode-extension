@@ -1516,7 +1516,7 @@ function Chart ({
                         
                         dataobj.row = row_labels[j]
                         dataobj.row_ = formati(rows_, j, options)
-
+                        
                         dataobj.open = to_chart_data(data[j], datatype)
                         dataobj.high = to_chart_data(data[rows + j], datatype)
                         dataobj.low = to_chart_data(data[rows * 2 + j], datatype)
@@ -1618,7 +1618,7 @@ function Chart ({
                             }}
                             padding='auto'
                         />
-
+                        
                 case DdbChartType.column:
                     return <Column
                         className='chart-body'

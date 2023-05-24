@@ -50,6 +50,8 @@
         
         "xlint/jsx-no-redundant-parenthesis-in-return": "error",
         
+        "xlint/keep-indent": "error",
+        
         
         "@typescript-eslint/semi": ["error", "never"],
         "@typescript-eslint/no-extra-semi": "error",
