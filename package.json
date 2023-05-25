@@ -17,7 +17,7 @@
         "@types/koa": "^2.13.6",
         "@types/koa-compress": "^4.0.3",
         "@types/node": "^20.2.3",
-        "@types/react": "^18.2.6",
+        "@types/react": "^18.2.7",
         "@types/react-dom": "^18.2.4",
         "@types/vscode": "^1.78.0",
         "@types/ws": "^8.5.4",
@@ -33,10 +33,10 @@
         "style-loader": "^3.3.3",
         "ts-loader": "^9.4.3",
         "typescript": "^5.0.4",
-        "webpack": "^5.83.1"
+        "webpack": "^5.84.0"
     },
     "dependencies": {
-        "@ant-design/icons": "^5.1.1",
+        "@ant-design/icons": "5.1.0",
         "@ant-design/plots": "^1.2.5",
         "@koa/cors": "^4.0.0",
         "@vscode/debugadapter": "^1.59.0",
@@ -59,7 +59,7 @@
     "pnpm": {
         "patchedDependencies": {
             "koa@2.14.2": "patches/koa@2.14.2.patch",
-            "webpack@5.83.1": "patches/webpack@5.83.1.patch"
+            "webpack@5.84.0": "patches/webpack@5.84.0.patch"
         }
     }
 }
