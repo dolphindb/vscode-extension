@@ -31,6 +31,7 @@ import {
     type InspectOptions,
     type DdbOptions,
 } from 'dolphindb'
+import dayjs from 'dayjs'
 
 
 import { t } from './i18n/index.js'
@@ -127,6 +128,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         const pconnect = (async () => {
             try {
                 await connection.connect()
+                await connection.check_license_expire()
                 await connection.update()
             } finally {
                 // 先在这里更新 done, 等后面 catch 了错误处理之后，可能会重试连接，会包含下一个连接进度
@@ -289,6 +291,30 @@ export let explorer: DdbExplorer
 const pyobjs = new Set(['list', 'tuple', 'dict', 'set', '_ddb', 'Exception', 'AssertRaise', 'PyBox'])
 
 
+export enum LicenseTypes {
+    /** 其他方式 */
+    Other = 0,
+    /** 机器指纹绑定 */
+    MachineFingerprintBind = 1,
+    /** 在线验证 */
+    OnlineVerify = 2,
+    /** LicenseServer 验证 */
+    LicenseServerVerify = 3,
+}
+
+export interface DdbLicense {
+    authorization: string
+    licenseType: LicenseTypes
+    maxMemoryPerNode: number
+    maxCoresPerNode: number
+    clientName: string
+    bindCPU: boolean
+    expiration: number
+    maxNodes: number
+    version: string
+    modules: bigint
+}
+
 /** 维护一个 ddb api 连接 */
 export class DdbConnection extends TreeItem {
     /** 连接名称 (连接 id)，如 local8848, controller, datanode0 */
@@ -395,6 +421,24 @@ export class DdbConnection extends TreeItem {
         explorer.refresher.fire(this)
     }
     
+    
+    async check_license_expire () {
+        const license = (
+            await this.ddb.call<DdbObj<DdbObj[]>>('license')
+        ).to_dict<DdbLicense>({ strip: true })
+        
+        // license.expiration 是以 date 为单位的数字
+        const expiration_date = dayjs(license.expiration * 86400000)
+        const now = dayjs()
+        const after_two_week = now.add(2, 'week')
+        const is_license_expired = now.isAfter(expiration_date, 'day')
+        const is_license_expire_soon = after_two_week.isAfter(expiration_date, 'day')
+            
+        if (is_license_expired) 
+            window.showErrorMessage(t('DolphinDB License 已过期，请联系管理人员立即更新，避免数据库关闭'))
+        else if (is_license_expire_soon)
+            window.showWarningMessage(t('DolphinDB License 将在两周内过期，请提醒管理人员及时更新，避免数据库过期后自动关闭'))
+    }
     
     /**
          执行代码后更新变量面板  
