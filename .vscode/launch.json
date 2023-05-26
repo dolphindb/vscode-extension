@@ -17,11 +17,11 @@
             ],
         },
         {
-			"name": "DA Server",
+			"name": "ddb.ext.debugger",
 			"type": "node",
 			"request": "launch",
 			"cwd": "${workspaceFolder}",
-
+            
 			"program": "${workspaceFolder}/out/debugger.cjs",
             "sourceMaps": true,
 			"args": [
@@ -36,7 +36,7 @@
     "compounds": [
 		{
 			"name": "Ext + DA",
-			"configurations": [ "ddb.ext", "DA Server" ],
+			"configurations": ["ddb.ext", "ddb.ext.debugger"],
             "preLaunchTask": "npm: dev"
 		}
 	]

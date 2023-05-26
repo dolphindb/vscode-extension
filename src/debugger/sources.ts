@@ -43,7 +43,7 @@ export class Sources {
         this._remote = remote
     }
     
-    public hasModule (moduleName: string): boolean {
+    public hasModule (moduleName: string) {
         return this._sourceRefMap.has(moduleName)
     }
     

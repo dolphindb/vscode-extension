@@ -742,7 +742,7 @@ export let dataview_webpack = {
                 symlinks: true,
                 
                 extensionAlias: {
-                    '.js': ['.js', '.tsx', '.ts']
+                    '.js': ['.js', '.ts', '.tsx']
                 },
                 
                 fallback: {
@@ -949,7 +949,7 @@ export const ext_webpack = {
                 symlinks: true,
                 
                 extensionAlias: {
-                    '.js': ['.js', '.tsx', '.ts']
+                    '.js': ['.js', '.ts', '.tsx']
                 },
             },
             
