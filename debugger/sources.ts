@@ -43,6 +43,10 @@ export class Sources {
         this._remote = remote
     }
     
+    public hasModule (moduleName: string): boolean {
+        return this._sourceRefMap.has(moduleName)
+    }
+    
     /** 通过moduleName或者数字ref获取整个source对象 */
     public getSource (ref: number | string): Source {
         if (typeof ref === 'string') {

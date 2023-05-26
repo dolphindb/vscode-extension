@@ -155,7 +155,6 @@ export class Remote {
         if (this.connected) 
             return
         
-        
         try {
             console.debug('Connecting to: ', this.url)
             this.websocket = await connect_websocket(this.url, {

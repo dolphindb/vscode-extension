@@ -695,42 +695,6 @@ export async function build_package_json (production: boolean) {
 }
 
 
-const ts_resolver = {
-    apply (resolver: Resolver) {
-        const target = resolver.ensureHook('file')
-        
-        for (const extension of ['.ts', '.tsx'] as const)
-            resolver.getHook('raw-file').tapAsync('ResolveTypescriptPlugin', (request, ctx, callback) => {
-                if (
-                    typeof request.path !== 'string' ||
-                    /(^|[\\/])node_modules($|[\\/])/.test(request.path)
-                ) {
-                    callback()
-                    return
-                }
-                
-                if (request.path.endsWith('.js')) {
-                    const path = request.path.slice(0, -3) + extension
-                    
-                    resolver.doResolve(
-                        target,
-                        {
-                            ...request,
-                            path,
-                            relativePath: request.relativePath?.replace(/\.js$/, extension)
-                        },
-                        `using path: ${path}`,
-                        ctx,
-                        callback
-                    )
-                } else
-                    callback()
-            })
-    }
-}
-
-
-
 export let dataview_webpack = {
     config: null as Configuration,
     
@@ -784,7 +748,9 @@ export let dataview_webpack = {
                 
                 symlinks: true,
                 
-                plugins: [ts_resolver],
+                extensionAlias: {
+                    '.js': ['.js', '.tsx', '.ts']
+                },
                 
                 fallback: {
                     process: false
@@ -989,7 +955,9 @@ export const ext_webpack = {
                 
                 symlinks: true,
                 
-                plugins: [ts_resolver]
+                extensionAlias: {
+                    '.js': ['.js', '.tsx', '.ts']
+                },
             },
             
             externals: {

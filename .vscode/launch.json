@@ -15,14 +15,15 @@
                 "${workspaceFolder}/out/**/*.cjs",
                 "!**/node_modules/**"
             ],
-            // "preLaunchTask": "npm: build"
         },
         {
 			"name": "DA Server",
 			"type": "node",
 			"request": "launch",
 			"cwd": "${workspaceFolder}",
-			"program": "${workspaceFolder}/debugAdapter/index.ts",
+
+			"program": "${workspaceFolder}/out/debugger.cjs",
+            "sourceMaps": true,
 			"args": [
 				"--server=4711"
 			],
@@ -30,13 +31,13 @@
 				"${workspaceFolder}/out/**/*.cjs",
                 "!**/node_modules/**"
 			],
-			// "preLaunchTask": "npm: build"
 		},
     ],
     "compounds": [
 		{
 			"name": "Ext + DA",
-			"configurations": [ "ddb.ext", "DA Server" ]
+			"configurations": [ "ddb.ext", "DA Server" ],
+            "preLaunchTask": "npm: dev"
 		}
 	]
 }

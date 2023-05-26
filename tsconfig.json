@@ -4,12 +4,8 @@
         
         "./index.ts",
         
-        "./debugger/index.ts",
-        
-        "./dataview/global.d.ts",
-        "./dataview/index.tsx",
-        "./dataview/window.tsx",
-        "./dataview/webview.tsx",
+        "debugger",
+        "dataview",
     ],
     
     "compilerOptions": {

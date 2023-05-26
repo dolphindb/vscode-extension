@@ -300,12 +300,13 @@ export class DdbDebugSession extends LoggingDebugSession {
             verified: false
         }))
         const fp_src = normalizePathAndCasing(args.source.path!)
-        let moduleName = fp_src === this._entrySourcePath ? '' : args.source.name!
-        // vsc会缓存断点设置信息，下次debug会话开启时会直接调用setBreakPointsRequest
-        // thanks to DDB强制要求moduleName与文件名一致，这里可以简单处理获取moduleName
-        // .dos结尾的认为是本地文件（server module已经在resolveScript处处理去除dos后缀），需要进行一次校验
-        if (moduleName.endsWith('.dos')) {
-            moduleName = moduleName.slice(0, -4)
+        let moduleName = fp_src === this._entrySourcePath ? '' : args.source.name.endsWith('.dos') ? args.source.name.slice(0, -4) : args.source.name
+        
+        if (this._sources.hasModule(moduleName)) {
+            
+            // vsc会缓存断点设置信息，下次debug会话开启时会直接调用setBreakPointsRequest
+            // thanks to DDB强制要求moduleName与文件名一致，这里可以简单处理获取moduleName
+            // .dos结尾的认为是本地文件（server module已经在resolveScript处处理去除dos后缀），需要进行一次校验
             // 先排除本次debug中没有使用的文件
             try {
                 this._sources.getSource(moduleName)
@@ -323,34 +324,42 @@ export class DdbDebugSession extends LoggingDebugSession {
                 return
             }
             // 校验本地文件与server侧是否一致
-            checkFile(moduleName, fp_src, this._sources).then(valid => {
-                if (!valid) 
-                    this.sendEvent(
-                        new OutputEvent(
-                            t('本地文件 {{fp_src}} 与服务器文件不一致，在本地文件中设置的断点可能导致未知错误，建议先同步文件\n', {
-                                fp_src: args.source.path
-                            }),
-                            'stderr'
-                        )
-                    )
+            // checkFile(moduleName, fp_src, this._sources).then(valid => {
+            //     if (!valid) 
+            //         this.sendEvent(
+            //             new OutputEvent(
+            //                 t('本地文件 {{fp_src}} 与服务器文件不一致，在本地文件中设置的断点可能导致未知错误，建议先同步文件\n', {
+            //                     fp_src: args.source.path
+            //                 }),
+            //                 'stderr'
+            //             )
+            //         )
                 
-            })
-        }
+            // })
+            
+            const res = (await this._remote.call('setBreaks', [moduleName, requestData.map(bp => bp.line)])) as [string, number[]]
+            
+            const actualBreakpoints = clientLines.map(line => ({
+                id: this.genId,
+                line,
+                // 服务端会返回设置成功的断点，不成功的断点（如空行）直接标记为未命中
+                verified: res[1].includes(this.convertClientLineToDebugger(line)),
+                source: this._sources.getSource(moduleName)
+            }))
+            this._sources.setBreakpoints(moduleName, actualBreakpoints)
+            
+            response.body = {
+                breakpoints: actualBreakpoints
+            }
+        } else 
+            response.body = {
+                breakpoints: clientLines.map(line => ({
+                    line,
+                    verified: false,
+                }))
+            }
         
-        const res = (await this._remote.call('setBreaks', [moduleName, requestData.map(bp => bp.line)])) as [string, number[]]
         
-        const actualBreakpoints = clientLines.map(line => ({
-            id: this.genId,
-            line,
-            // 服务端会返回设置成功的断点，不成功的断点（如空行）直接标记为未命中
-            verified: res[1].includes(this.convertClientLineToDebugger(line)),
-            source: this._sources.getSource(moduleName)
-        }))
-        this._sources.setBreakpoints(moduleName, actualBreakpoints)
-        
-        response.body = {
-            breakpoints: actualBreakpoints
-        }
         this.sendResponse(response)
     }
     
@@ -406,7 +415,8 @@ export class DdbDebugSession extends LoggingDebugSession {
                     
                     return new StackFrame(
                         stackFrameId,
-                        name ?? `line ${line}: ${sourceLines[line].trim()}`,
+                        // 文件 line 以 1 开始，展示时需要补上
+                        name ?? `line ${line + 1}: ${sourceLines[line].trim()}`,
                         this._sources.getSource(moduleName),
                         this.convertDebuggerLineToClient(line),
                         this.convertDebuggerColumnToClient(column ?? 0)
