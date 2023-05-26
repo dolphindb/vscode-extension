@@ -35,7 +35,7 @@ import { register_terminal_link_provider } from './terminal.js'
 
 
 declare global {
-    const FPD_SRC: string
+    const FPD_ROOT: string
 }
 
 export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }
@@ -56,10 +56,13 @@ export let extctx: ExtensionContext
 /** 是否处于开发模式 */
 export let dev = false
 
-/** 项目源代码根文件夹，dev 模式下才能用 */
-export const fpd_src = FPD_SRC
+/** 项目根文件夹路径，dev 模式下才能用 */
+export const fpd_root = FPD_ROOT
 
-export const fpd_node_modules = `${fpd_src}node_modules/`
+/** 项目 src 文件夹路径，dev 模式下才能用 */
+export const fpd_src = `${fpd_root}src/`
+
+export const fpd_node_modules = `${fpd_root}node_modules/`
 
 
 export async function activate (ctx: ExtensionContext) {

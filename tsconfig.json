@@ -2,14 +2,14 @@
     "include": [
         "./build.ts",
         
-        "./index.ts",
+        "./src/index.ts",
         
-        "./debugger/index.ts",
+        "./src/debugger/index.ts",
         
-        "./dataview/global.d.ts",
-        "./dataview/index.tsx",
-        "./dataview/window.tsx",
-        "./dataview/webview.tsx",
+        "./src/dataview/global.d.ts",
+        "./src/dataview/index.tsx",
+        "./src/dataview/window.tsx",
+        "./src/dataview/webview.tsx",
     ],
     
     "compilerOptions": {

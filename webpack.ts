@@ -16,7 +16,7 @@ import type { Item } from 'xshell/i18n/index.js'
 import { tm_language } from 'dolphindb/language.js'
 
 
-import { r } from './i18n/index.js'
+import { r } from './src/i18n/index.js'
 
 import package_json from './package.json' assert { type: 'json' }
 
@@ -28,7 +28,7 @@ const fpd_ramdisk_root = 't:/2/ddb/ext/' as const
 
 export const fpd_node_modules = `${fpd_root}node_modules/`
 
-export const fpd_dataview = `${fpd_root}dataview/`
+export const fpd_dataview = `${fpd_root}src/dataview/`
 
 export const fpd_out = `${ ramdisk ? fpd_ramdisk_root : fpd_root }out/`
 
@@ -338,7 +338,7 @@ export async function build_package_json (production: boolean) {
         
         publisher: 'dolphindb',
         
-        categories: ['Programming Languages', 'Other', 'Linters', 'Snippets'],
+        categories: ['Programming Languages', 'Other', 'Linters'],
         keywords: ['dolphindb', 'DolphinDB', 'DataBase', 'database', 'Time Series', 'timeseries', 'Programing Language'],
         homepage: 'https://github.com/dolphindb/vscode-extension/',
         bugs: {
@@ -464,13 +464,6 @@ export async function build_package_json (production: boolean) {
                 // ... args  ?  { arguments: args }  :  { },
             })),
             
-            
-            // snippets: [
-            //     {
-            //         language: 'dolphindb',
-            //         path: './dolphindb.snippets.json'
-            //     }
-            // ],
             
             viewsContainers: {
                 panel: [
@@ -748,9 +741,9 @@ export let dataview_webpack = {
             context: fpd_root,
             
             entry: {
-                'index.js': './dataview/index.tsx',
-                'window.js': './dataview/window.tsx',
-                'webview.js': './dataview/webview.tsx',
+                'index.js': './src/dataview/index.tsx',
+                'window.js': './src/dataview/window.tsx',
+                'webview.js': './src/dataview/webview.tsx',
             },
             
             
@@ -964,8 +957,8 @@ export const ext_webpack = {
             context: fpd_root,
             
             entry: {
-                'index.cjs': './index.ts',
-                'debugger.cjs': './debugger/index.ts',
+                'index.cjs': './src/index.ts',
+                'debugger.cjs': './src/debugger/index.ts',
             },
             
             experiments: {
@@ -1022,7 +1015,7 @@ export const ext_webpack = {
             
             plugins: [
                 new Webpack.DefinePlugin({
-                    FPD_SRC: fpd_root.quote()
+                    FPD_ROOT: fpd_root.quote()
                 }),
                 
                 // new BundleAnalyzerPlugin({
