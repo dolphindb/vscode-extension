@@ -8,7 +8,7 @@
     "scripts": {
         "dev": "tsc --project ./tsconfig.node.json && node ./build.js",
         "build": "tsc --project ./tsconfig.node.json && node ./build.js --production",
-        "scan": "i18n-scan --input \"**/*.{ts,tsx}\"",
+        "scan": "i18n-scan --input \"**/*.{ts,tsx}\" --output ./src/i18n/",
         "lint": "eslint \"**/*.{ts,tsx}\"",
         "fix": "eslint --fix \"**/*.{ts,tsx}\""
     },

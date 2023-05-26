@@ -2,10 +2,11 @@
     "include": [
         "./build.ts",
         
-        "./index.ts",
+        "./src/index.ts",
         
-        "debugger",
-        "dataview",
+        "./src/debugger/",
+        
+        "./src/dataview/",
     ],
     
     "compilerOptions": {
