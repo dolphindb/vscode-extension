@@ -601,7 +601,7 @@ export async function build_package_json () {
             debuggers: [
                 {
                     type: 'dolphindb',
-                    label: make('debugger.label', '调试 DolphinDB 脚本', 'Debug DolphinDB Script'),
+                    label: make('debugger.label', '调试 DolphinDB 脚本文件', 'Debug DolphinDB script file'),
                     languages: ['dolphindb'],
                     program: './debugger.cjs',
                     runtime: 'node',
@@ -667,17 +667,10 @@ export async function build_package_json () {
                     
                     initialConfigurations: [
                         {
-                            name: 'Debug for current file',
+                            name: make('debugger.initialConfigurations.name.file', '调试当前 DolphinDB 脚本文件', 'Debug the current DolphinDB script file'),
                             type: 'dolphindb',
                             request: 'launch',
                             program: '${file}',
-                        },
-                        {
-                            name: 'Debug with Server',
-                            type: 'dolphindb',
-                            request: 'launch',
-                            program: '${file}',
-                            debugServer: 4711,
                         }
                     ]
                 }

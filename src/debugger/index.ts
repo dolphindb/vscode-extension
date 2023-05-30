@@ -23,7 +23,7 @@ for (const argv of process.argv.slice(2)) {
 
 
 if (port > 0) {
-    // 在指定的端口开一个 server，用于调试调试器 (sampleWorkapsce: launch.json: debugServer 配置项)
+    // 在指定的端口开一个 server，用于调试 debugger (workspace: launch.json: debugServer 配置项)
     console.log(t('调试服务器已启动，等待 VSCode 调试器连接端口 {{port}}', { port }))
     
     let server: Server
