@@ -16,8 +16,6 @@ import type { Item } from 'xshell/i18n/index.js'
 import { tm_language } from 'dolphindb/language.js'
 
 
-import { r } from './src/i18n/index.js'
-
 import package_json from './package.json' assert { type: 'json' }
 
 
@@ -80,8 +78,25 @@ export async function build_tm_language () {
 }
 
 
-export async function build_package_json (production: boolean) {
+export async function build_package_json () {
     const { name, type, version, engines, scripts, dependencies, devDependencies } = package_json
+    
+    let dict: {
+        zh: Record<string, string>
+        en: Record<string, string>
+    } = {
+        zh: { },
+        en: { }
+    }
+    
+    
+    function make (id: string, zh: string, en: string) {
+        let { zh: _zh, en: _en } = dict
+        _zh[id] = zh
+        _en[id] = en
+        return id.surround('%')
+    }
+    
     
     const ext_commands = [
         {
@@ -197,121 +212,6 @@ export async function build_package_json (production: boolean) {
         },
     ]
     
-    const connection_properties: Schema[] = [
-        {
-            name: 'name',
-            type: 'string',
-            default: 'local8848',
-            description: {
-                zh: '连接名称，如 local8848, controller, datanode0',
-                en: 'Connection name, e.g. local8848, controller, datanode0'
-            },
-        },
-        {
-            name: 'url',
-            type: 'string',
-            default: 'ws://127.0.0.1:8848',
-            markdownDescription: {
-                zh: '数据库连接地址 (WebSocket URL), 如:  \n' +
-                    '- `ws://127.0.0.1:8848`\n' +
-                    '- `wss://dolphindb.com` (HTTPS 加密)\n',
-                en: 'Database connection URL (WebSocket URL), e.g.  \n' +
-                    '- `ws://127.0.0.1:8848`\n' +
-                    '- `wss://dolphindb.com` (HTTPS encrypted)\n',
-            },
-            format: 'uri',
-        },
-        {
-            name: 'autologin',
-            type: 'boolean',
-            default: true,
-            description: {
-                zh: '是否在建立连接后自动登录，默认 true',
-                en: 'Whether to automatically log in after the connection is established, the default is true'
-            },
-        },
-        {
-            name: 'username',
-            type: 'string',
-            default: 'admin',
-            description: {
-                zh: 'DolphinDB 登录用户名',
-                en: 'DolphinDB username'
-            },
-        },
-        {
-            name: 'password',
-            type: 'string',
-            default: '123456',
-            description: {
-                zh: 'DolphinDB 登录密码',
-                en: 'DolphinDB password'
-            },
-        },
-        {
-            name: 'python',
-            type: 'boolean',
-            default: false,
-            description: {
-                zh: '(需要 v2.10.0 以上的 DolphinDB Server) 使用 Python Parser 来解释执行脚本, 默认 false',
-                en: '(DolphinDB Server version must be above v2.10.0) Use Python Parser to interpret and execute scripts, the default is false'
-            },
-        },
-        {
-            name: 'verbose',
-            type: 'boolean',
-            default: false,
-            description: {
-                zh: '是否打印每个 rpc 的信息用于调试，默认 false',
-                en: 'Whether to print the information of each rpc for debugging, the default is false'
-            },
-        },
-    ]
-    
-    const ports_property = {
-        type: 'string',
-        default: '8321-8420',
-        markdownDescription: {
-            zh: 
-                '本插件为了在浏览器中展示表格等数据，在 VSCode 中创建的本地 HTTP 服务器的可用端口范围  \n' +
-                '取值为逗号分割的多个可用端口或端口区间 (不能含有空格)，比如：`8321,8322,8300-8310,11000-11999`  \n' +
-                '默认值为 `8321-8420` (包含左右边界)  \n' +
-                '打开 VSCode 窗口时，按从前到后的顺序查找首个可用的端口作为实际监听端口后，打开对应的浏览器页面 `http://localhost:{实际监听端口}`  \n' +
-                '每个 VSCode 窗口会使用端口范围中的一个端口创建 HTTP 服务器，请保证可用端口范围足够大  \n' +
-                '修改这个配置后建议重启 VSCode (对于已经创建的本地 HTTP 服务器不会生效)  \n',
-                
-            en:
-                'The available port range of the local HTTP server created in VSCode by this plugin in order to display data such as tables in the browser  \n' +
-                'The value is multiple available ports or port ranges separated by commas (no spaces), for example: `8321,8322,8300-8310,11000-11999`  \n' +
-                'The default value is `8321-8420` (including left and right boundaries)  \n' +
-                'When opening the VSCode window, search the first available port as the actual listening port in order from front to back, and then open the corresponding browser page `http://localhost:{actual-listening-port}`  \n' +
-                'Each VSCode window will use a port in the port range to create an HTTP server, please ensure that the available port range is large enough  \n' + 
-                'It is recommended to restart VSCode after modifying this configuration (it will not take effect for the local HTTP server that has been created)  \n'
-        }
-    }
-    
-    const decimals_property = {
-        type: ['number', 'null'],
-        default: null,
-        description: {
-            zh: '小数点后显示的位数 (可取 0 ~ 20)，默认为 null (实际数据的位数)',
-            en: 'The number of digits displayed after the decimal point (can be 0 ~ 20), the default is null (the actual number of digits)'
-        }
-    }
-    
-    const single_connection_mode = {
-        type: 'boolean',
-        default: false,
-        description: {
-            zh: '在左侧的连接面板切换到新的 DolphinDB 连接后自动断开原有连接',
-            en: 'Automatically disconnect the original connection after switching to a new DolphinDB connection in the connection panel on the left'
-        }
-    }
-    
-    const debugging_properties = {
-        
-    }
-    
     
     const package_json_ = {
         name,
@@ -387,6 +287,7 @@ export async function build_package_json (production: boolean) {
                 properties: {
                     'dolphindb.connections': {
                         type: 'array',
+                        
                         default: [
                             {
                                 name: 'local8848',
@@ -417,20 +318,95 @@ export async function build_package_json (production: boolean) {
                                 password: '123456',
                             },
                         ],
-                        description: '%configs.connections.description%',
+                        
+                        description: make(
+                            'configs.connections.description',
+                            '展示在左侧边栏的 DolphinDB 面板中的连接配置',
+                            'Connection configuration shown in the DolphinDB panel on the left sidebar'
+                        ),
+                        
                         items: {
                             type: 'object',
                             required: ['url'],
                             properties: Object.fromEntries(
-                                connection_properties.map(prop => [
+                                [
+                                    {
+                                        name: 'name',
+                                        type: 'string',
+                                        default: 'local8848',
+                                        description: {
+                                            zh: '连接名称，如 local8848, controller, datanode0',
+                                            en: 'Connection name, e.g. local8848, controller, datanode0'
+                                        },
+                                    },
+                                    {
+                                        name: 'url',
+                                        type: 'string',
+                                        default: 'ws://127.0.0.1:8848',
+                                        markdownDescription: {
+                                            zh: '数据库连接地址 (WebSocket URL), 如:  \n' +
+                                                '- `ws://127.0.0.1:8848`\n' +
+                                                '- `wss://dolphindb.com` (HTTPS 加密)\n',
+                                            en: 'Database connection URL (WebSocket URL), e.g.  \n' +
+                                                '- `ws://127.0.0.1:8848`\n' +
+                                                '- `wss://dolphindb.com` (HTTPS encrypted)\n',
+                                        },
+                                        format: 'uri',
+                                    },
+                                    {
+                                        name: 'autologin',
+                                        type: 'boolean',
+                                        default: true,
+                                        description: {
+                                            zh: '是否在建立连接后自动登录，默认 true',
+                                            en: 'Whether to automatically log in after the connection is established, the default is true'
+                                        },
+                                    },
+                                    {
+                                        name: 'username',
+                                        type: 'string',
+                                        default: 'admin',
+                                        description: {
+                                            zh: 'DolphinDB 登录用户名',
+                                            en: 'DolphinDB username'
+                                        },
+                                    },
+                                    {
+                                        name: 'password',
+                                        type: 'string',
+                                        default: '123456',
+                                        description: {
+                                            zh: 'DolphinDB 登录密码',
+                                            en: 'DolphinDB password'
+                                        },
+                                    },
+                                    {
+                                        name: 'python',
+                                        type: 'boolean',
+                                        default: false,
+                                        description: {
+                                            zh: '(需要 v2.10.0 以上的 DolphinDB Server) 使用 Python Parser 来解释执行脚本, 默认 false',
+                                            en: '(DolphinDB Server version must be above v2.10.0) Use Python Parser to interpret and execute scripts, the default is false'
+                                        },
+                                    },
+                                    {
+                                        name: 'verbose',
+                                        type: 'boolean',
+                                        default: false,
+                                        description: {
+                                            zh: '是否打印每个 rpc 的信息用于调试，默认 false',
+                                            en: 'Whether to print the information of each rpc for debugging, the default is false'
+                                        },
+                                    },
+                                ].map(prop => [
                                     prop.name,
                                     {
                                         ...prop,
                                         ... prop.description ? {
-                                            description: `%configs.connections.${prop.name}.description%`
+                                            description: make(`configs.connections.${prop.name}.description`, prop.description.zh, prop.description.en)
                                         } : { },
                                         ... prop.markdownDescription ? {
-                                            markdownDescription: `%configs.connections.${prop.name}.markdownDescription%`
+                                            markdownDescription: make(`configs.connections.${prop.name}.markdownDescription`, prop.markdownDescription.zh, prop.markdownDescription.en)
                                         } : { },
                                     }
                                 ])
@@ -439,25 +415,52 @@ export async function build_package_json (production: boolean) {
                     },
                     
                     'dolphindb.ports': {
-                        ...ports_property,
-                        markdownDescription: '%configs.ports.markdownDescription%'
-                    } as Schema,
+                        type: 'string',
+                        default: '8321-8420',
+                        markdownDescription: make(
+                            'configs.ports.markdownDescription',
+                            
+                            '本插件为了在浏览器中展示表格等数据，在 VSCode 中创建的本地 HTTP 服务器的可用端口范围  \n' +
+                            '取值为逗号分割的多个可用端口或端口区间 (不能含有空格)，比如：`8321,8322,8300-8310,11000-11999`  \n' +
+                            '默认值为 `8321-8420` (包含左右边界)  \n' +
+                            '打开 VSCode 窗口时，按从前到后的顺序查找首个可用的端口作为实际监听端口后，打开对应的浏览器页面 `http://localhost:{实际监听端口}`  \n' +
+                            '每个 VSCode 窗口会使用端口范围中的一个端口创建 HTTP 服务器，请保证可用端口范围足够大  \n' +
+                            '修改这个配置后建议重启 VSCode (对于已经创建的本地 HTTP 服务器不会生效)  \n',
+                            
+                            'The available port range of the local HTTP server created in VSCode by this plugin in order to display data such as tables in the browser  \n' +
+                            'The value is multiple available ports or port ranges separated by commas (no spaces), for example: `8321,8322,8300-8310,11000-11999`  \n' +
+                            'The default value is `8321-8420` (including left and right boundaries)  \n' +
+                            'When opening the VSCode window, search the first available port as the actual listening port in order from front to back, and then open the corresponding browser page `http://localhost:{actual-listening-port}`  \n' +
+                            'Each VSCode window will use a port in the port range to create an HTTP server, please ensure that the available port range is large enough  \n' + 
+                            'It is recommended to restart VSCode after modifying this configuration (it will not take effect for the local HTTP server that has been created)  \n'
+                        )
+                    } satisfies Schema,
                     
                     'dolphindb.decimals': {
-                        ...decimals_property,
-                        description: '%configs.decimals.description%'
-                    } as Schema,
+                        type: ['number', 'null'],
+                        default: null,
+                        description: make(
+                            'configs.decimals.description',
+                            '小数点后显示的位数 (可取 0 ~ 20)，默认为 null (实际数据的位数)',
+                            'The number of digits displayed after the decimal point (can be 0 ~ 20), the default is null (the actual number of digits)'
+                        )
+                    } satisfies Schema,
                     
                     'dolphindb.single_connection_mode': {
-                        ...single_connection_mode,
-                        description: '%configs.single_connection_mode.description%'
-                    } as Schema,
+                        type: 'boolean',
+                        default: false,
+                        description: make(
+                            'configs.single_connection_mode.description',
+                            '在左侧的连接面板切换到新的 DolphinDB 连接后自动断开原有连接',
+                            'Automatically disconnect the original connection after switching to a new DolphinDB connection in the connection panel on the left'
+                        )
+                    } satisfies Schema,
                 }
             },
             
-            commands: ext_commands.map(({ command, icon }) => ({
+            commands: ext_commands.map(({ command, icon, title }) => ({
                 command: `dolphindb.${command}`,
-                title: `%commands.${command}%`,
+                title: make(`commands.${command}`, title.zh, title.en),
                 icon
             })),
             
@@ -491,7 +494,7 @@ export async function build_package_json (production: boolean) {
                     {
                         type: 'webview',
                         id: 'ddbdataview',
-                        name: '%configs.ddbpanel.name%',
+                        name: make('configs.ddbpanel.name', '数据视图', 'DataView'),
                         contextualTitle: 'DolphinDB',
                         icon: './icons/object.svg',
                         visibility: 'visible',
@@ -650,37 +653,7 @@ export async function build_package_json (production: boolean) {
         ...(['zh', 'en'] as const).map(async language => {
             await fwrite(
                 `${fpd_out}package.nls${ language === 'zh' ? '.zh' : '' }.json`,
-                {
-                    'configs.connections.description': {
-                        zh: '展示在左侧边栏的 DolphinDB 面板中的连接配置',
-                        en: 'Connection configuration shown in the DolphinDB panel on the left sidebar',
-                    }[language],
-                    
-                    ... Object.fromEntries(
-                        connection_properties.map(({ name, description, markdownDescription }) => [
-                            `configs.connections.${name}.${ markdownDescription ? 'markdownDescription' : 'description' }`,
-                            r(
-                                (markdownDescription ? markdownDescription : description) as Item,
-                                language
-                            )
-                        ])
-                    ),
-                    
-                    'configs.ports.markdownDescription': ports_property.markdownDescription[language],
-                    
-                    'configs.decimals.description': decimals_property.description[language],
-                    
-                    'configs.single_connection_mode.description': single_connection_mode.description[language],
-                    
-                    'configs.ddbpanel.name': {
-                        zh: '数据视图',
-                        en: 'DataView'
-                    }[language],
-                    
-                    ... Object.fromEntries(
-                        ext_commands.map(({ command, title }) => [`commands.${command}`, r(title, language)])
-                    ),
-                },
+                dict[language]
             )
         }),
         
@@ -1076,7 +1049,7 @@ interface Schema {
     /** 内部使用 */
     name?: string
     
-    type: 'boolean' | 'number' | 'string' | 'object' | 'array' | ('boolean' | 'number' | 'string' | 'object' | 'array')[]
+    type: 'boolean' | 'number' | 'string' | 'object' | 'array' | 'null' | ('boolean' | 'number' | 'string' | 'object' | 'array' | 'null')[]
     default?: any
     
     items?: Schema
