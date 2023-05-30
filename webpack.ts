@@ -75,7 +75,7 @@ export async function copy_files () {
 export async function build_tm_language () {
     await Promise.all([
         fwrite(`${fpd_out}dolphindb.tmLanguage.json`, tm_language),
-        fcopy(`${fpd_root}dolphindb.language-configuration.json`, `${fpd_out}dolphindb.language-configuration.json`)
+        fcopy(`${fpd_root}src/dolphindb.language-configuration.json`, `${fpd_out}dolphindb.language-configuration.json`)
     ])
 }
 
