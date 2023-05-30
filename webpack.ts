@@ -597,38 +597,74 @@ export async function build_package_json () {
             },
             
             breakpoints: [{ language: 'dolphindb' }],
+            
             debuggers: [
                 {
                     type: 'dolphindb',
-                    label: 'dolphindb script debugging',
+                    label: make('debugger.label', '调试 DolphinDB 脚本', 'Debug DolphinDB Script'),
                     languages: ['dolphindb'],
                     program: './debugger.cjs',
                     runtime: 'node',
                     configurationAttributes: {
                         launch: {
                             required: ['program'],
-                            properties: {
-                                program: {
-                                    type: 'string',
-                                    description: 'Absolute path to a text file.',
-                                    default: '${file}',
-                                },
-                                url: {
-                                    type: 'string',
-                                    description: 'url of the DolphinDB server',
-                                },
-                                username: {
-                                    type: 'string',
-                                    description: 'username to login the DolphinDB server',
-                                },
-                                password: {
-                                    type: 'string',
-                                    description: 'password to login the DolphinDB server',
-                                },
-                                // TODO: 添加更多配置项例如stopOnEntry
-                            }
+                            
+                            properties: Object.fromEntries(
+                                [
+                                    {
+                                        name: 'program',
+                                        type: 'string',
+                                        default: '${file}',
+                                        description: {
+                                            zh: '脚本完整路径',
+                                            en: 'script full path'
+                                        },
+                                    },
+                                    {
+                                        name: 'url',
+                                        type: 'string',
+                                        markdownDescription: {
+                                            zh: '数据库连接地址 (WebSocket URL), 如:  \n' +
+                                                '- `ws://127.0.0.1:8848`\n' +
+                                                '- `wss://dolphindb.com` (HTTPS 加密)\n',
+                                            en: 'Database connection URL (WebSocket URL), e.g.  \n' +
+                                                '- `ws://127.0.0.1:8848`\n' +
+                                                '- `wss://dolphindb.com` (HTTPS encrypted)\n',
+                                        },
+                                        format: 'uri',
+                                    },
+                                    {
+                                        name: 'username',
+                                        type: 'string',
+                                        description: {
+                                            zh: 'DolphinDB 登录用户名',
+                                            en: 'DolphinDB username'
+                                        },
+                                    },
+                                    {
+                                        name: 'password',
+                                        type: 'string',
+                                        description: {
+                                            zh: 'DolphinDB 登录密码',
+                                            en: 'DolphinDB password'
+                                        },
+                                    },
+                                ].map(prop => [
+                                    prop.name,
+                                    {
+                                        ...prop,
+                                        ... prop.description ? {
+                                            description: make(`debugger.${prop.name}.description`, prop.description.zh, prop.description.en)
+                                        } : { },
+                                        ... prop.markdownDescription ? {
+                                            markdownDescription: make(`debugger.${prop.name}.markdownDescription`, prop.markdownDescription.zh, prop.markdownDescription.en)
+                                        } : { },
+                                    }
+                                ])
+                            ),
                         }
                     },
+                    
                     initialConfigurations: [
                         {
                             name: 'Debug for current file',
@@ -649,15 +685,17 @@ export async function build_package_json () {
         }
     }
     
+    
     await Promise.all([
+        fwrite(`${fpd_out}package.json`, package_json_),
+        
+        // 保存 make 函数暂存到 dict 的词条到 nls 文件
         ...(['zh', 'en'] as const).map(async language => {
             await fwrite(
                 `${fpd_out}package.nls${ language === 'zh' ? '.zh' : '' }.json`,
                 dict[language]
             )
-        }),
-        
-        fwrite(`${fpd_out}package.json`, package_json_)
+        })
     ])
 }
 
