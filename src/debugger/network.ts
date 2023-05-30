@@ -114,7 +114,7 @@ export class Remote {
             // TODO: 错误处理（是否需要对后端数据校验？）
             let msg = JSON.parse(decoder.decode(buf.subarray(4, baseOffset)))
             
-            console.debug('Receive message: ', msg)
+            console.log('Receive message: ', msg)
             
             // 仅查询scope或单变量时会出现offset
             if (msg?.data instanceof Array) 
@@ -145,7 +145,7 @@ export class Remote {
             
             return msg
         } catch (error) {
-            console.debug('Parse message error: ', error)
+            console.log('Parse message error: ', error)
             this.errorHandler(error)
         }
     }
@@ -156,18 +156,18 @@ export class Remote {
             return
         
         try {
-            console.debug('Connecting to: ', this.url)
+            console.log('Connecting to: ', this.url)
             this.websocket = await connect_websocket(this.url, {
                 protocols: 'debug',
                 on_message: this.handle.bind(this)
             })
-            console.debug('Connected')
+            console.log('Connected')
             if (this.autologin) 
                 await this.call('login', [this.username ?? 'admin', this.password ?? '123456'])
             
         } catch (error) {
             this.websocket = undefined
-            console.debug('Connect error: ', error)
+            console.log('Connect error: ', error)
             this.errorHandler(error)
         }
     }
@@ -177,10 +177,10 @@ export class Remote {
             if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) 
                 throw new Error(t('调试服务器连接失败\n'))
             
-            console.debug('Send message: ', msg)
+            console.log('Send message: ', msg)
             this.websocket!.send(this.pack(msg))
         } catch (error) {
-            console.debug('Send message error: ', error)
+            console.log('Send message error: ', error)
             this.handlers.delete(msg.id)
             this.errorHandler(error)
         }
@@ -218,7 +218,7 @@ export class Remote {
                 throw new Error(`"Unknown message from server": ${msg}`)
             
         } catch (error) {
-            console.debug('Handle message error: ', error)
+            console.log('Handle message error: ', error)
             this.errorHandler(error)
         }
     }

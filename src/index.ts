@@ -111,26 +111,26 @@ export async function activate (ctx: ExtensionContext) {
     ctx.subscriptions.push(debug.registerDebugConfigurationProvider('dolphindb', {
         resolveDebugConfiguration (folder, config, token): ProviderResult<DebugConfiguration> {
             // if launch.json is missing or empty
-            if (!config.type && !config.request && !config.name) {
-                const editor = window.activeTextEditor
-                if (editor && editor.document.languageId === 'dolphindb') {
-                    config.type = 'dolphindb'
-                    config.name = 'Debug for current file'
-                    config.program = '${file}'
-                }
+            if (!config.type && !config.request && !config.name && window.activeTextEditor?.document.languageId === 'dolphindb') {
+                config.type = 'dolphindb'
+                config.request = 'launch'
+                config.name = t('调试当前 DolphinDB 脚本文件')
+                config.program = '${file}'
             }
             
-            // 默认使用当前插件连接的server作为debugger
-            config.url ??= explorer.connection.url
-            config.username ??= explorer.connection.options.username
-            config.password ??= explorer.connection.options.password
-            config.autologin = explorer.connection.options.autologin
             
-            // 并不能在这里限制非.dos文件被选中作为debugee，此时${file}还未被解析成绝对路径
-            if (!config.program) 
-                return window.showInformationMessage('Cannot find a program to debug').then(_ => {
-                    return undefined // abort launch
-                })
+            // 默认使用当前插件连接的 server 作为 debugger
+            const { connection } = explorer
+            config.url ??= connection.url
+            config.username ??= connection.options.username
+            config.password ??= connection.options.password
+            config.autologin = connection.options.autologin
+            
+            // 并不能在这里限制非. dos 文件被选中作为 debugee，此时 ${file} 还未被解析成绝对路径
+            if (!config.program) {
+                window.showInformationMessage(t('调试配置 program 字段为空，请指定为待调试的脚本路径'))
+                return
+            }
             
             return config
         }

@@ -14,7 +14,7 @@ import { DebugProtocol } from '@vscode/debugprotocol'
 import type { DdbObj } from 'dolphindb'
 
 import { Remote } from './network.js'
-import { normalizePathAndCasing, loadSource, checkFile } from './utils.js'
+import { normalizePathAndCasing, loadSource } from './utils.js'
 
 import { Sources } from './sources.js'
 import { t } from '../i18n/index.js'
@@ -128,7 +128,7 @@ class Prerequisites {
 }
 
 
-/** override DebugSession的方法以支持某些功能，详见DAP */
+/** override DebugSession 的方法以支持某些功能，详见 DAP */
 export class DdbDebugSession extends LoggingDebugSession {
     // 不支持多线程，threadID固定为1
     private static readonly threadID = 1
@@ -148,10 +148,13 @@ export class DdbDebugSession extends LoggingDebugSession {
     private _stackTraceCache: StackFrame[] = [ ]
     private _stackTraceChangeFlag: boolean = true
     private _scopeCache: Map<number, DebugProtocol.Variable[]> = new Map()
+    
     private static id: number = 0
+    
     get genId () {
         return DdbDebugSession.id++
     }
+    
     private _exceptionBreakpoint: boolean = false
     
     // 初始化时compile error，则在文档首部显示异常展示错误信息
@@ -178,7 +181,7 @@ export class DdbDebugSession extends LoggingDebugSession {
     
     private registerEventHandlers () {
         // 因为syntax和error服务端返回写到了外层message中，其余事件数据都在data中，这里注册的时候不是很优雅~~(都怪后端)~~
-        this._remote.on('SYNTAX', this.handleSyntaxErr.bind(this))
+        this._remote.on('SYNTAX', this.handleSyntaxError.bind(this))
         this._remote.on('ERROR', this.handleException.bind(this))
         this._remote.on('BREAKPOINT', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'breakpoint', ...data }))
         this._remote.on('STEP', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'step', ...data }))
@@ -303,11 +306,11 @@ export class DdbDebugSession extends LoggingDebugSession {
         let moduleName = fp_src === this._entrySourcePath ? '' : args.source.name.endsWith('.dos') ? args.source.name.slice(0, -4) : args.source.name
         
         if (this._sources.hasModule(moduleName)) {
+            // vsc 会缓存断点设置信息，下次 debug 会话开启时会直接调用 setBreakPointsRequest
+            // thanks to DDB 强制要求 moduleName 与文件名一致，这里可以简单处理获取 moduleName
+            // .dos 结尾的认为是本地文件（server module 已经在 resolveScript 处处理去除 dos 后缀），需要进行一次校验
+            // 先排除本次 debug 中没有使用的文件
             
-            // vsc会缓存断点设置信息，下次debug会话开启时会直接调用setBreakPointsRequest
-            // thanks to DDB强制要求moduleName与文件名一致，这里可以简单处理获取moduleName
-            // .dos结尾的认为是本地文件（server module已经在resolveScript处处理去除dos后缀），需要进行一次校验
-            // 先排除本次debug中没有使用的文件
             try {
                 this._sources.getSource(moduleName)
             } catch (e) {
@@ -323,18 +326,16 @@ export class DdbDebugSession extends LoggingDebugSession {
                 this.sendResponse(response)
                 return
             }
+            
             // 校验本地文件与server侧是否一致
             // checkFile(moduleName, fp_src, this._sources).then(valid => {
             //     if (!valid) 
             //         this.sendEvent(
             //             new OutputEvent(
-            //                 t('本地文件 {{fp_src}} 与服务器文件不一致，在本地文件中设置的断点可能导致未知错误，建议先同步文件\n', {
-            //                     fp_src: args.source.path
-            //                 }),
+            //                 t('本地文件 {{fp_src}} 与服务器文件不一致，在本地文件中设置的断点可能导致未知错误，建议先同步文件\n', { fp_src: args.source.path }),
             //                 'stderr'
             //             )
             //         )
-                
             // })
             
             const res = (await this._remote.call('setBreaks', [moduleName, requestData.map(bp => bp.line)])) as [string, number[]]
@@ -399,26 +400,28 @@ export class DdbDebugSession extends LoggingDebugSession {
             this._prerequisites.create('stackTraceRequest')
             const res: StackFrameRes[] = await this._remote.call('stackTrace')
             res.reverse()
+            
             this._stackTraceCache = await Promise.all(
                 res.map(async frame => {
-                    const { stackFrameId, name, line, column } = frame
+                    const { stackFrameId, name, line: iline, column } = frame
                     let moduleName: number | string | undefined = frame.moduleName
-                    // 没有moduleName的栈帧是shared作用域
-                    if (moduleName === undefined) 
-                        return new StackFrame(stackFrameId, 'shared', this._sources.getSource(this._entrySourceRef), 0, 0)
                     
-                    // 特判，入口文件在Server端的moduleName为空
+                    // 没有 moduleName 的栈帧是 shared 作用域
+                    if (moduleName === undefined) 
+                        return new StackFrame(stackFrameId, t('共享'), this._sources.getSource(this._entrySourceRef), 0, 0)
+                    
+                    // 特判，入口文件在 Server 端的 moduleName 为空
                     if (moduleName === '') 
                         moduleName = this._entrySourceRef
                     
-                    const sourceLines = await this._sources.getLines(moduleName)
+                    const lines = await this._sources.getLines(moduleName)
                     
                     return new StackFrame(
                         stackFrameId,
                         // 文件 line 以 1 开始，展示时需要补上
-                        name ?? `line ${line + 1}: ${sourceLines[line].trim()}`,
+                        name ?? `${t('第 {{iline}} 行', { iline: iline + 1 })}: ${lines[iline].trim()}`,
                         this._sources.getSource(moduleName),
-                        this.convertDebuggerLineToClient(line),
+                        this.convertDebuggerLineToClient(iline),
                         this.convertDebuggerColumnToClient(column ?? 0)
                     )
                 })
@@ -677,12 +680,12 @@ export class DdbDebugSession extends LoggingDebugSession {
     }
     
     private handleOutput ({ data }: { data: string }): void {
-        console.debug(data)
+        console.log(data)
         this.sendEvent(new OutputEvent(`${data}\n`, 'stdout'))
     }
     
-    // SyntaxError与Exception被server区分开了，但这边统一合并为Exception便于展示
-    private handleSyntaxErr (msg: { message: string }): void {
+    // SyntaxError 与 Exception 被 server 区分开了，但这边统一合并为 Exception 便于展示
+    private handleSyntaxError (msg: { message: string }): void {
         this._compileErrorFlag = true
         this.handleException({ message: msg.message, data: { line: -1, moduleName: '' } })
     }

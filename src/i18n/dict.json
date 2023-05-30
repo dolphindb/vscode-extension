@@ -325,5 +325,26 @@
     },
     "先尝试用浏览器访问对应的 server 地址，如: {{url}}\n": {
         "en": "First try to access the corresponding server address with a browser, such as: {{url}}\n"
+    },
+    "共享": {
+        "en": "shared"
+    },
+    "第 {{iline}} 行": {
+        "en": "line {{iline}}"
+    },
+    "调试服务器已启动，等待 VSCode 调试器连接端口 {{port}}": {
+        "en": "The debug server has started, waiting for the VSCode debugger to connect to port {{port}}"
+    },
+    "与 VSCode 调试器建立了连接": {
+        "en": "Connected with VSCode debugger"
+    },
+    "与 VSCode 调试器的连接已断开": {
+        "en": "The connection to the VSCode debugger has been lost"
+    },
+    "调试当前 DolphinDB 脚本文件": {
+        "en": "Debug the current DolphinDB script file"
+    },
+    "调试配置 program 字段为空，请指定为待调试的脚本路径": {
+        "en": "The debug configuration program field is empty, please specify the script path to be debugged"
     }
 }
