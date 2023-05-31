@@ -347,7 +347,7 @@ function Vector ({
                 const script = form === DdbForm.set ?
                     name
                 :
-                    `${name}[${offset}:${Math.min(offset + page_size, rows)}]`
+                    `${name}[${offset}..${Math.min(offset + page_size, rows) - 1}]`
             
                 console.log(`${DdbForm[form]}.fetch:`, script)
             
