@@ -340,15 +340,15 @@ function Vector ({
             const offset = page_size * page_index
             
             if (
-                // 允许在 rows 为 0 时拉一次空的 table[0:0] 获取 obj 用来显示列名
+                // 允许在 rows 为 0 时拉一次变量获取 obj 用来显示类型
                 rows === 0 && offset === 0 ||
                 offset < rows
             ) {
-                const script = form === DdbForm.set ?
+                const script = (form === DdbForm.set || rows === 0) ?
                     name
                 :
                     `${name}[${offset}..${Math.min(offset + page_size, rows) - 1}]`
-            
+                
                 console.log(`${DdbForm[form]}.fetch:`, script)
             
                 objref.obj = ddb ?
