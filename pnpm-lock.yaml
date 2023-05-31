@@ -35,8 +35,8 @@ dependencies:
     specifier: ^1.11.7
     version: 1.11.7
   dolphindb:
-    specifier: ^2.0.970
-    version: 2.0.970(react-dom@18.2.0)
+    specifier: ^2.0.974
+    version: 2.0.974(react-dom@18.2.0)
   koa:
     specifier: ^2.14.2
     version: 2.14.2(patch_hash=p7ybv54qzz4vmboaajk6ep5psi)
@@ -3514,12 +3514,12 @@ packages:
       esutils: 2.0.3
     dev: true
 
-  /dolphindb@2.0.970(react-dom@18.2.0):
-    resolution: {integrity: sha512-44A4iaXg2v1N48C32Wf37IJby938DTTK1Yd/U260OebR0onvnr1mN+3i0mkkmS22faV8e9eOIjG72sdvG9IwgA==}
+  /dolphindb@2.0.974(react-dom@18.2.0):
+    resolution: {integrity: sha512-HVWOPSYWfTRAGnVJaBcesg8XJ7wfoGI8ES+13mJdfovqAl1xkPJcmYfl0wi4jgAkGkDFJXZh/2/aAn+DZc1t5Q==}
     engines: {node: '>=19.8.1'}
     dependencies:
       dayjs: 1.11.7
-      ipaddr.js: 2.0.1
+      ipaddr.js: 2.1.0
       tslib: 2.5.2
       xshell: 1.0.30(react-dom@18.2.0)
     transitivePeerDependencies:
@@ -4356,8 +4356,8 @@ packages:
       has: 1.0.3
       side-channel: 1.0.4
 
-  /ipaddr.js@2.0.1:
-    resolution: {integrity: sha512-1qTgH9NG+IIJ4yfKs2e6Pp1bZg8wbDbKHT21HrLIeYBTRLgMYKnMTPAuI3Lcs61nfx5h1xlXnbJtH1kX5/d/ng==}
+  /ipaddr.js@2.1.0:
+    resolution: {integrity: sha512-LlbxQ7xKzfBusov6UMi4MFpEg0m+mAm9xyNGEduwXMEDuf4WfzB/RZwMVYEd7IKGvh4IUkEXYxtAVu9T3OelJQ==}
     engines: {node: '>= 10'}
     dev: false
 
