@@ -5,13 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug for current file",
+            "name": "调试当前 DolphinDB 脚本文件",
             "type": "dolphindb",
             "request": "launch",
             "program": "${file}"
         },
         {
-            "name": "Debug with Server",
+            "name": "调试当前 DolphinDB 脚本文件 (独立 debugger server)",
             "type": "dolphindb",
             "request": "launch",
             "program": "${file}",

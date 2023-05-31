@@ -16,7 +16,7 @@ await Promise.all([
         if (!production)
             await fcopy(`${fpd_root}icons/`, `${fpd_out}icons/`)
     })(),
-    build_package_json(production),
+    build_package_json(),
     build_tm_language(),
     dataview_webpack.build(production),
     ext_webpack.build(production)
