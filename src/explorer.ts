@@ -441,11 +441,12 @@ export class DdbConnection extends TreeItem {
         const after_two_week = now.add(2, 'week')
         const is_license_expired = now.isAfter(expiration_date, 'day')
         const is_license_expire_soon = after_two_week.isAfter(expiration_date, 'day')
-            
+        
+        // 不用等 showErrorMessage 的 result
         if (is_license_expired) 
-            await window.showErrorMessage(t('DolphinDB License 已过期，请联系管理人员立即更新，避免数据库关闭'))
+            window.showErrorMessage(t('DolphinDB License 已过期，请联系管理人员立即更新，避免数据库关闭'))
         else if (is_license_expire_soon)
-            await window.showWarningMessage(t('DolphinDB License 将在两周内过期，请提醒管理人员及时更新，避免数据库过期后自动关闭'))
+            window.showWarningMessage(t('DolphinDB License 将在两周内过期，请提醒管理人员及时更新，避免数据库过期后自动关闭'))
     }
     
     
