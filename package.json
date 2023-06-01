@@ -1,7 +1,7 @@
 {
     "name": "dolphindb-vscode",
     "type": "module",
-    "version": "2.0.959",
+    "version": "2.0.960",
     "engines": {
         "vscode": ">=1.68.0"
     },
@@ -33,7 +33,7 @@
         "style-loader": "^3.3.3",
         "ts-loader": "^9.4.3",
         "typescript": "^5.0.4",
-        "webpack": "^5.84.1"
+        "webpack": "^5.85.0"
     },
     "dependencies": {
         "@ant-design/icons": "5.1.4",
@@ -59,7 +59,7 @@
     "pnpm": {
         "patchedDependencies": {
             "koa@2.14.2": "patches/koa@2.14.2.patch",
-            "webpack@5.84.1": "patches/webpack@5.84.1.patch"
+            "webpack@5.85.0": "patches/webpack@5.85.0.patch"
         }
     }
 }
