@@ -12,6 +12,12 @@
         "lint": "eslint \"**/*.{ts,tsx}\"",
         "fix": "eslint --fix \"**/*.{ts,tsx}\""
     },
+    "author": "Hongfei Shen <hongfei.shen@dolphindb.com> (https://dolphindb.net/hongfeishen)",
+    "homepage": "https://github.com/dolphindb/vscode-extension",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dolphindb/vscode-extension.git"
+    },
     "devDependencies": {
         "@svgr/webpack": "^8.0.1",
         "@types/koa": "^2.13.6",
