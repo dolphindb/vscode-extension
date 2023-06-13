@@ -55,6 +55,8 @@ import SvgLink from './link.icon.svg'
 import { type WindowModel } from './window.js'
 
 
+const max_strlen = 10000
+
 const page_sizes = [1, 2, 3, 5, 10, 15, 20, 25, 30, 40, 50, 75, 100, 150, 200, 300, 400, 500, 750, 1000, 5000, 10000, 100000]
 
 const views = {
@@ -77,6 +79,11 @@ export type Context = 'page' | 'webview' | 'window' | 'embed'
 export interface Remote {
     /** 调用 remote 中的 func, 只适用于最简单的一元 rpc (请求, 响应) */
     call <TReturn extends any[] = any[]> (func: string, args?: any[]): Promise<TReturn>
+}
+
+
+function truncate (str: string) {
+    return str.length >= max_strlen ? str.slice(0, max_strlen - 2) + '···' : str
 }
 
 
@@ -274,7 +281,7 @@ function build_tree_data (
             }
          else
             node = {
-                title: key + ': ' + formati(dict_value, i, options),
+                title: key + ': ' + truncate(formati(dict_value, i, options)),
                 key: genid()
             }
         
@@ -482,7 +489,7 @@ class VectorColumn implements TableColumnType <number> {
             this.index
         
         return index_ < obj.rows ?
-            formati(obj, index_, this.options)
+            truncate(formati(obj, index_, this.options))
         :
             null
     }
@@ -1142,7 +1149,7 @@ class TableColumn implements TableColumnType <number> {
             irow
         
         return index < obj.rows ?
-            formati(obj, index, this.options)
+            truncate(formati(obj, index, this.options))
         :
             null
     }
