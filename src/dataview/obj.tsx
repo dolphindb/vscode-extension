@@ -219,6 +219,7 @@ function Dict ({
     
     return <div className='dict'>
         <Tree
+            key={genid()}
             treeData={build_tree_data(_obj, { remote, ddb, ctx, options })}
             defaultExpandAll
             focusable={false}

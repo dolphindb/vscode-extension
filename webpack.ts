@@ -6,7 +6,7 @@ import { default as Webpack, type Configuration, type Compiler, type Resolver, t
 
 import type { Options as TSLoaderOptions } from 'ts-loader'
 import type { Options as SassOptions } from 'sass-loader'
-import sass from 'sass'
+import * as sass from 'sass'
 
 
 import { fwrite, fcopy, fexists } from 'xshell'
