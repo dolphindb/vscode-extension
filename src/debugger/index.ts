@@ -16,7 +16,7 @@ let port = 0
 for (const argv of process.argv.slice(2)) {
     const matches = /^--server=(\d{1,5})$/.exec(argv)
     if (matches) {
-        port = Number(matches[0])
+        port = Number(matches[1])
         break
     }
 }

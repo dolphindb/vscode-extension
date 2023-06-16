@@ -180,7 +180,7 @@ export class DdbDebugSession extends LoggingDebugSession {
     }
     
     private registerEventHandlers () {
-        // 因为syntax和error服务端返回写到了外层message中，其余事件数据都在data中，这里注册的时候不是很优雅~~(都怪后端)~~
+        // 因为 syntax 和 error 服务端返回写到了外层 message 中，其余事件数据都在 data 中，这里注册的时候不是很优雅 ~~(都怪后端)~~
         this._remote.on('SYNTAX', this.handleSyntaxError.bind(this))
         this._remote.on('ERROR', this.handleException.bind(this))
         this._remote.on('BREAKPOINT', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'breakpoint', ...data }))
@@ -663,9 +663,11 @@ export class DdbDebugSession extends LoggingDebugSession {
         this.sendResponse(response)
     }
     
-    // 以下为server主动推送事件的回调
+    // --- 以下为 server 主动推送事件的回调
+    
     private handlePause ({ reason }: PauseEventData): void {
         this._stackTraceChangeFlag = true
+        console.log('StoppedEvent')
         this.sendEvent(new StoppedEvent(reason, DdbDebugSession.threadID))
     }
     
@@ -674,15 +676,15 @@ export class DdbDebugSession extends LoggingDebugSession {
             this._remote.terminate()
             this._terminated = true
             this.sendEvent(new TerminatedEvent())
-        } else if (status === 'RESTARTED') 
-            return
-        
+        }
     }
     
     private handleOutput ({ data }: { data: string }): void {
         console.log(data)
         this.sendEvent(new OutputEvent(`${data}\n`, 'stdout'))
     }
+    
+    // --- 
     
     // SyntaxError 与 Exception 被 server 区分开了，但这边统一合并为 Exception 便于展示
     private handleSyntaxError (msg: { message: string }): void {

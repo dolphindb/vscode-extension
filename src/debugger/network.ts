@@ -52,10 +52,8 @@ export type ReceiveMessage = (ReturnMessage | EventMessage) & {
 /** 接收到消息后的处理函数，包含client发出请求的返回以及server主动推送的事件 */
 export type MessageHandler = (msg: ReceiveMessage, websocket?: WebSocket) => void | any[] | Promise<void | any[]>
 
-/** 
-    对socket的一层封装，创建时传入username&password，调用函数时自动登录
-    call用来调用server端的函数，on用来注册处理server端事件的回调
-*/
+/** 对 socket 的一层封装，创建时传入 username & password，调用函数时自动登录
+    call 用来调用 server 端的函数，on 用来注册处理 server 端事件的回调 */
 export class Remote {
     private static id = 0
     
@@ -68,13 +66,13 @@ export class Remote {
     
     private websocket?: Awaited<ReturnType<typeof connect_websocket>>
     
-    /** 处理server侧主动推送的事件的回调 */
+    /** 处理 server 侧主动推送的事件的回调 */
     private events = new Map<string, MessageHandler>()
     
     /** map<id, message handler>: 通过 rpc message.id 找到对应的 handler */
     private handlers = new Map<number, MessageHandler>()
     
-    /** debug会话不在开启状态时禁止发送请求 */
+    /** debug 会话不在开启状态时禁止发送请求 */
     private _terminated = false
     public terminate () {
         this._terminated = true
@@ -114,7 +112,7 @@ export class Remote {
             // TODO: 错误处理（是否需要对后端数据校验？）
             let msg = JSON.parse(decoder.decode(buf.subarray(4, baseOffset)))
             
-            console.log('Receive message: ', msg)
+            console.log(t('接收到消息:'), msg)
             
             // 仅查询scope或单变量时会出现offset
             if (msg?.data instanceof Array) 
@@ -172,50 +170,49 @@ export class Remote {
         }
     }
     
-    private async send (msg: SendMessage) {
+    private async send (message: SendMessage) {
         try {
             if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) 
                 throw new Error(t('调试服务器连接失败\n'))
             
-            console.log('Send message: ', msg)
-            this.websocket!.send(this.pack(msg))
+            console.log(t('发送消息:'), message)
+            this.websocket.send(this.pack(message))
         } catch (error) {
             console.log('Send message error: ', error)
-            this.handlers.delete(msg.id)
+            this.handlers.delete(message.id)
             this.errorHandler(error)
         }
     }
     
-    /** 接受server传回的消息，根据id或event决定是返回还是推送的消息，并分发到对应handler */
+    /** 接受 server 传回的消息，根据 id 或 event 决定是返回还是推送的消息，并分发到对应 handler */
     private async handle (socketEvent: ArrayBuffer, websocket: WebSocket) {
-        const msg = this.parse(socketEvent) as ReceiveMessage
+        const message = this.parse(socketEvent) as ReceiveMessage
         
-        const { id, event } = msg
+        const { id, event } = message
         
         try {
             if (event !== undefined) {
                 const handler = this.events.get(event)
-                // event中message不为OK时，一般认为是用户脚本的错误
-                if (msg.message !== 'OK' && !(event === 'ERROR' || event === 'SYNTAX')) 
-                    throw new Error(msg.message)
+                // event 中 message 不为 OK 时，一般认为是用户脚本的错误
+                if (message.message !== 'OK' && !(event === 'ERROR' || event === 'SYNTAX')) 
+                    throw new Error(message.message)
                 
                 if (handler) 
-                    await handler(msg)
-                 else 
+                    await handler(message)
+                else
                     throw new Error(`"Unknown event from server": ${event}`)
-                
             } else if (id !== undefined) {
                 const handler = this.handlers.get(id)
-                if (msg.message !== 'OK') 
+                if (message.message !== 'OK') 
                     // handler中mesaage不为OK时，一般认为是服务端/DA错误
-                    throw new Error(msg.message)
+                    throw new Error(message.message)
                  else if (handler)
-                     await handler(msg)
+                     await handler(message)
                  else
                      throw new Error(`"Unknown function id from server": ${id}`)
                 
             } else 
-                throw new Error(`"Unknown message from server": ${msg}`)
+                throw new Error(`"Unknown message from server": ${message}`)
             
         } catch (error) {
             console.log('Handle message error: ', error)
@@ -228,7 +225,7 @@ export class Remote {
         this.events.set(event, msg => handler(msg))
     }
     
-    /** 调用server侧函数 */
+    /** 调用 server 侧函数 */
     public async call (func: string, args?: any) {
         // 避免debug session未开启时发送其他请求
         if (this._terminated) 
