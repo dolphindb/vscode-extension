@@ -1,15 +1,6 @@
 import dayjs from 'dayjs'
 
-import {
-    window,
-    workspace,
-    
-    commands,
-    
-    ConfigurationTarget,
-    
-    ProgressLocation,
-} from 'vscode'
+import { window, workspace, commands, ConfigurationTarget, ProgressLocation } from 'vscode'
 
 import { Timer, delay, inspect } from 'xshell'
 
@@ -28,6 +19,34 @@ import { create_terminal, terminal } from './terminal.js'
 
 
 let lastvar: DdbVar
+
+
+/** 截取长脚本前三个非空行，或前两行 + ... */
+function truncate_text (lines: string[]) {
+    let i_first_non_empty = null
+    let i_non_empty_end = null
+    for (let i = 0;  i < lines.length;  i++) 
+        if (lines[i].trim()) {
+            if (i_first_non_empty === null)
+                i_first_non_empty = i
+            i_non_empty_end = i + 1
+        }
+    
+    // 未找到非空行
+    if (i_first_non_empty === null) {
+        i_first_non_empty = 0
+        i_non_empty_end = 0
+    }
+    
+    const too_much = i_non_empty_end - i_first_non_empty > 3
+    
+    let lines_ = lines.slice(i_first_non_empty, too_much ? i_first_non_empty + 2 : i_non_empty_end)
+    
+    if (too_much)
+        lines_.push('...')
+    
+    return lines_
+}
 
 
 async function execute (text: string) {
@@ -49,7 +68,9 @@ async function execute (text: string) {
     
     printer.fire(
         '\r\n' +
-        `${dayjs(timer.started).format('HH:mm:ss.SSS')}  ${connection.name}\r\n`
+        `${dayjs(timer.started).format('HH:mm:ss.SSS')}  ${connection.name}\r\n` +
+        truncate_text(text.split_lines()).join('\r\n') + 
+        (text.trim().length ? '\r\n' : '')
     )
     
     connection.running = true
