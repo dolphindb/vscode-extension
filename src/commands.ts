@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import path from 'upath'
 
 import { window, workspace, commands, ConfigurationTarget, ProgressLocation } from 'vscode'
 
@@ -8,7 +9,7 @@ import { DdbConnectionError, DdbForm, DdbObj, DdbType, InspectOptions } from 'do
 
 
 import { t } from './i18n/index.js'
-import { type DdbMessageItem, extctx } from './index.js'
+import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
@@ -353,27 +354,29 @@ export const ddb_commands = [
         webview.html = webview.html + ' '
     },
     
+    
     /** 上传文件预填写默认路径 `getHomeDir() + /scripts/ + 当前打开文件名` */
     async function upload_file () {
         let { connection } = explorer
+        
         await connection.connect()
+        
         let { ddb } = connection
-        let { value } = await ddb.call<DdbObj<string>>('getHomeDir')
-        let initialPath = value + '\\scripts\\'
-        const filePath    = window.activeTextEditor.document.uri.fsPath
-        const fileNameSplit = filePath.split('\\')
-        const fileName = fileNameSplit[fileNameSplit.length - 1]
-        initialPath += fileName
+        
+        let { value: fpd_home } = await ddb.call<DdbObj<string>>('getHomeDir')
+        
         const fp_remote = await window.showInputBox({
             title: t('上传到服务器端的路径'),
-            value: initialPath
+            value: `${path.normalizeTrim(fpd_home)}/scripts/${window.activeTextEditor.document.uri.fsPath.fname}`
         })
         
         if (!fp_remote)
             return
         
         await window.activeTextEditor.document.save()
+        
         const fpd_remote = fp_remote.fdir
+        
         if (!(
             await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])
         ).value)
@@ -382,16 +385,10 @@ export const ddb_commands = [
         await ddb.call('saveTextFile', [get_text('all'), fp_remote])
         
         window.showInformationMessage(t('文件上传成功'))
-        
     },
     
     
     function set_decimals () {
         formatter.prompt()
-    },
-    
-    
-    // function unit_test () {
-    //     window.showInformationMessage(t('点击单元测试'))
-    // }
+    }
 ]

@@ -210,13 +210,6 @@ export async function build_package_json () {
                 en: 'DolphinDB: Set decimal places'
             },
         },
-        // {
-        //     command: 'unit_test',
-        //     title: {
-        //         zh: '单元测试',
-        //         en: 'Unit Test'
-        //     },
-        // }
     ]
     
     
