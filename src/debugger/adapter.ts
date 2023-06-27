@@ -13,6 +13,8 @@ import { DebugProtocol } from '@vscode/debugprotocol'
 
 import type { DdbObj } from 'dolphindb'
 
+import { delay } from 'xshell'
+
 import { Remote } from './network.js'
 import { normalizePathAndCasing, loadSource } from './utils.js'
 
@@ -183,13 +185,13 @@ export class DdbDebugSession extends LoggingDebugSession {
         // 因为 syntax 和 error 服务端返回写到了外层 message 中，其余事件数据都在 data 中，这里注册的时候不是很优雅 ~~(都怪后端)~~
         this._remote.on('SYNTAX', this.handleSyntaxError.bind(this))
         this._remote.on('ERROR', this.handleException.bind(this))
-        this._remote.on('BREAKPOINT', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'breakpoint', ...data }))
-        this._remote.on('STEP', ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'step', ...data }))
+        this._remote.on('BREAKPOINT', async ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'breakpoint', ...data }))
+        this._remote.on('STEP', async ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'step', ...data }))
         this._remote.on('END', ({ data }: { data: EndEventData }) => this.handleTerminate(data))
         this._remote.on('OUTPUT', this.handleOutput.bind(this))
     }
     
-    protected override initializeRequest (response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments): void {
+    protected override initializeRequest (response: DebugProtocol.InitializeResponse, args: DebugProtocol.InitializeRequestArguments) {
         // the capabilities of this debug adapter, see more: https://microsoft.github.io/debug-adapter-protocol/specification#Requests_Initialize
         response.body = response.body || { }
         
@@ -225,7 +227,7 @@ export class DdbDebugSession extends LoggingDebugSession {
     protected override configurationDoneRequest (
         response: DebugProtocol.ConfigurationDoneResponse,
         args: DebugProtocol.ConfigurationDoneArguments
-    ): void {
+    ) {
         super.configurationDoneRequest(response, args)
         
         this._prerequisites.resolve('configurationDone')
@@ -381,7 +383,7 @@ export class DdbDebugSession extends LoggingDebugSession {
         this.sendResponse(response)
     }
     
-    protected override threadsRequest (response: DebugProtocol.ThreadsResponse): void {
+    protected override threadsRequest (response: DebugProtocol.ThreadsResponse) {
         response.body = {
             threads: [new Thread(DdbDebugSession.threadID, 'thread 1')]
         }
@@ -462,7 +464,7 @@ export class DdbDebugSession extends LoggingDebugSession {
         response: DebugProtocol.ScopesResponse,
         args: DebugProtocol.ScopesArguments,
         request?: DebugProtocol.Request | undefined
-    ): void {
+    ) {
         if (this._terminated) 
             return
         
@@ -547,7 +549,7 @@ export class DdbDebugSession extends LoggingDebugSession {
         response: DebugProtocol.ExceptionInfoResponse,
         args: DebugProtocol.ExceptionInfoArguments,
         request?: DebugProtocol.Request | undefined
-    ): void {
+    ) {
         response.body = this._exceptionInfo
         this.sendResponse(response)
     }
@@ -665,13 +667,15 @@ export class DdbDebugSession extends LoggingDebugSession {
     
     // --- 以下为 server 主动推送事件的回调
     
-    private handlePause ({ reason }: PauseEventData): void {
+    private async handlePause ({ reason }: PauseEventData) {
         this._stackTraceChangeFlag = true
-        console.log('StoppedEvent')
+        // 不加就会出问题，原因未知
+        // https://dolphindb1.atlassian.net/browse/VSCODE-58
+        await delay(0)
         this.sendEvent(new StoppedEvent(reason, DdbDebugSession.threadID))
     }
     
-    private handleTerminate ({ status }: EndEventData): void {
+    private handleTerminate ({ status }: EndEventData) {
         if (status === 'FINISHED' || status === 'STOPPED') {
             this._remote.terminate()
             this._terminated = true
@@ -679,7 +683,7 @@ export class DdbDebugSession extends LoggingDebugSession {
         }
     }
     
-    private handleOutput ({ data }: { data: string }): void {
+    private handleOutput ({ data }: { data: string }) {
         console.log(data)
         this.sendEvent(new OutputEvent(`${data}\n`, 'stdout'))
     }
@@ -687,12 +691,12 @@ export class DdbDebugSession extends LoggingDebugSession {
     // --- 
     
     // SyntaxError 与 Exception 被 server 区分开了，但这边统一合并为 Exception 便于展示
-    private handleSyntaxError (msg: { message: string }): void {
+    private handleSyntaxError (msg: { message: string }) {
         this._compileErrorFlag = true
         this.handleException({ message: msg.message, data: { line: -1, moduleName: '' } })
     }
     
-    private handleException ({ message, data }: { message: string, data: ExceptionContext }): void {
+    private handleException ({ message, data }: { message: string, data: ExceptionContext }) {
         this._stackTraceChangeFlag = true
         this._exceptionFlag = true
         this._exceptionCtx = {
@@ -709,7 +713,7 @@ export class DdbDebugSession extends LoggingDebugSession {
     }
     
     // Server出错时对用户的信息展示，内部方法
-    private handleServerError (error: Error): void {
+    private handleServerError (error: Error) {
         this._compileErrorFlag = true
         this._stackTraceChangeFlag = false
         if (!this._stackTraceCache.length) 
