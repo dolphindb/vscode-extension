@@ -241,8 +241,12 @@ export class DdbDebugSession extends LoggingDebugSession {
         
         // 加载主文件资源
         const fp_main = (this._entrySourcePath = normalizePathAndCasing(args.program))
-        loadSource(fp_main)
-            .then(async source => {
+        
+        
+        ;(async () => {
+            try {
+                const source = await loadSource(fp_main)
+                
                 const src = source.replace(/\r\n/g, '\n')
                 this._entrySourceRef = this._sources.add({
                     name: '',
@@ -258,16 +262,17 @@ export class DdbDebugSession extends LoggingDebugSession {
                         path: path as string
                     })
                 })
+                
                 this._prerequisites.resolve('scriptResolved')
-            })
-            .catch(err => {
+            } catch (err) {
                 if (err.code === 'ENOENT') {
                     this.sendEvent(new OutputEvent(t('本地找不到文件 {{fp_main}}，请先将这个文件下载到本地再启动调试\n', { fp_main }), 'stderr'))
                     this.sendEvent(new TerminatedEvent())
                     this._remote.terminate()
                 }
-            })
-            
+            }
+        })()
+        
         this.registerEventHandlers()
         
         await Promise.all([this._prerequisites.wait('scriptResolved'), this._prerequisites.wait('configurationDone')])

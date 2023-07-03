@@ -47,7 +47,7 @@ export class Sources {
         return this._sourceRefMap.has(moduleName)
     }
     
-    /** 通过moduleName或者数字ref获取整个source对象 */
+    /** 通过 moduleName 或者数字 ref 获取整个 source 对象 */
     public getSource (ref: number | string): Source {
         if (typeof ref === 'string') {
             const srcRef = this._sourceRefMap.get(ref)
