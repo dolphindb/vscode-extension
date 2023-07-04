@@ -22,7 +22,7 @@ DolphinDB 的 VSCode 插件提供针对用户脚本的调试功能，该功能�
 
 ## 开始使用
 
-请运行 DolphinDB Server 并检查版本在 2.00.9.7 及以上，并按照下面的步骤进行调试
+请运行 DolphinDB Server 并检查版本不低于 2.00.10 或 1.30.22，并按照下面的步骤进行调试
 
 ### 编写脚本
   
@@ -68,8 +68,10 @@ DolphinDB 的 VSCode 插件提供针对用户脚本的调试功能，该功能�
 
   <img src="images/debug/zh/launched.png" width='800' />
 
-  如果调试过程无法启动，请先检查 DolphinDB Server 是否满足 [开始使用](#开始使用) 中所描述的最低要求。
-  如果不满足要求，会报错 `Server sent no subprotocol 调试服务器连接失败，可能是 DolphinDB Server 版本低于 2.00.9.7`
+  如果调试过程无法启动，请打开底部的调试控制台，检查错误信息
+  
+  可能的原因有:
+  - DolphinDB Server 版本太低: 会报错 `Server sent no subprotocol 调试服务器连接失败，请确保 DolphinDB Server 版本不低于 2.00.10 或 1.30.22`
 
 ### 调试过程
   启动调试后，VSCode 的界面上方会出现如下图所示的调试工具栏。从左到右的名称及对应的键盘快捷键分别为继续（F5）、逐过程（F10）、单步调试（F11）、单步跳出（Shift + F11）、重启（Ctrl + Shift + F5）和停止（Shift + F5）。其中继续、逐过程和单步调试是调试中最常用的三个功能，推荐使用快捷键来操作。
