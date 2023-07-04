@@ -173,7 +173,7 @@ export class Remote {
     private async send (message: SendMessage) {
         try {
             if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) 
-                throw new Error(t('调试服务器连接失败\n'))
+                throw new Error(t(' 调试服务器连接失败，可能是 DolphinDB Server 版本低于 2.00.9.7\n'))
             
             console.log(t('发送消息:'), message)
             this.websocket.send(this.pack(message))
