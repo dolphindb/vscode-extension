@@ -1,4 +1,4 @@
-# 调试
+# 使用VSCode插件调试脚本
 
 ## 概述
 DolphinDB 的 VSCode 插件提供针对用户脚本的调试功能，该功能满足实时追踪运行脚本、显示中间变量的值以及展示函数调用栈信息的用户需求，以利于用户写出更快更好的脚本。下面简单介绍一下该功能的几个组件。
@@ -12,6 +12,10 @@ DolphinDB 的 VSCode 插件提供针对用户脚本的调试功能，该功能�
 * Debug Adapter
   
   处理两侧的交互信息
+
+* DAP
+
+  Debug Adapter Protocol，由Microsoft提出的一种通用的Debug信息交互协议。
 
 * Debug Client
   
@@ -144,11 +148,6 @@ DolphinDB 的 VSCode 插件提供针对用户脚本的调试功能，该功能�
   点击删除所有断点<img src="images/debug/zh/delete-breakpoints.png" width='20' />可以删除所有断点，包括已经禁用的断点。
 
   <img src="images/debug/zh/breakpoints-manager.png" width='400' />
-
-### 调试控制台
-  调试控制台的位置在调试主界面的下方，如下图所示。在调试控制台中，我们可以看到程序的运行信息，例如，程序的输出信息、异常信息等等
-
-  <img src="images/debug/zh/step-out.png" width='400' />
 
 ### 多目标调试
   使用多目标调试很简单：在启动一个调试会话的同时, 只需启动另一个调试会话，VSCode 将自动切换到多目标模式：
