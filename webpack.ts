@@ -2,7 +2,7 @@ import { fileURLToPath } from 'url'
 
 import path from 'upath'
 
-import { default as Webpack, type Configuration, type Compiler, type Resolver, type Stats } from 'webpack'
+import { default as Webpack, type Configuration, type Compiler, type Stats } from 'webpack'
 
 import type { Options as TSLoaderOptions } from 'ts-loader'
 import type { Options as SassOptions } from 'sass-loader'
@@ -589,7 +589,6 @@ export async function build_package_json () {
                 // 上传按钮
                 'editor/title': [
                     {
-                        when: "editorLangId == 'dolphindb'",
                         command: 'dolphindb.upload_file',
                         group: 'navigation',
                     }
