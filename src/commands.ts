@@ -359,7 +359,7 @@ export const ddb_commands = [
     async function upload_file () {
         let { connection } = explorer
         
-                try {
+        try {
             await connection.connect()
         } catch(err) {
             window.showErrorMessage(err.message)
