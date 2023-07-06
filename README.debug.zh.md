@@ -1,4 +1,4 @@
-# 使用VSCode插件调试脚本
+# 使用 VSCode 插件调试脚本
 
 ## 概述
 DolphinDB 的 VSCode 插件提供针对用户脚本的调试功能，该功能满足实时追踪运行脚本、显示中间变量的值以及展示函数调用栈信息的用户需求，以利于用户写出更快更好的脚本。下面简单介绍一下该功能的几个组件。
@@ -15,7 +15,7 @@ DolphinDB 的 VSCode 插件提供针对用户脚本的调试功能，该功能�
 
 * DAP
 
-  Debug Adapter Protocol，由Microsoft提出的一种通用的Debug信息交互协议。
+  Debug Adapter Protocol，由 Microsoft 提出的一种通用的 Debug 信息交互协议
 
 * Debug Client
   
@@ -24,7 +24,7 @@ DolphinDB 的 VSCode 插件提供针对用户脚本的调试功能，该功能�
 
 ## 开始使用
 
-请运行 DolphinDB Server 并检查版本不低于 2.00.10 或 1.30.22，并按照下面的步骤进行调试
+使用不低于 2.00.10 或 1.30.22 版本的 DolphinDB Server，并按照下面的步骤进行调试
 
 ### 编写脚本
   
