@@ -1,7 +1,8 @@
 import dayjs from 'dayjs'
 import path from 'upath'
+import fs from 'fs'
 
-import { window, workspace, commands, ConfigurationTarget, ProgressLocation } from 'vscode'
+import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri } from 'vscode'
 
 import { Timer, delay, inspect } from 'xshell'
 
@@ -355,8 +356,8 @@ export const ddb_commands = [
     },
     
     
-    /** 上传文件预填写默认路径 `getHomeDir() + /scripts/ + 当前打开文件名` */
-    async function upload_file () {
+    /** 上传文件预填写默认路径 `getHomeDir() + /scripts/ + 需要上传的文件名` */
+    async function upload_file (fileInfo: Uri) {
         let { connection } = explorer
         
         try {
@@ -371,13 +372,14 @@ export const ddb_commands = [
         
         const fp_remote = await window.showInputBox({
             title: t('上传到服务器端的路径'),
-            value: `${path.normalizeTrim(fpd_home)}/scripts/${window.activeTextEditor.document.uri.fsPath.fname}`
+            value: `${path.normalizeTrim(fpd_home)}/scripts/${fileInfo.path.split('/').pop()}`
         })
         
         if (!fp_remote)
             return
         
-        await window.activeTextEditor.document.save()
+        const curDoc = workspace.textDocuments.find((doc) => doc.fileName === fileInfo.fsPath)
+        if (curDoc) await curDoc.save()
         
         const fpd_remote = fp_remote.fdir
         
@@ -386,7 +388,10 @@ export const ddb_commands = [
         ).value)
             await ddb.call('mkdir', [fpd_remote])
         
-        await ddb.call('saveTextFile', [get_text('all'), fp_remote])
+        fs.readFile(fileInfo.path.substring(1), 'utf8', async function (err, data) {
+            if (err) window.showErrorMessage(err.message)
+            await ddb.call('saveTextFile', [data, fp_remote])
+        })
         
         window.showInformationMessage(t('文件上传成功'))
     },
