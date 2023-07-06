@@ -594,14 +594,19 @@ export async function build_package_json () {
                     }
                 ],
                 
-                // 单元测试按钮
-                // 'explorer/context': [ 
-                //     {
-                //         when: 'resourceExtname == .dos',
-                //         command: 'dolphindb.unit_test',
-                //         group: '2_workspace' 
-                //     }
-                // ]
+                'explorer/context': [
+                    // 单元测试按钮 
+                    // {
+                    //     when: 'resourceExtname == .dos',
+                    //     command: 'dolphindb.unit_test',
+                    //     group: '2_workspace' 
+                    // }
+                    {
+                        command: "dolphindb.upload_file",
+                        group: "2_workspace",
+                        when: "!explorerResourceIsFolder"
+                    }
+                ]
             },
             
             breakpoints: [{ language: 'dolphindb' }],
