@@ -147,6 +147,9 @@ cd vscode-extension
 # 安装项目依赖
 pnpm install
 
+# 将 .vscode/settings.template.json 复制为 .vscode/settings.json
+cp .vscode/settings.template.json .vscode/settings.json
+
 # 参考 package.json 中的 scripts
 
 # 构建开发版本
