@@ -5,7 +5,7 @@ import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri
 
 import { Timer, delay, inspect } from 'xshell'
 
-import {  DdbConnectionError, DdbForm, DdbObj, DdbType, InspectOptions } from 'dolphindb'
+import { DdbConnectionError, DdbForm, DdbObj, DdbType, InspectOptions } from 'dolphindb'
 
 
 import { t } from './i18n/index.js'
