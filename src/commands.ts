@@ -395,8 +395,7 @@ export const ddb_commands = [
         if (!(
             await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])
         ).value)
-            await ddb.call('mkdir', [fpd_remote])
-         
+            await ddb.call('mkdir', [fpd_remote])        
         
         /* Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
         content must be a string or string vector which stores the text to save. */
