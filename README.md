@@ -137,6 +137,9 @@ cd vscode-extension
 # Install project dependencies
 pnpm install
 
+# copy .vscode/settings.template.json to .vscode/settings.json
+cp .vscode/settings.template.json .vscode/settings.json
+
 # Refer to scripts in package.json
 
 # Build the development version
