@@ -362,7 +362,7 @@ export const ddb_commands = [
         
         try {
             await connection.connect()
-        } catch(err) {
+        } catch (err) {
             window.showErrorMessage(err.message)
         }
         
@@ -372,14 +372,15 @@ export const ddb_commands = [
         
         const fp_remote = await window.showInputBox({
             title: t('上传到服务器端的路径'),
-            value: `${path.normalizeTrim(fpd_home)}/scripts/${fileInfo.path.split('/').pop()}`
+            value: `${path.normalizeTrim(fpd_home)}/scripts/${path.basename(fileInfo.path)}`
         })
         
         if (!fp_remote)
             return
         
-        const curDoc = workspace.textDocuments.find((doc) => doc.fileName === fileInfo.fsPath)
-        if (curDoc) await curDoc.save()
+        const curDoc = workspace.textDocuments.find(doc => doc.fileName === fileInfo.fsPath)
+        if (curDoc) 
+            await curDoc.save()
         
         const fpd_remote = fp_remote.fdir
         
@@ -388,10 +389,14 @@ export const ddb_commands = [
         ).value)
             await ddb.call('mkdir', [fpd_remote])
         
-        fs.readFile(fileInfo.path.substring(1), 'utf8', async function (err, data) {
-            if (err) window.showErrorMessage(err.message)
-            await ddb.call('saveTextFile', [data, fp_remote])
-        })
+        fs.promises.readFile(fileInfo.path.substring(1), 'utf8')
+            .then(async data => {
+                await ddb.call('saveTextFile', [data, fp_remote])
+            })
+            .catch( err => {
+                if (err) 
+                    window.showErrorMessage(err.message)
+            })
         
         window.showInformationMessage(t('文件上传成功'))
     },
