@@ -1,0 +1,26 @@
+diff --git a/lib/FileSystemInfo.js b/lib/FileSystemInfo.js
+index df01c158c126f50ca5642cf57376edef057ec689..0794a549b5fe67c7447b62e8a36236d6ba37f6e4 100644
+--- a/lib/FileSystemInfo.js
++++ b/lib/FileSystemInfo.js
+@@ -1498,7 +1498,7 @@ class FileSystemInfo {
+ 					resolveResults.set(key, undefined);
+ 					resolve(context, path, resolverContext, (err, _, result) => {
+ 						if (typeof expected === "string") {
+-							if (!err && result && result.path === expected) {
++							if (!err && result && result.path.toLowerCase() === expected.toLowerCase()) {
+ 								resolveResults.set(key, result.path);
+ 							} else {
+ 								invalidResolveResults.add(key);
+diff --git a/lib/WebpackOptionsApply.js b/lib/WebpackOptionsApply.js
+index b5a4867de96ec31e3bf6979e95d2086fe2bae7f1..504e3ff1f3b1ec6b0a5f5e1ad52463e9ac070362 100644
+--- a/lib/WebpackOptionsApply.js
++++ b/lib/WebpackOptionsApply.js
+@@ -583,7 +583,7 @@ class WebpackOptionsApply extends OptionsApply {
+ 			portableIds: options.optimization.portableRecords
+ 		}).apply(compiler);
+ 
+-		new WarnCaseSensitiveModulesPlugin().apply(compiler);
++		// new WarnCaseSensitiveModulesPlugin().apply(compiler);
+ 
+ 		const AddManagedPathsPlugin = require("./cache/AddManagedPathsPlugin");
+ 		new AddManagedPathsPlugin(
