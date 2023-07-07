@@ -1,6 +1,5 @@
 import dayjs from 'dayjs'
 import path from 'upath'
-import fs from 'fs'
 
 import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri } from 'vscode'
 
