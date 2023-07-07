@@ -6,7 +6,7 @@ import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri
 
 import { Timer, delay, inspect } from 'xshell'
 
-import { DdbConnectionError, DdbForm, DdbObj, DdbType, InspectOptions } from 'dolphindb'
+import { DdbBlob, DdbConnectionError, DdbForm, DdbObj, DdbType, InspectOptions } from 'dolphindb'
 
 
 import { t } from './i18n/index.js'
@@ -362,8 +362,9 @@ export const ddb_commands = [
         
         try {
             await connection.connect()
-        } catch (err) {
-            window.showErrorMessage(err.message)
+        } catch (error) {
+            window.showErrorMessage(error.message)
+            throw error
         }
         
         let { ddb } = connection
@@ -378,9 +379,17 @@ export const ddb_commands = [
         if (!fp_remote)
             return
         
-        const curDoc = workspace.textDocuments.find(doc => doc.fileName === fileInfo.fsPath)
-        if (curDoc) 
-            await curDoc.save()
+        let data: string
+        
+        if (fileInfo.scheme !== 'untitled') {
+            const curDoc = workspace.textDocuments.find(doc => doc.fileName === fileInfo.fsPath)
+            if (curDoc) 
+                await curDoc.save()
+            const decoder = new TextDecoder('utf-8')
+            data = decoder.decode(await workspace.fs.readFile(Uri.file(fileInfo.fsPath)))
+        } else 
+            data = get_text('all')
+        
         
         const fpd_remote = fp_remote.fdir
         
@@ -388,8 +397,10 @@ export const ddb_commands = [
             await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])
         ).value)
             await ddb.call('mkdir', [fpd_remote])
+         
         
-        const data = await fs.promises.readFile(fileInfo.fsPath, 'utf8')
+        /* Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
+        content must be a string or string vector which stores the text to save. */
         await ddb.call('saveTextFile', [data, fp_remote])
         
         window.showInformationMessage(t('文件上传成功'))
