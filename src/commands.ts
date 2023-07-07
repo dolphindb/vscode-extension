@@ -389,7 +389,7 @@ export const ddb_commands = [
         ).value)
             await ddb.call('mkdir', [fpd_remote])
         
-        const data = await fs.promises.readFile(fileInfo.path.substring(1), 'utf8')
+        const data = await fs.promises.readFile(fileInfo.fsPath, 'utf8')
         await ddb.call('saveTextFile', [data, fp_remote])
         
         window.showInformationMessage(t('文件上传成功'))
