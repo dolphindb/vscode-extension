@@ -41,7 +41,7 @@
         
         // --- features
         "preserveSymlinks": false,
-        "jsx": "react",
+        "jsx": "react-jsx",
         "removeComments": false,
         "preserveConstEnums": true,
         "forceConsistentCasingInFileNames": true,
