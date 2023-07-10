@@ -16,10 +16,10 @@
         "@svgr/webpack": "^8.0.1",
         "@types/koa": "^2.13.6",
         "@types/koa-compress": "^4.0.3",
-        "@types/node": "^20.4.0",
+        "@types/node": "^20.4.1",
         "@types/react": "^18.2.14",
         "@types/react-dom": "^18.2.6",
-        "@types/vscode": "^1.79.1",
+        "@types/vscode": "^1.80.0",
         "@types/ws": "^8.5.5",
         "@typescript-eslint/eslint-plugin": "^5.61.0",
         "@typescript-eslint/parser": "^5.61.0",
@@ -58,8 +58,7 @@
     },
     "pnpm": {
         "patchedDependencies": {
-            "koa@2.14.2": "patches/koa@2.14.2.patch",
-            "webpack@5.88.1": "patches/webpack@5.88.1.patch"
+            "koa@2.14.2": "patches/koa@2.14.2.patch"
         }
     }
 }
