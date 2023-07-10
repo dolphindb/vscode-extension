@@ -364,5 +364,8 @@
     },
     "发送消息错误:": {
         "en": "send message errored:"
+    },
+    "文件成功上传到: ": {
+        "en": "The file was successfully uploaded to: "
     }
 }

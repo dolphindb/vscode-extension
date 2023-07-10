@@ -396,7 +396,7 @@ export const ddb_commands = [
             // content must be a string or string vector which stores the text to save.
             await ddb.call('saveTextFile', [text, fp_remote])
             
-            window.showInformationMessage(t('文件上传成功'))
+            window.showInformationMessage(`${t('文件成功上传到: ')}${fp_remote}`)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
