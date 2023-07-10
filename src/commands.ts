@@ -355,8 +355,8 @@ export const ddb_commands = [
     },
     
     
-    /** 上传文件预填写默认路径 `getHomeDir() + /scripts/ + 需要上传的文件名` */
-    async function upload_file (fileInfo: Uri) {
+    /** 上传文件预填写默认路径 `getHomeDir() + /uploads/ + 需要上传的文件名` */
+    async function upload_file (uri: Uri) {
         let { connection } = explorer
         
         try {
@@ -372,23 +372,21 @@ export const ddb_commands = [
         
         const fp_remote = await window.showInputBox({
             title: t('上传到服务器端的路径'),
-            value: `${path.normalizeTrim(fpd_home)}/scripts/${path.basename(fileInfo.path)}`
+            value: `${path.normalizeTrim(fpd_home)}/uploads/${path.basename(uri.path)}`
         })
         
         if (!fp_remote)
             return
         
-        let data: string
-        
-        if (fileInfo.scheme !== 'untitled') {
-            const curDoc = workspace.textDocuments.find(doc => doc.fileName === fileInfo.fsPath)
-            if (curDoc) 
-                await curDoc.save()
-            const decoder = new TextDecoder('utf-8')
-            data = decoder.decode(await workspace.fs.readFile(Uri.file(fileInfo.fsPath)))
-        } else 
-            data = get_text('all')
-        
+        let text: string
+        if (uri.scheme === 'untitled')
+            text = get_text('all')
+        else {
+            await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
+            text = new TextDecoder('utf-8').decode(
+                await workspace.fs.readFile(Uri.file(uri.fsPath))
+            )
+        }
         
         const fpd_remote = fp_remote.fdir
         
@@ -396,10 +394,10 @@ export const ddb_commands = [
             await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])
         ).value)
             await ddb.call('mkdir', [fpd_remote])
-            
-        /* Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
-        content must be a string or string vector which stores the text to save. */
-        await ddb.call('saveTextFile', [data, fp_remote])
+        
+        // Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
+        // content must be a string or string vector which stores the text to save.
+        await ddb.call('saveTextFile', [text, fp_remote])
         
         window.showInformationMessage(t('文件上传成功'))
     },
