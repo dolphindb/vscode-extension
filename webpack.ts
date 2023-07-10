@@ -602,9 +602,9 @@ export async function build_package_json () {
                     //     group: '2_workspace' 
                     // }
                     {
-                        command: "dolphindb.upload_file",
-                        group: "2_workspace",
-                        when: "!explorerResourceIsFolder"
+                        command: 'dolphindb.upload_file',
+                        group: '2_workspace',
+                        when: '!explorerResourceIsFolder'
                     }
                 ]
             },
