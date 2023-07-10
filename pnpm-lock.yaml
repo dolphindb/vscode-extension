@@ -65,8 +65,8 @@ dependencies:
     specifier: ^8.13.0
     version: 8.13.0
   xshell:
-    specifier: ^1.0.36
-    version: 1.0.36(react-dom@18.2.0)
+    specifier: ^1.0.37
+    version: 1.0.37(react-dom@18.2.0)
 
 devDependencies:
   '@svgr/webpack':
@@ -748,11 +748,6 @@ packages:
     engines: {node: '>=6.9.0'}
     dev: true
 
-  /@babel/helper-string-parser@7.21.5:
-    resolution: {integrity: sha512-5pTUx3hAJaZIdW99sJ6ZUUgWq/Y+Hja7TowEnLNMm1VivRgZQL3vpBY3qUACVsvw+yQU6+YgfBVmcbLaZtrA1w==}
-    engines: {node: '>=6.9.0'}
-    dev: false
-
   /@babel/helper-string-parser@7.22.5:
     resolution: {integrity: sha512-mM4COjgZox8U+JcXQwPijIZLElkgEpO5rsERVDJTc2qfCDfERyob6k5WegS14SX18IIjv+XD+GrqNumY5JRCDw==}
     engines: {node: '>=6.9.0'}
@@ -761,6 +756,7 @@ packages:
   /@babel/helper-validator-identifier@7.19.1:
     resolution: {integrity: sha512-awrNfaMtnHUr653GgGEs++LlAvW6w+DcPrOliSMXWCKo597CwL5Acf/wWdNkf/tfEQE3mjkeD1YOVZOUV/od1w==}
     engines: {node: '>=6.9.0'}
+    dev: true
 
   /@babel/helper-validator-identifier@7.22.5:
     resolution: {integrity: sha512-aJXu+6lErq8ltp+JhkJUfk1MTGyuA4v7f3pA+BJ5HLfNC6nAQ0Cpi9uOquUj8Hehg0aUiHzWQbOVJGao6ztBAQ==}
@@ -842,7 +838,7 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
     dependencies:
-      '@babel/types': 7.22.4
+      '@babel/types': 7.22.5
     dev: false
 
   /@babel/plugin-bugfix-safari-id-destructuring-collision-in-function-expression@7.18.6(@babel/core@7.21.4):
@@ -1847,15 +1843,6 @@ packages:
       to-fast-properties: 2.0.0
     dev: true
 
-  /@babel/types@7.22.4:
-    resolution: {integrity: sha512-Tx9x3UBHTTsMSW85WB2kphxYQVvrZ/t1FxD88IpSgIjiUJlCm9z+xWIDwyo1vffTwSqteqyznB8ZE9vYYk16zA==}
-    engines: {node: '>=6.9.0'}
-    dependencies:
-      '@babel/helper-string-parser': 7.21.5
-      '@babel/helper-validator-identifier': 7.19.1
-      to-fast-properties: 2.0.0
-    dev: false
-
   /@babel/types@7.22.5:
     resolution: {integrity: sha512-zo3MIHGOkPOfoRXitsgHLjEXmlDaD/5KU1Uzuc9GNiZPhSqVxVRtxuPaSBZDsYZ9qV88AjtMtWW7ww98loJ9KA==}
     engines: {node: '>=6.9.0'}
@@ -2773,23 +2760,23 @@ packages:
       negotiator: 0.6.3
     dev: false
 
-  /acorn-class-fields@0.3.7(acorn@8.8.2):
+  /acorn-class-fields@0.3.7(acorn@8.10.0):
     resolution: {integrity: sha512-jdUWSFce0fuADUljmExz4TWpPkxmRW/ZCPRqeeUzbGf0vFUcpQYbyq52l75qGd0oSwwtAepeL6hgb/naRgvcKQ==}
     engines: {node: '>=4.8.2'}
     peerDependencies:
       acorn: ^6 || ^7 || ^8
     dependencies:
-      acorn: 8.8.2
-      acorn-private-class-elements: 0.2.7(acorn@8.8.2)
+      acorn: 8.10.0
+      acorn-private-class-elements: 0.2.7(acorn@8.10.0)
     dev: false
 
-  /acorn-dynamic-import@4.0.0(acorn@8.8.2):
+  /acorn-dynamic-import@4.0.0(acorn@8.10.0):
     resolution: {integrity: sha512-d3OEjQV4ROpoflsnUA8HozoIR504TFxNivYEUi6uwz0IYhBkTDXGuWlNdMtybRt3nqVx/L6XqMt0FxkXuWKZhw==}
     deprecated: This is probably built in to whatever tool you're using. If you still need it... idk
     peerDependencies:
       acorn: ^6.0.0
     dependencies:
-      acorn: 8.8.2
+      acorn: 8.10.0
     dev: false
 
   /acorn-import-assertions@1.9.0(acorn@8.8.2):
@@ -2806,55 +2793,46 @@ packages:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
     dependencies:
       acorn: 8.10.0
-    dev: true
 
-  /acorn-jsx@5.3.2(acorn@8.8.2):
-    resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
-    peerDependencies:
-      acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
-    dependencies:
-      acorn: 8.8.2
-    dev: false
-
-  /acorn-private-class-elements@0.2.7(acorn@8.8.2):
+  /acorn-private-class-elements@0.2.7(acorn@8.10.0):
     resolution: {integrity: sha512-+GZH2wOKNZOBI4OOPmzpo4cs6mW297sn6fgIk1dUI08jGjhAaEwvC39mN2gJAg2lmAQJ1rBkFqKWonL3Zz6PVA==}
     engines: {node: '>=4.8.2'}
     peerDependencies:
       acorn: ^6.1.0 || ^7 || ^8
     dependencies:
-      acorn: 8.8.2
+      acorn: 8.10.0
     dev: false
 
-  /acorn-private-methods@0.3.3(acorn@8.8.2):
+  /acorn-private-methods@0.3.3(acorn@8.10.0):
     resolution: {integrity: sha512-46oeEol3YFvLSah5m9hGMlNpxDBCEkdceJgf01AjqKYTK9r6HexKs2rgSbLK81pYjZZMonhftuUReGMlbbv05w==}
     engines: {node: '>=4.8.2'}
     peerDependencies:
       acorn: ^6 || ^7 || ^8
     dependencies:
-      acorn: 8.8.2
-      acorn-private-class-elements: 0.2.7(acorn@8.8.2)
+      acorn: 8.10.0
+      acorn-private-class-elements: 0.2.7(acorn@8.10.0)
     dev: false
 
-  /acorn-stage3@4.0.0(acorn@8.8.2):
+  /acorn-stage3@4.0.0(acorn@8.10.0):
     resolution: {integrity: sha512-BR+LaADtA6GTB5prkNqWmlmCLYmkyW0whvSxdHhbupTaro2qBJ95fJDEiRLPUmiACGHPaYyeH9xmNJWdGfXRQw==}
     engines: {node: '>=4.8.2'}
     peerDependencies:
       acorn: ^7.4 || ^8
     dependencies:
-      acorn: 8.8.2
-      acorn-class-fields: 0.3.7(acorn@8.8.2)
-      acorn-private-methods: 0.3.3(acorn@8.8.2)
-      acorn-static-class-features: 0.2.4(acorn@8.8.2)
+      acorn: 8.10.0
+      acorn-class-fields: 0.3.7(acorn@8.10.0)
+      acorn-private-methods: 0.3.3(acorn@8.10.0)
+      acorn-static-class-features: 0.2.4(acorn@8.10.0)
     dev: false
 
-  /acorn-static-class-features@0.2.4(acorn@8.8.2):
+  /acorn-static-class-features@0.2.4(acorn@8.10.0):
     resolution: {integrity: sha512-5X4mpYq5J3pdndLmIB0+WtFd/mKWnNYpuTlTzj32wUu/PMmEGOiayQ5UrqgwdBNiaZBtDDh5kddpP7Yg2QaQYA==}
     engines: {node: '>=4.8.2'}
     peerDependencies:
       acorn: ^6.1.0 || ^7 || ^8
     dependencies:
-      acorn: 8.8.2
-      acorn-private-class-elements: 0.2.7(acorn@8.8.2)
+      acorn: 8.10.0
+      acorn-private-class-elements: 0.2.7(acorn@8.10.0)
     dev: false
 
   /acorn-walk@8.2.0:
@@ -2866,12 +2844,12 @@ packages:
     resolution: {integrity: sha512-F0SAmZ8iUtS//m8DmCTA0jlh6TDKkHQyK6xc6V4KDTyZKA9dnvX9/3sRTVQrWm79glUAZbnmmNcdYwUIHWVybw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
-    dev: true
 
   /acorn@8.8.2:
     resolution: {integrity: sha512-xjIYgE8HBrkpd/sJqOGNspf8uHG+NOHGOw6a/Urj8taM2EXfdNAH2oFcPeIFfsv3+kz/mJrS5VuMqbNLjCa2vw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
+    dev: true
 
   /ajv-keywords@3.5.2(ajv@6.12.6):
     resolution: {integrity: sha512-5p6WTN0DdTGVQk6VjcEju19IgaHudalcfabD7yhDGeA6bcQnmL+CpveLJq/3hvfwd1aof6L386Ougkx6RfyMIQ==}
@@ -3702,7 +3680,7 @@ packages:
       dayjs: 1.11.9
       ipaddr.js: 2.1.0
       tslib: 2.6.0
-      xshell: 1.0.36(react-dom@18.2.0)
+      xshell: 1.0.37(react-dom@18.2.0)
     transitivePeerDependencies:
       - bufferutil
       - react-dom
@@ -4192,7 +4170,7 @@ packages:
     resolution: {integrity: sha512-MGIE4HOvQCeUCzmlHs0vXpih4ysz4wg9qiSAu6cd42lVwPbTM1TjV7RusoyQqMmk/95gdQZX72u+YW+c3eEpFQ==}
     engines: {node: '>=14.14'}
     dependencies:
-      graceful-fs: 4.2.10
+      graceful-fs: 4.2.11
       jsonfile: 6.1.0
       universalify: 2.0.0
     dev: false
@@ -4201,7 +4179,7 @@ packages:
     resolution: {integrity: sha512-+vSd9frUnapVC2RZYfL3FCB2p3g4TBhaUmrsWlSudsGdnxIuUvBB2QM1VZeBtc49QFwrp+wQLrDs3+xxDgI5gQ==}
     engines: {node: '>= 0.10'}
     dependencies:
-      graceful-fs: 4.2.10
+      graceful-fs: 4.2.11
       through2: 2.0.5
     dev: false
 
@@ -4361,6 +4339,7 @@ packages:
 
   /graceful-fs@4.2.10:
     resolution: {integrity: sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA==}
+    dev: true
 
   /graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
@@ -4463,10 +4442,10 @@ packages:
     engines: {node: '>=12'}
     hasBin: true
     dependencies:
-      acorn: 8.8.2
-      acorn-dynamic-import: 4.0.0(acorn@8.8.2)
-      acorn-jsx: 5.3.2(acorn@8.8.2)
-      acorn-stage3: 4.0.0(acorn@8.8.2)
+      acorn: 8.10.0
+      acorn-dynamic-import: 4.0.0(acorn@8.10.0)
+      acorn-jsx: 5.3.2(acorn@8.10.0)
+      acorn-stage3: 4.0.0(acorn@8.10.0)
       acorn-walk: 8.2.0
       chalk: 4.1.2
       clone-deep: 4.0.1
@@ -6548,13 +6527,6 @@ packages:
     engines: {node: '>=10.0.0'}
     dev: false
 
-  /streamx@2.13.2:
-    resolution: {integrity: sha512-+TWqixPhGDXEG9L/XczSbhfkmwAtGs3BJX5QNU6cvno+pOLKeszByWcnaTu6dg8efsTYqR8ZZuXWHhZfgrxMvA==}
-    dependencies:
-      fast-fifo: 1.1.0
-      queue-tick: 1.0.1
-    dev: false
-
   /streamx@2.15.0:
     resolution: {integrity: sha512-HcxY6ncGjjklGs1xsP1aR71INYcsXFJet5CU1CHqihQ2J5nOsbd4OjgjHO42w/4QNv9gZb3BueV+Vxok5pLEXg==}
     dependencies:
@@ -6744,7 +6716,7 @@ packages:
   /teex@1.0.1:
     resolution: {integrity: sha512-eYE6iEI62Ni1H8oIa7KlDU6uQBtqr4Eajni3wX7rpfXD8ysFx8z0+dri+KWEPWpBsxXfxu58x/0jvTVT1ekOSg==}
     dependencies:
-      streamx: 2.13.2
+      streamx: 2.15.0
     dev: false
 
   /terser-webpack-plugin@5.3.8(webpack@5.88.1):
@@ -7084,7 +7056,7 @@ packages:
     dependencies:
       fs-mkdirp-stream: 1.0.0
       glob-stream: 6.1.0
-      graceful-fs: 4.2.10
+      graceful-fs: 4.2.11
       is-valid-glob: 1.0.0
       lazystream: 1.0.1
       lead: 1.0.0
@@ -7127,7 +7099,7 @@ packages:
     dependencies:
       append-buffer: 1.0.2
       convert-source-map: 1.9.0
-      graceful-fs: 4.2.10
+      graceful-fs: 4.2.11
       normalize-path: 2.1.1
       now-and-later: 2.0.1
       remove-bom-buffer: 3.0.0
@@ -7287,8 +7259,8 @@ packages:
         optional: true
     dev: false
 
-  /xshell@1.0.36(react-dom@18.2.0):
-    resolution: {integrity: sha512-+vM11F4dJh/wLuoKuO3rDOpIHyK3yia8I/D68cM9emyaL2K19ILmP7oHSFOkq9xzH6ayPtAaLAsIcHgfOjewrg==}
+  /xshell@1.0.37(react-dom@18.2.0):
+    resolution: {integrity: sha512-D0ATaSv5uRMrpfveaRtsMeuyM/pxCvD+uO62WqKJ0rxRoBeLvENSyHmnnn6qRNWCzDoq+IjVeoVF/xNpvBkQjg==}
     engines: {node: '>=20.3.0', vscode: '>=1.79.0'}
     hasBin: true
     dependencies:
