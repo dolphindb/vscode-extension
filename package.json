@@ -1,7 +1,7 @@
 {
     "name": "dolphindb-vscode",
     "type": "module",
-    "version": "2.0.971",
+    "version": "2.0.972",
     "engines": {
         "vscode": ">=1.68.0"
     },
@@ -21,8 +21,8 @@
         "@types/react-dom": "^18.2.6",
         "@types/vscode": "^1.80.0",
         "@types/ws": "^8.5.5",
-        "@typescript-eslint/eslint-plugin": "^5.61.0",
-        "@typescript-eslint/parser": "^5.61.0",
+        "@typescript-eslint/eslint-plugin": "^6.0.0",
+        "@typescript-eslint/parser": "^6.0.0",
         "css-loader": "^6.8.1",
         "eslint": "^8.44.0",
         "eslint-plugin-react": "^7.32.2",
@@ -41,9 +41,9 @@
         "@koa/cors": "^4.0.0",
         "@vscode/debugadapter": "^1.61.0",
         "@vscode/debugprotocol": "^1.61.0",
-        "antd": "^5.6.4",
+        "antd": "^5.7.0",
         "dayjs": "^1.11.9",
-        "dolphindb": "^2.0.978",
+        "dolphindb": "^2.0.979",
         "koa": "^2.14.2",
         "koa-compress": "^5.1.1",
         "koa-useragent": "^4.1.0",
@@ -54,7 +54,7 @@
         "tslib": "^2.6.0",
         "upath": "^2.0.1",
         "ws": "^8.13.0",
-        "xshell": "^1.0.37"
+        "xshell": "^1.0.38"
     },
     "pnpm": {
         "patchedDependencies": {
