@@ -93,13 +93,13 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         
         this.connections = config
             .get<{ url: string, name?: string, sql?: string }[]>('connections')
-            .map(({ url, name, ...options }) => {
+            .map(({ url, name, ...options }) =>
                 // 传入的 config 中 sql 为 string 类型，需要将其转换为对应的 SqlStandard 类型
-                return new DdbConnection(url, name, {
+                new DdbConnection(url, name, {
                     ...options,
                     sql: SqlStandard[options.sql] as SqlStandard,
                 })
-            })
+            )
         
         this.connection = this.connections[0]
         if (this.connection)
