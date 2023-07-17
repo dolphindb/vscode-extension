@@ -389,6 +389,16 @@ export async function build_package_json () {
                                             en: '(DolphinDB Server version must be above v2.10.0) Use Python Parser to interpret and execute scripts, the default is false'
                                         },
                                     },
+                                    // 如果类型为 SqlStandard，json 内无法正常使用枚举
+                                    {
+                                        name: 'sql',
+                                        type: 'number',
+                                        default: 0,
+                                        description: {
+                                            zh: '设置当前会话执行的 sql 标准, 0代表DolphinDB, 1代表Oracle, 2代表MySQL, 默认 DolphinDB',
+                                            en: 'set sql standrd flag, 0 represents DolphinDB, 1 represents Oracle, 2 represent MySQL, default DolphinDB'
+                                        },
+                                    },
                                     {
                                         name: 'verbose',
                                         type: 'boolean',

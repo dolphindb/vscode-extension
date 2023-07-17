@@ -24,6 +24,7 @@ import { inspect, assert, defer, delay } from 'xshell'
 
 import {
     DDB,
+    SqlStandard,
     DdbForm,
     DdbObj,
     DdbType,
@@ -89,6 +90,8 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         const config = workspace.getConfiguration('dolphindb')
         
         this.single_connection_mode = config.get<boolean>('single_connection_mode')
+        
+        console.log(config);
         
         this.connections = config
             .get<{ url: string, name?: string }[]>('connections')
@@ -339,6 +342,8 @@ export class DdbConnection extends TreeItem {
         password: '123456',
         
         python: false,
+        
+        sql: SqlStandard.DolphinDB,
         
         verbose: false,
     }
