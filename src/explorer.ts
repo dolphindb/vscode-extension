@@ -91,17 +91,14 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         
         this.single_connection_mode = config.get<boolean>('single_connection_mode')
         
-        console.log(config);
-        
         this.connections = config
             .get<{ url: string, name?: string, sql?: string }[]>('connections')
             .map(({ url, name, ...options }) => {
                 // 传入的 config 中 sql 为 string 类型，需要将其转换为对应的 SqlStandard 类型
-                let option = {
+                return new DdbConnection(url, name, {
                     ...options,
                     sql: SqlStandard[options.sql] as SqlStandard,
-                }
-                return new DdbConnection(url, name, option)
+                })
             })
         
         this.connection = this.connections[0]
@@ -392,7 +389,7 @@ export class DdbConnection extends TreeItem {
         }
         
         this.name = name
-
+        
         for (const key in this.options) {
             const value = options[key]
             if (value !== undefined)

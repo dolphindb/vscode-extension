@@ -391,11 +391,11 @@ export async function build_package_json () {
                                     },
                                     {
                                         name: 'sql',
-                                        enum: ["DolphinDB", "Oracle", "MySQL"],
-                                        default: "DolphinDB",
+                                        enum: ['DolphinDB', 'Oracle', 'MySQL'],
+                                        default: 'DolphinDB',
                                         description: {
                                             zh: '设置当前会话执行的 sql 标准, 默认 DolphinDB',
-                                            en: 'set sql standrd flag, default DolphinDB'
+                                            en: 'Sets the SQL standard for the execution of the current session, default DolphinDB'
                                         },
                                     },
                                     {
