@@ -122,7 +122,7 @@ function DataView () {
     
     const { type, data } = result
     
-    return <ConfigProvider locale={locales[locale_names[language]]} autoInsertSpaceInButton={false}>
+    return <ConfigProvider locale={locales[locale_names[language]]} autoInsertSpaceInButton={false} theme={{ hashed: false }}>
         <div className='result page'>{
             type === 'object' ?
                 <Obj obj={data} remote={remote} ctx='page' options={options} />
