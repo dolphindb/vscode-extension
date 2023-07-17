@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import path from 'upath'
 
-import { window, workspace, commands, ConfigurationTarget, ProgressLocation } from 'vscode'
+import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri } from 'vscode'
 
 import { Timer, delay, inspect } from 'xshell'
 
@@ -355,36 +355,52 @@ export const ddb_commands = [
     },
     
     
-    /** 上传文件预填写默认路径 `getHomeDir() + /scripts/ + 当前打开文件名` */
-    async function upload_file () {
-        let { connection } = explorer
-        
-        await connection.connect()
-        
-        let { ddb } = connection
-        
-        let { value: fpd_home } = await ddb.call<DdbObj<string>>('getHomeDir')
-        
-        const fp_remote = await window.showInputBox({
-            title: t('上传到服务器端的路径'),
-            value: `${path.normalizeTrim(fpd_home)}/scripts/${window.activeTextEditor.document.uri.fsPath.fname}`
-        })
-        
-        if (!fp_remote)
-            return
-        
-        await window.activeTextEditor.document.save()
-        
-        const fpd_remote = fp_remote.fdir
-        
-        if (!(
-            await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])
-        ).value)
-            await ddb.call('mkdir', [fpd_remote])
-        
-        await ddb.call('saveTextFile', [get_text('all'), fp_remote])
-        
-        window.showInformationMessage(t('文件上传成功'))
+    /** 上传文件预填写默认路径 `getHomeDir() + /uploads/ + 需要上传的文件名` */
+    async function upload_file (uri: Uri) {
+        // 文件上点右键 upload 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
+        try {
+            let { connection } = explorer
+            
+            await connection.connect()
+            
+            let { ddb } = connection
+            
+            let { value: fpd_home } = await ddb.call<DdbObj<string>>('getHomeDir')
+            
+            const fp_remote = await window.showInputBox({
+                title: t('上传到服务器端的路径'),
+                value: `${path.normalizeTrim(fpd_home)}/uploads/${path.basename(uri.path)}`
+            })
+            
+            if (!fp_remote)
+                return
+            
+            let text: string
+            if (uri.scheme === 'untitled')
+                text = get_text('all')
+            else {
+                await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
+                text = new TextDecoder('utf-8').decode(
+                    await workspace.fs.readFile(Uri.file(uri.fsPath))
+                )
+            }
+            
+            const fpd_remote = fp_remote.fdir
+            
+            if (!(
+                await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])
+            ).value)
+                await ddb.call('mkdir', [fpd_remote])
+            
+            // Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
+            // content must be a string or string vector which stores the text to save.
+            await ddb.call('saveTextFile', [text, fp_remote])
+            
+            window.showInformationMessage(`${t('文件成功上传到: ')}${fp_remote}`)
+        } catch (error) {
+            window.showErrorMessage(error.message)
+            throw error
+        }
     },
     
     

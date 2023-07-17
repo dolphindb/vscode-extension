@@ -21,8 +21,8 @@ import package_json from './package.json' assert { type: 'json' }
 
 export const fpd_root = `${path.dirname(fileURLToPath(import.meta.url))}/`
 
-const ramdisk = fexists('t:/TEMP/', { print: false })
-const fpd_ramdisk_root = 't:/2/ddb/ext/' as const
+const ramdisk = fexists('T:/TEMP/', { print: false })
+const fpd_ramdisk_root = 'T:/2/ddb/ext/' as const
 
 export const fpd_node_modules = `${fpd_root}node_modules/`
 
@@ -594,14 +594,19 @@ export async function build_package_json () {
                     }
                 ],
                 
-                // 单元测试按钮
-                // 'explorer/context': [ 
-                //     {
-                //         when: 'resourceExtname == .dos',
-                //         command: 'dolphindb.unit_test',
-                //         group: '2_workspace' 
-                //     }
-                // ]
+                'explorer/context': [
+                    // 单元测试按钮 
+                    // {
+                    //     when: 'resourceExtname == .dos',
+                    //     command: 'dolphindb.unit_test',
+                    //     group: '2_workspace' 
+                    // }
+                    {
+                        command: 'dolphindb.upload_file',
+                        group: '2_workspace',
+                        when: '!explorerResourceIsFolder'
+                    }
+                ]
             },
             
             breakpoints: [{ language: 'dolphindb' }],
