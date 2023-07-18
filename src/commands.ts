@@ -372,8 +372,11 @@ export const ddb_commands = [
                 value: `${path.normalizeTrim(fpd_home)}/uploads/${path.basename(uri.path)}`
             })
             
-            if (!fp_remote)
+            if (!fp_remote) {
+                if (fp_remote === '') 
+                    throw new Error(t('文件上传路径不能为空'))
                 return
+            }
             
             let text: string
             if (uri.scheme === 'untitled')

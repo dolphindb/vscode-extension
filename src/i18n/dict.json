@@ -83,6 +83,9 @@
     "文件上传成功": {
         "en": "File uploaded successfully"
     },
+    "文件上传路径不能为空": {
+        "en": "File upload path cannot be empty"
+    },
     "切换连接:": {
         "en": "Change connection:"
     },
