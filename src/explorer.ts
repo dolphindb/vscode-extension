@@ -24,6 +24,7 @@ import { inspect, assert, defer, delay } from 'xshell'
 
 import {
     DDB,
+    SqlStandard,
     DdbForm,
     DdbObj,
     DdbType,
@@ -91,8 +92,14 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         this.single_connection_mode = config.get<boolean>('single_connection_mode')
         
         this.connections = config
-            .get<{ url: string, name?: string }[]>('connections')
-            .map(({ url, name, ...options }) => new DdbConnection(url, name, options))
+            .get<{ url: string, name?: string, sql?: string }[]>('connections')
+            .map(({ url, name, ...options }) =>
+                // 传入的 config 中 sql 为 string 类型，需要将其转换为对应的 SqlStandard 类型
+                new DdbConnection(url, name, {
+                    ...options,
+                    sql: SqlStandard[options.sql] as SqlStandard,
+                })
+            )
         
         this.connection = this.connections[0]
         if (this.connection)
@@ -339,6 +346,8 @@ export class DdbConnection extends TreeItem {
         password: '123456',
         
         python: false,
+        
+        sql: SqlStandard.DolphinDB,
         
         verbose: false,
     }
