@@ -32,8 +32,8 @@ dependencies:
     specifier: ^1.11.9
     version: 1.11.9
   dolphindb:
-    specifier: ^2.0.1001
-    version: 2.0.1001(react-dom@18.2.0)
+    specifier: ^2.0.1002
+    version: 2.0.1002(react-dom@18.2.0)
   koa:
     specifier: ^2.14.2
     version: 2.14.2(patch_hash=p7ybv54qzz4vmboaajk6ep5psi)
@@ -3646,8 +3646,8 @@ packages:
       esutils: 2.0.3
     dev: true
 
-  /dolphindb@2.0.1001(react-dom@18.2.0):
-    resolution: {integrity: sha512-uRXKkoEtOuxwoAuadErOYiIYwq8QJm3+/cjvevgJoDnty7Q6P3ETwVPt0LqJeJoF+d6Nte3Rts+K+q/6rrSXvQ==}
+  /dolphindb@2.0.1002(react-dom@18.2.0):
+    resolution: {integrity: sha512-14rPdK1DCAHpr1fLAnsmDFtUk2pk0f16SX6q4sqzbq4NgJdCWTaDCbZarzQHrSuIcvUPM2OEz+DvTjIfMYmQmg==}
     engines: {node: '>=19.8.1'}
     dependencies:
       dayjs: 1.11.9
