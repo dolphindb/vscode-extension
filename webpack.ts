@@ -613,7 +613,6 @@ export async function build_package_json () {
                     {
                         command: 'dolphindb.upload_file',
                         group: '2_workspace',
-                        when: '!explorerResourceIsFolder'
                     }
                 ]
             },
