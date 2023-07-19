@@ -379,10 +379,6 @@ export const ddb_commands = [
                 return
             }
             
-            
-            const fpd_remote = fp_remote.fdir
-            
-            
             // vscode 有没有判断文件和目录的方法
             let is_dir = false
             try { 
