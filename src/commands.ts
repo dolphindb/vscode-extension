@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import path from 'upath'
 
-import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri } from 'vscode'
+import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri, FileType } from 'vscode'
 
 import { Timer, delay, inspect } from 'xshell'
 
@@ -355,10 +355,15 @@ export const ddb_commands = [
     },
     
     
-    /** 上传文件预填写默认路径 `getHomeDir() + /uploads/ + 需要上传的文件名` */
-    async function upload_file (uri: Uri) {
+    /** 上传文件预填写默认路径 `getHomeDir() + /uploads/ + 需要上传的文件名`
+        uri为右键选中的文件，uri_list为所有选中的文件列表  */
+    async function upload_file (uri: Uri, uri_list: Uri[]) {
         // 文件上点右键 upload 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
+            
+            // 是否为多文件上传
+            const is_multiple = uri_list.length > 1
+            
             let { connection } = explorer
                      
             await connection.connect()
@@ -369,7 +374,7 @@ export const ddb_commands = [
             
             const fp_remote = await window.showInputBox({
                 title: t('上传到服务器端的路径'),
-                value: `${path.normalizeTrim(fpd_home)}/uploads/${path.basename(uri.path)}`
+                value: `${path.normalizeTrim(fpd_home)}/uploads/${is_multiple ? '' : path.basename(uri.path)}`
             })
             
             
@@ -379,20 +384,22 @@ export const ddb_commands = [
                 return
             }
             
-            // vscode 有没有判断文件和目录的方法
-            let is_dir = false
-            try { 
-                await workspace.fs.readDirectory(uri)
-                is_dir = true
-            } catch (e) { }
+            console.log(uri_list, 'uri_list')
             
             
-            if (is_dir)
-                upload_dir(uri, fp_remote, ddb)
-            else
-                upload_single_file(uri, fp_remote, ddb)
-               
-            
+            uri_list.forEach(async file_uri => { 
+                const { type } = await workspace.fs.stat(file_uri)
+                
+                // 多文件场景下填入的文件夹名称为所有文件的父级目录，需要手动为每个文件拼接路径
+                const file_name = file_uri.fsPath.split('/').pop()
+                const file_path = is_multiple ? fp_remote + '/' + file_name : fp_remote
+                
+                if (type === FileType.Directory)
+                    upload_dir(file_uri, file_path, ddb)
+                else
+                    upload_single_file(file_uri, file_path, ddb)
+            })
+                 
             window.showInformationMessage(`${t('文件成功上传到: ')}${fp_remote}`)
         } catch (error) {
             window.showErrorMessage(error.message)
