@@ -10,5 +10,6 @@
         "source.fixAll": true,
         "source.organizeImports": false
     },
+    "git.pruneOnFetch": true,
     "git-graph.dialog.fetchRemote.prune": true
 }
