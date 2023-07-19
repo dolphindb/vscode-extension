@@ -9,5 +9,6 @@
     "editor.codeActionsOnSave": {
         "source.fixAll": true,
         "source.organizeImports": false
-    }
+    },
+    "git-graph.dialog.fetchRemote.prune": true
 }
