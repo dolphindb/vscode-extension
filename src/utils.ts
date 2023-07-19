@@ -1,9 +1,13 @@
+import { DDB, DdbObj } from 'dolphindb'
 import {
     window,
     Position,
     Range,
     ConfigurationTarget,
-    commands
+    commands,
+    Uri,
+    workspace,
+    FileType
 } from 'vscode'
 
 
@@ -89,4 +93,48 @@ export function open_workbench_settings_ui (target: ConfigurationTarget, options
     
     if (target === ConfigurationTarget.WorkspaceFolder) 
         return commands.executeCommand('workbench.action.openFolderSettings', options)
+}
+
+
+export const upload_single_file = async (file_uri: Uri, path: string, ddb: DDB) => { 
+    if (!(
+        await ddb.call<DdbObj<boolean>>('exists', [path])
+    ).value)
+        await ddb.call('mkdir', [path])
+    
+        
+    let text: string
+    if (file_uri.scheme === 'untitled')
+        text = get_text('all')
+    else {
+        await workspace.textDocuments.find(doc => doc.fileName === file_uri.fsPath)?.save()
+        text = new TextDecoder('utf-8').decode(
+            await workspace.fs.readFile(file_uri)
+        )
+    }
+    
+    // Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
+    // content must be a string or string vector which stores the text to save.
+    await ddb.call('saveTextFile', [text, path])
+}
+
+
+export const upload_dir = async (uri: Uri, path: string, ddb: DDB) => { 
+    if (!(
+        await ddb.call<DdbObj<boolean>>('exists', [path])
+    ).value)
+        await ddb.call('mkdir', [path])
+    
+    const sub_files: Array<[string, FileType]> = await workspace.fs.readDirectory(uri)
+    
+    sub_files.forEach(([name, file_type]) => { 
+        const upload_path = path + '/' + name
+        const file_uri = Uri.file(uri.fsPath + '/' + name)
+        if (file_type === FileType.File)  
+            upload_single_file(file_uri, upload_path, ddb)
+        
+        else
+            upload_dir(file_uri, upload_path, ddb)
+    })
+    
 }

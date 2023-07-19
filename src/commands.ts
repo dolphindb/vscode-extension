@@ -13,7 +13,7 @@ import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
-import { get_text, open_workbench_settings_ui } from './utils.js'
+import { get_text, open_workbench_settings_ui, upload_dir, upload_single_file } from './utils.js'
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
@@ -360,7 +360,7 @@ export const ddb_commands = [
         // 文件上点右键 upload 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
             let { connection } = explorer
-            
+                     
             await connection.connect()
             
             let { ddb } = connection
@@ -372,29 +372,27 @@ export const ddb_commands = [
                 value: `${path.normalizeTrim(fpd_home)}/uploads/${path.basename(uri.path)}`
             })
             
+            
             if (!fp_remote)
                 return
             
-            let text: string
-            if (uri.scheme === 'untitled')
-                text = get_text('all')
-            else {
-                await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
-                text = new TextDecoder('utf-8').decode(
-                    await workspace.fs.readFile(Uri.file(uri.fsPath))
-                )
-            }
             
             const fpd_remote = fp_remote.fdir
             
-            if (!(
-                await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])
-            ).value)
-                await ddb.call('mkdir', [fpd_remote])
             
-            // Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
-            // content must be a string or string vector which stores the text to save.
-            await ddb.call('saveTextFile', [text, fp_remote])
+            // vscode 有没有判断文件和目录的方法
+            let is_dir = false
+            try { 
+                await workspace.fs.readDirectory(uri)
+                is_dir = true
+            } catch (e) { }
+            
+            
+            if (is_dir)
+                upload_dir(uri, fp_remote, ddb)
+            else
+                upload_single_file(uri, fp_remote, ddb)
+               
             
             window.showInformationMessage(`${t('文件成功上传到: ')}${fp_remote}`)
         } catch (error) {
