@@ -97,12 +97,12 @@ export function open_workbench_settings_ui (target: ConfigurationTarget, options
 
 
 export const upload_single_file = async (file_uri: Uri, path: string, ddb: DDB) => { 
-    if (!(
-        await ddb.call<DdbObj<boolean>>('exists', [path])
-    ).value)
-        await ddb.call('mkdir', [path])
     
-        
+    if (!(
+        await ddb.call<DdbObj<boolean>>('exists', [path.fdir])
+    ).value)
+        await ddb.call('mkdir', [path.fdir])
+    
     let text: string
     if (file_uri.scheme === 'untitled')
         text = get_text('all')
