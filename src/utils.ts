@@ -130,9 +130,9 @@ export const upload_dir = async (uri: Uri, path: string, ddb: DDB) => {
     sub_files.forEach(([name, file_type]) => { 
         const upload_path = path + '/' + name
         const file_uri = Uri.file(uri.fsPath + '/' + name)
+        
         if (file_type === FileType.File)  
             upload_single_file(file_uri, upload_path, ddb)
-        
         else
             upload_dir(file_uri, upload_path, ddb)
     })
