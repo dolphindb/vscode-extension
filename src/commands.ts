@@ -394,7 +394,7 @@ export const ddb_commands = [
             const upload_list = uri_list.map( async file_uri => { 
                 const { type } = await workspace.fs.stat(file_uri)
                 
-                // 多文件场景下所有文件的公共父目录映射为填入的文件夹，需要手动替换
+                // 多文件场景下所有文件的公共父目录映射为填入的文件夹
                 const file_path = is_multiple ? file_uri.fsPath.replace(common_path, fp_remote) : fp_remote
                 
                 if (type === FileType.Directory)
