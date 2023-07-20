@@ -131,7 +131,6 @@ export async function upload_dir (uri: Uri, path: string, ddb: DDB) {
             
     const sub_files: Array<[string, FileType]> = await workspace.fs.readDirectory(uri)
     
-    let upload_list = [ ]
     
     for (let i = 0;  i < sub_files.length;  i++) { 
         const [name, file_type] = sub_files[i]
@@ -139,12 +138,11 @@ export async function upload_dir (uri: Uri, path: string, ddb: DDB) {
         const file_uri = Uri.file(uri.fsPath + '/' + name)
         
         if (file_type === FileType.File) 
-            upload_list.push(upload_single_file(file_uri, upload_path, ddb, true))
+            await upload_single_file(file_uri, upload_path, ddb, true)
          else  
-            upload_list.push(upload_dir(file_uri, upload_path, ddb))
+            await upload_dir(file_uri, upload_path, ddb)
     }
     
-    await run_promise_queue(upload_list)
 }
 
 export function get_common_path (path_list: string[]) {
@@ -160,10 +158,4 @@ export function get_common_path (path_list: string[]) {
             common_path_list.push(new_path_list[0][j])
     }
     return common_path_list.join('/')
-}
-
-// 依次执行promise
-export async function run_promise_queue (list: Array<Promise<void>>) {
-    for (let index = 0;  index < list.length;  index++)  
-        await list[index]
 }

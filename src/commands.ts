@@ -13,7 +13,7 @@ import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
-import { get_text, get_common_path, open_workbench_settings_ui, upload_dir, upload_single_file, run_promise_queue } from './utils.js'
+import { get_text, get_common_path, open_workbench_settings_ui, upload_dir, upload_single_file } from './utils.js'
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
@@ -390,21 +390,18 @@ export const ddb_commands = [
             if (!value)
                 return 
             
-            let upload_list = [ ]
-            
             for (let idx = 0;  idx < uri_list.length;  idx++) { 
                 const file_uri = uri_list[idx]
                 const { type } = await workspace.fs.stat(file_uri)
                 
                 // 多文件场景下所有文件的公共父目录映射为填入的文件夹
                 const file_path = is_multiple ? file_uri.fsPath.replace(common_path, fp_remote) : fp_remote
-                if (type === FileType.Directory) 
-                    upload_list.push(upload_dir(file_uri, file_path, ddb))
-                 else
-                    upload_list.push(upload_single_file(file_uri, file_path, ddb, false))
+                if (type === FileType.Directory)
+                    await upload_dir(file_uri, file_path, ddb)
+                else
+                    await upload_single_file(file_uri, file_path, ddb, false)
             }
             
-            await run_promise_queue(upload_list)
             
             window.showInformationMessage(`${t('文件成功上传到: ')}${fp_remote}`)
         } catch (error) {
