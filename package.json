@@ -1,7 +1,7 @@
 {
     "name": "dolphindb-vscode",
     "type": "module",
-    "version": "2.0.974",
+    "version": "2.0.975",
     "engines": {
         "vscode": ">=1.68.0"
     },
