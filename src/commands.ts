@@ -386,22 +386,23 @@ export const ddb_commands = [
             }
             
             
-            const value = await window.showWarningMessage(t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}', { file_num: uri_list.length, fp_remote }), { }, { title: '确认' })
+            const value = await window.showWarningMessage(t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}', { file_num: uri_list.length, fp_remote }), { }, { title: t('确认') })
             if (!value)
                 return 
             
+            let upload_list = [ ]
             
-            const upload_list = uri_list.map( async file_uri => { 
+            for (let idx = 0;  idx < uri_list.length;  idx++) { 
+                const file_uri = uri_list[idx]
                 const { type } = await workspace.fs.stat(file_uri)
                 
                 // 多文件场景下所有文件的公共父目录映射为填入的文件夹
                 const file_path = is_multiple ? file_uri.fsPath.replace(common_path, fp_remote) : fp_remote
-                
-                if (type === FileType.Directory)
-                    return upload_dir(file_uri, file_path, ddb)
-                else
-                    return upload_single_file(file_uri, file_path, ddb)
-            })
+                if (type === FileType.Directory) 
+                    upload_list.push(upload_dir(file_uri, file_path, ddb))
+                 else
+                    upload_list.push(upload_single_file(file_uri, file_path, ddb, false))
+            }
             
             await run_promise_queue(upload_list)
             

@@ -96,12 +96,15 @@ export function open_workbench_settings_ui (target: ConfigurationTarget, options
 }
 
 
-export const upload_single_file = async (file_uri: Uri, path: string, ddb: DDB) => { 
+export async function upload_single_file (file_uri: Uri, path: string, ddb: DDB, skip_check_exist: boolean) { 
     
-    if (!(
+    if (!skip_check_exist)
+        if (!(
         await ddb.call<DdbObj<boolean>>('exists', [path.fdir])
     ).value)
-        await ddb.call('mkdir', [path.fdir])
+            await ddb.call('mkdir', [path.fdir])
+    
+       
         
     let text: string
     if (file_uri.scheme === 'untitled')
@@ -119,8 +122,8 @@ export const upload_single_file = async (file_uri: Uri, path: string, ddb: DDB) 
 }
 
 
-export const upload_dir = async (uri: Uri, path: string, ddb: DDB) => { 
-
+export async function upload_dir (uri: Uri, path: string, ddb: DDB) { 
+   
     if (!(
         await ddb.call<DdbObj<boolean>>('exists', [path])
     ).value)
@@ -128,18 +131,23 @@ export const upload_dir = async (uri: Uri, path: string, ddb: DDB) => {
             
     const sub_files: Array<[string, FileType]> = await workspace.fs.readDirectory(uri)
     
-    await run_promise_queue(sub_files.map(async  ([name, file_type]) => { 
+    let upload_list = [ ]
+    
+    for (let i = 0;  i < sub_files.length;  i++) { 
+        const [name, file_type] = sub_files[i]
         const upload_path = path + '/' + name
         const file_uri = Uri.file(uri.fsPath + '/' + name)
         
-        if (file_type === FileType.File)  
-            return upload_single_file(file_uri, upload_path, ddb)
-        else
-            return  upload_dir(file_uri, upload_path, ddb)
-    }))
+        if (file_type === FileType.File) 
+            upload_list.push(upload_single_file(file_uri, upload_path, ddb, true))
+         else  
+            upload_list.push(upload_dir(file_uri, upload_path, ddb))
+    }
+    
+    await run_promise_queue(upload_list)
 }
 
-export const get_common_path = function (path_list: string[]) {
+export function get_common_path (path_list: string[]) {
     let common_path_list = [ ]
     const new_path_list = path_list.map(item => item.split('/'))
     
