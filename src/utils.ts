@@ -102,7 +102,7 @@ export const upload_single_file = async (file_uri: Uri, path: string, ddb: DDB) 
         await ddb.call<DdbObj<boolean>>('exists', [path.fdir])
     ).value)
         await ddb.call('mkdir', [path.fdir])
-    
+        
     let text: string
     if (file_uri.scheme === 'untitled')
         text = get_text('all')
@@ -120,21 +120,42 @@ export const upload_single_file = async (file_uri: Uri, path: string, ddb: DDB) 
 
 
 export const upload_dir = async (uri: Uri, path: string, ddb: DDB) => { 
+
     if (!(
         await ddb.call<DdbObj<boolean>>('exists', [path])
     ).value)
         await ddb.call('mkdir', [path])
-    
+            
     const sub_files: Array<[string, FileType]> = await workspace.fs.readDirectory(uri)
     
-    sub_files.forEach(([name, file_type]) => { 
+    await run_promise_queue(sub_files.map(async  ([name, file_type]) => { 
         const upload_path = path + '/' + name
         const file_uri = Uri.file(uri.fsPath + '/' + name)
         
         if (file_type === FileType.File)  
-            upload_single_file(file_uri, upload_path, ddb)
+            return upload_single_file(file_uri, upload_path, ddb)
         else
-            upload_dir(file_uri, upload_path, ddb)
-    })
+            return  upload_dir(file_uri, upload_path, ddb)
+    }))
+}
+
+export const get_common_path = function (path_list: string[]) {
+    let common_path_list = [ ]
+    const new_path_list = path_list.map(item => item.split('/'))
     
+    if (!path_list.length)
+        return ''
+    for (let j = 0;  j < new_path_list[0].length;  j++) { 
+        for (let i = 1;  i < new_path_list.length;  i++)
+            if (new_path_list[i][j] !== new_path_list[0][j])
+                return common_path_list.join('/')
+            common_path_list.push(new_path_list[0][j])
+    }
+    return common_path_list.join('/')
+}
+
+// 依次执行promise
+export async function run_promise_queue (list: Array<Promise<void>>) {
+    for (let index = 0;  index < list.length;  index++)  
+        await list[index]
 }

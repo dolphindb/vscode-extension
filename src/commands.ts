@@ -13,7 +13,7 @@ import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
-import { get_text, open_workbench_settings_ui, upload_dir, upload_single_file } from './utils.js'
+import { get_text, get_common_path, open_workbench_settings_ui, upload_dir, upload_single_file, run_promise_queue } from './utils.js'
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
@@ -363,6 +363,7 @@ export const ddb_commands = [
             
             // 是否为多文件上传
             const is_multiple = uri_list.length > 1
+            const common_path = is_multiple ? get_common_path(uri_list.map(item => item.fsPath)) : ''
             
             let { connection } = explorer
                      
@@ -370,8 +371,8 @@ export const ddb_commands = [
             
             let { ddb } = connection
             
-            let { value: fpd_home } = await ddb.call<DdbObj<string>>('getHomeDir')
-            
+            let { value: fpd_home } = await ddb.call<DdbObj<string>>('getHomeDir')    
+    
             const fp_remote = await window.showInputBox({
                 title: t('上传到服务器端的路径'),
                 value: `${path.normalizeTrim(fpd_home)}/uploads/${is_multiple ? '' : path.basename(uri.path)}`
@@ -384,22 +385,28 @@ export const ddb_commands = [
                 return
             }
             
-            console.log(uri_list, 'uri_list')
+            
+            const value = await window.showWarningMessage(t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}', { file_num: uri_list.length, fp_remote }), { }, { title: '确认' })
+            if (!value)
+                return 
             
             
-            uri_list.forEach(async file_uri => { 
+            const upload_list = uri_list.map( async file_uri => { 
                 const { type } = await workspace.fs.stat(file_uri)
                 
-                // 多文件场景下填入的文件夹名称为所有文件的父级目录，需要手动为每个文件拼接路径
-                const file_name = file_uri.fsPath.split('/').pop()
-                const file_path = is_multiple ? fp_remote + '/' + file_name : fp_remote
+                // 多文件场景下所有文件的公共父目录映射为填入的文件夹，需要手动将公共部分去除之后再进行上传
+                const rest_path = file_uri.fsPath.replace(common_path, '')
+                const file_path = is_multiple ? fp_remote + rest_path : fp_remote
                 
                 if (type === FileType.Directory)
-                    upload_dir(file_uri, file_path, ddb)
+                    return upload_dir(file_uri, file_path, ddb)
+                    
                 else
-                    upload_single_file(file_uri, file_path, ddb)
+                    return upload_single_file(file_uri, file_path, ddb)
             })
-                 
+            
+            await run_promise_queue(upload_list)
+            
             window.showInformationMessage(`${t('文件成功上传到: ')}${fp_remote}`)
         } catch (error) {
             window.showErrorMessage(error.message)
