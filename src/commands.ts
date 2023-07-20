@@ -394,13 +394,11 @@ export const ddb_commands = [
             const upload_list = uri_list.map( async file_uri => { 
                 const { type } = await workspace.fs.stat(file_uri)
                 
-                // 多文件场景下所有文件的公共父目录映射为填入的文件夹，需要手动将公共部分去除之后再进行上传
-                const rest_path = file_uri.fsPath.replace(common_path, '')
-                const file_path = is_multiple ? fp_remote + rest_path : fp_remote
+                // 多文件场景下所有文件的公共父目录映射为填入的文件夹，需要手动替换
+                const file_path = is_multiple ? file_uri.fsPath.replace(common_path, fp_remote) : fp_remote
                 
                 if (type === FileType.Directory)
                     return upload_dir(file_uri, file_path, ddb)
-                    
                 else
                     return upload_single_file(file_uri, file_path, ddb)
             })
