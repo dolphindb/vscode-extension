@@ -739,8 +739,7 @@ export let dataview_webpack = {
             
             
             experiments: {
-                // outputModule: true,
-                topLevelAwait: true,
+                outputModule: true,
             },
             
             output: {
@@ -749,9 +748,15 @@ export let dataview_webpack = {
                 publicPath: '/',
                 pathinfo: true,
                 globalObject: 'globalThis',
+                module: true,
+                library: {
+                    type: 'module',
+                }
             },
             
-            target: ['web', 'es2022'],
+            target: ['web', 'es2023'],
+            
+            externalsType: 'global',
             
             externals: {
                 react: 'React',
@@ -954,10 +959,6 @@ export const ext_webpack = {
                 'debugger.cjs': './src/debugger/index.ts',
             },
             
-            experiments: {
-                topLevelAwait: true,
-            },
-            
             output: {
                 path: fpd_out,
                 filename: '[name]',
@@ -968,7 +969,7 @@ export const ext_webpack = {
                 }
             },
             
-            target: ['node19', 'es2022'],
+            target: ['node20', 'es2023'],
             
             resolve: {
                 extensions: ['.js'],
