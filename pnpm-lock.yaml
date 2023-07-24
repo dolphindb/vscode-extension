@@ -65,8 +65,8 @@ dependencies:
     specifier: ^8.13.0
     version: 8.13.0
   xshell:
-    specifier: ^1.0.40
-    version: 1.0.40(react-dom@18.2.0)
+    specifier: ^1.0.41
+    version: 1.0.41(react-dom@18.2.0)
 
 devDependencies:
   '@svgr/webpack':
@@ -3643,7 +3643,7 @@ packages:
       dayjs: 1.11.9
       ipaddr.js: 2.1.0
       tslib: 2.6.0
-      xshell: 1.0.40(react-dom@18.2.0)
+      xshell: 1.0.41(react-dom@18.2.0)
     transitivePeerDependencies:
       - bufferutil
       - react-dom
@@ -6971,8 +6971,8 @@ packages:
         optional: true
     dev: false
 
-  /xshell@1.0.40(react-dom@18.2.0):
-    resolution: {integrity: sha512-xjVrnkfCsqALEOlYsUrszxxXoHfxZgLnwSSOLmfxpPSFHMA/G3w2cdr70TAJByzWXfpv1jEmPxRjqb0h8ilQiQ==}
+  /xshell@1.0.41(react-dom@18.2.0):
+    resolution: {integrity: sha512-oylra3jUO+DecHlEtuKXGpnnVgihyHUZgHWqzp7fUK+RFQNHeNHCZ6tKGH65yBAxjimhTtt0OaAnDKT4svnrlA==}
     engines: {node: '>=20.5.0', vscode: '>=1.79.0'}
     hasBin: true
     dependencies:
