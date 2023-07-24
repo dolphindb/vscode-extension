@@ -54,7 +54,7 @@
         "tslib": "^2.6.0",
         "upath": "^2.0.1",
         "ws": "^8.13.0",
-        "xshell": "^1.0.39"
+        "xshell": "^1.0.40"
     },
     "pnpm": {
         "patchedDependencies": {
