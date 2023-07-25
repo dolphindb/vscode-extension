@@ -415,9 +415,9 @@ export const ddb_commands = [
     },
     
     
-    /** 上传文件预填写默认路径 `getHomeDir() + /uploads/ + 需要上传的文件名`
-        uri为右键选中的文件，uri_list为所有选中的文件列表  */
-    async function upload_file (uri: Uri, uri_list: Uri[]) {
+    /** 批量上传文件  
+        uri 为右键选中的文件，uris 为所有选中的文件列表  */
+    async function upload_file (uri: Uri, uris: Uri[]) {
         // 文件上点右键 upload 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
             const mappings = normalize_mappings(workspace.getConfiguration('dolphindb').get('mappings'))
@@ -428,18 +428,17 @@ export const ddb_commands = [
             let { connection } = explorer
             
             // 是否为多文件上传
-            const is_multiple = uri_list.length > 1
+            const multiple = uris.length > 1
             
-            let { ddb } = connection
-            const fdp_home =  (await ddb.call<DdbObj<string>>('getHomeDir')).value
-                     
             await connection.connect()
             
-  
+            let { ddb } = connection
+            
+            const fdp_home = (await ddb.call<DdbObj<string>>('getHomeDir')).value.fpd
             
             // 单文件场景下用户可以手动填入路径
-            let fp_remote
-            if (!is_multiple) { 
+            let fp_remote: string
+            if (!multiple) {
                 fp_remote = await window.showInputBox({
                     title: t('上传到服务器端的路径'),
                     value: resolve_remote_path(
@@ -449,7 +448,7 @@ export const ddb_commands = [
                     )
                 })
                 
-                if (!fp_remote) { 
+                if (!fp_remote) {
                     if (fp_remote === '')
                         window.showErrorMessage(t('文件上传路径不能为空'))
                     return
@@ -457,27 +456,31 @@ export const ddb_commands = [
             }
             
             
-            const upload_file_list = uri_list.map(file_uri => resolve_remote_path(file_uri.fsPath, mappings, fdp_home))
-            const upload_paths = fp_remote || upload_file_list.join('\n')
+            const remote_fps = uris.map(file_uri => resolve_remote_path(file_uri.fsPath.fp, mappings, fdp_home))
+            const remote_fps_str = fp_remote || remote_fps.join('\n')
             
-            const value = await window.showWarningMessage(t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}', { file_num: uri_list.length, fp_remote: upload_paths }), { modal: true }, { title: t('确认') })
-            if (!value)
-                return 
+            if (!await window.showWarningMessage(
+                t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}',
+                { file_num: uris.length, fp_remote: remote_fps_str }),
+                { modal: true },
+                { title: t('确认') }
+            ))
+                return
             
-            for (let i = 0;  i < uri_list.length;  i++ ) { 
-                const file_uri = uri_list[i]
-                const { type } = await workspace.fs.stat(file_uri)
+            for (let i = 0;  i < uris.length;  i++ ) { 
+                const uri = uris[i]
+                const { type } = await workspace.fs.stat(uri)
                 
-                // 多文件场景下将文件逐一映射，但文件场景下直接采用fp_remote
-                const file_path = is_multiple ? upload_file_list[i] : fp_remote
+                // 多文件场景下将文件逐一映射，单文件场景下直接采用 fp_remote
+                const fp = fp_remote || remote_fps[i]
                 if (type === FileType.Directory)
-                    await upload_dir(file_uri, file_path, ddb)
+                    await upload_dir(uri, fp, ddb)
                 else
-                    await upload_single_file(file_uri, file_path, ddb, false)
+                    await upload_single_file(uri, fp, ddb)
             }
             
             
-            window.showInformationMessage(`${t('文件成功上传到: ')}${upload_paths}`)
+            window.showInformationMessage(`${t('文件成功上传到: ')}${remote_fps_str}`)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
