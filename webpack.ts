@@ -1,7 +1,5 @@
 import { fileURLToPath } from 'url'
 
-import path from 'upath'
-
 import { default as Webpack, type Configuration, type Compiler, type Stats } from 'webpack'
 
 import type { Options as TSLoaderOptions } from 'ts-loader'
@@ -19,7 +17,7 @@ import { tm_language } from 'dolphindb/language.js'
 import package_json from './package.json' assert { type: 'json' }
 
 
-export const fpd_root = `${path.dirname(fileURLToPath(import.meta.url))}/`
+export const fpd_root = fileURLToPath(import.meta.url).fdir
 
 const ramdisk = fexists('T:/TEMP/', { print: false })
 const fpd_ramdisk_root = 'T:/2/ddb/ext/' as const

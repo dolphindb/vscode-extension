@@ -1,5 +1,4 @@
 import dayjs from 'dayjs'
-import path from 'upath'
 
 import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri } from 'vscode'
 
@@ -369,7 +368,7 @@ export const ddb_commands = [
             
             const fp_remote = await window.showInputBox({
                 title: t('上传到服务器端的路径'),
-                value: `${path.normalizeTrim(fpd_home)}/uploads/${path.basename(uri.path)}`
+                value: `${fpd_home.fpd}uploads/${uri.path.fp.fname}`
             })
             
             if (!fp_remote) {
