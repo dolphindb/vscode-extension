@@ -373,6 +373,18 @@
     },
     "请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}":{
         "en": "Please confirm whether to upload these {{file_num}} files to {{fp_remote}}"
+    },
+    "配置文件中的 dolphindb.mappings 中存在路径类型错误映射项（\"文件夹\" 路径错误映射到 \"文件\" 路径或 \"文件\" 路径错误映射到 \"文件夹\" 路径），请检查后修改。": {
+        "en": "There is a wrong path mapping item in dolphindb.mappings in the configuration file (the \"folder\" path is incorrectly mapped to the \"file\" path or the \"file\" path is incorrectly mapped to the \"folder\" path), please check and modify. "
+    },
+    "您未配置 dolphindb.mappings，是否现在配置？": {
+        "en": "You have not configured dolphindb.mappings, would you like to do so now?"
+    },
+    "不再提醒": {
+        "en": "No More Reminders"
+    },
+    "配置文件中的 dolphindb.mappings 中存在路径类型错误映射项（1. \"文件夹\" 路径错误映射到 \"文件\" 路径；2. \"文件\" 路径错误映射到 \"文件夹\" 路径；3. \"default\" 没有映射到 \"文件夹\" 路径。）请检查后修改。": {
+        "en": "There is a wrong path type mapping item in dolphindb.mappings in the configuration file (1. \"folder\" path is incorrectly mapped to \"file\" path; 2. \"file\" path is incorrectly mapped to \"folder\" path; 3. \"default\" is not mapped to \"folder\" path.) Please check and modify."
     }
     
 }

@@ -3,15 +3,19 @@ import 'xshell/scroll-bar.sass'
 import './index.sass'
 
 
-import { default as React, useEffect } from 'react'
+import { useEffect } from 'react'
 import { createRoot as create_root } from 'react-dom/client'
 
-import {
-    ConfigProvider,
-    
-    // @ts-ignore 使用了 antd-with-locales 之后 window.antd 变量中有 locales 属性
-    locales
-} from 'antd'
+import { ConfigProvider, App } from 'antd'
+import zh from 'antd/es/locale/zh_CN.js'
+import en from 'antd/locale/en_US.js'
+import ja from 'antd/locale/ja_JP.js'
+import ko from 'antd/locale/ko_KR.js'
+
+import type { MessageInstance } from 'antd/es/message/interface.js'
+import type { ModalStaticFunctions } from 'antd/es/modal/confirm.js'
+import type { NotificationInstance } from 'antd/es/notification/interface.js'
+
 
 import { Model } from 'react-object-model'
 
@@ -24,14 +28,6 @@ import { language } from '../i18n/index.js'
 import { Obj, DdbObjRef, open_obj } from './obj.js'
 
 
-const locale_names = {
-    zh: 'zh_CN',
-    en: 'en_US',
-    ja: 'ja_JP',
-    ko: 'ko_KR'
-} as const
-
-
 let remote = new Remote({ url: `ws://${location.host}` })
 
 
@@ -39,6 +35,12 @@ class DataViewModel extends Model<DataViewModel> {
     result?: { type: 'object', data: DdbObj } | { type: 'objref', data: DdbObjRef }
     
     options?: InspectOptions
+    
+    message: MessageInstance
+    
+    modal: Omit<ModalStaticFunctions, 'warn'>
+    
+    notification: NotificationInstance
     
     
     async init () {
@@ -110,8 +112,27 @@ class DataViewModel extends Model<DataViewModel> {
 let model = window.model = new DataViewModel()
 
 
+create_root(
+    document.querySelector('.root')
+).render(<Root />)
+
+
+const locales = { zh, en, ja, ko }
+
+function Root () {
+    return <ConfigProvider locale={locales[language] as any} autoInsertSpaceInButton={false} theme={{ hashed: false }}>
+        <App>
+            <DataView />
+        </App>
+    </ConfigProvider>
+}
+
+
 function DataView () {
     const { result, options } = model.use(['result', 'options'])
+    
+    // App 组件通过 Context 提供上下文方法调用，因而 useApp 需要作为子组件才能使用
+    Object.assign(model, App.useApp())
     
     useEffect(() => {
         model.init()
@@ -122,17 +143,11 @@ function DataView () {
     
     const { type, data } = result
     
-    return <ConfigProvider locale={locales[locale_names[language]]} autoInsertSpaceInButton={false} theme={{ hashed: false }}>
-        <div className='result page'>{
-            type === 'object' ?
-                <Obj obj={data} remote={remote} ctx='page' options={options} />
-            :
-                <Obj objref={data} remote={remote} ctx='page' options={options} />
-        }</div>
-    </ConfigProvider>
+    return <div className='result page'>{
+        type === 'object' ?
+            <Obj obj={data} remote={remote} ctx='page' options={options} />
+        :
+            <Obj objref={data} remote={remote} ctx='page' options={options} />
+    }</div>
 }
 
-
-create_root(
-    document.querySelector('.root')
-).render(<DataView/>)

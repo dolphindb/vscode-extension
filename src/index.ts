@@ -1,5 +1,4 @@
 import util from 'util'
-import path from 'upath'
 
 import {
     window,
@@ -46,9 +45,7 @@ if (util.inspect.styles.number !== 'green')
 
 
 /** 插件运行目录: 可能是 out 文件夹或实际安装文件夹 */
-export const fpd_ext = path.normalizeTrim(
-    extensions.getExtension('dolphindb.dolphindb-vscode').extensionPath
-) + '/'
+export const fpd_ext = extensions.getExtension('dolphindb.dolphindb-vscode').extensionPath.fpd
 
 
 export let extctx: ExtensionContext

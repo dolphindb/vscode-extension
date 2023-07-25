@@ -1,7 +1,5 @@
 import { fileURLToPath } from 'url'
 
-import path from 'upath'
-
 import { default as Webpack, type Configuration, type Compiler, type Stats } from 'webpack'
 
 import type { Options as TSLoaderOptions } from 'ts-loader'
@@ -19,7 +17,7 @@ import { tm_language } from 'dolphindb/language.js'
 import package_json from './package.json' assert { type: 'json' }
 
 
-export const fpd_root = `${path.dirname(fileURLToPath(import.meta.url))}/`
+export const fpd_root = fileURLToPath(import.meta.url).fdir
 
 const ramdisk = fexists('T:/TEMP/', { print: false })
 const fpd_ramdisk_root = 'T:/2/ddb/ext/' as const
@@ -42,8 +40,8 @@ export async function copy_files () {
             'react-dom/umd/react-dom.production.min.js',
             'dayjs/dayjs.min.js',
             'lodash/lodash.min.js',
-            'antd/dist/antd-with-locales.min.js',
-            'antd/dist/antd-with-locales.min.js.map',
+            'antd/dist/antd.min.js',
+            'antd/dist/antd.min.js.map',
             '@ant-design/icons/dist/index.umd.min.js',
             '@ant-design/plots/dist/plots.min.js',
             '@ant-design/plots/dist/plots.min.js.map',
@@ -464,6 +462,52 @@ export async function build_package_json () {
                             'Automatically disconnect the original connection after switching to a new DolphinDB connection in the connection panel on the left'
                         )
                     } satisfies Schema,
+                    
+                    'dolphindb.mappings': {
+                        type: 'object',
+                        default: { },
+                        ...(() => {
+                            const description_zh =
+                                '上传文件时支持配置文件和文件夹映射 (可添加 **"default"** 作为默认的上传路径，如果是文件夹映射，需要本地和服务器路径均以 **"/"** 结尾)  \n' +
+                                '比如，用户配置 mappings 为如下内容:  \n' + 
+                                '`{ "/path/to/local/" : "/path/at/remote/",`  \n' +
+                                '`  "/path/to/local/dir1/file.dos": "/data/server/dir1/file.dos",`  \n' +
+                                '`  "D:/path/to/local/": "/data/server/",`  \n' +
+                                '`  "default" : "/data/" }`  \n' +
+                                '如果用户本地文件路径为 `"/path/to/local/dir1/file.dos"`，则会被映射到服务器路径 `"/data/server/dir1/file.dos"`  \n' +
+                                '如果用户本地文件路径为 `"D:/path/to/local/file.dos"`，则会被映射到服务器路径 `"/data/server/file.dos"`  \n' +
+                                '如果用户本地文件路径为 `"/user/documents/file.dos"`，则被匹配到 **"default"** 项,即映射为服务器路径 `"/data/file.dos"`'
+                            
+                            const description_en =
+                                'Mapping relationship between local path and server path when uploading files (**"default"** can be configured as the default upload server path,If it is a folder mapping, both local and server paths need to end with **"/"**)  \n' +
+                                'for example,The user configures mappings as follows:  \n' +
+                                '`{ "/path/to/local/" : "/path/at/remote/",`  \n' +
+                                '`  "/path/to/local/dir1/file.dos": "/data/server/dir1/file.dos",`  \n' +
+                                '`  "D:/path/to/local/": "/data/server/",`  \n' +
+                                '`  "default" : "/data/" }`  \n' +
+                                'If the user local file path is `"/path/to/local/dir1/file.dos"`, it will be mapped to the server path `"/data/server/dir1/file.dos"`  \n' +
+                                'If the user local file path is `"D:/path/to/local/file.dos"`, it will be mapped to the server path `"/data/server/file.dos"`  \n' +
+                                'If the user local file path is `"/user/documents/file.dos"`, it will be matched to the **"default"** item, which is mapped to the server path `"/data/file.dos"`'
+                            
+                            return {
+                                markdownDescription: make(
+                                    'configs.mappings.markdownDescription',
+                                    description_zh,
+                                    description_en
+                                ),
+                                patternProperties: {
+                                    '.*': {
+                                        type: 'string',
+                                        markdownDescription: make(
+                                            'configs.mappings.item.markdownDescription',
+                                            description_zh,
+                                            description_en
+                                        )
+                                    }
+                                }
+                            }
+                        })()                        
+                    } satisfies Schema
                 }
             },
             
@@ -738,8 +782,7 @@ export let dataview_webpack = {
             
             
             experiments: {
-                // outputModule: true,
-                topLevelAwait: true,
+                outputModule: true,
             },
             
             output: {
@@ -748,9 +791,15 @@ export let dataview_webpack = {
                 publicPath: '/',
                 pathinfo: true,
                 globalObject: 'globalThis',
+                module: true,
+                library: {
+                    type: 'module',
+                }
             },
             
-            target: ['web', 'es2022'],
+            target: ['web', 'es2023'],
+            
+            externalsType: 'global',
             
             externals: {
                 react: 'React',
@@ -953,10 +1002,6 @@ export const ext_webpack = {
                 'debugger.cjs': './src/debugger/index.ts',
             },
             
-            experiments: {
-                topLevelAwait: true,
-            },
-            
             output: {
                 path: fpd_out,
                 filename: '[name]',
@@ -967,7 +1012,7 @@ export const ext_webpack = {
                 }
             },
             
-            target: ['node19', 'es2022'],
+            target: ['node20', 'es2023'],
             
             resolve: {
                 extensions: ['.js'],
@@ -1120,6 +1165,7 @@ interface Schema {
     /** regexp pattern */
     pattern?: string
     patternErrorMessage?: string
+    patternProperties?: object
     
     format?: 'date' | 'time' | 'ipv4' | 'email' | 'uri'
     
