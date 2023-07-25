@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 
 import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri } from 'vscode'
 
-import { Timer, delay, inspect } from 'xshell'
+import { path, Timer, delay, inspect } from 'xshell'
 
 import { DdbConnectionError, DdbForm, DdbObj, DdbType, InspectOptions } from 'dolphindb'
 
@@ -46,6 +46,67 @@ function truncate_text (lines: string[]) {
         lines_.push('...')
     
     return lines_
+}
+
+
+/** 将 mappings 的 key 和 value 都进行 path.normalize，如果有类型的错误匹配，扔出错误 */
+function normalize_mappings (mappings: Record<string, string>) {
+    return mappings ?
+        Object.fromEntries(
+            Object.entries(mappings)
+                .map(([key, value]) => {
+                    const normalized_key = path.normalize(key)
+                    const normalized_value = path.normalize(value)
+                    
+                    if (normalized_key === 'default' ? !normalized_value.isdir : (normalized_key.isdir !== normalized_value.isdir))
+                        throw Error(t('配置文件中的 dolphindb.mappings 中存在路径类型错误映射项（1. "文件夹" 路径错误映射到 "文件" 路径；2. "文件" 路径错误映射到 "文件夹" 路径；3. "default" 没有映射到 "文件夹" 路径。）请检查后修改。'))
+                    
+                    return [normalized_key, normalized_value]
+                })
+        )
+    :
+         { }
+}
+
+
+let should_remind_setting_mappings = true
+
+/** 展示 modal 提醒用户设置 mappings */
+async function remind_mappings () {
+    const { title } = await window.showInformationMessage(
+        t('您未配置 dolphindb.mappings，是否现在配置？'), 
+        { modal: true },   
+        { title: t('是') },  
+        { title: t('否'), isCloseAffordance: true }, 
+        { title: t('不再提醒') }
+    )
+    
+    switch (title) {
+        case t('是'):
+            await commands.executeCommand('dolphindb.open_settings', 'mappings')
+            return false
+        case t('否'):
+            return true
+        case t('不再提醒'):
+            should_remind_setting_mappings = false
+            return false
+    }
+}
+
+
+/** 根据传入的本地路径，获取映射的 server 路径  
+    - fp_local: 本地文件或文件夹的绝对路径
+    - mappings: 映射配置
+    - fpd_home: 以 / 结尾的文件夹路径  
+    @example
+    resolve_remote_path('D:/aaa/bbb/ccc.txt', { 'D:/aaa/': '/data/', default: '/default/' }, '/home/')
+    // /data/bbb/ccc.txt */
+function resolve_remote_path (fp_local: string, mappings: Record<string, string>, fpd_home: string) {
+    for (let fp = fp_local, fp_last = null;  fp !== fp_last;  fp_last = fp, fp = fp.fdir)
+        if (fp in mappings)
+            return mappings[fp] + fp_local.slice(fp.length)
+    
+    return (mappings.default || `${fpd_home}uploads/`) + fp_local.fname
 }
 
 
@@ -313,8 +374,8 @@ export const ddb_commands = [
     },
     
     
-    async function open_settings (query?: string) {
-        const connectionsInspection = workspace.getConfiguration('dolphindb').inspect('connections')
+    async function open_settings (setting?: string) {
+        const connectionsInspection = workspace.getConfiguration('dolphindb').inspect(setting)
         
         let target = ConfigurationTarget.Global
         switch (true) {
@@ -328,7 +389,7 @@ export const ddb_commands = [
                 break
         }
         
-        await open_workbench_settings_ui(target, { query: `@ext:dolphindb.dolphindb-vscode${query ? ` ${query}` : ''}` })
+        await open_workbench_settings_ui(target, { query: `@ext:dolphindb.dolphindb-vscode${setting ? ` ${setting}` : ''}` })
     },
     
     
@@ -358,17 +419,24 @@ export const ddb_commands = [
     async function upload_file (uri: Uri) {
         // 文件上点右键 upload 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
+            const mappings = normalize_mappings(workspace.getConfiguration('dolphindb').get('mappings'))
+            
+            if (should_remind_setting_mappings && !Object.keys(mappings).length && !await remind_mappings())
+                return
+            
             let { connection } = explorer
             
             await connection.connect()
             
             let { ddb } = connection
             
-            let { value: fpd_home } = await ddb.call<DdbObj<string>>('getHomeDir')
-            
             const fp_remote = await window.showInputBox({
                 title: t('上传到服务器端的路径'),
-                value: `${fpd_home.fpd}uploads/${uri.path.fp.fname}`
+                value: resolve_remote_path(
+                    uri.fsPath.fp,
+                    mappings,
+                    (await ddb.call<DdbObj<string>>('getHomeDir')).value
+                )
             })
             
             if (!fp_remote) {
@@ -376,6 +444,8 @@ export const ddb_commands = [
                     window.showErrorMessage(t('文件上传路径不能为空'))
                 return
             }
+            
+            const fpd_remote = fp_remote.fdir
             
             let text: string
             if (uri.scheme === 'untitled')
@@ -386,8 +456,6 @@ export const ddb_commands = [
                     await workspace.fs.readFile(Uri.file(uri.fsPath))
                 )
             }
-            
-            const fpd_remote = fp_remote.fdir
             
             if (!(
                 await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])

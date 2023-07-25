@@ -124,6 +124,33 @@ DolphinDB 的 VSCode 插件提供针对用户脚本的调试功能，该功能�
 
 [调试功能文档](./README.debug.zh.md)
 
+#### 9. 文件上传
+DolphinDB 的 VSCode 插件支持用户上传文件。支持用户以以下两种方式上传文件：
+
+1. 在 VSCode 的资源管理器中选中需要上传的文件并右击，在右键菜单中选择 "DolphinDB: 上传到服务器"
+2. 打开需要上传的文件后，在 VSCode 界面的右上角单击上传按钮
+
+之后，需要用户输入上传到 server 的文件路径（不能为空），回车后，等待提示 "文件成功上传" 即可。
+
+此外，用户可以通过配置 dolphindb.mappings 来自定义本地路径和 server 路径的映射关系，方便插件在后续上传过程根据 dolphindb.mappings 自行匹配 server 路径。在 VSCode 设置界面，选中扩展下的 DolphinDB，在 Mappings 界面选择添加项，左侧 "键" 为本地地址，右侧 "值" 为服务器地址。
+<img src='./images/mappings.zh.png' width='800'>
+
+
+添加完成后，插件会根据用户的 mappings 对路径进行映射。例如，用户当前配置的 mappings 为: 
+```json
+{
+    "/path/to/local/": "/path/at/remote/",
+    "/path/to/local/dir1/": "/data/server/dir1/",
+    "D:/path/to/local/": "/data/server/",
+    "default": "/data/server/"
+}
+```
+用户进行文件上传时，路径映射的规则如下：
+
+1. 以自动的方式进行映射，key 代表本地路径，value 代表 server 路径，配置完成后，会选择最长匹配项作为上传路径。例如，用户上传的文件路径为 `/path/to/local/dir1/file.dos` ,此时同时存在 `/path/to/local/` 和 `/path/to/local/dir1/` 均可匹配用户路径，但以最长匹配项 `/path/to/local/dir1/` 优先匹配
+2. 可配置 defalut 字段，作为默认匹配，如果当前路径没有命中 dolphindb.mappings 中的其余项，则以 default 对应的 server 路径作为上传路径，例如，用户上传的文件路径为 `/user/dosuments/file.dos`，此时匹配不到 mappings 的其余项，则以 `default` 字段映射的 server 路径作为上传路径，即 `/data/server/file.dos`
+3. 若 dolphindb.mappings 中没有匹配项，则以 `getHomeDir() + /uploads/ + 文件名` 作为上传路径
+
 ## 开发说明
 ```shell
 # 安装最新版的 nodejs

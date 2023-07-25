@@ -120,6 +120,30 @@ When entering a DolphinDB built-in function in the VSCode editor, click the arro
 
 After the function input is complete, hover the mouse over the function name to view the function documentation
 
+#### 8. File upload
+DolphinDB's VSCode plugin supports users to upload files. Users are supported to upload files in the following two ways:
+
+1. Select the file to be uploaded in the explorer of VSCode and right-click, and select "DolphinDB: Upload to Server" in the right-click menu
+2. After opening the file to be uploaded, click the upload button in the upper right corner of the VSCode interface
+
+After that, the user needs to input the path of the file uploaded to the server (cannot be empty), press Enter, and wait for the prompt "The file was uploaded successfully".
+
+In addition, users can customize the mapping relationship between the local path and the server path by configuring dolphindb.mappings, so that the plug-in can automatically match the server path according to dolphindb.mappings in the subsequent upload process. On the VSCode settings interface, select DolphinDB under Extensions, and select Add Items on the Mappings interface. The "key" on the left is the local address, and the "value" on the right is the server address.
+<img src='./images/mappings.en.png' width='800'>
+
+After adding, the plugin will map the path according to the user's mappings. For example, the mappings currently configured by the user are:
+```json
+{
+    "/path/to/local/": "/path/at/remote/",
+    "/path/to/local/dir1/": "/data/server/dir1/",
+    "D:/path/to/local/": "/data/server/",
+    "default": "/data/server/"
+}
+```
+When users upload files, the path mapping rules are as follows:
+1. Mapping is performed in an automatic manner. The key represents the local path, and the value represents the server path. After the configuration is complete, the longest matching item will be selected as the upload path. For example, the file path uploaded by the user is `/path/to/local/dir1/file.dos`, and `/path/to/local/` and `/path/to/local/dir1/` exist at the same time to match the user path, but the longest matching item `/path/to/local/dir1/` will be matched first
+2. The defalut field can be configured as a default match. If the current path does not match other items in dolphindb.mappings, the server path corresponding to the default will be used as the upload path. For example, the file path uploaded by the user is `/user/dosuments/file.dos`. At this time, if the rest of the mappings cannot be matched, the server path mapped by the `default` field will be used as the upload path, that is, `/data/server/file.dos `
+3. If there is no match in dolphindb.mappings, use `getHomeDir() + /uploads/ + filename` as the upload path
 
 ## Development
 ```shell
