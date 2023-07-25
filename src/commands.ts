@@ -452,7 +452,7 @@ export const ddb_commands = [
                 if (!fp_remote) { 
                     if (fp_remote === '')
                         window.showErrorMessage(t('文件上传路径不能为空'))
-                return
+                    return
                 }
             }
             
