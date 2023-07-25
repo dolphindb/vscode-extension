@@ -116,6 +116,7 @@ export async function upload_single_file (file_uri: Uri, path: string, ddb: DDB,
         )
     }
     
+    
     // Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
     // content must be a string or string vector which stores the text to save.
     await ddb.call('saveTextFile', [text, path])
@@ -132,8 +133,8 @@ export async function upload_dir (uri: Uri, path: string, ddb: DDB) {
     const sub_files: Array<[string, FileType]> = await workspace.fs.readDirectory(uri)
     
     
-    for (let i = 0;  i < sub_files.length;  i++) { 
-        const [name, file_type] = sub_files[i]
+    for (let sub_file of sub_files) { 
+        const [name, file_type] = sub_file
         const upload_path = path + '/' + name
         const file_uri = Uri.file(uri.fsPath + '/' + name)
         
@@ -143,19 +144,4 @@ export async function upload_dir (uri: Uri, path: string, ddb: DDB) {
             await upload_dir(file_uri, upload_path, ddb)
     }
     
-}
-
-export function get_common_path (path_list: string[]) {
-    let common_path_list = [ ]
-    const new_path_list = path_list.map(item => item.split('/'))
-    
-    if (!path_list.length)
-        return ''
-    for (let j = 0;  j < new_path_list[0].length;  j++) { 
-        for (let i = 1;  i < new_path_list.length;  i++)
-            if (new_path_list[i][j] !== new_path_list[0][j])
-                return common_path_list.join('/')
-            common_path_list.push(new_path_list[0][j])
-    }
-    return common_path_list.join('/')
 }

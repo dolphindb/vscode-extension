@@ -460,25 +460,25 @@ export const ddb_commands = [
             }
             
             
-            const value = await window.showWarningMessage(t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}', { file_num: uri_list.length, fp_remote }), { }, { title: t('确认') })
+            const upload_files = uri_list.map(file_uri => resolve_remote_path(file_uri.fsPath, mappings, fdp_home)).join('\n')
+            
+            const value = await window.showWarningMessage(t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}', { file_num: uri_list.length, fp_remote: fp_remote || upload_files }), { }, { title: t('确认') })
             if (!value)
                 return 
             
-            for (let idx = 0;  idx < uri_list.length;  idx++) { 
-                const file_uri = uri_list[idx]
+            for (let file_uri of uri_list ) { 
                 const { type } = await workspace.fs.stat(file_uri)
                 
                 // 多文件场景下将文件逐一映射，但文件场景下直接采用fp_remote
                 const file_path = is_multiple ? resolve_remote_path(file_uri.fsPath, mappings, fdp_home) : fp_remote
-                console.log(file_uri.fsPath, file_path, 7777)
-                // if (type === FileType.Directory)
-                //     await upload_dir(file_uri, file_path, ddb)
-                // else
-                //     await upload_single_file(file_uri, file_path, ddb, false)
+                if (type === FileType.Directory)
+                    await upload_dir(file_uri, file_path, ddb)
+                else
+                    await upload_single_file(file_uri, file_path, ddb, false)
             }
             
             
-            window.showInformationMessage(`${t('文件成功上传到: ')}${fp_remote}`)
+            window.showInformationMessage(`${t('文件成功上传到: ')}${ fp_remote || upload_files}`)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
