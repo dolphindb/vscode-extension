@@ -4,7 +4,7 @@ import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri
 
 import { path, Timer, delay, inspect } from 'xshell'
 
-import { DdbConnectionError, DdbForm, DdbObj, DdbType, InspectOptions } from 'dolphindb'
+import { DdbConnectionError, DdbForm, DdbObj, DdbType, type InspectOptions, type DdbStringObj } from 'dolphindb'
 
 
 import { t } from './i18n/index.js'
@@ -496,6 +496,7 @@ export const ddb_commands = [
         formatter.prompt()
     },
     
+    
     async function synchronize_module (uri: Uri) {
         try {
             let { connection } = explorer
@@ -509,12 +510,12 @@ export const ddb_commands = [
                 await workspace.fs.readFile(Uri.file(uri.fsPath))
             )
             
-            // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是false且目录下已存在对应文件，会报错，true直接覆盖旧的文件
-            // 第三个参数表示是否加密。false不加密，生成dos文件；true加密，生成dom文件 
+            // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是 false 且目录下已存在对应文件，会报错，true 直接覆盖旧的文件
+            // 第三个参数表示是否加密。false 不加密，生成 dos 文件；true 加密，生成 dom 文件
             // 返回值为上传结果对象
-            const fp = await ddb.call('uploadModule', [text, true, true])
+            const { value } = await ddb.call<DdbStringObj>('uploadModule', [text, true, true])
             
-            window.showInformationMessage(`${t('模块成功同步到: ')}${fp.value}`)
+            window.showInformationMessage(`${t('模块成功同步到: ')}${value.fp}`)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
