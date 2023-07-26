@@ -496,7 +496,7 @@ export const ddb_commands = [
             // 返回值为上传结果对象
             const fp = await ddb.call('uploadModule', [text, true, true])
             
-            window.showInformationMessage(`${t('文件成功同步到: ')}${fp.value}`)
+            window.showInformationMessage(`${t('模块成功同步到: ')}${fp.value}`)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error

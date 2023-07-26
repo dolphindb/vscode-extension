@@ -371,8 +371,8 @@
     "文件成功上传到: ": {
         "en": "The file was successfully uploaded to: "
     },
-    "文件成功同步到: ": {
-        "en": "The file was successfully synced to: "
+    "模块成功同步到: ": {
+        "en": "The module was successfully synced to: "
     },
     "配置文件中的 dolphindb.mappings 中存在路径类型错误映射项（\"文件夹\" 路径错误映射到 \"文件\" 路径或 \"文件\" 路径错误映射到 \"文件夹\" 路径），请检查后修改。": {
         "en": "There is a wrong path mapping item in dolphindb.mappings in the configuration file (the \"folder\" path is incorrectly mapped to the \"file\" path or the \"file\" path is incorrectly mapped to the \"folder\" path), please check and modify. "
