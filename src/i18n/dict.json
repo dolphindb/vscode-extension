@@ -371,8 +371,11 @@
     "文件成功上传到: ": {
         "en": "The file was successfully uploaded to: "
     },
-    "请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}":{
+    "请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}": {
         "en": "Please confirm whether to upload these {{file_num}} files to {{fp_remote}}"
+    },
+    "模块成功上传到: ": {
+        "en": "The module was successfully uploaded to: "
     },
     "配置文件中的 dolphindb.mappings 中存在路径类型错误映射项（\"文件夹\" 路径错误映射到 \"文件\" 路径或 \"文件\" 路径错误映射到 \"文件夹\" 路径），请检查后修改。": {
         "en": "There is a wrong path mapping item in dolphindb.mappings in the configuration file (the \"folder\" path is incorrectly mapped to the \"file\" path or the \"file\" path is incorrectly mapped to the \"folder\" path), please check and modify. "
@@ -385,5 +388,8 @@
     },
     "配置文件中的 dolphindb.mappings 中存在路径类型错误映射项（1. \"文件夹\" 路径错误映射到 \"文件\" 路径；2. \"文件\" 路径错误映射到 \"文件夹\" 路径；3. \"default\" 没有映射到 \"文件夹\" 路径。）请检查后修改。": {
         "en": "There is a wrong path type mapping item in dolphindb.mappings in the configuration file (1. \"folder\" path is incorrectly mapped to \"file\" path; 2. \"file\" path is incorrectly mapped to \"folder\" path; 3. \"default\" is not mapped to \"folder\" path.) Please check and modify."
+    },
+    "是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件": {
+        "en": "Do you want to encrypt the module after uploading? \nIf it is encrypted, the server will only save the encrypted .dom file, and the source code cannot be viewed\nIf it is not encrypted, the server will save the original file"
     }
 }

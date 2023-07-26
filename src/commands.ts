@@ -4,7 +4,7 @@ import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri
 
 import { path, Timer, delay, inspect } from 'xshell'
 
-import { DdbConnectionError, DdbForm, DdbObj, DdbType, InspectOptions } from 'dolphindb'
+import { DdbConnectionError, DdbForm, DdbObj, DdbType, type InspectOptions, type DdbStringObj } from 'dolphindb'
 
 
 import { t } from './i18n/index.js'
@@ -483,7 +483,11 @@ export const ddb_commands = [
     
     /** 批量上传文件  
         uri 为右键选中的文件，uris 为所有选中的文件列表  */
-    async function upload_file (uri: Uri, uris: Uri[]) {
+    async function upload_file (uri: Uri, uris: Uri[] | { groupId: 0 }) {
+        // 点击图标上传时 uris 不是数组
+        if (!Array.isArray(uris))
+            uris = [uri]
+        
         // 文件上点右键 upload 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
             await upload(uri, uris)
@@ -519,5 +523,41 @@ export const ddb_commands = [
     
     function set_decimals () {
         formatter.prompt()
+    },
+    
+    
+    async function upload_module (uri: Uri, uris: Uri[]) {
+        try {
+            let { connection } = explorer
+            
+            await connection.connect()
+            
+            let { ddb } = connection
+            
+            await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
+            const text = new TextDecoder('utf-8').decode(
+                await workspace.fs.readFile(Uri.file(uri.fsPath))
+            )
+            
+            const { title } = await window.showInformationMessage(
+                t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
+                { modal: true },   
+                { title: t('是') },  
+                { title: t('否') },
+            ) || { }
+            
+            if (!title)
+                return
+            
+            // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是 false 且目录下已存在对应文件，会报错，true 直接覆盖旧的文件
+            // 第三个参数表示是否加密。false 不加密，生成 dos 文件；true 加密，生成 dom 文件
+            // 返回值为上传结果对象
+            const { value } = await ddb.call<DdbStringObj>('uploadModule', [text, true, title === t('是')])
+            
+            window.showInformationMessage(`${t('模块成功上传到: ')}${value.fp}`)
+        } catch (error) {
+            window.showErrorMessage(error.message)
+            throw error
+        }
     }
 ]
