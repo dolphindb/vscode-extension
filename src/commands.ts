@@ -497,7 +497,7 @@ export const ddb_commands = [
     },
     
     
-    async function synchronize_module (uri: Uri) {
+    async function upload_module (uri: Uri) {
         try {
             let { connection } = explorer
             
@@ -510,12 +510,22 @@ export const ddb_commands = [
                 await workspace.fs.readFile(Uri.file(uri.fsPath))
             )
             
+            const { title } = await window.showInformationMessage(
+                t('是否要对上传后的模块加密？\n若加密，服务器端将保存加密后的 .dom 文件，看不到源码\n若不加密，服务器端将保存 .dos 文件，可以看到源码'), 
+                { modal: true },   
+                { title: t('是') },  
+                { title: t('否') },
+            ) || { }
+            
+            if (title === undefined)
+                return
+            
             // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是 false 且目录下已存在对应文件，会报错，true 直接覆盖旧的文件
             // 第三个参数表示是否加密。false 不加密，生成 dos 文件；true 加密，生成 dom 文件
             // 返回值为上传结果对象
-            const { value } = await ddb.call<DdbStringObj>('uploadModule', [text, true, true])
+            const { value } = await ddb.call<DdbStringObj>('uploadModule', [text, true, title === t('是') ? true : false])
             
-            window.showInformationMessage(`${t('模块成功同步到: ')}${value.fp}`)
+            window.showInformationMessage(`${t('模块成功上传到: ')}${value.fp}`)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
