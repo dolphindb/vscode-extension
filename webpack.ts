@@ -208,6 +208,13 @@ export async function build_package_json () {
                 en: 'DolphinDB: Set decimal places'
             },
         },
+        {
+            command: 'synchronize_module',
+            title: {
+                zh: 'DolphinDB: 同步模块',
+                en: 'DolphinDB: Synchronize Module'
+            }
+        },
     ]
     
     
@@ -655,9 +662,14 @@ export async function build_package_json () {
                     //     group: '2_workspace' 
                     // }
                     {
+                        when: '!explorerResourceIsFolder',
                         command: 'dolphindb.upload_file',
-                        group: '2_workspace',
-                        when: '!explorerResourceIsFolder'
+                        group: '2_workspace'
+                    },
+                    {
+                        when: 'resourceDirname =~ /modules/ && !explorerResourceIsFolder',
+                        command: 'dolphindb.synchronize_module',
+                        group: '2_workspace'
                     }
                 ]
             },

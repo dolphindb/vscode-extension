@@ -476,5 +476,30 @@ export const ddb_commands = [
     
     function set_decimals () {
         formatter.prompt()
+    },
+    
+    async function synchronize_module (uri: Uri) {
+        try {
+            let { connection } = explorer
+            
+            await connection.connect()
+            
+            let { ddb } = connection
+            
+            await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
+            const text = new TextDecoder('utf-8').decode(
+                await workspace.fs.readFile(Uri.file(uri.fsPath))
+            )
+            
+            // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是false且目录下已存在对应文件，会报错，true直接覆盖旧的文件
+            // 第三个参数表示是否加密。false不加密，生成dos文件；true加密，生成dom文件 
+            // 返回值为上传路径或错误信息
+            const fp = await ddb.call('uploadModule', [text, true, true])
+            
+            window.showInformationMessage(`${t('文件成功同步到: ')}${fp.value}`)
+        } catch (error) {
+            window.showErrorMessage(error.message)
+            throw error
+        }
     }
 ]
