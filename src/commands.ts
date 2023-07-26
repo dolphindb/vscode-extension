@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 
-import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri } from 'vscode'
+import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri, FileType } from 'vscode'
 
 import { path, Timer, delay, inspect } from 'xshell'
 
@@ -12,7 +12,7 @@ import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
-import { get_text, open_workbench_settings_ui } from './utils.js'
+import { get_text, open_workbench_settings_ui, upload_dir, upload_single_file } from './utils.js'
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
@@ -415,8 +415,13 @@ export const ddb_commands = [
     },
     
     
-    /** 上传文件预填写默认路径 `getHomeDir() + /uploads/ + 需要上传的文件名` */
-    async function upload_file (uri: Uri) {
+    /** 批量上传文件  
+        uri 为右键选中的文件，uris 为所有选中的文件列表  */
+    async function upload_file (uri: Uri, uris: Uri[] | { groupId: 0 }) {
+        // 点击图标上传时 uris 不是数组
+        if (!Array.isArray(uris))
+            uris = [uri]
+        
         // 文件上点右键 upload 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
             const mappings = normalize_mappings(workspace.getConfiguration('dolphindb').get('mappings'))
@@ -426,47 +431,60 @@ export const ddb_commands = [
             
             let { connection } = explorer
             
+            // 是否为多文件上传
+            const multiple = uris.length > 1
+            
             await connection.connect()
             
             let { ddb } = connection
             
-            const fp_remote = await window.showInputBox({
-                title: t('上传到服务器端的路径'),
-                value: resolve_remote_path(
-                    uri.fsPath.fp,
-                    mappings,
-                    (await ddb.call<DdbObj<string>>('getHomeDir')).value
-                )
-            })
+            const fdp_home = (await ddb.call<DdbObj<string>>('getHomeDir')).value.fpd
             
-            if (!fp_remote) {
-                if (fp_remote === '') 
-                    window.showErrorMessage(t('文件上传路径不能为空'))
+            // 单文件场景下用户可以手动填入路径
+            let fp_remote: string
+            if (!multiple) {
+                fp_remote = await window.showInputBox({
+                    title: t('上传到服务器端的路径'),
+                    value: resolve_remote_path(
+                        uri.fsPath.fp,
+                        mappings,
+                        fdp_home
+                    )
+                })
+                
+                if (!fp_remote) {
+                    if (fp_remote === '')
+                        window.showErrorMessage(t('文件上传路径不能为空'))
+                    return
+                }
+            }
+            
+            
+            const remote_fps = uris.map(file_uri => resolve_remote_path(file_uri.fsPath.fp, mappings, fdp_home))
+            const remote_fps_str = fp_remote || remote_fps.join('\n')
+            
+            if (!await window.showWarningMessage(
+                t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}',
+                { file_num: uris.length, fp_remote: remote_fps_str }),
+                { modal: true },
+                { title: t('确认') }
+            ))
                 return
+            
+            for (let i = 0;  i < uris.length;  i++ ) { 
+                const uri = uris[i]
+                const { type } = await workspace.fs.stat(uri)
+                
+                // 多文件场景下将文件逐一映射，单文件场景下直接采用 fp_remote
+                const fp = fp_remote || remote_fps[i]
+                if (type === FileType.Directory)
+                    await upload_dir(uri, fp, ddb)
+                else
+                    await upload_single_file(uri, fp, ddb)
             }
             
-            const fpd_remote = fp_remote.fdir
             
-            let text: string
-            if (uri.scheme === 'untitled')
-                text = get_text('all')
-            else {
-                await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
-                text = new TextDecoder('utf-8').decode(
-                    await workspace.fs.readFile(Uri.file(uri.fsPath))
-                )
-            }
-            
-            if (!(
-                await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])
-            ).value)
-                await ddb.call('mkdir', [fpd_remote])
-            
-            // Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
-            // content must be a string or string vector which stores the text to save.
-            await ddb.call('saveTextFile', [text, fp_remote])
-            
-            window.showInformationMessage(`${t('文件成功上传到: ')}${fp_remote}`)
+            window.showInformationMessage(`${t('文件成功上传到: ')}${remote_fps_str}`)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error

@@ -196,8 +196,8 @@ export async function build_package_json () {
         {
             command: 'upload_file',
             title: {
-                zh: 'DolphinDB: 上传文件',
-                en: 'DolphinDB: Upload File'
+                zh: 'DolphinDB: 上传到服务器',
+                en: 'DolphinDB: Upload to server'
             },
             icon: '$(cloud-upload)',
         },

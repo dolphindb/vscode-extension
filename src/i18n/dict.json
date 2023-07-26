@@ -371,6 +371,9 @@
     "文件成功上传到: ": {
         "en": "The file was successfully uploaded to: "
     },
+    "请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}":{
+        "en": "Please confirm whether to upload these {{file_num}} files to {{fp_remote}}"
+    },
     "模块成功同步到: ": {
         "en": "The module was successfully synced to: "
     },

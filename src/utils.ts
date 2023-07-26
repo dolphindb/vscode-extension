@@ -1,10 +1,16 @@
+import { DDB, DdbObj } from 'dolphindb'
 import {
     window,
     Position,
     Range,
     ConfigurationTarget,
-    commands
+    commands,
+    Uri,
+    workspace,
+    FileType
 } from 'vscode'
+
+import { path } from 'xshell'
 
 
 /** 获取选择区域的文本，若选择为空，则根据 selector 确定 (当前 | 全部文本 | 空) */
@@ -89,4 +95,40 @@ export function open_workbench_settings_ui (target: ConfigurationTarget, options
     
     if (target === ConfigurationTarget.WorkspaceFolder) 
         return commands.executeCommand('workbench.action.openFolderSettings', options)
+}
+
+
+export async function upload_single_file (file_uri: Uri, path: string, ddb: DDB, check_existence = true) { 
+    if (check_existence && !(await ddb.call<DdbObj<boolean>>('exists', [path.fdir])).value)
+        await ddb.call('mkdir', [path.fdir])
+    
+    let text: string
+    if (file_uri.scheme === 'untitled')
+        text = get_text('all')
+    else {
+        await workspace.textDocuments.find(doc => doc.fileName === file_uri.fsPath)?.save()
+        text = new TextDecoder('utf-8').decode(
+            await workspace.fs.readFile(file_uri)
+        )
+    }
+    
+    // Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
+    // content must be a string or string vector which stores the text to save.
+    await ddb.call('saveTextFile', [text, path])
+}
+
+
+export async function upload_dir (uri: Uri, fpd_remote: string, ddb: DDB, check_existence = true) { 
+    if (check_existence && !(await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])).value)
+        await ddb.call('mkdir', [fpd_remote])
+    
+    for (const [name, file_type] of await workspace.fs.readDirectory(uri)) { 
+        const upload_path = path.join(fpd_remote, name)
+        const file_uri = Uri.file(uri.fsPath.fp + '/' + name)
+        
+        if (file_type === FileType.File)
+            await upload_single_file(file_uri, upload_path, ddb, false)
+         else  
+            await upload_dir(file_uri, upload_path + '/', ddb)
+    }
 }
