@@ -493,7 +493,7 @@ export const ddb_commands = [
             
             // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是false且目录下已存在对应文件，会报错，true直接覆盖旧的文件
             // 第三个参数表示是否加密。false不加密，生成dos文件；true加密，生成dom文件 
-            // 返回值为上传路径或错误信息
+            // 返回值为上传结果对象
             const fp = await ddb.call('uploadModule', [text, true, true])
             
             window.showInformationMessage(`${t('文件成功同步到: ')}${fp.value}`)
