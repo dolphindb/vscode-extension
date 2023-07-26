@@ -490,7 +490,7 @@ export async function build_package_json () {
                                 '`  "default" : "/data/" }`  \n' +
                                 '如果用户本地文件路径为 `"/path/to/local/dir1/file.dos"`，则会被映射到服务器路径 `"/data/server/dir1/file.dos"`  \n' +
                                 '如果用户本地文件路径为 `"D:/path/to/local/file.dos"`，则会被映射到服务器路径 `"/data/server/file.dos"`  \n' +
-                                '如果用户本地文件路径为 `"/user/documents/file.dos"`，则被匹配到 **"default"** 项,即映射为服务器路径 `"/data/file.dos"`'
+                                '如果用户本地文件路径为 `"/user/documents/file.dos"`，则被匹配到 **"default"** 项，即映射为服务器路径 `"/data/file.dos"`'
                             
                             const description_en =
                                 'Mapping relationship between local path and server path when uploading files (**"default"** can be configured as the default upload server path,If it is a folder mapping, both local and server paths need to end with **"/"**)  \n' +
