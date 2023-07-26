@@ -385,5 +385,6 @@
     },
     "配置文件中的 dolphindb.mappings 中存在路径类型错误映射项（1. \"文件夹\" 路径错误映射到 \"文件\" 路径；2. \"文件\" 路径错误映射到 \"文件夹\" 路径；3. \"default\" 没有映射到 \"文件夹\" 路径。）请检查后修改。": {
         "en": "There is a wrong path type mapping item in dolphindb.mappings in the configuration file (1. \"folder\" path is incorrectly mapped to \"file\" path; 2. \"file\" path is incorrectly mapped to \"folder\" path; 3. \"default\" is not mapped to \"folder\" path.) Please check and modify."
-    }
+    },
+    "请注意只能上传txt、dos与csv类型的文件，其他文件会忽略": "Please note that only files of type txt, dos, and csv can be uploaded, and other files will be ignored."
 }

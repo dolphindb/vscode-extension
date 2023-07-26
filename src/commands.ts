@@ -443,13 +443,15 @@ export const ddb_commands = [
             // 单文件场景下用户可以手动填入路径
             let fp_remote: string
             if (!multiple) {
+                const { type } = await workspace.fs.stat(uri)
+                const local_fp = uri.fsPath.fp + (type === FileType.Directory ? '/' : '')
                 fp_remote = await window.showInputBox({
                     title: t('上传到服务器端的路径'),
                     value: resolve_remote_path(
-                        uri.fsPath.fp,
+                        local_fp,
                         mappings,
                         fdp_home
-                    )
+                    ),
                 })
                 
                 if (!fp_remote) {
@@ -460,12 +462,17 @@ export const ddb_commands = [
             }
             
             
-            const remote_fps = uris.map(file_uri => resolve_remote_path(file_uri.fsPath.fp, mappings, fdp_home))
+            const remote_fps = uris.map(async file_uri => {
+                const { type } = await workspace.fs.stat(file_uri)
+                const local_fp = uri.fsPath.fp + (type === FileType.Directory ? '/' : '')
+                return resolve_remote_path(local_fp, mappings, fdp_home)
+            })
+            
             const remote_fps_str = fp_remote || remote_fps.join('\n')
             
             if (!await window.showWarningMessage(
                 t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}',
-                { file_num: uris.length, fp_remote: remote_fps_str }),
+                { file_num: uris.length, fp_remote: remote_fps_str }) + '\n' + t('请注意只能上传txt、dos与csv类型的文件，其他文件会忽略'),
                 { modal: true },
                 { title: t('确认') }
             ))
@@ -476,7 +483,7 @@ export const ddb_commands = [
                 const { type } = await workspace.fs.stat(uri)
                 
                 // 多文件场景下将文件逐一映射，单文件场景下直接采用 fp_remote
-                const fp = fp_remote || remote_fps[i]
+                const fp = fp_remote || await remote_fps[i]
                 if (type === FileType.Directory)
                     await upload_dir(uri, fp, ddb)
                 else
