@@ -497,7 +497,7 @@ export const ddb_commands = [
     },
     
     
-    async function upload_module (uri: Uri) {
+    async function upload_module (uri: Uri, uris: Uri[]) {
         try {
             let { connection } = explorer
             
@@ -517,7 +517,7 @@ export const ddb_commands = [
                 { title: t('否') },
             ) || { }
             
-            if (title === undefined)
+            if (!title)
                 return
             
             // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是 false 且目录下已存在对应文件，会报错，true 直接覆盖旧的文件

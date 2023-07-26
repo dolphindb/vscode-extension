@@ -196,8 +196,8 @@ export async function build_package_json () {
         {
             command: 'upload_file',
             title: {
-                zh: 'DolphinDB: 上传文件到服务器',
-                en: 'DolphinDB: Upload file to server'
+                zh: 'DolphinDB: 上传到服务器',
+                en: 'DolphinDB: Upload to server'
             },
             icon: '$(cloud-upload)',
         },
@@ -211,8 +211,8 @@ export async function build_package_json () {
         {
             command: 'upload_module',
             title: {
-                zh: 'DolphinDB: 上传模块到服务器',
-                en: 'DolphinDB: Upload module to server'
+                zh: 'DolphinDB: 上传模块',
+                en: 'DolphinDB: Upload Module'
             }
         },
     ]
@@ -662,12 +662,11 @@ export async function build_package_json () {
                     //     group: '2_workspace' 
                     // }
                     {
-                        when: '!explorerResourceIsFolder',
                         command: 'dolphindb.upload_file',
                         group: '2_workspace'
                     },
                     {
-                        when: 'resourceDirname =~ /modules/ && !explorerResourceIsFolder',
+                        when: '!explorerResourceIsFolder',
                         command: 'dolphindb.upload_module',
                         group: '2_workspace'
                     }
