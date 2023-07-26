@@ -202,6 +202,13 @@ export async function build_package_json () {
             icon: '$(cloud-upload)',
         },
         {
+            command: 'unit_test',
+            title: {
+                zh: 'DolhpinDB: 单元测试',
+                en: 'DolphinDB: Unit Test'
+            }  
+        },
+        {
             command: 'set_decimals',
             title: {
                 zh: 'DolphinDB: 设置 DolphinDB 小数显示位数',
@@ -648,12 +655,11 @@ export async function build_package_json () {
                 ],
                 
                 'explorer/context': [
-                    // 单元测试按钮 
-                    // {
-                    //     when: 'resourceExtname == .dos',
-                    //     command: 'dolphindb.unit_test',
-                    //     group: '2_workspace' 
-                    // }
+                    {
+                        when: 'resourceExtname == .dos',
+                        command: 'dolphindb.unit_test',
+                        group: '2_workspace' 
+                    },
                     {
                         command: 'dolphindb.upload_file',
                         group: '2_workspace',
