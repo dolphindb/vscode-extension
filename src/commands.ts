@@ -511,7 +511,7 @@ export const ddb_commands = [
             )
             
             const { title } = await window.showInformationMessage(
-                t('是否要对上传后的模块加密？\n若加密，服务器端将保存加密后的 .dom 文件，看不到源码。\n若不加密，服务器端将保存 .dos 文件，可以看到源码。'), 
+                t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
                 { modal: true },   
                 { title: t('是') },  
                 { title: t('否') },
