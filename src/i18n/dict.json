@@ -389,7 +389,7 @@
     "配置文件中的 dolphindb.mappings 中存在路径类型错误映射项（1. \"文件夹\" 路径错误映射到 \"文件\" 路径；2. \"文件\" 路径错误映射到 \"文件夹\" 路径；3. \"default\" 没有映射到 \"文件夹\" 路径。）请检查后修改。": {
         "en": "There is a wrong path type mapping item in dolphindb.mappings in the configuration file (1. \"folder\" path is incorrectly mapped to \"file\" path; 2. \"file\" path is incorrectly mapped to \"folder\" path; 3. \"default\" is not mapped to \"folder\" path.) Please check and modify."
     },
-    "是否要对上传后的模块加密？\n若加密，服务器端将保存加密后的 .dom 文件，看不到源码\n若不加密，服务器端将保存 .dos 文件，可以看到源码": {
-        "en": "Do you want to encrypt the uploaded module?\nIf encrypted, the server will save the encrypted .dom file, and the source code cannot be seen\nIf it is not encrypted, the server will save the .dos file, and you can see the source code"
+    "是否要对上传后的模块加密？\n若加密，服务器端将保存加密后的 .dom 文件，看不到源码。\n若不加密，服务器端将保存 .dos 文件，可以看到源码。": {
+        "en": "Do you want to encrypt the uploaded module?\nIf encrypted, the server will save the encrypted .dom file, and the source code cannot be seen.\nIf it is not encrypted, the server will save the .dos file, and you can see the source code."
     }
 }
