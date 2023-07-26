@@ -461,12 +461,12 @@ export const ddb_commands = [
                 }
             }
             
-            
-            const remote_fps = uris.map(async file_uri => {
+            let remote_fps: string[] = [ ]
+            for (let file_uri of uris) { 
                 const { type } = await workspace.fs.stat(file_uri)
                 const local_fp = uri.fsPath.fp + (type === FileType.Directory ? '/' : '')
-                return resolve_remote_path(local_fp, mappings, fdp_home)
-            })
+                remote_fps.push(resolve_remote_path(local_fp, mappings, fdp_home)) 
+            }
             
             const remote_fps_str = fp_remote || remote_fps.join('\n')
             
@@ -483,7 +483,7 @@ export const ddb_commands = [
                 const { type } = await workspace.fs.stat(uri)
                 
                 // 多文件场景下将文件逐一映射，单文件场景下直接采用 fp_remote
-                const fp = fp_remote || await remote_fps[i]
+                const fp = fp_remote || remote_fps[i]
                 if (type === FileType.Directory)
                     await upload_dir(uri, fp, ddb)
                 else
