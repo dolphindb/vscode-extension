@@ -10,6 +10,8 @@ import {
     FileType
 } from 'vscode'
 
+import { path } from 'xshell'
+
 
 /** 获取选择区域的文本，若选择为空，则根据 selector 确定 (当前 | 全部文本 | 空) */
 export function get_text (selector: 
@@ -121,7 +123,7 @@ export async function upload_dir (uri: Uri, fpd_remote: string, ddb: DDB, check_
         await ddb.call('mkdir', [fpd_remote])
     
     for (const [name, file_type] of await workspace.fs.readDirectory(uri)) { 
-        const upload_path = fpd_remote + name
+        const upload_path = path.join(fpd_remote, name)
         const file_uri = Uri.file(uri.fsPath.fp + '/' + name)
         
         if (file_type === FileType.File)

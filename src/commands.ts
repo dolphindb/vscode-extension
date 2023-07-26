@@ -417,7 +417,11 @@ export const ddb_commands = [
     
     /** 批量上传文件  
         uri 为右键选中的文件，uris 为所有选中的文件列表  */
-    async function upload_file (uri: Uri, uris: Uri[]) {
+    async function upload_file (uri: Uri, uris: Uri[] | { groupId: 0 }) {
+        // 点击图标上传时 uris 不是数组
+        if (!Array.isArray(uris))
+            uris = [uri]
+        
         // 文件上点右键 upload 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
             const mappings = normalize_mappings(workspace.getConfiguration('dolphindb').get('mappings'))
