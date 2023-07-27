@@ -554,7 +554,7 @@ export const ddb_commands = [
             // 返回值为上传结果对象
             const { value } = await ddb.call<DdbStringObj>('uploadModule', [text, true, title === t('是')])
             
-            window.showInformationMessage(`${t('模块成功上传到: ')}${value.fp}`)
+            window.showInformationMessage(`${t('模块成功上传到: ')}${path.normalize(value.fp)}`)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
