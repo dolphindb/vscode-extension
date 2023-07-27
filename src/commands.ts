@@ -440,15 +440,20 @@ export const ddb_commands = [
             
             const fdp_home = (await ddb.call<DdbObj<string>>('getHomeDir')).value.fpd
             
+            let remote_fps: string[] = [ ]
+            for (let file_uri of uris) { 
+                const { type } = await workspace.fs.stat(file_uri)
+                const local_fp = uri.fsPath.fp + (type === FileType.Directory ? '/' : '')
+                remote_fps.push(resolve_remote_path(local_fp, mappings, fdp_home)) 
+            }
+            
             // 单文件场景下用户可以手动填入路径
             let fp_remote: string
             if (!multiple) {
-                const { type } = await workspace.fs.stat(uri)
-                const local_fp = uri.fsPath.fp + (type === FileType.Directory ? '/' : '')
                 fp_remote = await window.showInputBox({
                     title: t('上传到服务器端的路径'),
                     value: resolve_remote_path(
-                        local_fp,
+                        remote_fps[0],
                         mappings,
                         fdp_home
                     ),
@@ -459,13 +464,6 @@ export const ddb_commands = [
                         window.showErrorMessage(t('文件上传路径不能为空'))
                     return
                 }
-            }
-            
-            let remote_fps: string[] = [ ]
-            for (let file_uri of uris) { 
-                const { type } = await workspace.fs.stat(file_uri)
-                const local_fp = uri.fsPath.fp + (type === FileType.Directory ? '/' : '')
-                remote_fps.push(resolve_remote_path(local_fp, mappings, fdp_home)) 
             }
             
             const remote_fps_str = fp_remote || remote_fps.join('\n')
