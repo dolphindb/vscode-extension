@@ -331,7 +331,7 @@ export async function open_connection_settings () {
 
 
 async function upload (uri: Uri, uris: Uri[]) {
-    // const mappings = normalize_mappings(workspace.getConfiguration('dolphindb').get('connections'))
+ 
     let { connection } = explorer
     
     const connections = workspace.getConfiguration('dolphindb').get('connections')
@@ -339,10 +339,9 @@ async function upload (uri: Uri, uris: Uri[]) {
     const mappings = normalize_mappings((connections as Array<DdbConnection>).
                                         find(connection_ => connection_.name === connection.name).mappings)
     
-    console.log('connection:', mappings)
-    
     if (should_remind_setting_mappings && !Object.keys(mappings).length && !await remind_mappings())
-        return ''
+        return
+            
     
     // 是否为多文件上传
     const multiple = uris.length > 1
@@ -353,18 +352,26 @@ async function upload (uri: Uri, uris: Uri[]) {
     
     const fdp_home = (await ddb.call<DdbObj<string>>('getHomeDir')).value.fpd
     
+    const remote_fps = await Promise.all(
+        uris.map(async file_uri => { 
+            const { type } = await workspace.fs.stat(file_uri)
+            const local_fp = type === FileType.Directory ? uri.fsPath.fpd : uri.fsPath.fp
+            return resolve_remote_path(local_fp, mappings, fdp_home)
+        })
+    )
+    
     // 单文件场景下用户可以手动填入路径
     let fp_remote: string
     if (!multiple) {
         fp_remote = await window.showInputBox({
             title: t('上传到服务器端的路径'),
             value: resolve_remote_path(
-                uri.fsPath.fp,
+                remote_fps[0],
                 mappings,
                 fdp_home
             )
         })
-                
+        
         if (!fp_remote) {
             if (fp_remote === '')
                 window.showErrorMessage(t('文件上传路径不能为空'))
@@ -372,8 +379,6 @@ async function upload (uri: Uri, uris: Uri[]) {
         }
     }
     
-    
-    const remote_fps = uris.map(file_uri => resolve_remote_path(file_uri.fsPath.fp, mappings, fdp_home))
     const remote_fps_str = fp_remote || remote_fps.join('\n')
     
     if (!await window.showWarningMessage(
@@ -386,17 +391,16 @@ async function upload (uri: Uri, uris: Uri[]) {
     
     for (let i = 0;  i < uris.length;  i++ ) { 
         const uri = uris[i]
-        const { type } = await workspace.fs.stat(uri)
         
         // 多文件场景下将文件逐一映射，单文件场景下直接采用 fp_remote
         const fp = fp_remote || remote_fps[i]
-        if (type === FileType.Directory)
+        if (remote_fps[i].isdir)
             await upload_dir(uri, fp, ddb)
         else
             await upload_single_file(uri, fp, ddb)
     }
-            
-            
+    
+    
     window.showInformationMessage(`${t('文件成功上传到: ')}${remote_fps_str}`)
     return fp_remote || remote_fps
 }
@@ -493,7 +497,6 @@ export const ddb_commands = [
         // 点击图标上传时 uris 不是数组
         if (!Array.isArray(uris))
             uris = [uri]
-        
         // 文件上点右键 upload 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
             await upload(uri, uris)
