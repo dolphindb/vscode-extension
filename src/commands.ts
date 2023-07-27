@@ -330,7 +330,7 @@ export async function open_connection_settings () {
 }
 
 
-async function upload (uri: Uri, uris: Uri[]) {
+export async function upload (uri: Uri, uris: Uri[]) {
     let { connection } = explorer
     
     const connections = workspace.getConfiguration('dolphindb').get('connections')
@@ -341,7 +341,7 @@ async function upload (uri: Uri, uris: Uri[]) {
     )
     
     if (should_remind_setting_mappings && !Object.keys(mappings).length && !await remind_mappings())
-        return
+        return [ ]
     
     
     // 是否为多文件上传
