@@ -353,7 +353,7 @@ export class DdbConnection extends TreeItem {
         
         verbose: false,
         
-        mappings: { }
+        mappings: null
     }
     
     // --- 状态
