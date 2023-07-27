@@ -98,7 +98,7 @@ Go to `File > Preferences > Keyboard Shortcuts` (`File > Preferences > Keyboard 
 
 - In order to display tables and other data in the browser, each VSCode window will start a local HTTP server, and its available port range can be configured through `dolphindb.ports`, the default is `8321-8420`, hover the mouse over ports to view Detailed explanation. The function displayed in the pop-up window in the browser requires a version of the past two years, such as Chrome 100+ or Edge 100+ or Firefox 100+
 
-- If the right button of the dataview panel is hidden, it cannot be displayed again, and the script returning to the form and array will always be displayed as being executed. You need to execute a piece of script code that can return the table and array, and then press `ctrl + shift + p ` Call out the Command Palette, search for open view, click to open the view, and then search for the data view, click to open
+- If the dataview (data view) panel is right-clicked and hidden, it cannot be displayed again, and the execution script has been stuck in execution. You need to execute the `defs()` function, then press `ctrl + shift + p` to call out the command panel, search for open view, click to open the view, and then search for the data view (English name is dataview), click to open
 
 #### 6. Switch connections and view session variables for connections in the DOLPHIDB area of the EXPLORER panel on the left side of the VSCode editor
 
