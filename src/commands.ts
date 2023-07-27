@@ -440,14 +440,12 @@ export const ddb_commands = [
             
             const fdp_home = (await ddb.call<DdbObj<string>>('getHomeDir')).value.fpd
             
-            let remote_fps: string[] = [ ]
-            for (let file_uri of uris) { 
+            const remote_fps: string[] = await Promise.all(uris.map(async file_uri => { 
                 const { type } = await workspace.fs.stat(file_uri)
                 const local_fp = type === FileType.Directory ? uri.fsPath.fpd : uri.fsPath.fp
-                remote_fps.push(resolve_remote_path(local_fp, mappings, fdp_home)) 
-            }
-            
-            
+                return resolve_remote_path(local_fp, mappings, fdp_home)
+            }))
+           
             // 单文件场景下用户可以手动填入路径
             let fp_remote: string
             if (!multiple) {
@@ -479,11 +477,10 @@ export const ddb_commands = [
             
             for (let i = 0;  i < uris.length;  i++ ) { 
                 const uri = uris[i]
-                const { type } = await workspace.fs.stat(uri)
                 
                 // 多文件场景下将文件逐一映射，单文件场景下直接采用 fp_remote
                 const fp = fp_remote || remote_fps[i]
-                if (type === FileType.Directory)
+                if (remote_fps[i].slice(-1) === '/')
                     await upload_dir(uri, fp, ddb)
                 else
                     await upload_single_file(uri, fp, ddb)
