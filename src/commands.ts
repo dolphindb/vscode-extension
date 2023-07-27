@@ -403,7 +403,7 @@ async function upload (uri: Uri, uris: Uri[]) {
     
     window.showInformationMessage(`${t('文件成功上传到: ')}${remote_fps_str}`)
     
-    return [fp_remote] || remote_fps
+    return fp_remote ? [fp_remote] : remote_fps
 }
 
 
