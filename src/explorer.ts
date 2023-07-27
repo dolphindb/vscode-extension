@@ -402,6 +402,7 @@ export class DdbConnection extends TreeItem {
                 this.options[key] = value
         }
         
+        this.mappings = this.options.mappings
         this.description = this.url
         this.iconPath = icon_empty
         this.contextValue = 'disconnected'
