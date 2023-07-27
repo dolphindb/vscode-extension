@@ -372,7 +372,8 @@ export async function upload (uri: Uri, uris: Uri[]) {
         if (!fp_remote) {
             if (fp_remote === '')
                 window.showErrorMessage(t('文件上传路径不能为空'))
-            return
+            
+            return [ ]
         }
     }
     
@@ -384,7 +385,7 @@ export async function upload (uri: Uri, uris: Uri[]) {
         { modal: true },
         { title: t('确认') }
     ))
-        return
+        return [ ]
     
     for (let i = 0;  i < uris.length;  i++ ) { 
         const uri = uris[i]
