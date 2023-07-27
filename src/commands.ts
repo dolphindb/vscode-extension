@@ -59,7 +59,7 @@ function normalize_mappings (mappings: Record<string, string>) {
                     const normalized_value = path.normalize(value)
                     
                     if (normalized_key === 'default' ? !normalized_value.isdir : (normalized_key.isdir !== normalized_value.isdir))
-                        throw Error(t('配置文件中的 dolphindb.mappings 中存在路径类型错误映射项（1. "文件夹" 路径错误映射到 "文件" 路径；2. "文件" 路径错误映射到 "文件夹" 路径；3. "default" 没有映射到 "文件夹" 路径。）请检查后修改。'))
+                        throw Error(t('当前连接配置中的 mappings 中存在路径类型错误映射项（1. "文件夹" 路径错误映射到 "文件" 路径；2. "文件" 路径错误映射到 "文件夹" 路径；3. "default" 没有映射到 "文件夹" 路径。）请检查后修改。'))
                     
                     return [normalized_key, normalized_value]
                 })
