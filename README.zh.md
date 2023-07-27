@@ -98,7 +98,7 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 
 - 为了在浏览器中展示表格等数据，每个 VSCode 窗口会启动一个本地 HTTP 服务器，其可用端口范围可以通过 `dolphindb.ports` 配置，默认为 `8321-8420`，鼠标悬浮在 ports 上可查看详细解释。在浏览器中弹窗展示的功能，要求近两年的版本，如 Chrome 100+ 或 Edge 100+ 或 Firefox 100+
 
-- 如果出现 dataview (数据视图) 面板右键隐藏后，无法再次显示，且运行任何脚本都在执行中，需要先执行一段代码，然后按 `ctrl + shift + p` 呼出命令面板，搜索 open view，点击打开视图，然后搜索数据视图（英文名是 dataview），点击后即可打开
+- 如果出现 dataview (数据视图) 面板右键隐藏后，无法再次显示，且运行返回表格，数组的脚本都在执行中，需要先执行一段能够返回表格，数组的脚本代码，然后按 `ctrl + shift + p` 呼出命令面板，搜索 open view，点击打开视图，然后搜索数据视图（英文名是 dataview），点击后即可打开
 
 #### 6. 在 DOLPHINDB 区域中切换连接及查看已连接会话的变量
 执行代码后，如下图所示，可以：
