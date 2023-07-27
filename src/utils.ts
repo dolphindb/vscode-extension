@@ -98,7 +98,7 @@ export function open_workbench_settings_ui (target: ConfigurationTarget, options
 }
 
 
-export async function upload_single_file (file_uri: Uri, path: string, ddb: DDB, check_existence = true) { 
+export async function fupload (file_uri: Uri, path: string, ddb: DDB, check_existence = true) { 
     if (check_existence && !(await ddb.call<DdbObj<boolean>>('exists', [path.fdir])).value)
         await ddb.call('mkdir', [path.fdir])
     
@@ -118,7 +118,7 @@ export async function upload_single_file (file_uri: Uri, path: string, ddb: DDB,
 }
 
 
-export async function upload_dir (uri: Uri, fpd_remote: string, ddb: DDB, check_existence = true) { 
+export async function fdupload (uri: Uri, fpd_remote: string, ddb: DDB, check_existence = true) { 
     if (check_existence && !(await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])).value)
         await ddb.call('mkdir', [fpd_remote])
     
@@ -127,8 +127,8 @@ export async function upload_dir (uri: Uri, fpd_remote: string, ddb: DDB, check_
         const file_uri = Uri.file(uri.fsPath.fp + '/' + name)
         
         if (file_type === FileType.File)
-            await upload_single_file(file_uri, upload_path, ddb, false)
+            await fupload(file_uri, upload_path, ddb, false)
          else  
-            await upload_dir(file_uri, upload_path + '/', ddb)
+            await fdupload(file_uri, upload_path + '/', ddb)
     }
 }

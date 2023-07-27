@@ -12,7 +12,7 @@ import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
-import { get_text, open_workbench_settings_ui, upload_dir, upload_single_file } from './utils.js'
+import { get_text, open_workbench_settings_ui, fdupload, fupload } from './utils.js'
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
@@ -354,11 +354,13 @@ export async function upload (uri: Uri, uris: Uri[]) {
     const fdp_home = (await ddb.call<DdbObj<string>>('getHomeDir')).value.fpd
     
     const remote_fps = await Promise.all(
-        uris.map(async file_uri => { 
-            const { type } = await workspace.fs.stat(file_uri)
-            const local_fp = type === FileType.Directory ? uri.fsPath.fpd : uri.fsPath.fp
-            return resolve_remote_path(local_fp, mappings, fdp_home)
-        })
+        uris.map(async uri =>
+            resolve_remote_path(
+                (await workspace.fs.stat(uri)).type === FileType.Directory ? uri.fsPath.fpd : uri.fsPath.fp,
+                mappings,
+                fdp_home
+            )
+        )
     )
     
     // 单文件场景下用户可以手动填入路径
@@ -380,9 +382,9 @@ export async function upload (uri: Uri, uris: Uri[]) {
         }
     }
     
-    const remote_fps_str = fp_remote || remote_fps.join('\n')
+    const remote_fps_str = fp_remote || remote_fps.join_lines(false)
     
-    if (!await window.showWarningMessage(
+    if (!await window.showInformationMessage(
         t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}',
         { file_num: uris.length, fp_remote: remote_fps_str }),
         { modal: true },
@@ -396,9 +398,9 @@ export async function upload (uri: Uri, uris: Uri[]) {
         // 多文件场景下将文件逐一映射，单文件场景下直接采用 fp_remote
         const fp = fp_remote || remote_fps[i]
         if (remote_fps[i].isdir)
-            await upload_dir(uri, fp, ddb)
+            await fdupload(uri, fp, ddb)
         else
-            await upload_single_file(uri, fp, ddb)
+            await fupload(uri, fp, ddb)
     }
     
     window.showInformationMessage(`${t('文件成功上传到: ')}${remote_fps_str}`)
