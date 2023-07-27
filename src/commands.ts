@@ -74,7 +74,7 @@ let should_remind_setting_mappings = true
 /** 展示 modal 提醒用户设置 mappings */
 async function remind_mappings () {
     const { title } = await window.showInformationMessage(
-        t('您未配置 dolphindb.mappings，是否现在配置？'), 
+        t('当前连接未配置 mappings，是否现在配置？'), 
         { modal: true },   
         { title: t('是') },  
         { title: t('否'), isCloseAffordance: true }, 
@@ -83,7 +83,7 @@ async function remind_mappings () {
     
     switch (title) {
         case t('是'):
-            await commands.executeCommand('dolphindb.open_settings', 'mappings')
+            await commands.executeCommand('dolphindb.open_settings', 'connections')
             return false
         case t('否'):
             return true
@@ -331,12 +331,18 @@ export async function open_connection_settings () {
 
 
 async function upload (uri: Uri, uris: Uri[]) {
-    const mappings = normalize_mappings(workspace.getConfiguration('dolphindb').get('mappings'))
-            
+    // const mappings = normalize_mappings(workspace.getConfiguration('dolphindb').get('connections'))
+    let { connection } = explorer
+    
+    const connections = workspace.getConfiguration('dolphindb').get('connections')
+    
+    const mappings = normalize_mappings((connections as Array<DdbConnection>).
+                                        find(connection_ => connection_.name === connection.name).mappings)
+    
+    console.log('connection:', mappings)
+    
     if (should_remind_setting_mappings && !Object.keys(mappings).length && !await remind_mappings())
         return ''
-    
-    let { connection } = explorer
     
     // 是否为多文件上传
     const multiple = uris.length > 1

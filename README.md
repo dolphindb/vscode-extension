@@ -128,10 +128,10 @@ DolphinDB's VSCode plugin supports users to upload files. Users are supported to
 
 After that, the user needs to input the path of the file uploaded to the server (cannot be empty), press Enter, and wait for the prompt "The file was uploaded successfully".
 
-In addition, users can customize the mapping relationship between the local path and the server path by configuring dolphindb.mappings, so that the plug-in can automatically match the server path according to dolphindb.mappings in the subsequent upload process. On the VSCode settings interface, select DolphinDB under Extensions, and select Add Items on the Mappings interface. The "key" on the left is the local address, and the "value" on the right is the server address.
-<img src='./images/mappings.en.png' width='800'>
+In addition, users can customize the mapping relationship between the local path and the server path by configuring the mappings of Connections, so that the plug-in can automatically match the server path according to the mappings in the subsequent upload process. In the VSCode setting interface, select DolphinDB under extension, open the setting.json file, add or modify mappings in the connection that needs to be configured, the "key" on the left is the local address, and the "value" on the right is the server address.
+<img src='./images/mappings.png' width='800'>
 
-After adding, the plugin will map the path according to the user's mappings. For example, the mappings currently configured by the user are:
+After adding, the plugin will map the path according to the mappings configured by the user in the current connection. For example, the mappings configured in the user's current connection are:
 ```json
 {
     "/path/to/local/": "/path/at/remote/",

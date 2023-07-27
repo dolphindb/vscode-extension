@@ -132,11 +132,11 @@ DolphinDB 的 VSCode 插件支持用户上传文件。支持用户以以下两�
 
 之后，需要用户输入上传到 server 的文件路径（不能为空），回车后，等待提示 "文件成功上传" 即可。
 
-此外，用户可以通过配置 dolphindb.mappings 来自定义本地路径和 server 路径的映射关系，方便插件在后续上传过程根据 dolphindb.mappings 自行匹配 server 路径。在 VSCode 设置界面，选中扩展下的 DolphinDB，在 Mappings 界面选择添加项，左侧 "键" 为本地地址，右侧 "值" 为服务器地址。
-<img src='./images/mappings.zh.png' width='800'>
+此外，用户可以通过配置 Connections 的 mappings 来自定义本地路径和 server 路径的映射关系，方便插件在后续上传过程根据 mappings 自行匹配 server 路径。在 VSCode 设置界面，选中扩展下的 DolphinDB，打开 setting.json 文件，在需要配置的 connection 中添加或修改 mappings ，左侧 "键" 为本地地址，右侧 "值" 为服务器地址。
+<img src='./images/mappings.png' width='800'>
 
 
-添加完成后，插件会根据用户的 mappings 对路径进行映射。例如，用户当前配置的 mappings 为: 
+添加完成后，插件会根据当前连接中用户配置的 mappings 对路径进行映射。例如，用户当前连接中配置的 mappings 为: 
 ```json
 {
     "/path/to/local/": "/path/at/remote/",

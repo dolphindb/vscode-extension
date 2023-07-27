@@ -419,6 +419,52 @@ export async function build_package_json () {
                                             en: 'Whether to print the information of each rpc for debugging, the default is false'
                                         },
                                     },
+                                    {
+                                        name: 'mappings',
+                                        type: 'object',
+                                        default: { },
+                                        ...(() => {
+                                            const description_zh =
+                                                '上传文件时支持配置文件和文件夹映射 (可添加 **"default"** 作为默认的上传路径，如果是文件夹映射，需要本地和服务器路径均以 **"/"** 结尾)  \n' +
+                                                '比如，用户配置 mappings 为如下内容:  \n' + 
+                                                '`{ "/path/to/local/" : "/path/at/remote/",`  \n' +
+                                                '`  "/path/to/local/dir1/file.dos": "/data/server/dir1/file.dos",`  \n' +
+                                                '`  "D:/path/to/local/": "/data/server/",`  \n' +
+                                                '`  "default" : "/data/" }`  \n' +
+                                                '如果用户本地文件路径为 `"/path/to/local/dir1/file.dos"`，则会被映射到服务器路径 `"/data/server/dir1/file.dos"`  \n' +
+                                                '如果用户本地文件路径为 `"D:/path/to/local/file.dos"`，则会被映射到服务器路径 `"/data/server/file.dos"`  \n' +
+                                                '如果用户本地文件路径为 `"/user/documents/file.dos"`，则被匹配到 **"default"** 项，即映射为服务器路径 `"/data/file.dos"`'
+                                            
+                                            const description_en =
+                                                'Mapping relationship between local path and server path when uploading files (**"default"** can be configured as the default upload server path,If it is a folder mapping, both local and server paths need to end with **"/"**)  \n' +
+                                                'for example,The user configures mappings as follows:  \n' +
+                                                '`{ "/path/to/local/" : "/path/at/remote/",`  \n' +
+                                                '`  "/path/to/local/dir1/file.dos": "/data/server/dir1/file.dos",`  \n' +
+                                                '`  "D:/path/to/local/": "/data/server/",`  \n' +
+                                                '`  "default" : "/data/" }`  \n' +
+                                                'If the user local file path is `"/path/to/local/dir1/file.dos"`, it will be mapped to the server path `"/data/server/dir1/file.dos"`  \n' +
+                                                'If the user local file path is `"D:/path/to/local/file.dos"`, it will be mapped to the server path `"/data/server/file.dos"`  \n' +
+                                                'If the user local file path is `"/user/documents/file.dos"`, it will be matched to the **"default"** item, which is mapped to the server path `"/data/file.dos"`'
+                                            
+                                            return {
+                                                markdownDescription: {
+                                                    zh: description_zh,
+                                                    en: description_en
+                                                },
+                                                patternProperties: {
+                                                    '.*': {
+                                                        type: 'string',
+                                                        markdownDescription: make(
+                                                            'configs.mappings.item.markdownDescription',
+                                                            description_zh,
+                                                            description_en
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        })()  
+                                        
+                                    }
                                 ].map(prop => [
                                     prop.name,
                                     {
@@ -477,51 +523,6 @@ export async function build_package_json () {
                         )
                     } satisfies Schema,
                     
-                    'dolphindb.mappings': {
-                        type: 'object',
-                        default: { },
-                        ...(() => {
-                            const description_zh =
-                                '上传文件时支持配置文件和文件夹映射 (可添加 **"default"** 作为默认的上传路径，如果是文件夹映射，需要本地和服务器路径均以 **"/"** 结尾)  \n' +
-                                '比如，用户配置 mappings 为如下内容:  \n' + 
-                                '`{ "/path/to/local/" : "/path/at/remote/",`  \n' +
-                                '`  "/path/to/local/dir1/file.dos": "/data/server/dir1/file.dos",`  \n' +
-                                '`  "D:/path/to/local/": "/data/server/",`  \n' +
-                                '`  "default" : "/data/" }`  \n' +
-                                '如果用户本地文件路径为 `"/path/to/local/dir1/file.dos"`，则会被映射到服务器路径 `"/data/server/dir1/file.dos"`  \n' +
-                                '如果用户本地文件路径为 `"D:/path/to/local/file.dos"`，则会被映射到服务器路径 `"/data/server/file.dos"`  \n' +
-                                '如果用户本地文件路径为 `"/user/documents/file.dos"`，则被匹配到 **"default"** 项，即映射为服务器路径 `"/data/file.dos"`'
-                            
-                            const description_en =
-                                'Mapping relationship between local path and server path when uploading files (**"default"** can be configured as the default upload server path,If it is a folder mapping, both local and server paths need to end with **"/"**)  \n' +
-                                'for example,The user configures mappings as follows:  \n' +
-                                '`{ "/path/to/local/" : "/path/at/remote/",`  \n' +
-                                '`  "/path/to/local/dir1/file.dos": "/data/server/dir1/file.dos",`  \n' +
-                                '`  "D:/path/to/local/": "/data/server/",`  \n' +
-                                '`  "default" : "/data/" }`  \n' +
-                                'If the user local file path is `"/path/to/local/dir1/file.dos"`, it will be mapped to the server path `"/data/server/dir1/file.dos"`  \n' +
-                                'If the user local file path is `"D:/path/to/local/file.dos"`, it will be mapped to the server path `"/data/server/file.dos"`  \n' +
-                                'If the user local file path is `"/user/documents/file.dos"`, it will be matched to the **"default"** item, which is mapped to the server path `"/data/file.dos"`'
-                            
-                            return {
-                                markdownDescription: make(
-                                    'configs.mappings.markdownDescription',
-                                    description_zh,
-                                    description_en
-                                ),
-                                patternProperties: {
-                                    '.*': {
-                                        type: 'string',
-                                        markdownDescription: make(
-                                            'configs.mappings.item.markdownDescription',
-                                            description_zh,
-                                            description_en
-                                        )
-                                    }
-                                }
-                            }
-                        })()                        
-                    } satisfies Schema
                 }
             },
             

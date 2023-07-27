@@ -350,6 +350,8 @@ export class DdbConnection extends TreeItem {
         sql: SqlStandard.DolphinDB,
         
         verbose: false,
+        
+        mappings: { }
     }
     
     // --- 状态
@@ -371,6 +373,7 @@ export class DdbConnection extends TreeItem {
     shared: DdbVarLocation
     
     running = false
+    mappings: any
     
     
     constructor (url: string, name: string = url, options: DdbOptions = { }) {
