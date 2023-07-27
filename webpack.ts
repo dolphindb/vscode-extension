@@ -664,7 +664,7 @@ export async function build_package_json () {
                 
                 'explorer/context': [
                     {
-                        when: 'resourceExtname == .dos',
+                        when: 'resourceExtname == .dos || explorerResourceIsFolder',
                         command: 'dolphindb.unit_test',
                         group: '2_workspace' 
                     },
