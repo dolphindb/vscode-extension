@@ -456,7 +456,7 @@ export const ddb_commands = [
                         remote_fps[0],
                         mappings,
                         fdp_home
-                    ),
+                    )
                 })
                 
                 if (!fp_remote) {
@@ -470,7 +470,7 @@ export const ddb_commands = [
             
             if (!await window.showWarningMessage(
                 t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}',
-                { file_num: uris.length, fp_remote: remote_fps_str }) + '\n' + t('请注意只能上传txt、dos与csv类型的文件，其他文件会忽略'),
+                { file_num: uris.length, fp_remote: remote_fps_str }),
                 { modal: true },
                 { title: t('确认') }
             ))

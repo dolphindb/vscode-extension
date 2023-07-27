@@ -99,7 +99,6 @@ export function open_workbench_settings_ui (target: ConfigurationTarget, options
 
 
 export async function upload_single_file (file_uri: Uri, path: string, ddb: DDB, check_existence = true) { 
-    
     if (check_existence && !(await ddb.call<DdbObj<boolean>>('exists', [path.fdir])).value)
         await ddb.call('mkdir', [path.fdir])
     
