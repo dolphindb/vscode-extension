@@ -208,6 +208,13 @@ export async function build_package_json () {
                 en: 'DolphinDB: Set decimal places'
             },
         },
+        {
+            command: 'upload_module',
+            title: {
+                zh: 'DolphinDB: 上传模块',
+                en: 'DolphinDB: Upload Module'
+            }
+        },
     ]
     
     
@@ -656,7 +663,12 @@ export async function build_package_json () {
                     // }
                     {
                         command: 'dolphindb.upload_file',
-                        group: '2_workspace',
+                        group: '2_workspace'
+                    },
+                    {
+                        when: '!explorerResourceIsFolder',
+                        command: 'dolphindb.upload_module',
+                        group: '2_workspace'
                     }
                 ]
             },
