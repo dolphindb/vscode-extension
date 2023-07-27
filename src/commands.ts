@@ -74,7 +74,7 @@ let should_remind_setting_mappings = true
 /** 展示 modal 提醒用户设置 mappings */
 async function remind_mappings () {
     const { title } = await window.showInformationMessage(
-        t('当前连接未配置 mappings，是否现在配置？'), 
+        t('当前连接未配置 mappings，建议在 dolphindb.connections 的每个连接配置对象中添加 mappings 属性，将本地路径关联到远程路径，是否现在配置？'), 
         { modal: true },   
         { title: t('是') },  
         { title: t('否'), isCloseAffordance: true }, 
