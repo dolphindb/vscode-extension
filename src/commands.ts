@@ -330,7 +330,7 @@ export async function open_connection_settings () {
 }
 
 
-export async function upload (uri: Uri, uris: Uri[]) {
+export async function upload (uri: Uri, uris: Uri[], silent = false) {
     let { connection } = explorer
     
     if (should_remind_setting_mappings && !connection.mappings && !await remind_mappings())
@@ -338,16 +338,13 @@ export async function upload (uri: Uri, uris: Uri[]) {
     
     const mappings = normalize_mappings(connection.mappings)
     
-    // 是否为多文件上传
-    const multiple = uris.length > 1
-    
     await connection.connect()
     
     let { ddb } = connection
     
     const fdp_home = (await ddb.call<DdbObj<string>>('getHomeDir')).value.fpd
     
-    const remote_fps = await Promise.all(
+    let remote_fps = await Promise.all(
         uris.map(async uri =>
             resolve_remote_path(
                 (await workspace.fs.stat(uri)).type === FileType.Directory ? uri.fsPath.fpd : uri.fsPath.fp,
@@ -358,28 +355,31 @@ export async function upload (uri: Uri, uris: Uri[]) {
     )
     
     // 单文件场景下用户可以手动填入路径
-    let fp_remote: string
-    if (!multiple) {
-        fp_remote = await window.showInputBox({
-            title: t('上传到服务器端的路径'),
-            value: resolve_remote_path(
-                remote_fps[0],
-                mappings,
-                fdp_home
-            )
-        })
+    if (uris.length === 1) {
+        let fp_remote = resolve_remote_path(
+            remote_fps[0],
+            mappings,
+            fdp_home
+        )
         
-        if (!fp_remote) {
+        if (!silent)
+            fp_remote = await window.showInputBox({
+                title: t('上传到服务器端的路径'),
+                value: fp_remote
+            })
+        
+        if (fp_remote)
+            remote_fps[0] = fp_remote
+        else {
             if (fp_remote === '')
                 window.showErrorMessage(t('文件上传路径不能为空'))
-            
             return [ ]
         }
     }
     
-    const remote_fps_str = fp_remote || remote_fps.join_lines(false)
+    const remote_fps_str = remote_fps.join_lines(false)
     
-    if (!await window.showInformationMessage(
+    if (!silent && !await window.showInformationMessage(
         t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}',
         { file_num: uris.length, fp_remote: remote_fps_str }),
         { modal: true },
@@ -391,16 +391,17 @@ export async function upload (uri: Uri, uris: Uri[]) {
         const uri = uris[i]
         
         // 多文件场景下将文件逐一映射，单文件场景下直接采用 fp_remote
-        const fp = fp_remote || remote_fps[i]
+        const fp = remote_fps[i]
         if (remote_fps[i].isdir)
             await fdupload(uri, fp, ddb)
         else
             await fupload(uri, fp, ddb)
     }
     
-    window.showInformationMessage(`${t('文件成功上传到: ')}${remote_fps_str}`)
+    if (!silent)
+        window.showInformationMessage(`${t('文件成功上传到: ')}${remote_fps_str}`)
     
-    return fp_remote ? [fp_remote] : remote_fps
+    return remote_fps
 }
 
 
@@ -507,7 +508,7 @@ export const ddb_commands = [
     
     async function unit_test (uri: Uri, uris: []) {
         try {
-            for (const fp of await upload(uri, uris))
+            for (const fp of await upload(uri, uris, true))
                 await execute(`test('${fp}')`)
         } catch (error) {
             window.showErrorMessage(error.message)
