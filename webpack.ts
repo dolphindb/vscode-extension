@@ -204,7 +204,7 @@ export async function build_package_json () {
         {
             command: 'unit_test',
             title: {
-                zh: 'DolhpinDB: 单元测试',
+                zh: 'DolphinDB: 单元测试',
                 en: 'DolphinDB: Unit Test'
             }  
         },
@@ -463,7 +463,6 @@ export async function build_package_json () {
                                                 }
                                             }
                                         })()  
-                                        
                                     }
                                 ].map(prop => [
                                     prop.name,
@@ -664,9 +663,8 @@ export async function build_package_json () {
                 
                 'explorer/context': [
                     {
-                        when: 'resourceExtname == .dos || explorerResourceIsFolder',
                         command: 'dolphindb.unit_test',
-                        group: '2_workspace' 
+                        group: '2_workspace'
                     },
                     {
                         command: 'dolphindb.upload_file',

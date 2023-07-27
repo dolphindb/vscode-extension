@@ -338,7 +338,9 @@ export class DdbConnection extends TreeItem {
     url: string
     
     /** 这里设置的值为默认值，需要和 webpack 中的属性默认值保持一致 */
-    options: DdbOptions = {
+    options: DdbOptions & {
+        mappings: Record<string, string>
+    } = {
         autologin: true,
         
         username: 'admin',
@@ -373,7 +375,8 @@ export class DdbConnection extends TreeItem {
     shared: DdbVarLocation
     
     running = false
-    mappings: any
+    
+    mappings: Record<string, string>
     
     
     constructor (url: string, name: string = url, options: DdbOptions = { }) {

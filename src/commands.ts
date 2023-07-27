@@ -331,17 +331,18 @@ export async function open_connection_settings () {
 
 
 async function upload (uri: Uri, uris: Uri[]) {
- 
     let { connection } = explorer
     
     const connections = workspace.getConfiguration('dolphindb').get('connections')
     
-    const mappings = normalize_mappings((connections as Array<DdbConnection>).
-                                        find(connection_ => connection_.name === connection.name).mappings)
+    const mappings = normalize_mappings(
+        (connections as Array<DdbConnection>).find(connection_ => connection_.name === connection.name)
+            .mappings
+    )
     
     if (should_remind_setting_mappings && !Object.keys(mappings).length && !await remind_mappings())
         return
-            
+    
     
     // 是否为多文件上传
     const multiple = uris.length > 1
@@ -400,9 +401,9 @@ async function upload (uri: Uri, uris: Uri[]) {
             await upload_single_file(uri, fp, ddb)
     }
     
-    
     window.showInformationMessage(`${t('文件成功上传到: ')}${remote_fps_str}`)
-    return fp_remote || remote_fps
+    
+    return [fp_remote] || remote_fps
 }
 
 
@@ -509,20 +510,8 @@ export const ddb_commands = [
     
     async function unit_test (uri: Uri, uris: []) {
         try {
-            const remote_fps = await upload(uri, uris)
-            
-            if (typeof remote_fps === 'string' ? !remote_fps : !remote_fps.length)
-                return
-            
-            let { connection } = explorer
-            
-            await connection.connect()
-                    
-            if (typeof remote_fps === 'string')   
-                await execute(`test('${remote_fps}')`)
-            else 
-                for (let i = 0;  i < remote_fps.length;  i++)
-                    await execute(`test('${remote_fps[i]}')`)
+            for (const fp of await upload(uri, uris))
+                await execute(`test('${fp}')`)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
