@@ -443,9 +443,10 @@ export const ddb_commands = [
             let remote_fps: string[] = [ ]
             for (let file_uri of uris) { 
                 const { type } = await workspace.fs.stat(file_uri)
-                const local_fp = uri.fsPath.fp + (type === FileType.Directory ? '/' : '')
+                const local_fp = type === FileType.Directory ? uri.fsPath.fpd : uri.fsPath.fp
                 remote_fps.push(resolve_remote_path(local_fp, mappings, fdp_home)) 
             }
+            
             
             // 单文件场景下用户可以手动填入路径
             let fp_remote: string
