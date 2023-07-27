@@ -71,7 +71,7 @@ function normalize_mappings (mappings: Record<string, string>) {
 
 let should_remind_setting_mappings = true
 
-/** 展示 modal 提醒用户设置 mappings */
+/** 展示 modal 提醒用户设置 mappings, 返回是否还要继续后面的操作 */
 async function remind_mappings () {
     const { title } = await window.showInformationMessage(
         t('当前连接未配置 mappings，建议在 dolphindb.connections 的每个连接配置对象中添加 mappings 属性，将本地路径关联到远程路径，是否现在配置？'), 
@@ -333,16 +333,10 @@ export async function open_connection_settings () {
 export async function upload (uri: Uri, uris: Uri[]) {
     let { connection } = explorer
     
-    const connections = workspace.getConfiguration('dolphindb').get('connections')
-    
-    const mappings = normalize_mappings(
-        (connections as Array<DdbConnection>).find(connection_ => connection_.name === connection.name)
-            .mappings
-    )
-    
-    if (should_remind_setting_mappings && !Object.keys(mappings).length && !await remind_mappings())
+    if (should_remind_setting_mappings && !connection.mappings && !await remind_mappings())
         return [ ]
     
+    const mappings = normalize_mappings(connection.mappings)
     
     // 是否为多文件上传
     const multiple = uris.length > 1
