@@ -422,7 +422,9 @@ export async function build_package_json () {
                                     {
                                         name: 'mappings',
                                         type: 'object',
-                                        default: { },
+                                        default: {
+                                            'D:/path/to/local/dir/': '/tmp/remote/dir/'
+                                        },
                                         ...(() => {
                                             const description_zh =
                                                 '上传文件时支持配置文件和文件夹映射 (可添加 **"default"** 作为默认的上传路径，如果是文件夹映射，需要本地和服务器路径均以 **"/"** 结尾)  \n' +
