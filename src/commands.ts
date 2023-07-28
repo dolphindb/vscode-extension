@@ -362,10 +362,11 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
                 value: remote_fps[0]
             })
         
-        if (!remote_fps[0])
+        if (!remote_fps[0]) {
             if (remote_fps[0] === '')
                 window.showErrorMessage(t('文件上传路径不能为空'))
             return [ ]
+        }
     }
     
     const remote_fps_str = remote_fps.join_lines(false)
