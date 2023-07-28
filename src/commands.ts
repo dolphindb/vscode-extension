@@ -344,7 +344,7 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
     
     const fdp_home = (await ddb.call<DdbObj<string>>('getHomeDir')).value.fpd
     
-    let remote_fps = await Promise.all(
+    const remote_fps = await Promise.all(
         uris.map(async uri =>
             resolve_remote_path(
                 (await workspace.fs.stat(uri)).type === FileType.Directory ? uri.fsPath.fpd : uri.fsPath.fp,
@@ -356,25 +356,15 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
     
     // 单文件场景下用户可以手动填入路径
     if (uris.length === 1) {
-        let fp_remote = resolve_remote_path(
-            remote_fps[0],
-            mappings,
-            fdp_home
-        )
-        
         if (!silent)
-            fp_remote = await window.showInputBox({
+            remote_fps[0] = await window.showInputBox({
                 title: t('上传到服务器端的路径'),
-                value: fp_remote
+                value: remote_fps[0]
             })
-        
-        if (fp_remote)
-            remote_fps[0] = fp_remote
-        else {
-            if (fp_remote === '')
+        if (!remote_fps[0])
+            if (remote_fps[0] === '')
                 window.showErrorMessage(t('文件上传路径不能为空'))
             return [ ]
-        }
     }
     
     const remote_fps_str = remote_fps.join_lines(false)
@@ -530,20 +520,19 @@ export const ddb_commands = [
             
             let { ddb } = connection
             
-            await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
-            const text = new TextDecoder('utf-8').decode(
-                await workspace.fs.readFile(Uri.file(uri.fsPath))
-            )
-            
             const { title } = await window.showInformationMessage(
                 t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
                 { modal: true },   
                 { title: t('是') },  
                 { title: t('否') },
             ) || { }
-            
             if (!title)
                 return
+            
+            await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
+            const text = new TextDecoder('utf-8').decode(
+                await workspace.fs.readFile(Uri.file(uri.fsPath))
+            )
             
             // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是 false 且目录下已存在对应文件，会报错，true 直接覆盖旧的文件
             // 第三个参数表示是否加密。false 不加密，生成 dos 文件；true 加密，生成 dom 文件
