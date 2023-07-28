@@ -102,9 +102,9 @@ async function remind_mappings () {
     resolve_remote_path('D:/aaa/bbb/ccc.txt', { 'D:/aaa/': '/data/', default: '/default/' }, '/home/')
     // /data/bbb/ccc.txt */
 function resolve_remote_path (fp_local: string, mappings: Record<string, string>, fpd_home: string) {
-    for (let fp = fp_local, fp_last = null;  fp !== fp_last;  fp_last = fp, fp = fp.fdir)
-        if (fp in mappings)
-            return mappings[fp] + fp_local.slice(fp.length)
+    for (let fp = fp_local, fp_last = null, fp_: string;  fp !== fp_last;  fp_last = fp, fp = fp.fdir)
+        if (fp_ = mappings[fp])
+            return fp_ + fp_local.slice(fp.length)
     
     return (mappings.default || `${fpd_home}uploads/`) + fp_local.fname
 }
