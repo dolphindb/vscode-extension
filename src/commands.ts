@@ -344,7 +344,7 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
     
     const fdp_home = (await ddb.call<DdbObj<string>>('getHomeDir')).value.fpd
     
-    const remote_fps = await Promise.all(
+    let remote_fps = await Promise.all(
         uris.map(async uri =>
             resolve_remote_path(
                 (await workspace.fs.stat(uri)).type === FileType.Directory ? uri.fsPath.fpd : uri.fsPath.fp,
@@ -361,6 +361,7 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
                 title: t('上传到服务器端的路径'),
                 value: remote_fps[0]
             })
+        
         if (!remote_fps[0])
             if (remote_fps[0] === '')
                 window.showErrorMessage(t('文件上传路径不能为空'))
@@ -526,6 +527,7 @@ export const ddb_commands = [
                 { title: t('是') },  
                 { title: t('否') },
             ) || { }
+            
             if (!title)
                 return
             
