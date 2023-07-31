@@ -43,7 +43,7 @@ function truncate_text (lines: string[]) {
     let lines_ = lines.slice(i_first_non_empty, too_much ? i_first_non_empty + 2 : i_non_empty_end)
     
     if (too_much)
-        lines_.push(t('...共 {{total_lines}} 行', { total_lines: i_non_empty_end - i_first_non_empty }))
+        lines_.push(t('··· 共 {{total_lines}} 行 ···', { total_lines: i_non_empty_end - i_first_non_empty }))
     
     return lines_
 }

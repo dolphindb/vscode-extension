@@ -335,8 +335,8 @@
     "第 {{iline}} 行": {
         "en": "line {{iline}}"
     },
-    "...共 {{total_lines}} 行": {
-        "en": "... {{total_lines}} lines in total"
+    "··· 共 {{total_lines}} 行 ···": {
+        "en": "··· {{total_lines}} lines in total ···"
     },
     "调试服务器已启动，等待 VSCode 调试器连接端口 {{port}}": {
         "en": "The debug server has started, waiting for the VSCode debugger to connect to port {{port}}"
