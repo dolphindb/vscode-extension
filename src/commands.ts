@@ -110,7 +110,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 }
 
 
-async function execute (text: string, is_test: boolean) {
+async function execute (text: string, testing = false) {
     let { connection } = explorer
     
     if (connection.running) {
@@ -222,6 +222,17 @@ async function execute (text: string, is_test: boolean) {
     connection.running = false
     statbar.update()
     
+    if (testing) {
+        printer.fire(
+            (obj.value as string).replaceAll('\n', '\r\n').blue +
+            timer.getstr(true) +
+            (connection === explorer.connection ? '' : ` (${connection.name})`) +
+            '\r\n'
+        )
+        
+        return
+    }
+    
     let to_inspect = false
     let objstr: string
     
@@ -246,8 +257,9 @@ async function execute (text: string, is_test: boolean) {
                     inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
     }
     
-    printer.fire(( is_test ? obj.value.toString().replaceAll('\n', '\r\n').blue : objstr) +
-                timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
+    printer.fire(
+        objstr +
+        timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
     )
     
     if (to_inspect)
@@ -256,12 +268,12 @@ async function execute (text: string, is_test: boolean) {
 
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
-async function execute_with_progress (text: string) {
+async function execute_with_progress (text: string, testing?: boolean) {
     let { connection } = explorer
     
     let done = false
     
-    const pexecute = execute(text, false)
+    const pexecute = execute(text, testing)
     
     // 1s 还未完成，则显示进度
     ;(async () => {
@@ -500,7 +512,7 @@ export const ddb_commands = [
     async function unit_test (uri: Uri, uris: []) {
         try {
             for (const fp of await upload(uri, uris, true))
-                await execute(`test('${fp}')`, true)
+                await execute_with_progress(`test('${fp}')`, true)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
