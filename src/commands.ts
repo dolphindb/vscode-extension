@@ -384,26 +384,29 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
     const remote_fps_str = remote_fps.join_lines(false)
     
     if (!silent && !await window.showInformationMessage(
-        t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}',
+        t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}（目前版本暂不支持上传二进制文件，二进制文件会被自动忽略）',
         { file_num: uris.length, fp_remote: remote_fps_str }),
         { modal: true },
         { title: t('确认') }
     ))
         return [ ]
     
+    // 暂时用传入数组的方式对二进制文件进行剔除，将成功上传的文件 push 到数组中
+    const uploaded_files = [ ]
+        
     for (let i = 0;  i < uris.length;  i++ ) { 
         const uri = uris[i]
         
         // 多文件场景下将文件逐一映射，单文件场景下直接采用 fp_remote
         const fp = remote_fps[i]
         if (remote_fps[i].isdir)
-            await fdupload(uri, fp, ddb)
+            await fdupload(uri, fp, ddb, uploaded_files)
         else
-            await fupload(uri, fp, ddb)
+            await fupload(uri, fp, ddb, uploaded_files)
     }
     
-    if (!silent)
-        window.showInformationMessage(`${t('文件成功上传到: ')}${remote_fps_str}`)
+    if (!silent && uploaded_files.length)
+        window.showInformationMessage(`${t('文件成功上传到: ')}${uploaded_files.join_lines(false)}`)
     
     return remote_fps
 }

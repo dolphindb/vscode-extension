@@ -86,6 +86,11 @@ export function get_text (selector:
 }
 
 
+export function is_binary_file (buffer: Uint8Array) {
+    return buffer.includes(0)
+}
+
+
 export function open_workbench_settings_ui (target: ConfigurationTarget, options?: { query?: string }) {
     if (target === ConfigurationTarget.Global) 
         return commands.executeCommand('workbench.action.openSettings', options)
@@ -98,7 +103,7 @@ export function open_workbench_settings_ui (target: ConfigurationTarget, options
 }
 
 
-export async function fupload (file_uri: Uri, path: string, ddb: DDB, check_existence = true) { 
+export async function fupload (file_uri: Uri, path: string, ddb: DDB, uploaded_files: string[], check_existence = true) { 
     if (check_existence && !(await ddb.call<DdbObj<boolean>>('exists', [path.fdir])).value)
         await ddb.call('mkdir', [path.fdir])
     
@@ -107,18 +112,20 @@ export async function fupload (file_uri: Uri, path: string, ddb: DDB, check_exis
         text = get_text('all')
     else {
         await workspace.textDocuments.find(doc => doc.fileName === file_uri.fsPath)?.save()
-        text = new TextDecoder('utf-8').decode(
-            await workspace.fs.readFile(file_uri)
-        )
+        const buffer = await workspace.fs.readFile(file_uri)
+        if (is_binary_file(buffer))
+            return
+        text = new TextDecoder('utf-8').decode(buffer)
     }
     
     // Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
     // content must be a string or string vector which stores the text to save.
     await ddb.call('saveTextFile', [text, path])
+    uploaded_files.push(path)
 }
 
 
-export async function fdupload (uri: Uri, fpd_remote: string, ddb: DDB, check_existence = true) { 
+export async function fdupload (uri: Uri, fpd_remote: string, ddb: DDB,  uploaded_files: string[], check_existence = true) { 
     if (check_existence && !(await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])).value)
         await ddb.call('mkdir', [fpd_remote])
     
@@ -127,8 +134,8 @@ export async function fdupload (uri: Uri, fpd_remote: string, ddb: DDB, check_ex
         const file_uri = Uri.file(uri.fsPath.fp + '/' + name)
         
         if (file_type === FileType.File)
-            await fupload(file_uri, upload_path, ddb, false)
+            await fupload(file_uri, upload_path, ddb, uploaded_files, false)
          else  
-            await fdupload(file_uri, upload_path + '/', ddb)
+            await fdupload(file_uri, upload_path + '/', ddb, uploaded_files)
     }
 }
