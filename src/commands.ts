@@ -222,12 +222,16 @@ async function execute (text: string, testing = false) {
     connection.running = false
     statbar.update()
     
+    
+    function get_execution_end () {
+        return timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
+    }
+    
+    
     if (testing) {
         printer.fire(
             (obj.value as string).replaceAll('\n', '\r\n').blue +
-            timer.getstr(true) +
-            (connection === explorer.connection ? '' : ` (${connection.name})`) +
-            '\r\n'
+            get_execution_end()
         )
         
         return
@@ -257,10 +261,7 @@ async function execute (text: string, testing = false) {
                     inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
     }
     
-    printer.fire(
-        objstr +
-        timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
-    )
+    printer.fire(objstr + get_execution_end())
     
     if (to_inspect)
         await lastvar.inspect()
