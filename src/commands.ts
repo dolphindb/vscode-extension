@@ -110,7 +110,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 }
 
 
-async function execute (text: string) {
+async function execute (text: string, testing = false) {
     let { connection } = explorer
     
     if (connection.running) {
@@ -222,6 +222,21 @@ async function execute (text: string) {
     connection.running = false
     statbar.update()
     
+    
+    function get_execution_end () {
+        return timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
+    }
+    
+    
+    if (testing) {
+        printer.fire(
+            (obj.value as string).replaceAll('\n', '\r\n').blue +
+            get_execution_end()
+        )
+        
+        return
+    }
+    
     let to_inspect = false
     let objstr: string
     
@@ -246,10 +261,7 @@ async function execute (text: string) {
                     inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
     }
     
-    printer.fire(
-        objstr +
-        timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
-    )
+    printer.fire(objstr + get_execution_end())
     
     if (to_inspect)
         await lastvar.inspect()
@@ -257,12 +269,12 @@ async function execute (text: string) {
 
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
-async function execute_with_progress (text: string) {
+async function execute_with_progress (text: string, testing?: boolean) {
     let { connection } = explorer
     
     let done = false
     
-    const pexecute = execute(text)
+    const pexecute = execute(text, testing)
     
     // 1s 还未完成，则显示进度
     ;(async () => {
@@ -501,7 +513,7 @@ export const ddb_commands = [
     async function unit_test (uri: Uri, uris: []) {
         try {
             for (const fp of await upload(uri, uris, true))
-                await execute(`test('${fp}')`)
+                await execute_with_progress(`test('${fp}')`, true)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
