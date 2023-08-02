@@ -12,7 +12,7 @@ import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
-import { get_text, open_workbench_settings_ui, fdupload, fupload, mdupload, mupload } from './utils.js'
+import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
@@ -544,15 +544,19 @@ export const ddb_commands = [
             if (!title)
                 return
             
-            const fps = new Array<string>()
-            for (let i = 0;  i < uris.length;  i++ ) { 
-                const uri = uris[i]
+            (await Promise.all(
+                uris.map(async  => {
                     
+                })
+            )).flat()
+            
+            let fps: string[]
+            for (const uri of uris)
                 if ((await workspace.fs.stat(uri)).type === FileType.Directory)
-                    await mdupload(uri, title === t('是'), ddb, fps)
+                    await fdmupload(uri, title === t('是'), ddb, fps)
                 else
-                    await mupload(uri, title === t('是'), ddb, fps)
-            }
+                    await fmupload(uri, title === t('是'), ddb, fps)
+            
             
             window.showInformationMessage(`${t('模块成功上传到: ')}${fps.join_lines(false)}`)
         } catch (error) {
