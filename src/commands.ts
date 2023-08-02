@@ -164,8 +164,7 @@ async function execute (text: string, is_test: boolean) {
                 }
             }
         )
-        if (is_test)
-            printer.fire(obj.value.toString().replace(/\n/g, '\r\n'))
+        
     } catch (error) {
         connection.running = false
         statbar.update()
@@ -248,11 +247,11 @@ async function execute (text: string, is_test: boolean) {
                     inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
     }
     
-    if (!is_test)
-        printer.fire(
-            objstr +
-            timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
-        )
+    printer.fire( is_test ? 
+        obj.value.toString().replace(/\n/g, '\r\n') :
+        objstr +
+        timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
+    )
     
     if (to_inspect)
         await lastvar.inspect()
