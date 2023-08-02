@@ -4,7 +4,7 @@ import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri
 
 import { path, Timer, delay, inspect } from 'xshell'
 
-import { DdbConnectionError, DdbForm, DdbObj, DdbType, type InspectOptions, type DdbStringObj } from 'dolphindb'
+import { DdbConnectionError, DdbForm, DdbObj, DdbType, type InspectOptions } from 'dolphindb'
 
 
 import { t } from './i18n/index.js'
@@ -12,7 +12,7 @@ import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
-import { get_text, open_workbench_settings_ui, fdupload, fupload } from './utils.js'
+import { get_text, open_workbench_settings_ui, fdupload, fupload, mdupload, mupload } from './utils.js'
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
@@ -532,17 +532,17 @@ export const ddb_commands = [
             if (!title)
                 return
             
-            await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
-            const text = new TextDecoder('utf-8').decode(
-                await workspace.fs.readFile(Uri.file(uri.fsPath))
-            )
+            const fps = new Array<string>()
+            for (let i = 0;  i < uris.length;  i++ ) { 
+                const uri = uris[i]
+                    
+                if ((await workspace.fs.stat(uri)).type === FileType.Directory)
+                    await mdupload(uri, title === t('是'), ddb, fps)
+                else
+                    await mupload(uri, title === t('是'), ddb, fps)
+            }
             
-            // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是 false 且目录下已存在对应文件，会报错，true 直接覆盖旧的文件
-            // 第三个参数表示是否加密。false 不加密，生成 dos 文件；true 加密，生成 dom 文件
-            // 返回值为上传结果对象
-            const { value } = await ddb.call<DdbStringObj>('uploadModule', [text, true, title === t('是')])
-            
-            window.showInformationMessage(`${t('模块成功上传到: ')}${path.normalize(value.fp)}`)
+            window.showInformationMessage(`${t('模块成功上传到: ')}${fps.join_lines(false)}`)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error

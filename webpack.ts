@@ -671,7 +671,6 @@ export async function build_package_json () {
                         group: '2_workspace'
                     },
                     {
-                        when: '!explorerResourceIsFolder',
                         command: 'dolphindb.upload_module',
                         group: '2_workspace'
                     }

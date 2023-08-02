@@ -1,4 +1,4 @@
-import { DDB, DdbObj } from 'dolphindb'
+import { DDB, DdbObj, type DdbStringObj } from 'dolphindb'
 import {
     window,
     Position,
@@ -130,5 +130,30 @@ export async function fdupload (uri: Uri, fpd_remote: string, ddb: DDB, check_ex
             await fupload(file_uri, upload_path, ddb, false)
          else  
             await fdupload(file_uri, upload_path + '/', ddb)
+    }
+}
+
+export async function mupload (uri: Uri, encrypt: boolean, ddb: DDB, fps: string[]) {
+    await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
+    const text = new TextDecoder('utf-8').decode(
+        await workspace.fs.readFile(Uri.file(uri.fsPath))
+    )
+            
+    // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是 false 且目录下已存在对应文件，会报错，true 直接覆盖旧的文件
+    // 第三个参数表示是否加密。false 不加密，生成 dos 文件；true 加密，生成 dom 文件
+    // 返回值为上传结果对象
+    const { value } = await ddb.call<DdbStringObj>('uploadModule', [text, true, encrypt])
+            
+    fps.push(path.normalize(value.fp))
+}
+
+export async function mdupload (uri: Uri, encrypt: boolean, ddb: DDB, fps: string[]) {
+    for (const [name, file_type] of await workspace.fs.readDirectory(uri)) { 
+        const file_uri = Uri.file(uri.fsPath.fp + '/' + name)
+        
+        if (file_type === FileType.File)
+            await mupload(file_uri, encrypt, ddb, fps)
+        else  
+            await mdupload(file_uri, encrypt, ddb, fps)
     }
 }
