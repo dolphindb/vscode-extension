@@ -248,7 +248,7 @@ async function execute (text: string, is_test: boolean) {
     
     printer.fire( is_test ? 
                         obj.value.toString().replace(/\n/g, '\r\n') 
-                            :
+                    :
                         objstr +
                         timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
     )
