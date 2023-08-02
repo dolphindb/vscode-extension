@@ -110,7 +110,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 }
 
 
-async function execute (text: string) {
+async function execute (text: string, is_test: boolean) {
     let { connection } = explorer
     
     if (connection.running) {
@@ -164,6 +164,8 @@ async function execute (text: string) {
                 }
             }
         )
+        if (is_test)
+            printer.fire(obj.value.toString().replace(/\n/g, '\r\n'))
     } catch (error) {
         connection.running = false
         statbar.update()
@@ -246,10 +248,11 @@ async function execute (text: string) {
                     inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
     }
     
-    printer.fire(
-        objstr +
-        timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
-    )
+    if (!is_test)
+        printer.fire(
+            objstr +
+            timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
+        )
     
     if (to_inspect)
         await lastvar.inspect()
@@ -262,7 +265,7 @@ async function execute_with_progress (text: string) {
     
     let done = false
     
-    const pexecute = execute(text)
+    const pexecute = execute(text, false)
     
     // 1s 还未完成，则显示进度
     ;(async () => {
@@ -501,7 +504,7 @@ export const ddb_commands = [
     async function unit_test (uri: Uri, uris: []) {
         try {
             for (const fp of await upload(uri, uris, true))
-                await execute(`test('${fp}')`)
+                await execute(`test('${fp}')`, true)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
