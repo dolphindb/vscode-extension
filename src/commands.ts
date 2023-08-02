@@ -544,19 +544,11 @@ export const ddb_commands = [
             if (!title)
                 return
             
-            (await Promise.all(
-                uris.map(async  => {
-                    
-                })
+            const fps = (await Promise.all(
+                uris.map(
+                    async uri => (await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload(uri, title === t('是'), ddb) : fmupload(uri, title === t('是'), ddb)
+                )
             )).flat()
-            
-            let fps: string[]
-            for (const uri of uris)
-                if ((await workspace.fs.stat(uri)).type === FileType.Directory)
-                    await fdmupload(uri, title === t('是'), ddb, fps)
-                else
-                    await fmupload(uri, title === t('是'), ddb, fps)
-            
             
             window.showInformationMessage(`${t('模块成功上传到: ')}${fps.join_lines(false)}`)
         } catch (error) {

@@ -135,7 +135,7 @@ export async function fdupload (uri: Uri, fpd_remote: string, ddb: DDB, check_ex
 
 
 /** 模块文件上传 */
-export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB, fps: string[]) {
+export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
     await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
     const text = new TextDecoder('utf-8').decode(
         await workspace.fs.readFile(Uri.file(uri.fsPath))
@@ -146,18 +146,20 @@ export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB, fps: strin
     // 返回值为上传结果对象
     const { value } = await ddb.call<DdbStringObj>('uploadModule', [text, true, encrypt])
     
-    fps.push(path.normalize(value.fp))
+    return path.normalize(value.fp)
 }
 
 
 /** 模块文件夹上传 */
-export async function fdmupload (uri: Uri, encrypt: boolean, ddb: DDB, fps: string[]) {
-    for (const [name, file_type] of await workspace.fs.readDirectory(uri)) { 
-        const file_uri = Uri.file(uri.fsPath.fp + '/' + name)
-        
-        if (file_type === FileType.File)
-            await fmupload(file_uri, encrypt, ddb, fps)
-        else  
-            await fdmupload(file_uri, encrypt, ddb, fps)
-    }
+export async function fdmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
+    const uris: Uri[] = [ ]
+    
+    for (const [name] of await workspace.fs.readDirectory(uri))
+        uris.push(Uri.file(uri.fsPath.fp + '/' + name))
+    
+    return (await Promise.all(
+        uris.map(
+            async uri => (await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload(uri, encrypt, ddb) : fmupload(uri, encrypt, ddb)
+        )
+    )).flat()
 }
