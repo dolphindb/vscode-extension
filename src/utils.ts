@@ -86,11 +86,6 @@ export function get_text (selector:
 }
 
 
-export function is_binary_file (buffer: Uint8Array) {
-    return buffer.includes(0)
-}
-
-
 export function open_workbench_settings_ui (target: ConfigurationTarget, options?: { query?: string }) {
     if (target === ConfigurationTarget.Global) 
         return commands.executeCommand('workbench.action.openSettings', options)
@@ -113,7 +108,7 @@ export async function fupload (file_uri: Uri, path: string, ddb: DDB, uploaded_f
     else {
         await workspace.textDocuments.find(doc => doc.fileName === file_uri.fsPath)?.save()
         const buffer = await workspace.fs.readFile(file_uri)
-        if (is_binary_file(buffer))
+        if (buffer.includes(0))
             return
         text = new TextDecoder('utf-8').decode(buffer)
     }

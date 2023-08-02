@@ -392,7 +392,7 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
         return [ ]
     
     // 暂时用传入数组的方式对二进制文件进行剔除，将成功上传的文件 push 到数组中
-    const uploaded_files = [ ]
+    const uploaded_files: string[] = [ ]
         
     for (let i = 0;  i < uris.length;  i++ ) { 
         const uri = uris[i]
