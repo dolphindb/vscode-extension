@@ -546,7 +546,9 @@ export const ddb_commands = [
             
             const fps = (await Promise.all(
                 uris.map(
-                    async uri => (await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload(uri, title === t('是'), ddb) : fmupload(uri, title === t('是'), ddb)
+                    async uri => (await workspace.fs.stat(uri)).type === FileType.Directory 
+                        ? fdmupload(uri, title === t('是'), ddb) 
+                        : fmupload(uri, title === t('是'), ddb)
                 )
             )).flat()
             

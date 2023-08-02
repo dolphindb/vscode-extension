@@ -152,14 +152,24 @@ export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
 
 /** 模块文件夹上传 */
 export async function fdmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
-    const uris: Uri[] = [ ]
+    type FileInfo = {
+        uri: Uri
+        file_type: FileType
+    }
+    const files_info: FileInfo[] = [ ]
     
-    for (const [name] of await workspace.fs.readDirectory(uri))
-        uris.push(Uri.file(uri.fsPath.fp + '/' + name))
+    for (const [name, file_type] of await workspace.fs.readDirectory(uri))
+        files_info.push({
+            uri: Uri.file(uri.fsPath.fp + '/' + name),
+            file_type
+        })
     
     return (await Promise.all(
-        uris.map(
-            async uri => (await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload(uri, encrypt, ddb) : fmupload(uri, encrypt, ddb)
+        files_info.map(
+            ({ uri, file_type }) => (file_type === FileType.Directory 
+                ? fdmupload(uri, encrypt, ddb) 
+                : fmupload(uri, encrypt, ddb)
+            )
         )
     )).flat()
 }
