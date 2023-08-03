@@ -137,7 +137,7 @@ export async function fdupload (uri: Uri, fpd_remote: string, ddb: DDB, uploaded
 }
 
 
-/** 模块文件上传 */
+/** 上传模块文件 */
 export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
     await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
     const buffer = await workspace.fs.readFile(Uri.file(uri.fsPath))
@@ -154,7 +154,7 @@ export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
 }
 
 
-/** 模块文件夹上传 */
+/** 上传模块文件夹 */
 export async function fdmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
     type FileInfo = {
         uri: Uri
