@@ -98,7 +98,7 @@ export function open_workbench_settings_ui (target: ConfigurationTarget, options
 }
 
 
-export async function fupload (file_uri: Uri, path: string, ddb: DDB, check_existence = true) { 
+export async function fupload (file_uri: Uri, path: string, ddb: DDB, uploadeds: string[], check_existence = true) { 
     if (check_existence && !(await ddb.call<DdbObj<boolean>>('exists', [path.fdir])).value)
         await ddb.call('mkdir', [path.fdir])
     
@@ -107,18 +107,21 @@ export async function fupload (file_uri: Uri, path: string, ddb: DDB, check_exis
         text = get_text('all')
     else {
         await workspace.textDocuments.find(doc => doc.fileName === file_uri.fsPath)?.save()
-        text = new TextDecoder('utf-8').decode(
-            await workspace.fs.readFile(file_uri)
-        )
+        const buffer = await workspace.fs.readFile(file_uri)
+        if (buffer.includes(0))
+            return
+        text = new TextDecoder('utf-8').decode(buffer)
     }
     
     // Usage: saveTextFile(content, filename,[append=false],[lastModified]). 
     // content must be a string or string vector which stores the text to save.
     await ddb.call('saveTextFile', [text, path])
+    
+    uploadeds.push(path)
 }
 
 
-export async function fdupload (uri: Uri, fpd_remote: string, ddb: DDB, check_existence = true) { 
+export async function fdupload (uri: Uri, fpd_remote: string, ddb: DDB, uploadeds: string[], check_existence = true) { 
     if (check_existence && !(await ddb.call<DdbObj<boolean>>('exists', [fpd_remote])).value)
         await ddb.call('mkdir', [fpd_remote])
     
@@ -127,9 +130,9 @@ export async function fdupload (uri: Uri, fpd_remote: string, ddb: DDB, check_ex
         const file_uri = Uri.file(uri.fsPath.fp + '/' + name)
         
         if (file_type === FileType.File)
-            await fupload(file_uri, upload_path, ddb, false)
-        else  
-            await fdupload(file_uri, upload_path + '/', ddb)
+            await fupload(file_uri, upload_path, ddb, uploadeds, false)
+        else
+            await fdupload(file_uri, upload_path + '/', ddb, uploadeds)
     }
 }
 
