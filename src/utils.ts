@@ -137,9 +137,10 @@ export async function fdupload (uri: Uri, fpd_remote: string, ddb: DDB, check_ex
 /** 模块文件上传 */
 export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
     await workspace.textDocuments.find(doc => doc.fileName === uri.fsPath)?.save()
-    const text = new TextDecoder('utf-8').decode(
-        await workspace.fs.readFile(Uri.file(uri.fsPath))
-    )
+    const buffer = await workspace.fs.readFile(Uri.file(uri.fsPath))
+    if (buffer.includes(0))
+        return
+    const text = new TextDecoder('utf-8').decode(buffer)
     
     // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是 false 且目录下已存在对应文件，会报错，true 直接覆盖旧的文件
     // 第三个参数表示是否加密。false 不加密，生成 dos 文件；true 加密，生成 dom 文件
