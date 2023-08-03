@@ -549,14 +549,12 @@ export const ddb_commands = [
                 return
             
             const fps = (await Promise.all(
-                uris.map(
-                    async uri => (await workspace.fs.stat(uri)).type === FileType.Directory 
-                        ? fdmupload(uri, title === t('是'), ddb) 
-                        : fmupload(uri, title === t('是'), ddb)
+                uris.map(async uri =>
+                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是'), ddb)
                 )
             )).flat()
             
-            window.showInformationMessage(`${t('模块成功上传到: ')}${fps.join_lines(false)}`)
+            window.showInformationMessage(`${t('模块成功上传到: ')}${fps.join_lines()}`)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error

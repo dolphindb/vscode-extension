@@ -143,12 +143,15 @@ export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
     const buffer = await workspace.fs.readFile(Uri.file(uri.fsPath))
     if (buffer.includes(0))
         return
-    const text = new TextDecoder('utf-8').decode(buffer)
     
     // 第二个参数表示如果已存在对应文件，是否要覆盖。如果是 false 且目录下已存在对应文件，会报错，true 直接覆盖旧的文件
     // 第三个参数表示是否加密。false 不加密，生成 dos 文件；true 加密，生成 dom 文件
     // 返回值为上传结果对象
-    const { value } = await ddb.call<DdbStringObj>('uploadModule', [text, true, encrypt])
+    const { value } = await ddb.call<DdbStringObj>('uploadModule', [
+        new TextDecoder('utf-8').decode(buffer),
+        true,
+        encrypt
+    ])
     
     return path.normalize(value.fp)
 }
@@ -157,11 +160,9 @@ export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
 /** 上传模块文件夹 */
 export async function fdmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
     return (await Promise.all(
-        (await workspace.fs.readDirectory(uri)).map(
-            ([name, file_type]) => (file_type === FileType.Directory 
-                ? fdmupload(Uri.file(uri.fsPath.fp + '/' + name), encrypt, ddb) 
-                : fmupload(Uri.file(uri.fsPath.fp + '/' + name), encrypt, ddb)
-            )
+        (await workspace.fs.readDirectory(uri))
+            .map(([name, file_type]) =>
+                (file_type === FileType.Directory ? fdmupload : fmupload)(Uri.file(uri.fsPath.fp + '/' + name), encrypt, ddb) 
         )
     )).flat()
 }
