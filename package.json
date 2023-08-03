@@ -1,7 +1,7 @@
 {
     "name": "dolphindb-vscode",
     "type": "module",
-    "version": "2.0.1016",
+    "version": "2.0.1017",
     "engines": {
         "vscode": ">=1.68.0"
     },
@@ -16,7 +16,7 @@
         "@svgr/webpack": "^8.0.1",
         "@types/koa": "^2.13.8",
         "@types/koa-compress": "^4.0.3",
-        "@types/node": "^20.4.5",
+        "@types/node": "^20.4.6",
         "@types/react": "^18.2.18",
         "@types/react-dom": "^18.2.7",
         "@types/vscode": "^1.80.0",
@@ -36,12 +36,12 @@
         "webpack": "^5.88.2"
     },
     "dependencies": {
-        "@ant-design/icons": "5.2.2",
+        "@ant-design/icons": "5.2.4",
         "@ant-design/plots": "^1.2.5",
         "@koa/cors": "^4.0.0",
         "@vscode/debugadapter": "^1.61.0",
         "@vscode/debugprotocol": "^1.61.0",
-        "antd": "^5.8.0",
+        "antd": "^5.8.1",
         "dayjs": "^1.11.9",
         "dolphindb": "^2.0.1006",
         "koa": "^2.14.2",
