@@ -392,8 +392,8 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
         return [ ]
     
     // 暂时用传入数组的方式对二进制文件进行剔除，将成功上传的文件 push 到数组中
-    const uploaded_files: string[] = [ ]
-        
+    let uploaded_files: string[] = [ ]
+    
     for (let i = 0;  i < uris.length;  i++ ) { 
         const uri = uris[i]
         
@@ -406,6 +406,7 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
     }
     
     if (!silent && uploaded_files.length)
+        // 等待 server 支持二进制上传后可以用 remote_fps_str
         window.showInformationMessage(`${t('文件成功上传到: ')}${uploaded_files.join_lines(false)}`)
     
     return remote_fps
