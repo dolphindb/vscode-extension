@@ -531,6 +531,7 @@ export const ddb_commands = [
     
     
     async function upload_module (uri: Uri, uris: Uri[]) {
+        // 文件上点右键 upload_module 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
             let { connection } = explorer
             

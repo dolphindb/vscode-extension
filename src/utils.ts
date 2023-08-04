@@ -156,7 +156,7 @@ export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
         
         return path.normalize(value.fp)
     } catch (error) {
-        error.message += `(${uri.fsPath.fp})`
+        error.message += ` (${uri.fsPath.fp})`
         throw error 
     }
 }
