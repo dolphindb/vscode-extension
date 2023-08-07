@@ -153,18 +153,18 @@ export class Remote {
             return
         
         try {
-            console.log('Connecting to: ', this.url)
+            console.log(t('连接到:'), this.url)
             this.websocket = await connect_websocket(this.url, {
                 protocols: 'debug',
                 on_message: this.handle.bind(this)
             })
-            console.log('Connected')
+            console.log(t('已连接到 server'))
             if (this.autologin) 
                 await this.call('login', [this.username ?? 'admin', this.password ?? '123456'])
             
         } catch (error) {
             this.websocket = undefined
-            console.log('Connect error: ', error)
+            console.log(t('连接错误:'), error)
             this.errorHandler(error)
         }
     }
