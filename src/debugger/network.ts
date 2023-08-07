@@ -114,10 +114,10 @@ export class Remote {
             
             console.log(t('接收到消息:'), msg)
             
-            // 仅查询scope或单变量时会出现offset
+            // 仅查询 scope 或单变量时会出现 offset
             if (msg?.data instanceof Array) 
                 msg.data.forEach((item: any) => {
-                    if (item.offset) 
+                    if (item?.offset) 
                         if (item.offset === -1) 
                             item.value = `${item.form}<${item.type}> Too large to display(${item.bytes} bytes)`
                          else {
@@ -127,7 +127,6 @@ export class Remote {
                             // item.value = item.value.replace(/\n/g, '');
                             baseOffset += item.offset
                         }
-                    
                 })
              else if (msg?.data?.offset) {
                 const item = msg.data
