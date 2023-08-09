@@ -1,7 +1,7 @@
 {
     "name": "dolphindb-vscode",
     "type": "module",
-    "version": "2.0.1020",
+    "version": "2.0.1021",
     "engines": {
         "vscode": ">=1.68.0"
     },
@@ -16,13 +16,13 @@
         "@svgr/webpack": "^8.0.1",
         "@types/koa": "^2.13.8",
         "@types/koa-compress": "^4.0.3",
-        "@types/node": "^20.4.7",
-        "@types/react": "^18.2.18",
+        "@types/node": "^20.4.9",
+        "@types/react": "^18.2.19",
         "@types/react-dom": "^18.2.7",
         "@types/vscode": "^1.81.0",
         "@types/ws": "^8.5.5",
-        "@typescript-eslint/eslint-plugin": "^6.2.1",
-        "@typescript-eslint/parser": "^6.2.1",
+        "@typescript-eslint/eslint-plugin": "^6.3.0",
+        "@typescript-eslint/parser": "^6.3.0",
         "css-loader": "^6.8.1",
         "eslint": "^8.46.0",
         "eslint-plugin-react": "^7.33.1",
@@ -36,14 +36,14 @@
         "webpack": "^5.88.2"
     },
     "dependencies": {
-        "@ant-design/icons": "5.2.4",
+        "@ant-design/icons": "5.2.5",
         "@ant-design/plots": "^1.2.5",
         "@koa/cors": "^4.0.0",
         "@vscode/debugadapter": "^1.61.0",
         "@vscode/debugprotocol": "^1.61.0",
         "antd": "^5.8.2",
         "dayjs": "^1.11.9",
-        "dolphindb": "^2.0.1006",
+        "dolphindb": "^2.0.1007",
         "koa": "^2.14.2",
         "koa-compress": "^5.1.1",
         "koa-useragent": "^4.1.0",
@@ -53,7 +53,7 @@
         "react-object-model": "^1.0.5",
         "tslib": "^2.6.1",
         "ws": "^8.13.0",
-        "xshell": "^1.0.43"
+        "xshell": "^1.0.46"
     },
     "pnpm": {
         "patchedDependencies": {
