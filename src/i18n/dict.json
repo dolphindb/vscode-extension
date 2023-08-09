@@ -400,5 +400,14 @@
     },
     "请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}（目前版本暂不支持上传二进制文件，二进制文件会被自动忽略）": {
         "en": "Please confirm whether to upload these {{file_num}} files to {{fp_remote}} (The current version does not support uploading binary files, and binary files will be automatically ignored)"
+    },
+    "连接到:": {
+        "en": "connect to:"
+    },
+    "已连接到 server": {
+        "en": "connected to server"
+    },
+    "连接错误:": {
+        "en": "connection error:"
     }
 }
