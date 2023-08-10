@@ -103,7 +103,7 @@ export async function build_package_json () {
         {
             command: 'execute',
             key: 'ctrl+e',
-            when: "editorTextFocus && editorLangId == ('dolphindb' || 'dolphindb-python')",
+            when: "editorTextFocus && (editorLangId == 'dolphindb' || editorLangId == 'dolphindb-python')",
             title: {
                 zh: 'DolphinDB: 执行代码',
                 en: 'DolphinDB: Execute Code'
@@ -111,7 +111,7 @@ export async function build_package_json () {
         },
         {
             command: 'execute_selection_or_line',
-            when: "editorTextFocus && editorLangId == ('dolphindb' || 'dolphindb-python')",
+            when: "editorTextFocus && (editorLangId == 'dolphindb' || editorLangId == 'dolphindb-python')",
             title: {
                 zh: '执行选中或当前行',
                 en: 'Execute Selection or Line'
@@ -120,7 +120,7 @@ export async function build_package_json () {
         },
         {
             command: 'execute_file',
-            when: "editorLangId == ('dolphindb' || 'dolphindb-python')",
+            when: "editorLangId == 'dolphindb' || editorLangId == 'dolphindb-python'",
             title: {
                 zh: '执行整个文件',
                 en: 'Execute File'
@@ -662,11 +662,11 @@ export async function build_package_json () {
                 // 执行按钮
                 'editor/title/run': [
                     {
-                        when: "editorLangId == ('dolphindb' || 'dolphindb-python')",
+                        when: "editorLangId == 'dolphindb' || editorLangId == 'dolphindb-python'",
                         command: 'dolphindb.execute_file',
                     },
                     {
-                        when: "editorLangId == ('dolphindb' || 'dolphindb-python')",
+                        when: "editorLangId == 'dolphindb' || editorLangId == 'dolphindb-python'",
                         command: 'dolphindb.execute_selection_or_line'
                     },
                 ],
