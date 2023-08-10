@@ -118,12 +118,16 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         }
     }
     
+    
     change_language_mode () {
-        const languageId = window.activeTextEditor?.document.languageId
-        const python = this.connection.options.python
+        const languageId = window.activeTextEditor?.document?.languageId
+        const { python } = this.connection.options
         
         if ((languageId === 'dolphindb' && python) || (languageId === 'dolphindb-python' && !python))
-            languages.setTextDocumentLanguage(window.activeTextEditor.document, python ? 'dolphindb-python' : 'dolphindb')
+            languages.setTextDocumentLanguage(
+                window.activeTextEditor.document,
+                python ? 'dolphindb-python' : 'dolphindb'
+            )
     }
     
     
@@ -141,7 +145,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
             }
         
         this.change_language_mode()
-    
+        
         console.log(t('连接:'), connection)
         statbar.update()
         this.refresher.fire()
