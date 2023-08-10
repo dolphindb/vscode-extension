@@ -70,8 +70,10 @@ export async function copy_files () {
 
 export async function build_tm_language () {
     await Promise.all([
-        fwrite(`${fpd_out}dolphindb.tmLanguage.json`, tm_language),
-        fcopy(`${fpd_root}dolphindb.language-configuration.json`, `${fpd_out}dolphindb.language-configuration.json`)
+        fwrite(`${fpd_out}dolphindb.tmLanguage.json`, tm_language(false)),
+        fwrite(`${fpd_out}dolphindb-python.tmLanguage.json`, tm_language(true)),
+        fcopy(`${fpd_root}dolphindb.language-configuration.json`, `${fpd_out}dolphindb.language-configuration.json`),
+        fcopy(`${fpd_root}dolphindb-python.language-configuration.json`, `${fpd_out}dolphindb-python.language-configuration.json`)
     ])
 }
 
@@ -283,6 +285,16 @@ export async function build_package_json () {
                         dark: './icons/file.svg',
                         light: './icons/file.svg',
                     }
+                },
+                {
+                    id: 'dolphindb-python',
+                    extensions: ['.dos'],
+                    aliases: ['DolphinDB Python', 'dolphindb python'],
+                    configuration: './dolphindb-python.language-configuration.json',
+                    icon: {
+                        dark: './icons/file.svg',
+                        light: './icons/file.svg',
+                    }
                 }
             ],
             
@@ -291,6 +303,11 @@ export async function build_package_json () {
                     language: 'dolphindb',
                     scopeName: 'source.dolphindb',
                     path: './dolphindb.tmLanguage.json',
+                },
+                {
+                    language: 'dolphindb-python',
+                    scopeName: 'source.dolphindb-python',
+                    path: './dolphindb-python.tmLanguage.json',
                 }
             ],
             

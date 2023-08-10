@@ -15,6 +15,8 @@ import {
     type ConfigurationChangeEvent, 
     
     ProgressLocation,
+    
+    languages,
 } from 'vscode'
 
 
@@ -70,6 +72,11 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     
     constructor () {
         this.load_connections()
+        
+        this.changeLanguageMode()
+        window.onDidChangeActiveTextEditor(() => {
+            this.changeLanguageMode()    
+        })
     }
     
     
@@ -114,6 +121,11 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         }
     }
     
+    changeLanguageMode () {
+        if (window.activeTextEditor?.document.fileName.split('.').pop() === 'dos') 
+            languages.setTextDocumentLanguage(window.activeTextEditor.document, this.connection.options.python ? 'dolphindb-python' : 'dolphindb')
+    }
+    
     
     /** 执行连接操作后，如果超过 1s 还未完成，则显示进度 */
     async connect (connection: DdbConnection) {
@@ -128,7 +140,8 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
                     this.disconnect(_connection)
             }
         
-        
+        this.changeLanguageMode()
+    
         console.log(t('连接:'), connection)
         statbar.update()
         this.refresher.fire()
