@@ -11,7 +11,7 @@ import { fwrite, fcopy, fexists } from 'xshell'
 import type { Item } from 'xshell/i18n/index.js'
 
 
-import { tm_language } from 'dolphindb/language.js'
+import { tm_language, tm_language_python } from 'dolphindb/language.js'
 
 
 import package_json from './package.json' assert { type: 'json' }
@@ -70,8 +70,8 @@ export async function copy_files () {
 
 export async function build_tm_language () {
     await Promise.all([
-        fwrite(`${fpd_out}dolphindb.tmLanguage.json`, tm_language(false)),
-        fwrite(`${fpd_out}dolphindb-python.tmLanguage.json`, tm_language(true)),
+        fwrite(`${fpd_out}dolphindb.tmLanguage.json`, tm_language),
+        fwrite(`${fpd_out}dolphindb-python.tmLanguage.json`, tm_language_python),
         fcopy(`${fpd_root}dolphindb.language-configuration.json`, `${fpd_out}dolphindb.language-configuration.json`),
         fcopy(`${fpd_root}dolphindb-python.language-configuration.json`, `${fpd_out}dolphindb-python.language-configuration.json`)
     ])
