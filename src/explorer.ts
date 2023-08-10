@@ -119,8 +119,11 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     }
     
     change_language_mode () {
-        // if (window.activeTextEditor?.document.fileName.split('.').pop() === 'dos') 
-        //     languages.setTextDocumentLanguage(window.activeTextEditor.document, this.connection.options.python ? 'dolphindb-python' : 'dolphindb')
+        const languageId = window.activeTextEditor?.document.languageId
+        const python = this.connection.options.python
+        
+        if ((languageId === 'dolphindb' && python) || (languageId === 'dolphindb-python' && !python))
+            languages.setTextDocumentLanguage(window.activeTextEditor.document, python ? 'dolphindb-python' : 'dolphindb')
     }
     
     
