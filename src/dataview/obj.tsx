@@ -1,6 +1,6 @@
 import './obj.sass'
 
-import { default as React, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type default as React, type FC } from 'react'
 
 import {
     Pagination,
@@ -68,7 +68,7 @@ const views = {
     [DdbForm.dict]: Dict,
 }
 
-const UpSelect: React.FC<SelectProps> & { Option: typeof Select.Option } = Object.assign(
+const UpSelect: FC<SelectProps> & { Option: typeof Select.Option } = Object.assign(
     props => <Select {...props} size='small' placement='topLeft' listHeight={128} />,
     { Option: Select.Option }
 )
@@ -678,12 +678,14 @@ function Table ({
 
 
 export function StreamingTable ({
+    url,
     table,
     username,
     password,
     ctx,
     options,
 }: {
+    url: string
     table: string
     username?: string
     password?: string
@@ -694,11 +696,13 @@ export function StreamingTable ({
     
     let rddbapi = useRef<DDB>()
     
-    let rauto_append = useRef<boolean>(false)
+    let rauto_append = useRef<boolean>(true)
     
     let rappended = useRef<number>(0)
     
     let rreceived = useRef<number>(0)
+    
+    let rdata = useRef<StreamingData>(null)
     
     const default_rate = 0 as const
     
@@ -722,7 +726,7 @@ export function StreamingTable ({
     
     
     useEffect(() => {
-        let ddb = rddb.current = new DDB(undefined, {
+        let ddb = rddb.current = new DDB(url, {
             autologin: Boolean(username),
             username,
             password,
@@ -744,13 +748,16 @@ export function StreamingTable ({
                     if (rrate.current === -1 || time - rlast.current < rrate.current)
                         return
                     
+                    rdata.current = message
+                    
+                    
                     rlast.current = time
                     rerender({ })
                 }
             }
         })
         
-        let ddbapi = rddbapi.current = new DDB('')
+        let ddbapi = rddbapi.current = new DDB(url)
         
         
         ;(async () => {
@@ -804,13 +811,12 @@ export function StreamingTable ({
     }, [rauto_append.current])
     
     
-    if (!rddb.current?.streaming.data || !rddbapi.current)
+    if (!rddb.current || !rddbapi.current || !rdata.current)
         return null
     
     const {
         current: {
             streaming: {
-                data,
                 window: {
                     rows: winrows,
                     offset,
@@ -820,6 +826,8 @@ export function StreamingTable ({
             streaming,
         }
     } = rddb
+    
+    const { current: data } = rdata
     
     
     let rows = new Array<number>(page_size)
