@@ -72,6 +72,7 @@ export async function build_tm_language () {
     await Promise.all([
         fwrite(`${fpd_out}dolphindb.tmLanguage.json`, tm_language),
         fwrite(`${fpd_out}dolphindb-python.tmLanguage.json`, tm_language_python),
+        
         fcopy(`${fpd_root}dolphindb.language-configuration.json`, `${fpd_out}dolphindb.language-configuration.json`),
         fcopy(`${fpd_root}dolphindb-python.language-configuration.json`, `${fpd_out}dolphindb-python.language-configuration.json`)
     ])
@@ -289,7 +290,7 @@ export async function build_package_json () {
                 {
                     id: 'dolphindb-python',
                     extensions: ['.dos'],
-                    aliases: ['DolphinDB Python', 'dolphindb python'],
+                    aliases: ['DolphinDB Python', 'dolphindb-python'],
                     configuration: './dolphindb-python.language-configuration.json',
                     icon: {
                         dark: './icons/file.svg',

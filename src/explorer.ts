@@ -72,11 +72,6 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     
     constructor () {
         this.load_connections()
-        
-        this.changeLanguageMode()
-        window.onDidChangeActiveTextEditor(() => {
-            this.changeLanguageMode()    
-        })
     }
     
     
@@ -111,6 +106,8 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         this.connection = this.connections[0]
         if (this.connection)
             this.connection.iconPath = icon_checked
+        
+        this.change_language_mode()
     }
     
     
@@ -121,9 +118,9 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         }
     }
     
-    changeLanguageMode () {
-        if (window.activeTextEditor?.document.fileName.split('.').pop() === 'dos') 
-            languages.setTextDocumentLanguage(window.activeTextEditor.document, this.connection.options.python ? 'dolphindb-python' : 'dolphindb')
+    change_language_mode () {
+        // if (window.activeTextEditor?.document.fileName.split('.').pop() === 'dos') 
+        //     languages.setTextDocumentLanguage(window.activeTextEditor.document, this.connection.options.python ? 'dolphindb-python' : 'dolphindb')
     }
     
     
@@ -140,7 +137,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
                     this.disconnect(_connection)
             }
         
-        this.changeLanguageMode()
+        this.change_language_mode()
     
         console.log(t('连接:'), connection)
         statbar.update()

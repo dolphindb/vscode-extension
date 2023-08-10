@@ -82,6 +82,10 @@ export async function activate (ctx: ExtensionContext) {
     
     register_explorer()
     
+    window.onDidChangeActiveTextEditor(() => {
+        explorer.change_language_mode()    
+    })
+    
     
     formatter.init()
     statbar.init()
