@@ -43,7 +43,7 @@
         "@vscode/debugprotocol": "^1.61.0",
         "antd": "^5.8.3",
         "dayjs": "^1.11.9",
-        "dolphindb": "^2.0.1010",
+        "dolphindb": "^2.0.1011",
         "koa": "^2.14.2",
         "koa-compress": "^5.1.1",
         "koa-useragent": "^4.1.0",
