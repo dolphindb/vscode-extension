@@ -1,4 +1,4 @@
-import { WebSocket, connect_websocket, inspect } from 'xshell'
+import { type WebSocket, connect_websocket, inspect, WebSocketOpen } from 'xshell'
 
 import { DdbDict, DdbObj } from 'dolphindb'
 
@@ -88,7 +88,7 @@ export class Remote {
     ) { }
     
     get connected () {
-        return this.websocket?.readyState === WebSocket.OPEN
+        return this.websocket?.readyState === WebSocketOpen
     }
     
     /** call之前将参数打包成DdbDist */
@@ -171,7 +171,7 @@ export class Remote {
     
     private async send (message: SendMessage) {
         try {
-            if (!this.websocket || this.websocket.readyState !== WebSocket.OPEN) 
+            if (!this.websocket || this.websocket.readyState !== WebSocketOpen) 
                 throw new Error(t(' 调试服务器连接失败，请确保 DolphinDB Server 版本不低于 2.00.10 或 1.30.22\n'))
             
             console.log(t('发送消息:'), message)
