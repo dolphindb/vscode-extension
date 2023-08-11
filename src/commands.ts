@@ -252,13 +252,23 @@ async function execute (text: string, testing = false) {
             objstr = obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
             break
         
-        default:
+        default:  // DdbForm.scalar, 其他未知类型
             terminal.show(true)
+            
+            switch (obj.type) {
+                case DdbType.void:
+                    objstr = ''
+                    break
+                    
+                case DdbType.string:
+                    objstr = inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\\n', '\r\n') + '\r\n'
+                    
+            }
             
             if (obj.type === DdbType.void)
                 objstr = ''
             else if (obj.type === DdbType.string)
-                objstr = inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\\n', '\r\n') + '\r\n'
+                objstr = inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\\n', '\n') + '\r\n'
             else 
                 objstr = inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
     }
