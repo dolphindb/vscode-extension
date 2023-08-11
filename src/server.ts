@@ -105,12 +105,6 @@ class DdbServer extends Server {
     })
     
     
-    constructor () {
-        // 实际上重写了 start 方法, this.port = 8321 未使用
-        super(8321)
-    }
-    
-    
     override async start () {
         // --- init koa app
         let app = new Koa()
