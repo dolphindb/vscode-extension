@@ -255,10 +255,12 @@ async function execute (text: string, testing = false) {
         default:
             terminal.show(true)
             
-            objstr = obj.type === DdbType.void ?
-                    ''
-                :
-                    inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
+            if (obj.type === DdbType.void)
+                objstr = ''
+            else if (obj.type === DdbType.string)
+                objstr = inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\\n', '\r\n') + '\r\n'
+            else 
+                objstr = inspect(obj, { decimals: formatter.decimals } as InspectOptions).replaceAll('\n', '\r\n') + '\r\n'
     }
     
     printer.fire(objstr + get_execution_end())
