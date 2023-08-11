@@ -1043,7 +1043,10 @@ export const ext_webpack = {
                 globalObject: 'globalThis',
                 library: {
                     type: 'commonjs2',
-                }
+                },
+                
+                // 关掉之后可以避免生成多个 chunk, 开着也挺好，按需加载
+                // chunkLoading: false,
             },
             
             target: ['node20', 'es2023'],
