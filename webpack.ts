@@ -1061,7 +1061,7 @@ export const ext_webpack = {
                 },
             },
             
-            externalsType: 'global',
+            externalsType: 'commonjs2',
             
             externals: {
                 vscode: 'commonjs2 vscode'
