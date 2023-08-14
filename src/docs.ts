@@ -267,7 +267,7 @@ export async function load_docs () {
 export function register_docs (ctx: ExtensionContext) {
     // 函数补全
     ctx.subscriptions.push(
-        languages.registerCompletionItemProvider('dolphindb', {
+        languages.registerCompletionItemProvider(['dolphindb', 'dolphindb-python'], {
             provideCompletionItems (doc, pos, canceller, ctx) {
                 const keyword = doc.getText(doc.getWordRangeAtPosition(pos))
                 
@@ -332,7 +332,7 @@ export function register_docs (ctx: ExtensionContext) {
     
     // 悬浮提示
     ctx.subscriptions.push(
-        languages.registerHoverProvider('dolphindb', {
+        languages.registerHoverProvider(['dolphindb', 'dolphindb-python'], {
             provideHover (doc, pos, canceller) {
                 const md = get_func_md(doc.getText(doc.getWordRangeAtPosition(pos)))
                 if (!md)
@@ -345,7 +345,7 @@ export function register_docs (ctx: ExtensionContext) {
     
     // 函数签名
     ctx.subscriptions.push(
-        languages.registerSignatureHelpProvider('dolphindb', {
+        languages.registerSignatureHelpProvider(['dolphindb', 'dolphindb-python'], {
             provideSignatureHelp (doc, pos, canceller, ctx) {
                 const { func_name, param_search_pos } = find_func_start(doc, pos)
                 if (param_search_pos === -1) 

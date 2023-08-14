@@ -112,7 +112,12 @@ export async function activate (ctx: ExtensionContext) {
     ctx.subscriptions.push(debug.registerDebugConfigurationProvider('dolphindb', {
         resolveDebugConfiguration (folder, config, token): ProviderResult<DebugConfiguration> {
             // if launch.json is missing or empty
-            if (!config.type && !config.request && !config.name && window.activeTextEditor?.document.languageId === 'dolphindb') {
+            if (
+                !config.type && 
+                !config.request && 
+                !config.name && 
+                (window.activeTextEditor?.document.languageId === 'dolphindb' || window.activeTextEditor?.document.languageId === 'dolphindb-python')
+            ) {
                 config.type = 'dolphindb'
                 config.request = 'launch'
                 config.name = t('调试当前 DolphinDB 脚本文件')
