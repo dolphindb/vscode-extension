@@ -4,13 +4,7 @@ import type { Duplex } from 'stream'
 
 import { workspace, extensions, ExtensionKind } from 'vscode'
 
-import { WebSocketServer } from 'ws'
-import { default as Koa, type Context } from 'koa'
-
-// @ts-ignore
-import KoaCors from '@koa/cors'
-import KoaCompress from 'koa-compress'
-import { userAgent as KoaUserAgent } from 'koa-useragent'
+import type { Context } from 'koa'
 
 import { type Message, Remote } from 'xshell'
 import { Server } from 'xshell/server.js'
@@ -106,6 +100,13 @@ class DdbServer extends Server {
     
     
     override async start () {
+        const { WebSocketServer } = await import('ws')
+        
+        const { default: Koa } = await import('koa')
+        const { default: KoaCors } = await import('@koa/cors')
+        const { default: KoaCompress } = await import('koa-compress')
+        
+        
         // --- init koa app
         let app = new Koa()
         
@@ -130,8 +131,6 @@ class DdbServer extends Server {
         )
         
         app.use(KoaCors({ credentials: true }))
-        
-        app.use(KoaUserAgent)
         
         app.use(this._router.bind(this))
         
