@@ -1,6 +1,6 @@
 import './obj.sass'
 
-import { useEffect, useRef, useState, type default as React, type FC } from 'react'
+import { useEffect, useRef, useState, type default as React, type FC, type MutableRefObject } from 'react'
 
 import {
     Pagination,
@@ -22,7 +22,7 @@ const Icon: typeof _Icon.default = _Icon as any
 
 import { Line, Pie, Bar, Column, Scatter, Area, DualAxes, Histogram, Stock } from '@ant-design/plots'
 
-import { genid } from 'xshell/utils.browser.js'
+import { genid, seq } from 'xshell/utils.browser.js'
 
 
 import {
@@ -45,7 +45,8 @@ import {
     type DdbTableObj,
     type DdbMatrixObj,
     type DdbChartObj,
-    type StreamingData,
+    type StreamingParams,
+    type StreamingMessage,
 } from 'dolphindb/browser.js'
 import { assert, delay } from 'xshell/utils.browser.js'
 
@@ -245,32 +246,28 @@ function build_tree_data (
     const dict_key = obj.value[0]
     const dict_value = obj.value[1]
     
-    let tree_data = new Array(dict_key.rows)
-    
-    for (let i = 0;  i < dict_key.rows;  i++) {
-        let node = { }
+    return seq(dict_key.rows, i => {
         let key = formati(dict_key, i, options)
         
         let valueobj = dict_value.value[i]
         
-        if (valueobj instanceof DdbObj) 
-            if (valueobj.form === DdbForm.dict) 
-                node = {
-                    title: key + ': ',
+        if (valueobj instanceof DdbObj)
+            if (valueobj.form === DdbForm.dict)
+                return {
+                    title: `${key}: `,
                     key: genid(),
                     children: build_tree_data(valueobj, { remote, ctx, ddb })
                 }
-             else if (valueobj.form === DdbForm.scalar) {
-                let value = format(valueobj.type, valueobj.value, valueobj.le, { ...options, quote: true, nullstr: true })
-                node = {
-                    title: key + ': ' + value,
+            else if (valueobj.form === DdbForm.scalar)
+                return {
+                    title: `${key}: ${format(valueobj.type, valueobj.value, valueobj.le, { ...options, quote: true, nullstr: true })}`,
                     key: genid()
                 }
-            } else {
+            else {
                 const View = views[valueobj.form] || Default
                 
-                node = {
-                    title: key + ':',
+                return {
+                    title: `${key}:`,
                     key: genid(),
                     children: [
                         {
@@ -280,16 +277,12 @@ function build_tree_data (
                     ]
                 }
             }
-         else
-            node = {
-                title: key + ': ' + truncate(formati(dict_value, i, options)),
+        else
+            return {
+                title: `${key}: ${truncate(formati(dict_value, i, options))}`,
                 key: genid()
             }
-        
-        tree_data.push(node)
-    }
-    
-    return tree_data
+    })
 }
 
 
@@ -377,26 +370,9 @@ function Vector ({
     if (!info.rows)
         return <>{ (obj || objref.obj).toString(options) }</>
     
-    let rows = new Array<number>(nrows)
-    for (let i = 0;  i < nrows;  i++)
-        rows[i] = i
-    
-    let cols = new Array<VectorColumn>(ncols)
-    for (let i = 0;  i < ncols;  i++)
-        cols[i] = new VectorColumn({
-            obj,
-            objref,
-            index: i,
-            form: info.form as (DdbForm.set | DdbForm.vector),
-            ncols,
-            page_index,
-            page_size,
-            options,
-        })
-    
     return <div className='vector'>
         <AntTable
-            dataSource={rows as any[]}
+            dataSource={seq(nrows) as any[]}
             rowKey={x => x}
             bordered
             pagination={false}
@@ -410,7 +386,18 @@ function Vector ({
                         return page_size * page_index + index * ncols
                     }
                 },
-                ... cols
+                ... seq(ncols, index => 
+                    new VectorColumn({
+                        obj,
+                        objref,
+                        index,
+                        form: info.form as (DdbForm.set | DdbForm.vector),
+                        ncols,
+                        page_index,
+                        page_size,
+                        options,
+                    })
+                )
             ]}
         />
         
@@ -508,7 +495,7 @@ function StreamingCell ({
     irow,
     options
 }: {
-    window: StreamingData['window']
+    window: StreamingMessage['window']
     
     /** 在表格实际数据中位于第几列 */
     icol: number
@@ -602,25 +589,9 @@ function Table ({
     }, [obj, objref, page_index, page_size])
     
     
-    let rows = new Array<number>(nrows)
-    for (let i = 0;  i < nrows;  i++)
-        rows[i] = i
-    
-    let cols = new Array<TableColumn>(ncols)
-    for (let i = 0;  i < ncols;  i++)
-        cols[i] = new TableColumn({
-            obj,
-            objref,
-            index: i,
-            page_index,
-            page_size,
-            options,
-        })
-    
-    
     return <div className='table'>
         <AntTable
-            dataSource={rows as any[]}
+            dataSource={seq(nrows) as any[]}
             rowKey={x => x}
             bordered
             pagination={false}
@@ -633,7 +604,15 @@ function Table ({
                     render: irow =>
                         page_size * page_index + irow
                 },
-                ... cols
+                ...seq(ncols, index => 
+                    new TableColumn({
+                        obj,
+                        objref,
+                        index,
+                        page_index,
+                        page_size,
+                        options,
+                    }))
             ]}
         />
         
@@ -696,13 +675,13 @@ export function StreamingTable ({
     
     let rddbapi = useRef<DDB>()
     
-    let rauto_append = useRef<boolean>(true)
+    let rauto_append = useRef<boolean>(false)
     
     let rappended = useRef<number>(0)
     
     let rreceived = useRef<number>(0)
     
-    let rdata = useRef<StreamingData>(null)
+    let rmessage = useRef<StreamingMessage>(null)
     
     const default_rate = 0 as const
     
@@ -735,8 +714,10 @@ export function StreamingTable ({
                 handler (message) {
                     console.log(message)
                     
-                    if (message.error) {
-                        console.error(message.error)
+                    const { error } = message
+                    
+                    if (error) {
+                        console.error(error)
                         return
                     }
                     
@@ -748,9 +729,7 @@ export function StreamingTable ({
                     if (rrate.current === -1 || time - rlast.current < rrate.current)
                         return
                     
-                    rdata.current = message
-                    
-                    
+                    rmessage.current = message
                     rlast.current = time
                     rerender({ })
                 }
@@ -788,61 +767,47 @@ export function StreamingTable ({
             rerender({ })
         })()
         
-        return () => { ddb?.disconnect() }
+        return () => { ddb.disconnect() }
     }, [ ])
     
-    
-    useEffect(() => {
-        rerender({ })
-    }, [page_size, page_index])
     
     useEffect(() => {
         if (!rauto_append.current)
             return
         
+        let stopped = false
+        
         ;(async () => {
-            for (  ;  rauto_append.current;  ) {
+            for (  ;  rauto_append.current && !stopped;  ) {
                 await append_data()
                 await delay(1000)
             }
             
             console.log('自动更新已停止')
         })()
+        
+        return () => {
+            stopped = true
+        }
     }, [rauto_append.current])
     
     
-    if (!rddb.current || !rddbapi.current || !rdata.current)
+    if (!rddb.current || !rddbapi.current || !rmessage.current)
         return null
     
-    const {
-        current: {
-            streaming: {
-                window: {
-                    rows: winrows,
-                    offset,
-                    segments
-                }
-            },
-            streaming,
-        }
-    } = rddb
     
-    const { current: data } = rdata
+    const { current: message } = rmessage
+    const { colnames } = message
     
-    
-    let rows = new Array<number>(page_size)
-    for (let i = 0;  i < page_size;  i++)
-        rows[i] = i
-    
-    let cols = new Array<StreamingTableColumn>(data.rows)
-    for (let i = 0;  i < data.rows;  i++)
-        cols[i] = new StreamingTableColumn({
-            streaming,
-            index: i,
+    const cols = seq(
+        colnames.length,
+        index => new StreamingTableColumn({
+            rmessage,
+            index,
             page_size,
             page_index,
             options,
-        })
+        }))
     
     
     async function append_data (n = 3) {
@@ -963,7 +928,7 @@ export function StreamingTable ({
         
         <div className='table'>
             <AntTable
-                dataSource={rows as any[]}
+                dataSource={seq(page_size) as any[]}
                 rowKey={x => x}
                 bordered
                 pagination={false}
@@ -984,14 +949,14 @@ export function StreamingTable ({
         
         <div className='bottom-bar'>
             <div className='info'>
-                <span className='desc'>{t('窗口')}: {winsize} {t('行')} {data.rows} {t('列')}, {t('偏移量')}: {offset}</span> 
+                <span className='desc'>{rreceived.current} {t('行')} {cols.length} {t('列')}{ message.window.offset > 0 ? ` ${message.window.offset} ${t('偏移')}` : '' }</span>{' '}
                 <span className='type'>{t('的流表')}</span>
                 <span className='name'>{table}</span>
             </div>
             
             <Pagination
                 className='pagination'
-                total={winsize}
+                total={rreceived.current}
                 current={page_index + 1}
                 pageSize={page_size}
                 pageSizeOptions={page_sizes}
@@ -1057,7 +1022,7 @@ class StreamingTableColumn implements TableColumnType <number> {
     
     key: number
     
-    streaming: StreamingData
+    rmessage: MutableRefObject<StreamingMessage>
     
     col: DdbVectorObj
     
@@ -1075,12 +1040,14 @@ class StreamingTableColumn implements TableColumnType <number> {
         
         this.key = this.index
         
-        this.col = this.streaming.data.value[this.index]
+        const { current: { data: mdata, colnames } } = this.rmessage
+        
+        this.col = mdata.value[this.index]
         assert(this.col.form === DdbForm.vector, t('this.streaming.data 中的元素应该是 vector'))
         
         this.title = <Tooltip
                 title={DdbType[this.col.type === DdbType.symbol_extended ? DdbType.symbol : this.col.type]}
-            >{this.streaming.colnames[this.index]}</Tooltip>
+            >{colnames[this.index]}</Tooltip>
         
         this.align = TableColumn.left_align_types.has(this.col.type) ? 'left' : 'right'
     }
@@ -1088,7 +1055,7 @@ class StreamingTableColumn implements TableColumnType <number> {
     
     render = (irow: number) => 
         <StreamingCell
-            window={this.streaming.window}
+            window={this.rmessage.current.window}
             irow={this.page_size * this.page_index + irow}
             icol={this.index}
             options={this.options}
@@ -1224,24 +1191,9 @@ function Matrix ({
     }, [obj, objref, page_index, page_size])
     
     
-    let rows = new Array<number>(nrows)
-    for (let i = 0;  i < nrows;  i++)
-        rows[i] = i
-    
-    let cols = new Array<MatrixColumn>(ncols)
-    for (let i = 0;  i < ncols;  i++)
-        cols[i] = new MatrixColumn({
-            obj,
-            objref,
-            index: i,
-            page_index,
-            page_size,
-            options,
-        })
-    
     return <div className='matrix'>
         <AntTable
-            dataSource={rows as any[]}
+            dataSource={seq(nrows) as any[]}
             rowKey={x => x}
             bordered
             pagination={false}
@@ -1268,7 +1220,16 @@ function Matrix ({
                                 i
                     }
                 },
-                ... cols
+                ... seq(ncols, index => 
+                    new MatrixColumn({
+                        obj,
+                        objref,
+                        index,
+                        page_index,
+                        page_size,
+                        options,
+                    })
+                )
             ]}
         />
         
@@ -1476,20 +1437,13 @@ function Chart ({
             
             const row_labels = (() => {
                 // 没有设置 label 的话直接以序号赋值并返回
-                if (!rows_) {
-                    let arr = new Array(rows)
-                    for (let i = 0;  i < rows;  i++)
-                        arr[i] = i
-                    return arr
-                } else if (charttype === DdbChartType.kline || charttype === DdbChartType.scatter)
+                if (!rows_)
+                    return seq(rows)
+                else if (charttype === DdbChartType.kline || charttype === DdbChartType.scatter)
                     return rows_.value
-                else {
+                else
                     // format 为 string
-                    const arr = new Array(rows)
-                    for (let i = 0;  i < rows;  i++)
-                        arr[i] = formati(rows_, i, options)
-                    return arr
-                }
+                    return seq(rows, i => formati(rows_, i, options))
             })()
             
             const n = charttype === DdbChartType.line && multi_y_axes || charttype === DdbChartType.kline ? rows : rows * cols
