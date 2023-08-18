@@ -32,8 +32,8 @@ dependencies:
     specifier: ^1.11.9
     version: 1.11.9
   dolphindb:
-    specifier: ^2.0.1014
-    version: 2.0.1014(react-dom@18.2.0)
+    specifier: ^2.0.1015
+    version: 2.0.1015(react-dom@18.2.0)
   koa:
     specifier: ^2.14.2
     version: 2.14.2(patch_hash=p7ybv54qzz4vmboaajk6ep5psi)
@@ -50,8 +50,8 @@ dependencies:
     specifier: ^18.2.0
     version: 18.2.0(react@18.2.0)
   react-object-model:
-    specifier: ^1.0.5
-    version: 1.0.5(react@18.2.0)
+    specifier: ^1.0.6
+    version: 1.0.6(react@18.2.0)
   tslib:
     specifier: ^2.6.1
     version: 2.6.1
@@ -106,11 +106,11 @@ devDependencies:
     specifier: ^1.0.6
     version: 1.0.6(eslint@8.47.0)(typescript@5.1.6)
   sass:
-    specifier: ^1.65.1
-    version: 1.65.1
+    specifier: ^1.66.0
+    version: 1.66.0
   sass-loader:
     specifier: ^13.3.2
-    version: 13.3.2(sass@1.65.1)(webpack@5.88.2)
+    version: 13.3.2(sass@1.66.0)(webpack@5.88.2)
   source-map-loader:
     specifier: ^4.0.1
     version: 4.0.1(webpack@5.88.2)
@@ -3436,8 +3436,8 @@ packages:
       esutils: 2.0.3
     dev: true
 
-  /dolphindb@2.0.1014(react-dom@18.2.0):
-    resolution: {integrity: sha512-oFk/FBISiXUFoqMgpukjEu/K+vkzRIXlE84wYh2bJvhLbRsHOZMHYH+Fz+unz9zUI3ZYxfPRlrYAoUNCth0hAQ==}
+  /dolphindb@2.0.1015(react-dom@18.2.0):
+    resolution: {integrity: sha512-DRhm+KPrJI1IYHP9jqrbWSrh+NHoR4pCQMJUykKHHo70EP3Hk3iHTl7NfoBH9HyIEFgCSyB09gexo/4d5usXOA==}
     engines: {node: '>=19.8.1'}
     dependencies:
       dayjs: 1.11.9
@@ -3918,8 +3918,9 @@ packages:
       to-regex-range: 5.0.1
     dev: true
 
-  /final-form@4.20.9:
-    resolution: {integrity: sha512-shA1X/7v8RmukWMNRHx0l7+Bm41hOivY78IvOiBrPVHjyWFIyqqIEMCz7yTVRc9Ea+EU4WkZ5r4MH6whSo5taw==}
+  /final-form@4.20.10:
+    resolution: {integrity: sha512-TL48Pi1oNHeMOHrKv1bCJUrWZDcD3DIG6AGYVNOnyZPr7Bd/pStN0pL+lfzF5BNoj/FclaoiaLenk4XUIFVYng==}
+    engines: {node: '>=8'}
     requiresBuild: true
     dependencies:
       '@babel/runtime': 7.22.6
@@ -5775,14 +5776,14 @@ packages:
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
-  /react-object-model@1.0.5(react@18.2.0):
-    resolution: {integrity: sha512-aapL6k+UMucpExu3gJDsvFZCFXsEHXCiSyCOwQuowHnkIV3iblT9rHXSbjLOb2XQOGO3x4OzD48bqnNAxhRZIA==}
+  /react-object-model@1.0.6(react@18.2.0):
+    resolution: {integrity: sha512-1qS4H+CxpV+2tull3oQgS1A+7qGc2k7m8vXsptRrbq66smJl0A+uLV6ES9EHLGbPhLnkVhCys1LjesoJ6Sr5qQ==}
     peerDependencies:
       react: ^18.2.0
     dependencies:
       react: 18.2.0
     optionalDependencies:
-      final-form: 4.20.9
+      final-form: 4.20.10
     dev: false
 
   /react@18.2.0:
@@ -6029,7 +6030,7 @@ packages:
   /safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
 
-  /sass-loader@13.3.2(sass@1.65.1)(webpack@5.88.2):
+  /sass-loader@13.3.2(sass@1.66.0)(webpack@5.88.2):
     resolution: {integrity: sha512-CQbKl57kdEv+KDLquhC+gE3pXt74LEAzm+tzywcA0/aHZuub8wTErbjAoNI57rPUWRYRNC5WUnNl8eGJNbDdwg==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -6049,12 +6050,12 @@ packages:
         optional: true
     dependencies:
       neo-async: 2.6.2
-      sass: 1.65.1
+      sass: 1.66.0
       webpack: 5.88.2
     dev: true
 
-  /sass@1.65.1:
-    resolution: {integrity: sha512-9DINwtHmA41SEd36eVPQ9BJKpn7eKDQmUHmpI0y5Zv2Rcorrh0zS+cFrt050hdNbmmCNKTW3hV5mWfuegNRsEA==}
+  /sass@1.66.0:
+    resolution: {integrity: sha512-C3U+RgpAAlTXULZkWwzfysgbbBBo8IZudNAOJAVBLslFbIaZv4MBPkTqhuvpK4lqgdoFiWhnOGMoV4L1FyOBag==}
     engines: {node: '>=14.0.0'}
     hasBin: true
     dependencies:

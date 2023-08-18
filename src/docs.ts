@@ -49,18 +49,56 @@ const token_ends = new Set(
     Object.values(token_map)
 )
 
+
+interface RstDocument {
+    title: string
+    type: DocumentType
+    children: Paragraph[]
+}
+
+interface Paragraph {
+    type: ParagraphType
+    title: string
+    children: ContextBlock[]
+}
+
+interface ContextBlock {
+    type: 'text' | 'code'
+    language?: string
+    value: string[]
+}
+
+type DocumentType = 'command' | 'function' | 'template'
+
+type ParagraphType = 'grammer' | 'parameters' | 'detail' | 'example'
+
+
+const func_fps = {
+    command: 'FunctionsandCommands/CommandsReferences/',
+    function: 'FunctionsandCommands/FunctionReferences/',
+    template: 'Functionalprogramming/TemplateFunctions/'
+} as const
+
+
 function get_func_md (keyword: string) {
-    const func_doc = docs[keyword] || docs[keyword + '!']
+    const func_doc: RstDocument = docs[keyword] || docs[keyword + '!']
     
     if (!func_doc)
         return
     
+    const { title, type } = func_doc
+    
     let md = new MarkdownString(
         // 标题
-        `#### ${func_doc.title}\n` +
+        `#### ${title}\n` +
         
         // 链接
-        `https://${ language === 'zh' ? 'www.dolphindb.cn/cn/' : 'dolphindb.com/' }help/FunctionsandCommands/${ func_doc.type === 'command' ? 'CommandsReferences' : 'FunctionReferences' }/${func_doc.title[0]}/${func_doc.title}.html\n`
+        'https://' + 
+        (language === 'zh' ? 'docs.dolphindb.cn/zh/' : 'dolphindb.com/') +
+        'help/' +
+        func_fps[type] +
+        (type !== 'template' ? `${title[0]}/` : '') +
+        title + '.html\n'
     )
     
     md.isTrusted = true
