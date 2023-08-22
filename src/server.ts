@@ -236,21 +236,12 @@ class DdbServer extends Server {
         const { path } = request
         
         if (dev && path.startsWith('/vendors/'))
-            return this.try_send(ctx, path.slice('/vendors/'.length), {
-                root: fpd_node_modules,
-                log_404: true
-            })
+            return this.try_send(ctx, fpd_node_modules, path.slice('/vendors/'.length), true)
         
-        if (dev && await this.try_send(ctx, path, {
-            root: `${fpd_src}dataview/`,
-            log_404: false
-        }))
+        if (dev && await this.try_send(ctx, `${fpd_src}dataview/`, path, false))
             return true
         
-        return this.try_send(ctx, path, {
-            root: `${fpd_ext}dataview/`,
-            log_404: true
-        })
+        return this.try_send(ctx, path, `${fpd_ext}dataview/`, true)
     }
     
     
