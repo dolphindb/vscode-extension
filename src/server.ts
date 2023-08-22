@@ -241,7 +241,7 @@ class DdbServer extends Server {
         if (dev && await this.try_send(ctx, `${fpd_src}dataview/`, path, false))
             return true
         
-        return this.try_send(ctx, path, `${fpd_ext}dataview/`, true)
+        return this.try_send(ctx, `${fpd_ext}dataview/`, path, true)
     }
     
     
