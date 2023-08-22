@@ -264,6 +264,15 @@ function find_active_param_index (
         index = ncommas
     }
     
+    const expr = /^[a-zA-Z0-9_]$/
+    // 判断当前函数前面的一个字符是否为 . ，如果是，则索引加一
+    for (let j = start - 1;  text[j] !== '\n';  j--)         
+        if (!expr.test(text[j])) {
+            if (text[j] === '.' && j > 0 && expr.test(text[j - 1]))
+                index++
+            break
+        }
+        
     return index
 }
 
