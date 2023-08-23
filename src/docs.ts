@@ -264,14 +264,11 @@ function find_active_param_index (
         index = ncommas
     }
     
-    const expr = /^[a-zA-Z0-9_]$/
-    // 判断当前函数前面的一个字符是否为 . ，如果是，则索引加一
-    for (let j = start - 1;  text[j] !== '\n' && j > 0;  j--) 
-        if (!expr.test(text[j])) {
-            if (text[j] === '.' && expr.test(text[j - 1]))
-                index++
-            break
-        }
+    /** 匹配当前函数名的正则, 并捕获该函数名 */
+    let reg = /(?:)([a-zA-Z_\u4e00-\u9fa5][a-zA-Z0-9_\u4e00-\u9fa5]*)\($/
+    let match = reg.exec(text)
+    if (match && text[start - match[1].length - 1] === '.')
+        index++
         
     return index
 }
