@@ -103,7 +103,7 @@ export async function build_package_json () {
         {
             command: 'execute',
             key: 'ctrl+e',
-            when: "editorTextFocus && (editorLangId == 'dolphindb' || editorLangId == 'dolphindb-python')",
+            when: "editorTextFocus && editorLangId == 'dolphindb' || editorTextFocus && editorLangId == 'dolphindb-python'",
             title: {
                 zh: 'DolphinDB: 执行代码',
                 en: 'DolphinDB: Execute Code'
@@ -111,7 +111,7 @@ export async function build_package_json () {
         },
         {
             command: 'execute_selection_or_line',
-            when: "editorTextFocus && (editorLangId == 'dolphindb' || editorLangId == 'dolphindb-python')",
+            when: "editorTextFocus && editorLangId == 'dolphindb' || editorTextFocus && editorLangId == 'dolphindb-python'",
             title: {
                 zh: '执行选中或当前行',
                 en: 'Execute Selection or Line'
