@@ -155,7 +155,7 @@ export class Remote {
         try {
             console.log(t('连接到:'), this.url)
             this.websocket = await connect_websocket(this.url, {
-                protocols: 'debug',
+                protocols: ['debug'],
                 on_message: this.handle.bind(this)
             })
             console.log(t('已连接到 server'))

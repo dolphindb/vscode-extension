@@ -32,8 +32,8 @@ dependencies:
     specifier: ^1.11.9
     version: 1.11.9
   dolphindb:
-    specifier: ^2.0.1019
-    version: 2.0.1019(react-dom@18.2.0)
+    specifier: ^2.0.1020
+    version: 2.0.1020(react-dom@18.2.0)
   koa:
     specifier: ^2.14.2
     version: 2.14.2(patch_hash=p7ybv54qzz4vmboaajk6ep5psi)
@@ -59,8 +59,8 @@ dependencies:
     specifier: ^8.13.0
     version: 8.13.0
   xshell:
-    specifier: ^1.0.54
-    version: 1.0.54(react-dom@18.2.0)
+    specifier: ^1.0.55
+    version: 1.0.55(react-dom@18.2.0)
 
 devDependencies:
   '@svgr/webpack':
@@ -3442,14 +3442,14 @@ packages:
       esutils: 2.0.3
     dev: true
 
-  /dolphindb@2.0.1019(react-dom@18.2.0):
-    resolution: {integrity: sha512-R8BxQlsKtpmPwrB/WRfdLCzHvfdd6FRlIBO/BRrK/C2OoJez45tkYu22sx/8bq6Gyh9H8eAJPhDGU0zv1I1lsA==}
+  /dolphindb@2.0.1020(react-dom@18.2.0):
+    resolution: {integrity: sha512-r5pq9yaTtMoUYKiYvlO1x88Z944mCNf36xMf9lU5txhkEBa719ip8WH592IvnwIoOI5b1GelzVAwIUr88euWRA==}
     engines: {node: '>=19.8.1'}
     dependencies:
       dayjs: 1.11.9
       ipaddr.js: 2.1.0
       tslib: 2.6.2
-      xshell: 1.0.54(react-dom@18.2.0)
+      xshell: 1.0.55(react-dom@18.2.0)
     transitivePeerDependencies:
       - bufferutil
       - react-dom
@@ -6933,8 +6933,8 @@ packages:
         optional: true
     dev: false
 
-  /xshell@1.0.54(react-dom@18.2.0):
-    resolution: {integrity: sha512-Y8mrGU3ApQPZNb4nXS9aKv/PXGUdftTeRXzQUQ3sgK+G+lPQCFTedUTPhqErons59Z34NHt8hkgbOOMsVZ0hkg==}
+  /xshell@1.0.55(react-dom@18.2.0):
+    resolution: {integrity: sha512-zJGAjzrBGmgTKQOixwQzjLeLzubq8yZWL2XLB4I3R3xuoQ+eE0+C7HEa4uX1hNaxJCPeLtWQfX4EkOLkXYEr+A==}
     engines: {node: '>=20.5.1', vscode: '>=1.79.0'}
     hasBin: true
     dependencies:
