@@ -265,12 +265,11 @@ function find_active_param_index (
     }
     
     /** 匹配当前函数名的正则, 并捕获该函数名 */
-    let reg = /(?:)([a-zA-Z_\u4e00-\u9fa5][a-zA-Z0-9_\u4e00-\u9fa5]*)\($/
-    let match = reg.exec(text)
-    if (match && text[start - match[1].length - 1] === '.')
-        index++
-        
-    return index
+    const match = /([a-zA-Z_\u4e00-\u9fa5][\w\u4e00-\u9fa5]*!?)\($/.exec(text)
+    return match && text[start - 1 - match[1].length] === '.' ?
+            index + 1
+        :
+            index
 }
 
 
