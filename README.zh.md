@@ -85,7 +85,8 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 
 ##### 常见问题
 
-- 如果出现 `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..` 这样的错误，请重启 VSCode
+- 如果出现 `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..` 这样的错误，请重启 VSCode  
+如果还不能解决，尝试执行 `pkill code && rm -rf .config/Code/Service\ Worker/{CacheStorage,ScriptCache}`, 参考 https://github.com/microsoft/vscode/issues/125993
 
 - 如果出现执行代码并返回表格后，底部没有自动切换到 DolphinDB 视图的情况，需要重置 DolphinDB 视图的位置，如下图所示  
 <img src='./images/reset-location.png' width='400'>

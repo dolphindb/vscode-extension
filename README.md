@@ -85,7 +85,8 @@ After the code is executed, there will be text-based output in the terminal belo
 
 ##### FAQ
 
-- If there is an error like `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..`, please restart VSCode
+- If there is an error like `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..`, please restart VSCode  
+If it still can’t be solved, try executing `pkill code && rm -rf .config/Code/Service\ Worker/{CacheStorage,ScriptCache}`, refer to https://github.com/microsoft/vscode/issues/125993
 
 - If there is no automatic switch to the DolphinDB view at the bottom after executing the code and returning to the form, you need to reset the position of the DolphinDB view, as shown in the figure below
 <img src='./images/reset-location.png' width='400'>
