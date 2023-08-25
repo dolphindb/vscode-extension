@@ -252,7 +252,7 @@ async function execute (text: string, testing = false) {
             objstr = obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
             break
         
-        default:
+        default:  // DdbForm.scalar, 其他未知类型
             terminal.show(true)
             
             objstr = obj.type === DdbType.void ?

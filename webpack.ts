@@ -11,7 +11,7 @@ import { fwrite, fcopy, fexists } from 'xshell'
 import type { Item } from 'xshell/i18n/index.js'
 
 
-import { tm_language } from 'dolphindb/language.js'
+import { tm_language, tm_language_python } from 'dolphindb/language.js'
 
 
 import package_json from './package.json' assert { type: 'json' }
@@ -71,7 +71,10 @@ export async function copy_files () {
 export async function build_tm_language () {
     await Promise.all([
         fwrite(`${fpd_out}dolphindb.tmLanguage.json`, tm_language),
-        fcopy(`${fpd_root}dolphindb.language-configuration.json`, `${fpd_out}dolphindb.language-configuration.json`)
+        fwrite(`${fpd_out}dolphindb-python.tmLanguage.json`, tm_language_python),
+        
+        fcopy(`${fpd_root}dolphindb.language-configuration.json`, `${fpd_out}dolphindb.language-configuration.json`),
+        fcopy(`${fpd_root}dolphindb-python.language-configuration.json`, `${fpd_out}dolphindb-python.language-configuration.json`)
     ])
 }
 
@@ -100,7 +103,7 @@ export async function build_package_json () {
         {
             command: 'execute',
             key: 'ctrl+e',
-            when: "editorTextFocus && editorLangId == 'dolphindb'",
+            when: "editorTextFocus && editorLangId == 'dolphindb' || editorTextFocus && editorLangId == 'dolphindb-python'",
             title: {
                 zh: 'DolphinDB: 执行代码',
                 en: 'DolphinDB: Execute Code'
@@ -108,7 +111,7 @@ export async function build_package_json () {
         },
         {
             command: 'execute_selection_or_line',
-            when: "editorTextFocus && editorLangId == 'dolphindb'",
+            when: "editorTextFocus && editorLangId == 'dolphindb' || editorTextFocus && editorLangId == 'dolphindb-python'",
             title: {
                 zh: '执行选中或当前行',
                 en: 'Execute Selection or Line'
@@ -117,7 +120,7 @@ export async function build_package_json () {
         },
         {
             command: 'execute_file',
-            when: "editorLangId == 'dolphindb'",
+            when: "editorLangId == 'dolphindb' || editorLangId == 'dolphindb-python'",
             title: {
                 zh: '执行整个文件',
                 en: 'Execute File'
@@ -283,6 +286,16 @@ export async function build_package_json () {
                         dark: './icons/file.svg',
                         light: './icons/file.svg',
                     }
+                },
+                {
+                    id: 'dolphindb-python',
+                    extensions: ['.dos'],
+                    aliases: ['DolphinDB Python', 'dolphindb-python'],
+                    configuration: './dolphindb-python.language-configuration.json',
+                    icon: {
+                        dark: './icons/file.svg',
+                        light: './icons/file.svg',
+                    }
                 }
             ],
             
@@ -291,6 +304,11 @@ export async function build_package_json () {
                     language: 'dolphindb',
                     scopeName: 'source.dolphindb',
                     path: './dolphindb.tmLanguage.json',
+                },
+                {
+                    language: 'dolphindb-python',
+                    scopeName: 'source.dolphindb-python',
+                    path: './dolphindb-python.tmLanguage.json',
                 }
             ],
             
@@ -644,11 +662,11 @@ export async function build_package_json () {
                 // 执行按钮
                 'editor/title/run': [
                     {
-                        when: "editorLangId == 'dolphindb'",
+                        when: "editorLangId == 'dolphindb' || editorLangId == 'dolphindb-python'",
                         command: 'dolphindb.execute_file',
                     },
                     {
-                        when: "editorLangId == 'dolphindb'",
+                        when: "editorLangId == 'dolphindb' || editorLangId == 'dolphindb-python'",
                         command: 'dolphindb.execute_selection_or_line'
                     },
                 ],
@@ -677,13 +695,13 @@ export async function build_package_json () {
                 ]
             },
             
-            breakpoints: [{ language: 'dolphindb' }],
+            breakpoints: [{ language: 'dolphindb' }, { language: 'dolphindb-python' }],
             
             debuggers: [
                 {
                     type: 'dolphindb',
                     label: make('debugger.label', '调试 DolphinDB 脚本文件', 'Debug DolphinDB script file'),
-                    languages: ['dolphindb'],
+                    languages: ['dolphindb', 'dolphindb-python'],
                     program: './debugger.cjs',
                     runtime: 'node',
                     configurationAttributes: {
@@ -1025,7 +1043,10 @@ export const ext_webpack = {
                 globalObject: 'globalThis',
                 library: {
                     type: 'commonjs2',
-                }
+                },
+                
+                // 关掉之后可以避免生成多个 chunk, 开着也挺好，按需加载
+                // chunkLoading: false,
             },
             
             target: ['node20', 'es2023'],
@@ -1039,6 +1060,8 @@ export const ext_webpack = {
                     '.js': ['.js', '.ts', '.tsx']
                 },
             },
+            
+            externalsType: 'commonjs2',
             
             externals: {
                 vscode: 'commonjs2 vscode'

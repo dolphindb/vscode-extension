@@ -49,18 +49,56 @@ const token_ends = new Set(
     Object.values(token_map)
 )
 
+
+interface RstDocument {
+    title: string
+    type: DocumentType
+    children: Paragraph[]
+}
+
+interface Paragraph {
+    type: ParagraphType
+    title: string
+    children: ContextBlock[]
+}
+
+interface ContextBlock {
+    type: 'text' | 'code'
+    language?: string
+    value: string[]
+}
+
+type DocumentType = 'command' | 'function' | 'template'
+
+type ParagraphType = 'grammer' | 'parameters' | 'detail' | 'example'
+
+
+const func_fps = {
+    command: 'FunctionsandCommands/CommandsReferences/',
+    function: 'FunctionsandCommands/FunctionReferences/',
+    template: 'Functionalprogramming/TemplateFunctions/'
+} as const
+
+
 function get_func_md (keyword: string) {
-    const func_doc = docs[keyword] || docs[keyword + '!']
+    const func_doc: RstDocument = docs[keyword] || docs[keyword + '!']
     
     if (!func_doc)
         return
     
+    const { title, type } = func_doc
+    
     let md = new MarkdownString(
         // 标题
-        `#### ${func_doc.title}\n` +
+        `#### ${title}\n` +
         
         // 链接
-        `https://${ language === 'zh' ? 'www.dolphindb.cn/cn/' : 'dolphindb.com/' }help/FunctionsandCommands/${ func_doc.type === 'command' ? 'CommandsReferences' : 'FunctionReferences' }/${func_doc.title[0]}/${func_doc.title}.html\n`
+        'https://' + 
+        (language === 'zh' ? 'docs.dolphindb.cn/zh/' : 'dolphindb.com/') +
+        'help/' +
+        func_fps[type] +
+        (type !== 'template' ? `${title[0]}/` : '') +
+        title + '.html\n'
     )
     
     md.isTrusted = true
@@ -168,7 +206,7 @@ function find_func_start (
 }
 
 
-/** 根据函数参数开始位置分析参数语义，提取出当前参数索引 */
+/** 根据函数参数开始位置分析参数语义，提取出当前参数索引，start 是扩号的位置 */
 function find_active_param_index (
     document: TextDocument,
     position: Position,
@@ -226,7 +264,10 @@ function find_active_param_index (
         index = ncommas
     }
     
-    return index
+    const func_start_text = text.slice(0, start)
+    /** 匹配当前函数名的正则, 并捕获该函数名 */
+    const match = /[a-zA-Z_\u4e00-\u9fa5][\w\u4e00-\u9fa5]*!?$/.exec(func_start_text)
+    return match && func_start_text[start - 1 /* 去掉括号 */ - match[0].length] === '.' ? index + 1 : index
 }
 
 
@@ -267,7 +308,7 @@ export async function load_docs () {
 export function register_docs (ctx: ExtensionContext) {
     // 函数补全
     ctx.subscriptions.push(
-        languages.registerCompletionItemProvider('dolphindb', {
+        languages.registerCompletionItemProvider(['dolphindb', 'dolphindb-python'], {
             provideCompletionItems (doc, pos, canceller, ctx) {
                 const keyword = doc.getText(doc.getWordRangeAtPosition(pos))
                 
@@ -332,7 +373,7 @@ export function register_docs (ctx: ExtensionContext) {
     
     // 悬浮提示
     ctx.subscriptions.push(
-        languages.registerHoverProvider('dolphindb', {
+        languages.registerHoverProvider(['dolphindb', 'dolphindb-python'], {
             provideHover (doc, pos, canceller) {
                 const md = get_func_md(doc.getText(doc.getWordRangeAtPosition(pos)))
                 if (!md)
@@ -345,7 +386,7 @@ export function register_docs (ctx: ExtensionContext) {
     
     // 函数签名
     ctx.subscriptions.push(
-        languages.registerSignatureHelpProvider('dolphindb', {
+        languages.registerSignatureHelpProvider(['dolphindb', 'dolphindb-python'], {
             provideSignatureHelp (doc, pos, canceller, ctx) {
                 const { func_name, param_search_pos } = find_func_start(doc, pos)
                 if (param_search_pos === -1) 

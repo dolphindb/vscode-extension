@@ -15,6 +15,8 @@ import {
     type ConfigurationChangeEvent, 
     
     ProgressLocation,
+    
+    languages,
 } from 'vscode'
 
 
@@ -104,6 +106,8 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         this.connection = this.connections[0]
         if (this.connection)
             this.connection.iconPath = icon_checked
+        
+        this.change_language_mode()
     }
     
     
@@ -112,6 +116,18 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
             explorer.load_connections()
             explorer.refresher.fire()
         }
+    }
+    
+    
+    change_language_mode () {
+        const languageId = window.activeTextEditor?.document?.languageId
+        const { python } = this.connection.options
+        
+        if ((languageId === 'dolphindb' && python) || (languageId === 'dolphindb-python' && !python))
+            languages.setTextDocumentLanguage(
+                window.activeTextEditor.document,
+                python ? 'dolphindb-python' : 'dolphindb'
+            )
     }
     
     
@@ -128,6 +144,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
                     this.disconnect(_connection)
             }
         
+        this.change_language_mode()
         
         console.log(t('连接:'), connection)
         statbar.update()

@@ -82,6 +82,10 @@ export async function activate (ctx: ExtensionContext) {
     
     register_explorer()
     
+    window.onDidChangeActiveTextEditor(() => {
+        explorer.change_language_mode()    
+    })
+    
     
     formatter.init()
     statbar.init()
@@ -107,8 +111,15 @@ export async function activate (ctx: ExtensionContext) {
     
     ctx.subscriptions.push(debug.registerDebugConfigurationProvider('dolphindb', {
         resolveDebugConfiguration (folder, config, token): ProviderResult<DebugConfiguration> {
+            const languageId = window.activeTextEditor?.document.languageId
+            
             // if launch.json is missing or empty
-            if (!config.type && !config.request && !config.name && window.activeTextEditor?.document.languageId === 'dolphindb') {
+            if (
+                !config.type && 
+                !config.request && 
+                !config.name && 
+                (languageId === 'dolphindb' || languageId === 'dolphindb-python')
+            ) {
                 config.type = 'dolphindb'
                 config.request = 'launch'
                 config.name = t('调试当前 DolphinDB 脚本文件')

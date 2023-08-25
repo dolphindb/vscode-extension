@@ -4,13 +4,7 @@ import type { Duplex } from 'stream'
 
 import { workspace, extensions, ExtensionKind } from 'vscode'
 
-import { WebSocketServer } from 'ws'
-import { default as Koa, type Context } from 'koa'
-
-// @ts-ignore
-import KoaCors from '@koa/cors'
-import KoaCompress from 'koa-compress'
-import { userAgent as KoaUserAgent } from 'koa-useragent'
+import type { Context } from 'koa'
 
 import { type Message, Remote } from 'xshell'
 import { Server } from 'xshell/server.js'
@@ -105,13 +99,14 @@ class DdbServer extends Server {
     })
     
     
-    constructor () {
-        // 实际上重写了 start 方法, this.port = 8321 未使用
-        super(8321)
-    }
-    
-    
     override async start () {
+        const { WebSocketServer } = await import('ws')
+        
+        const { default: Koa } = await import('koa')
+        const { default: KoaCors } = await import('@koa/cors')
+        const { default: KoaCompress } = await import('koa-compress')
+        
+        
         // --- init koa app
         let app = new Koa()
         
@@ -136,8 +131,6 @@ class DdbServer extends Server {
         )
         
         app.use(KoaCors({ credentials: true }))
-        
-        app.use(KoaUserAgent)
         
         app.use(this._router.bind(this))
         
@@ -243,21 +236,12 @@ class DdbServer extends Server {
         const { path } = request
         
         if (dev && path.startsWith('/vendors/'))
-            return this.try_send(ctx, path.slice('/vendors/'.length), {
-                root: fpd_node_modules,
-                log_404: true
-            })
+            return this.try_send(ctx, fpd_node_modules, path.slice('/vendors/'.length), true)
         
-        if (dev && await this.try_send(ctx, path, {
-            root: `${fpd_src}dataview/`,
-            log_404: false
-        }))
+        if (dev && await this.try_send(ctx, `${fpd_src}dataview/`, path, false))
             return true
         
-        return this.try_send(ctx, path, {
-            root: `${fpd_ext}dataview/`,
-            log_404: true
-        })
+        return this.try_send(ctx, `${fpd_ext}dataview/`, path, true)
     }
     
     
