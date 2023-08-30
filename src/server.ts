@@ -67,7 +67,7 @@ class DdbServer extends Server {
             async subscribe_inspection ({ id }, websocket) {
                 console.log(t('page 已订阅 inspection'))
                 
-                function subscriber (ddbvar: Partial<DdbVar>, open: boolean, options?: InspectOptions, buffer?: Uint8Array, le?: boolean) {
+                function subscriber (ddbvar: Partial<DdbVar>, open: boolean, options: InspectOptions = { }, buffer: Uint8Array = null, le: boolean = true) {
                     server.remote.send({ id, data: [ddbvar, open, options, buffer, le] }, websocket)
                 }
                 
