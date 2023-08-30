@@ -11,6 +11,8 @@ import {
 } from 'vscode'
 
 import { path } from 'xshell'
+import { assert } from 'xshell/utils.browser.js'
+import { t } from './i18n/index.js'
 
 
 /** 获取选择区域的文本，若选择为空，则根据 selector 确定 (当前 | 全部文本 | 空) */
@@ -153,7 +155,7 @@ export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
             true,
             encrypt
         ])
-        
+        assert(typeof value === 'string', t('上传模块成功后返回值类型不为 string'))
         return path.normalize(value.fp)
     } catch (error) {
         error.message += ` (${uri.fsPath.fp})`
