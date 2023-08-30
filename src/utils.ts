@@ -155,7 +155,7 @@ export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
             true,
             encrypt
         ])
-        assert(typeof value === 'string', t('上传模块成功后返回值类型不为 string'))
+        assert(typeof value === 'string', t('uploadModule 返回值类型应该为 string'))
         return path.normalize(value.fp)
     } catch (error) {
         error.message += ` (${uri.fsPath.fp})`
