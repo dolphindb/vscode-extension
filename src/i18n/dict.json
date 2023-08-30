@@ -414,7 +414,7 @@
         "en": "offset"
     },
     " 调试服务器连接失败，请确保 DolphinDB Server 版本不低于 2.00.10.1 或 1.30.22.1\n": {
-        "en": "Debug server connection failed, please make sure DolphinDB Server version is not lower than 2.00.10.1 or 1.30.22.1\n"
+        "en": " Debug server connection failed, please make sure DolphinDB Server version is not lower than 2.00.10.1 or 1.30.22.1\n"
     },
     "uploadModule 返回值类型应该为 string": {
         "en": "uploadModule return value type should be string"
