@@ -929,7 +929,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
             },
             open,
             { decimals: formatter.decimals },
-            ... (this.obj ? [this.obj.pack(), this.obj.le] : [ ]) as [Uint8Array, boolean],
+            ... (this.obj ? [this.obj.pack(), this.obj.le] : [null, DdbObj.le_client]) as [Uint8Array, boolean],
         ] as const
         
         

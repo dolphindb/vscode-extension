@@ -10,8 +10,9 @@ import {
     FileType
 } from 'vscode'
 
-import { path } from 'xshell'
-import { assert } from 'xshell/utils.browser.js'
+import { path, assert } from 'xshell'
+
+
 import { t } from './i18n/index.js'
 
 
@@ -155,7 +156,9 @@ export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
             true,
             encrypt
         ])
+        
         assert(typeof value === 'string', t('uploadModule 返回值类型应该为 string'))
+        
         return path.normalize(value.fp)
     } catch (error) {
         error.message += ` (${uri.fsPath.fp})`
