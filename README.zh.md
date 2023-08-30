@@ -84,21 +84,29 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 <img src='./images/with-dataview.png' width='600'>
 
 ##### 常见问题
+- 如果出现 `Ctrl + E` 快捷键无反应，可能是未关联 DolphinDB 语言（此时语法高亮也未生效），或者快捷键与其他插件冲突了，需要自定义快捷键:  
+到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，在搜索框中输入 `ctrl+e`, 删除和 `DolphinDB: 执行代码` 冲突的其他插件的快捷键
+<img src='./images/key-bindings.png' width='600'>
 
-- 如果出现 `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..` 这样的错误，请重启 VSCode
+- 如果出现执行代码后一直卡在执行中，打开 vscode 顶部的 `帮助 (Help)` > `切换开发人员工具 (DevTools)` 在弹出的窗口中切换到控制台标签页，看看有没有 `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..` 这样的错误，如果有，请重启 VSCode  
+如果还不能解决，尝试下面的方法结束所有的 `Code.exe` 进程，并删除 service worker 缓存:
+    - linux: `pkill code && rm -rf .config/Code/Service\ Worker/{CacheStorage,ScriptCache}`
+    - windows:
+        - 1. 退出 vscode 打开任务管理器，结束所有 vscode 进程
+        - 2. 在文件管理器中打开 `C:/Users/你的用户名/AppData/Roaming/Code/Service Worker/`
+        - 3. 删除 `CacheStorage` 和 `ScriptCache` 两个文件夹  
+    
+    参考 https://github.com/microsoft/vscode/issues/125993
 
 - 如果出现执行代码并返回表格后，底部没有自动切换到 DolphinDB 视图的情况，需要重置 DolphinDB 视图的位置，如下图所示  
 <img src='./images/reset-location.png' width='400'>
 
-- 如果出现 `Ctrl + E` 快捷键无反应，可能是未关联 DolphinDB 语言（此时语法高亮也未生效），或者快捷键与其他插件冲突了，需要自定义快捷键:  
-到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，在搜索框中输入 `ctrl+e`, 删除和 `DolphinDB: 执行代码` 冲突的其他插件的快捷键
-<img src='./images/key-bindings.png' width='600'>
+- 如果出现 dataview (数据视图) 面板右键隐藏后，无法再次显示，且执行脚本一直卡在执行中的情况。需要执行 `defs()` 这个函数，然后按 `ctrl + shift + p` 呼出命令面板，搜索 open view，点击打开视图，然后搜索数据视图（英文名是 dataview），点击后即可打开
 
 - VSCode 有大约为 `1 GB` 的内存限制。建议使用 `limit` 限制返回记录数；或者将结果赋给某个变量，如 `a = select * from`，后续通过点击侧边栏变量旁边的按钮进行分页懒加载，按需取回单页数据
 
 - 为了在浏览器中展示表格等数据，每个 VSCode 窗口会启动一个本地 HTTP 服务器，其可用端口范围可以通过 `dolphindb.ports` 配置，默认为 `8321-8420`，鼠标悬浮在 ports 上可查看详细解释。在浏览器中弹窗展示的功能，要求近两年的版本，如 Chrome 100+ 或 Edge 100+ 或 Firefox 100+
 
-- 如果出现 dataview (数据视图) 面板右键隐藏后，无法再次显示，且执行脚本一直卡在执行中的情况。需要执行 `defs()` 这个函数，然后按 `ctrl + shift + p` 呼出命令面板，搜索 open view，点击打开视图，然后搜索数据视图（英文名是 dataview），点击后即可打开
 
 #### 6. 在 DOLPHINDB 区域中切换连接及查看已连接会话的变量
 执行代码后，如下图所示，可以：

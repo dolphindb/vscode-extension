@@ -6,7 +6,7 @@ import './window.sass'
 import { useEffect } from 'react'
 import { createRoot as create_root } from 'react-dom/client'
 
-import { ConfigProvider, App } from 'antd'
+import { App, ConfigProvider } from 'antd'
 import zh from 'antd/es/locale/zh_CN.js'
 import en from 'antd/locale/en_US.js'
 import ja from 'antd/locale/ja_JP.js'
@@ -68,7 +68,7 @@ function Root () {
         autoInsertSpaceInButton={false}
         theme={{ hashed: false, token: { borderRadius: 0 } }}
     >
-        <App>
+        <App className='app'>
             <DdbObjWindow />
         </App>
     </ConfigProvider>
@@ -124,3 +124,4 @@ function DdbObjWindow () {
         <Obj obj={obj} objref={objref} ctx='window' remote={remote} ddb={ddb} options={options} />
     </div>
 }
+

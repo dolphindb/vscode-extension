@@ -85,20 +85,28 @@ After the code is executed, there will be text-based output in the terminal belo
 
 ##### FAQ
 
-- If there is an error like `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..`, please restart VSCode
-
-- If there is no automatic switch to the DolphinDB view at the bottom after executing the code and returning to the form, you need to reset the position of the DolphinDB view, as shown in the figure below
-<img src='./images/reset-location.png' width='400'>
-
 - If there is no response to the `Ctrl + E` shortcut key, it may be that the DolphinDB language is not associated (syntax highlighting does not take effect at this time), or the shortcut key conflicts with other plugins, and you need to customize the shortcut key:
 Go to `File > Preferences > Keyboard Shortcuts` (`File > Preferences > Keyboard Shortcuts`) of VSCode to modify, enter `ctrl+e` in the search box, and delete other plug-ins that conflict with `DolphinDB: Execute Code` hot key
 <img src='./images/key-bindings.png' width='600'>
 
+- If you have been stuck in execution after executing the code, open `Help` > `Switch Developer Tools (DevTools)` at the top of vscode and switch to the console tab in the pop-up window to see if there is `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..` If there is such an error, please restart VSCode
+If it still can't be solved, try the following methods to end all `Code.exe` processes and delete the service worker cache:
+     - linux: `pkill code && rm -rf .config/Code/Service\ Worker/{CacheStorage,ScriptCache}`
+     - windows:
+         - 1. Exit vscode, open the task manager, and end all vscode processes
+         - 2. Open `C:/Users/your username/AppData/Roaming/Code/Service Worker/` in the file manager
+         - 3. Delete `CacheStorage` and `ScriptCache` two folders
+    
+     Reference https://github.com/microsoft/vscode/issues/125993
+
+- If there is no automatic switch to the DolphinDB view at the bottom after executing the code and returning to the form, you need to reset the position of the DolphinDB view, as shown in the figure below
+<img src='./images/reset-location.png' width='400'>
+
+- If the dataview (data view) panel is right-clicked and hidden, it cannot be displayed again, and the execution script has been stuck in execution. You need to execute the `defs()` function, then press `ctrl + shift + p` to call out the command panel, search for open view, click to open the view, and then search for the data view (English name is dataview), click to open
+
 - VSCode has a memory limit of about `1 GB`. It is recommended to use `limit` to limit the number of returned records; or assign the result to a variable, such as `a = select * from`, and then click the button next to the variable in the sidebar to perform paging lazy loading and retrieve single page data on demand
 
 - In order to display tables and other data in the browser, each VSCode window will start a local HTTP server, and its available port range can be configured through `dolphindb.ports`, the default is `8321-8420`, hover the mouse over ports to view Detailed explanation. The function displayed in the pop-up window in the browser requires a version of the past two years, such as Chrome 100+ or Edge 100+ or Firefox 100+
-
-- If the dataview (data view) panel is right-clicked and hidden, it cannot be displayed again, and the execution script has been stuck in execution. You need to execute the `defs()` function, then press `ctrl + shift + p` to call out the command panel, search for open view, click to open the view, and then search for the data view (English name is dataview), click to open
 
 #### 6. Switch connections and view session variables for connections in the DOLPHIDB area of the EXPLORER panel on the left side of the VSCode editor
 

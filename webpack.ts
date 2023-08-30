@@ -1085,6 +1085,8 @@ export const ext_webpack = {
                             transpileOnly: true,
                             compilerOptions: {
                                 module: 'ESNext' as any,
+                                moduleResolution: 'Bundler' as any,
+                                esModuleInterop: true
                             }
                         } as Partial<TSLoaderOptions>
                     }
