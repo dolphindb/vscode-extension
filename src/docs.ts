@@ -94,8 +94,7 @@ function get_func_md (keyword: string) {
         
         // 链接
         'https://' + 
-        (language === 'zh' ? 'docs.dolphindb.cn/zh/' : 'dolphindb.com/') +
-        'help/' +
+        (language === 'zh' ? 'docs.dolphindb.cn/zh/' : 'dolphindb.com/help/') +
         func_fps[type] +
         (type !== 'template' ? `${title[0]}/` : '') +
         title + '.html\n'
