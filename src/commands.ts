@@ -1,10 +1,10 @@
 import dayjs from 'dayjs'
 
-import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri, FileType } from 'vscode'
+import { window, workspace, commands, ConfigurationTarget, ProgressLocation, type Uri, FileType } from 'vscode'
 
 import { path, Timer, delay, inspect } from 'xshell'
 
-import { DdbConnectionError, DdbForm, DdbObj, DdbType, type InspectOptions } from 'dolphindb'
+import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions } from 'dolphindb'
 
 
 import { t } from './i18n/index.js'

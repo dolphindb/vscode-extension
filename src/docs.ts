@@ -16,7 +16,7 @@ import {
     
     SignatureInformation, SignatureHelp, ParameterInformation,
     
-    CompletionItem, CompletionItemKind,
+    type CompletionItem, CompletionItemKind,
 } from 'vscode'
 
 import { fread_json } from 'xshell'
