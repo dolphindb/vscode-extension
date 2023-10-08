@@ -9,7 +9,7 @@ import {
     Scope,
     ContinuedEvent,
 } from '@vscode/debugadapter'
-import { DebugProtocol } from '@vscode/debugprotocol'
+import type { DebugProtocol } from '@vscode/debugprotocol'
 
 import type { DdbObj } from 'dolphindb'
 
@@ -187,7 +187,7 @@ export class DdbDebugSession extends LoggingDebugSession {
         this._remote.on('ERROR', this.handleException.bind(this))
         this._remote.on('BREAKPOINT', async ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'breakpoint', ...data }))
         this._remote.on('STEP', async ({ data }: { data: PauseEventReceiveData }) => this.handlePause({ reason: 'step', ...data }))
-        this._remote.on('END', ({ data }: { data: EndEventData }) => this.handleTerminate(data))
+        this._remote.on('END', ({ data }: { data: EndEventData }) => { this.handleTerminate(data) })
         this._remote.on('OUTPUT', this.handleOutput.bind(this))
     }
     
@@ -505,7 +505,7 @@ export class DdbDebugSession extends LoggingDebugSession {
         if (this._terminated) 
             return
         
-        const reduceVariables = (variables: VariableRes[], frameId: number): DebugProtocol.Variable[] => {
+        function reduceVariables (variables: VariableRes[], frameId: number) {
             return variables.map(variable => {
                 const { name, value, data, vid, type, form } = variable
                 const resvar: DebugProtocol.Variable = {

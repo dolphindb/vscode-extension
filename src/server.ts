@@ -9,7 +9,7 @@ import type { Context } from 'koa'
 import { type Message, Remote } from 'xshell'
 import { Server } from 'xshell/server.js'
 
-import { DDB, type DdbMessage, type InspectOptions } from 'dolphindb'
+import { type DDB, type DdbMessage, type InspectOptions } from 'dolphindb'
 
 import { t } from './i18n/index.js'
 import { dev, fpd_ext, fpd_node_modules, fpd_src } from './index.js'

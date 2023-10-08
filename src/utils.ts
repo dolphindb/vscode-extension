@@ -1,4 +1,4 @@
-import { DDB, DdbObj, type DdbStringObj } from 'dolphindb'
+import { type DDB, type DdbObj, type DdbStringObj } from 'dolphindb'
 import {
     window,
     Position,
