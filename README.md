@@ -163,6 +163,18 @@ When users upload files, the path mapping rules are as follows:
 2. The defalut field can be configured as a default match. If the current path does not match other items in dolphindb.mappings, the server path corresponding to the default will be used as the upload path. For example, the file path uploaded by the user is `/user/dosuments/file.dos`. At this time, if the rest of the mappings cannot be matched, the server path mapped by the `default` field will be used as the upload path, that is, `/data/server/file.dos `
 3. If there is no match in dolphindb.mappings, use `getHomeDir() + /uploads/ + filename` as the upload path
 
+#### 10. Configure the function name to be bold (optional)
+Add the following textmate rules to the VSCode configuration file `settings.json`
+```
+"editor.tokenColorCustomizations": {
+     "textMateRules": [
+         // function: bold
+         { "scope": "entity.name.function", "settings": { "fontStyle": "bold" }},
+         { "scope": "support.function", "settings": { "fontStyle": "bold" }} ,
+     ]
+},
+```
+
 ## Development
 ```shell
 # Install the latest version of nodejs
