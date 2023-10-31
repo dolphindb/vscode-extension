@@ -28,12 +28,13 @@ The debugging architecture consists of several components working together:
 
 ![components](images/debug/en/components.png)
 
-| **Component**                | **Description**                                              |
-| :--------------------------- | :----------------------------------------------------------- |
-| DolphinDB Server             | The database process that handles interrupts, hangs, and queries. |
-| Debug Adapter                | An intermediary component which handles communication between VS Code extension and the DolphinDB server using DAP. |
-| Debug Adapter Protocol (DAP) | An abstract communication protocol defined by Microsoft.     |
-| Debug Client                 | The user interface for debugging within VS Code. See screenshot below. |
+| **Component**                   | **Description**                                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Debug Server (DolphinDB Server) | The database process that handles interrupts, hangs, and queries.                                                   |
+| Debug Adapter                   | An intermediary component which handles communication between VS Code extension and the DolphinDB server using DAP. |
+| Debug Adapter Protocol (DAP)    | An abstract communication protocol defined by Microsoft.                                                            |
+| Debug Client                    | The user interface for debugging within VS Code. See screenshot below.                                              |
+
 
 ![overview](images/debug/en/all-header.png)
 

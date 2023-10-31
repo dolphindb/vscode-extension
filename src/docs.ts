@@ -92,8 +92,12 @@ function get_func_md (keyword: string) {
         // 标题
         `#### ${title}\n` +
         
-        // 链接
-        `https://docs.dolphindb.cn/${language === 'en' ? 'en' : 'zh'}/` +
+        // 旧文档链接
+        'https://' + (language === 'zh' ? 'docs.dolphindb.cn/zh/help/' : 'dolphindb.com/help200/') +
+        
+        // 新文档链接
+        // `https://docs.dolphindb.cn/${language === 'zh' ? 'zh' : 'en'}/` +
+        
         func_fps[type] +
         (type !== 'template' ? `${title[0]}/` : '') +
         title + '.html\n'

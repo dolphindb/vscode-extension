@@ -9,7 +9,7 @@
 
 ![components](images/debug/zh/components.png)
 
-* DolphinDB Server
+* Debug Server (DolphinDB Server)
   
   真正执行中断、挂起、数据查询操作的数据库进程
 
