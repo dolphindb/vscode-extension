@@ -1,6 +1,6 @@
 import { DdbObj, DdbDict, DdbString, DdbVectorString, DdbVectorInt, DdbVectorAny, DdbInt, DdbBool, DdbForm, DdbType, DdbVoid } from 'dolphindb'
 import { promises as fs } from 'fs'
-import { Sources } from './sources.js'
+import { type Sources } from './sources.js'
 
 // DDB数据类型转换相关
 /** 

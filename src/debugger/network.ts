@@ -1,6 +1,6 @@
 import { type WebSocket, connect_websocket, inspect, WebSocketOpen } from 'xshell'
 
-import { DdbDict, DdbObj } from 'dolphindb'
+import { type DdbDict, DdbObj } from 'dolphindb'
 
 import { json2DdbDict } from './utils.js'
 import { t } from '../i18n/index.js'

@@ -10,7 +10,7 @@ import {
 } from 'xshell'
 
 import {
-    DDB,
+    type DDB,
     type DdbMessage,
     type InspectOptions,
 } from 'dolphindb'

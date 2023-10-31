@@ -146,6 +146,19 @@ DolphinDB 的 VSCode 插件支持用户上传文件。支持用户以以下两�
 <img src='./images/mappings.png' width='800'>
 
 
+#### 10. 配置函数名加粗高亮 (可选)
+在 VSCode 配置文件 `settings.json` 中加上下面的 textmate 规则
+```
+"editor.tokenColorCustomizations": {
+    "textMateRules": [        
+        // function: bold
+        { "scope": "entity.name.function", "settings": { "fontStyle": "bold" }},
+        { "scope": "support.function", "settings": { "fontStyle": "bold" }} ,
+    ]
+},
+```
+
+
 添加完成后，插件会根据当前连接中用户配置的 mappings 对路径进行映射。例如，用户当前连接中配置的 mappings 为: 
 ```json
 {
