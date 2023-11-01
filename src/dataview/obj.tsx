@@ -267,7 +267,7 @@ function build_tree_data (
                     key: genid(),
                     children: [
                         {
-                            title: <View obj={valueobj} ctx={ctx} ddb={ddb} remote={remote} />,
+                            title: <View obj={valueobj} ctx={ctx} ddb={ddb} remote={remote} options={options} />,
                             key: genid()
                         }
                     ]
