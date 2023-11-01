@@ -418,5 +418,8 @@
     },
     "uploadModule 返回值类型应该为 string": {
         "en": "uploadModule return value type should be string"
+    },
+    "当前连接未配置路径映射关系，文件会默认上传至 <getHomeDir()>/uploads 文件夹下。建议在 dolphindb.connections 的每个连接配置对象中添加 mappings 属性，将本地路径关联到远程路径，后续上传会根据 mappings 进行路径匹配。是否现在配置？": {
+        "en": "The current connection has no path mapping configured, and files will be uploaded to the <getHomeDir()>/uploads folder by default. It is recommended to add the mappings attribute to each connection configuration object of dolphindb.connections to associate the local path with the remote path. Subsequent uploads will perform path matching based on mappings. Do you want to configure it now?"
     }
 }
