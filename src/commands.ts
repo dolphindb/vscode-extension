@@ -539,6 +539,10 @@ export const ddb_commands = [
             
             let { ddb } = connection
             
+            // 点击图标上传时 uris 不是数组
+            if (!Array.isArray(uris))
+                uris = [uri]
+            
             const { title } = await window.showInformationMessage(
                 t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
                 { modal: true },   
