@@ -74,7 +74,7 @@ let should_remind_setting_mappings = true
 /** 展示 modal 提醒用户设置 mappings, 返回是否还要继续后面的操作 */
 async function remind_mappings () {
     const { title } = await window.showInformationMessage(
-        t('当前连接未配置路径映射关系，文件会默认上传至 <getHomeDir()>/uploads 文件夹下。建议在 dolphindb.connections 的每个连接配置对象中添加 mappings 属性，将本地路径关联到远程路径，后续上传会根据 mappings 进行路径匹配。是否现在配置？'), 
+        t('当前连接未配置路径映射关系，文件会默认上传至 {getHomeDir()}/uploads/ 文件夹下。建议在 dolphindb.connections 的每个连接配置对象中添加 mappings 属性，将本地路径关联到远程路径，后续上传会根据 mappings 进行路径匹配。是否现在配置？'), 
         { modal: true },   
         { title: t('是') },  
         { title: t('否'), isCloseAffordance: true }, 
@@ -542,6 +542,10 @@ export const ddb_commands = [
             await connection.connect()
             
             let { ddb } = connection
+            
+            // 点击图标上传时 uris 不是数组
+            if (!Array.isArray(uris))
+                uris = [uri]
             
             const { title } = await window.showInformationMessage(
                 t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 

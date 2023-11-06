@@ -670,13 +670,17 @@ export async function build_package_json () {
                         command: 'dolphindb.execute_selection_or_line'
                     },
                 ],
-                
+                // 对应上传的子菜单指令
+                upload: [
+                    { command: 'dolphindb.upload_file', group: 'navigation' },
+                    { command: 'dolphindb.upload_module', group: 'navigation' }
+                ],
                 // 上传按钮
                 'editor/title': [
                     {
-                        command: 'dolphindb.upload_file',
                         group: 'navigation',
-                    }
+                        submenu: 'upload',
+                    },
                 ],
                 
                 'explorer/context': [
@@ -694,7 +698,13 @@ export async function build_package_json () {
                     }
                 ]
             },
-            
+            submenus: [
+                {
+                    id: 'upload',
+                    icon: '$(cloud-upload)',
+                    label: '上传',
+                }
+            ],
             breakpoints: [{ language: 'dolphindb' }, { language: 'dolphindb-python' }],
             
             debuggers: [
