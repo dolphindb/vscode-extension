@@ -7,7 +7,7 @@ import { path, Timer, delay, inspect } from 'xshell'
 import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions } from 'dolphindb'
 
 
-import { t } from './i18n/index.js'
+import { i18n, t } from './i18n/index.js'
 import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
@@ -78,6 +78,7 @@ async function remind_mappings () {
         { modal: true },   
         { title: t('是') },  
         { title: t('否'), isCloseAffordance: true }, 
+        { title: t('查看文档') },
         { title: t('不再提醒') }
     )
     
@@ -87,6 +88,9 @@ async function remind_mappings () {
             return false
         case t('否'):
             return true
+        case t('查看文档'):
+            await commands.executeCommand('vscode.open', `https://github.com/dolphindb/vscode-extension${i18n.language === 'zh' ? '/blob/main/README.zh.md#9-文件上传' : '#9-file-upload'}`)
+            return false
         case t('不再提醒'):
             should_remind_setting_mappings = false
             return false
