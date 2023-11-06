@@ -78,6 +78,7 @@ async function remind_mappings () {
         { modal: true },   
         { title: t('是') },  
         { title: t('否'), isCloseAffordance: true }, 
+        { title: t('查看文档') },
         { title: t('不再提醒') }
     )
     
@@ -87,6 +88,9 @@ async function remind_mappings () {
             return false
         case t('否'):
             return true
+        case t('查看文档'):
+            await commands.executeCommand('vscode.open', 'https://github.com/dolphindb/vscode-extension#9-file-upload')
+            return false
         case t('不再提醒'):
             should_remind_setting_mappings = false
             return false
