@@ -74,6 +74,9 @@
     "查看 dolphindb 变量:": {
         "en": "Inspect the dolphindb variable:"
     },
+    "在新窗口查看表结构:": {
+        "en": "View schemas in new window:"
+    },
     "在新窗口查看变量:": {
         "en": "View variables in new window:"
     },

@@ -246,8 +246,7 @@ function build_tree_data (
         let key = formati(dict_key, i, options)
         
         let valueobj = dict_value.value[i]
-        
-        if (valueobj instanceof DdbObj)
+        if (Object.getPrototypeOf(valueobj).constructor.name === 'DdbObj')
             if (valueobj.form === DdbForm.dict)
                 return {
                     title: `${key}: `,

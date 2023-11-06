@@ -486,6 +486,12 @@ export const ddb_commands = [
     },
     
     
+    async function open_schema (ddbvar: DdbVar = lastvar) {
+        console.log(t('在新窗口查看表结构:'), ddbvar)
+        await ddbvar.inspect(true, true)
+    },
+    
+    
     async function open_variable (ddbvar: DdbVar = lastvar) {
         console.log(t('在新窗口查看变量:'), ddbvar)
         await ddbvar.inspect(true)

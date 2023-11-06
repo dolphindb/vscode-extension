@@ -895,8 +895,10 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         }
     }
     
-    /** - open?: 是否在新窗口中打开 */
-    async inspect (open = false) {
+    /** - open?: 是否在新窗口中打开 
+     *  - schema?: 是否是查看表结构
+     * */
+    async inspect (open = false, schema = false) {
         if (open) {
             if (!server.subscribers_inspection.length) {
                 dataview.ppage = defer<void>()
@@ -914,6 +916,9 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
             
             dataview.view.show(true)
         }
+        
+        if (schema) 
+            this.obj = await this.ddb.eval(`schema(objByName('${this.name}'))`)
         
         const args = [
             {
