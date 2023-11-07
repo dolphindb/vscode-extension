@@ -670,11 +670,6 @@ export async function build_package_json () {
                         when: 'view == ddbdataview',
                     },
                     {
-                        command: 'dolphindb.open_schema',
-                        group: 'navigation',
-                        when: 'view == ddbdataview',
-                    },
-                    {
                         command: 'dolphindb.open_variable',
                         group: 'navigation',
                         when: 'view == ddbdataview',
