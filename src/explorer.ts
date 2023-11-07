@@ -780,6 +780,8 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     /** this.bytes <= DdbVar.size_limit */
     obj: TObj
     
+    load_table_variable_schema_defined = false
+    
     
     constructor (data: Partial<DdbVar>) {
         super(data.name, TreeItemCollapsibleState.None)
@@ -917,8 +919,12 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
             dataview.view.show(true)
         }
         
-        if (schema) 
-            this.obj = await this.ddb.eval(`schema(objByName('${this.name}'))`)
+        let obj = this.obj
+        
+        if (schema) {
+            await this.define_load_table_variable_schema()
+            obj = await this.ddb.call('load_table_variable_schema', [this.name])
+        }
         
         const args = [
             {
@@ -934,7 +940,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
             },
             open,
             { decimals: formatter.decimals },
-            ... (this.obj ? [this.obj.pack(), this.obj.le] : [null, DdbObj.le_client]) as [Uint8Array, boolean],
+            ... (obj ? [obj.pack(), obj.le] : [null, DdbObj.le_client]) as [Uint8Array, boolean],
         ] as const
         
         
@@ -943,6 +949,20 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         
         for (const subscriber of server.subscribers_inspection)
             subscriber(...args)
+    }
+    
+    
+    async define_load_table_variable_schema () {
+        if (this.load_table_variable_schema_defined)
+            return
+        
+        await this.ddb.eval(
+            'def load_table_variable_schema (tb_name) {\n' +
+            '    return schema(objByName(tb_name))\n' +
+            '}\n'
+        )
+        
+        this.load_table_variable_schema_defined = true
     }
     
     
