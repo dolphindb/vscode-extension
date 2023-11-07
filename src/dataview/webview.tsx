@@ -234,7 +234,7 @@ function Root () {
         autoInsertSpaceInButton={false}
         theme={{ hashed: false, token: { borderRadius: 0, motion: false } }}
     >
-        <App>
+        <App className='app'>
             <DataView />
         </App>
     </ConfigProvider>
