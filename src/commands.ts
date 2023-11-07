@@ -491,7 +491,7 @@ export const ddb_commands = [
     
     
     async function open_schema (ddbvar: DdbVar = lastvar) {
-        console.log(t('在新窗口查看表结构:'), ddbvar)
+        console.log(t('查看 dolphindb 表结构:'), ddbvar)
         await ddbvar.inspect(false, true)
     },
     
