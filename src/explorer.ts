@@ -395,6 +395,8 @@ export class DdbConnection extends TreeItem {
     
     mappings: Record<string, string>
     
+    load_table_variable_schema_defined = false
+    
     
     constructor (url: string, name: string = url, options: DdbOptions = { }) {
         super(`${name} `, TreeItemCollapsibleState.None)
@@ -444,12 +446,6 @@ export class DdbConnection extends TreeItem {
         
         await this.ddb.connect()
         
-        await this.ddb.eval(
-            'def load_table_variable_schema (tb_name) {\n' +
-            '    return schema(objByName(tb_name))\n' +
-            '}\n'
-        )
-        
         console.log(`${t('连接成功:')} ${this.name}`)
         this.connected = true
         this.description = this.url + ' ' + t('已连接')
@@ -466,6 +462,20 @@ export class DdbConnection extends TreeItem {
         this.contextValue = 'disconnected'
         this.description = this.url
         explorer.refresher.fire(this)
+    }
+    
+    
+    async define_load_table_variable_schema () {
+        if (this.load_table_variable_schema_defined)
+            return
+        
+        await this.ddb.eval(
+            'def load_table_variable_schema (tb_name) {\n' +
+            '    return schema(objByName(tb_name))\n' +
+            '}\n'
+        )
+        
+        this.load_table_variable_schema_defined = true
     }
     
     
@@ -924,8 +934,10 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         
         let obj = this.obj
         
-        if (schema)
+        if (schema) {
+            explorer.connection.define_load_table_variable_schema()
             obj = await this.ddb.call('load_table_variable_schema', [this.name])
+        }     
         
         const args = [
             {
