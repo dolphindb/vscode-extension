@@ -470,8 +470,8 @@ export class DdbConnection extends TreeItem {
             return
         
         await this.ddb.eval(
-            'def load_table_variable_schema (tb_name) {\n' +
-            '    return schema(objByName(tb_name))\n' +
+            'def load_table_variable_schema (table_name) {\n' +
+            '    return schema(objByName(table_name))\n' +
             '}\n'
         )
         
@@ -935,9 +935,9 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         let obj = this.obj
         
         if (schema) {
-            explorer.connection.define_load_table_variable_schema()
+            await explorer.connection.define_load_table_variable_schema()
             obj = await this.ddb.call('load_table_variable_schema', [this.name])
-        }     
+        }
         
         const args = [
             {
