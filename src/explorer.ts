@@ -444,6 +444,12 @@ export class DdbConnection extends TreeItem {
         
         await this.ddb.connect()
         
+        await this.ddb.eval(
+            'def load_table_variable_schema (tb_name) {\n' +
+            '    return schema(objByName(tb_name))\n' +
+            '}\n'
+        )
+        
         console.log(`${t('连接成功:')} ${this.name}`)
         this.connected = true
         this.description = this.url + ' ' + t('已连接')
@@ -780,8 +786,6 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     /** this.bytes <= DdbVar.size_limit */
     obj: TObj
     
-    load_table_variable_schema_defined = false
-    
     
     constructor (data: Partial<DdbVar>) {
         super(data.name, TreeItemCollapsibleState.None)
@@ -920,10 +924,8 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         
         let obj = this.obj
         
-        if (schema) {
-            await this.define_load_table_variable_schema()
+        if (schema)
             obj = await this.ddb.call('load_table_variable_schema', [this.name])
-        }
         
         const args = [
             {
@@ -948,20 +950,6 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         
         for (const subscriber of server.subscribers_inspection)
             subscriber(...args)
-    }
-    
-    
-    async define_load_table_variable_schema () {
-        if (this.load_table_variable_schema_defined)
-            return
-        
-        await this.ddb.eval(
-            'def load_table_variable_schema (tb_name) {\n' +
-            '    return schema(objByName(tb_name))\n' +
-            '}\n'
-        )
-        
-        this.load_table_variable_schema_defined = true
     }
     
     
