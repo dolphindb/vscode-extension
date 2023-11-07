@@ -897,9 +897,8 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         }
     }
     
-    /** - open?: 是否在新窗口中打开 
-     *  - schema?: 是否是查看表结构
-     * */
+    /**  - open?: 是否在新窗口中打开 
+         - schema?: 是否是查看表结构 */
     async inspect (open = false, schema = false) {
         if (open) {
             if (!server.subscribers_inspection.length) {
