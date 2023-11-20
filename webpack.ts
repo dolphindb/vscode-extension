@@ -181,6 +181,14 @@ export async function build_package_json () {
             icon: '$(browser)',
         },
         {
+            command: 'inspect_schema',
+            title: {
+                zh: 'DolphinDB: 查看表结构',
+                en: 'DolphinDB: Inspect Schema'
+            },
+            icon: '$(symbol-structure)',
+        },
+        {
             command: 'open_variable',
             title: {
                 zh: 'DolphinDB: 在新窗口中查看变量',
@@ -617,6 +625,10 @@ export async function build_package_json () {
                         when: 'false',
                     },
                     {
+                        command: 'dolphindb.inspect_schema',
+                        when: 'false',
+                    },
+                    {
                         command: 'dolphindb.open_variable',
                         when: 'false',
                     },
@@ -630,6 +642,11 @@ export async function build_package_json () {
                     {
                         command: 'dolphindb.disconnect',
                         when: "view == dolphindb.explorer && viewItem == 'connected'",
+                        group: 'inline',
+                    },
+                    {
+                        command: 'dolphindb.inspect_schema',
+                        when: "view == dolphindb.explorer && viewItem == 'var'",
                         group: 'inline',
                     },
                     {

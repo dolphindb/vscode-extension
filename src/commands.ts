@@ -490,7 +490,14 @@ export const ddb_commands = [
     },
     
     
-    async function open_variable (ddbvar: DdbVar = lastvar) {
+    async function inspect_schema (ddbvar: DdbVar = lastvar) {
+        console.log(t('查看 dolphindb 表结构:'), ddbvar)
+        await ddbvar.inspect(false, true)
+    },
+    
+    
+    async function open_variable (ddbvar?: DdbVar) {
+        ddbvar ||= lastvar
         console.log(t('在新窗口查看变量:'), ddbvar)
         await ddbvar.inspect(true)
     },

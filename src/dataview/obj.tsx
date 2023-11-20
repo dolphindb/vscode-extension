@@ -247,7 +247,9 @@ function build_tree_data (
         
         let valueobj = dict_value.value[i]
         
-        if (valueobj instanceof DdbObj)
+        // if (valueobj instanceof DdbObj)
+        // valueobj 可能来自不同 window
+        if (valueobj && Object.getPrototypeOf(valueobj)?.constructor.name === 'DdbObj')
             if (valueobj.form === DdbForm.dict)
                 return {
                     title: `${key}: `,

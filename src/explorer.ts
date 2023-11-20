@@ -395,6 +395,8 @@ export class DdbConnection extends TreeItem {
     
     mappings: Record<string, string>
     
+    load_table_variable_schema_defined = false
+    
     
     constructor (url: string, name: string = url, options: DdbOptions = { }) {
         super(`${name} `, TreeItemCollapsibleState.None)
@@ -460,6 +462,20 @@ export class DdbConnection extends TreeItem {
         this.contextValue = 'disconnected'
         this.description = this.url
         explorer.refresher.fire(this)
+    }
+    
+    
+    async define_load_table_variable_schema () {
+        if (this.load_table_variable_schema_defined)
+            return
+        
+        await this.ddb.eval(
+            'def load_table_variable_schema (table_name) {\n' +
+            '    return schema(objByName(table_name))\n' +
+            '}\n'
+        )
+        
+        this.load_table_variable_schema_defined = true
     }
     
     
@@ -895,8 +911,9 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         }
     }
     
-    /** - open?: 是否在新窗口中打开 */
-    async inspect (open = false) {
+    /**  - open?: 是否在新窗口中打开 
+         - schema?: 是否是查看表结构 */
+    async inspect (open = false, schema = false) {
         if (open) {
             if (!server.subscribers_inspection.length) {
                 dataview.ppage = defer<void>()
@@ -915,6 +932,13 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
             dataview.view.show(true)
         }
         
+        let obj = this.obj
+        
+        if (schema) {
+            await explorer.connection.define_load_table_variable_schema()
+            obj = await this.ddb.call('load_table_variable_schema', [this.name])
+        }
+        
         const args = [
             {
                 node: this.node,
@@ -929,7 +953,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
             },
             open,
             { decimals: formatter.decimals },
-            ... (this.obj ? [this.obj.pack(), this.obj.le] : [null, DdbObj.le_client]) as [Uint8Array, boolean],
+            ... (obj ? [obj.pack(), obj.le] : [null, DdbObj.le_client]) as [Uint8Array, boolean],
         ] as const
         
         
