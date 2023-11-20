@@ -433,5 +433,8 @@
     },
     "\n等 {{num}} 个路径": {
         "en": "\netc {{num}} paths"
+    },
+    "\n...等，共 {{num}} 个路径": {
+        "en": "...and so on, a total of {{num}} paths"
     }
 }
