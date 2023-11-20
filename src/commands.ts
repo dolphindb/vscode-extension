@@ -385,11 +385,13 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
         }
     }
     
-    const remote_fps_str = remote_fps.join_lines(false)
+    const remote_fps_str = (remote_fps.length > 10 ? remote_fps.slice(0, 10) : remote_fps).join_lines(false)
     
     if (!silent && !await window.showInformationMessage(
-        t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}（目前版本暂不支持上传二进制文件，二进制文件会被自动忽略）',
-        { file_num: uris.length, fp_remote: remote_fps_str }),
+        t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}} {{notice}}（目前版本暂不支持上传二进制文件，二进制文件会被自动忽略）',
+        { file_num: uris.length, 
+          fp_remote: remote_fps_str,
+          notice: remote_fps.length > 10 ? t('\n等 {{num}} 个路径', { num: remote_fps.length - 10 }) : '' }),
         { modal: true },
         { title: t('确认') }
     ))
