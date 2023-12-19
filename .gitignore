@@ -19,6 +19,9 @@ node_modules/
 /src/i18n/stats.json
 /src/i18n/untranslateds.json
 
+/src/config.js.map
+/src/config.js
+
 !/prepare.js
 
 /workspace/

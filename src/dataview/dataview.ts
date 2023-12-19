@@ -1,28 +1,17 @@
-import { window, type WebviewView } from 'vscode'
+import { window, type WebviewView, Uri } from 'vscode'
 
-import {
-    type Message,
-    Remote,
-    fread,
-    genid,
-    assert,
-    defer,
-} from 'xshell'
+import { type Message, Remote, genid, assert, defer } from 'xshell'
 
-import {
-    type DDB,
-    type DdbMessage,
-    type InspectOptions,
-} from 'dolphindb'
+import type { DDB, DdbMessage, InspectOptions } from 'dolphindb'
 
 
 import { language, t } from '../i18n/index.js'
-import { dev, fpd_ext, fpd_src } from '../index.js'
+import { get_vendors } from '../config.js'
+import { dev, fpd_ext } from '../index.js'
 import { explorer, type DdbVar } from '../explorer.js'
-import { server } from '../server.js'
 
 
-type ViewMessageHandler = (message: Message, view: WebviewView) => void | any[] | Promise<void | any[]>
+type ViewMessageHandler <TData extends any[] = any[]> = (message: Message<TData>, view: WebviewView) => void | any[] | Promise<void | any[]>
 
 
 /** 基于 vscode webview 相关的消息函数 postMessage, onDidReceiveMessage, window.addEventListener('message', ...) 实现的 rpc  */
@@ -116,17 +105,37 @@ export let dataview = {
             {
                 async resolveWebviewView (view, ctx, canceller) {
                     dataview.view = view
-                    view.webview.options = { enableCommandUris: true, enableScripts: true }
-                    view.webview.onDidReceiveMessage(
+                    
+                    let { webview } = view
+                    
+                    webview.options = { enableCommandUris: true, enableScripts: true }
+                    webview.onDidReceiveMessage(
                         (message: ArrayBuffer) => {
                             dataview.handle(new Uint8Array(message))
-                        },
-                        dataview
+                        }
                     )
-                    view.webview.html = (
-                        await fread(`${ dev ? fpd_src : fpd_ext }dataview/webview${ dev ? '.dev' : '' }.html`)
-                    ).replaceAll('{host}', `localhost:${server.port}`)
-                    .replace('{language}', language)
+                    
+                    webview.html = 
+                        '<!doctype html>\n' +
+                        '<html>\n' +
+                        '    <head>\n' +
+                        '        <title>DolphinDB</title>\n' +
+                        "        <meta charset='utf-8' />\n" +
+                        '        <script>\n' +
+                        `            window.language = '${language}'\n` +
+                        '        </script>\n' +
+                        
+                        get_vendors(dev)
+                            .filter(fp => !fp.endsWith('.map'))
+                            .map(vendor => `        <script src='${webview.asWebviewUri(Uri.file(`${fpd_ext}dataview/vendors/${vendor}`))}' defer></script>\n`)
+                            .join_lines() +
+                        
+                        `        <script src='${webview.asWebviewUri(Uri.file(`${fpd_ext}dataview/webview.js`))}' type='module'></script>\n` +
+                        '    </head>\n' +
+                        '    <body>\n' +
+                        "        <div class='root'></div>\n" +
+                        '    </body>\n' +
+                        '</html>\n'
                 }
             },
             { webviewOptions: { retainContextWhenHidden: true } }
