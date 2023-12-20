@@ -71,7 +71,7 @@ async function copy_files (dev: boolean) {
         ),
         
         ... ([
-            'index.html',
+            `index${ dev ? '.dev' : '' }.html`,
             'window.html',
             'webview.html',
             'logo.png'

@@ -41,7 +41,7 @@ import {
 
 
 import { t } from './i18n/index.js'
-import { dev, fpd_root, fpd_ext, type DdbMessageItem } from './index.js'
+import { fpd_ext, type DdbMessageItem } from './index.js'
 import { statbar } from './statbar.js'
 import { formatter } from './formatter.js'
 import { server } from './server.js'
@@ -751,7 +751,7 @@ class DdbVarForm extends TreeItem {
         this.connection = connection
         this.shared = shared
         this.form = form
-        this.iconPath = `${ dev ? fpd_root : fpd_ext }icons/${DdbForm[form]}.svg`
+        this.iconPath = `${fpd_ext}icons/${DdbForm[form]}.svg`
     }
     
     
@@ -981,8 +981,8 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
 
 
 export function register_explorer () {
-    icon_empty = `${ dev ? fpd_root : fpd_ext }icons/radio.empty.svg`
-    icon_checked = `${ dev ? fpd_root : fpd_ext }icons/radio.checked.svg`
+    icon_empty = `${fpd_ext}icons/radio.empty.svg`
+    icon_checked = `${fpd_ext}icons/radio.checked.svg`
     
     explorer = new DdbExplorer()
     explorer.view = window.createTreeView('dolphindb.explorer', { treeDataProvider: explorer })

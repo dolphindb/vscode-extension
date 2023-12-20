@@ -50,16 +50,7 @@ export const fpd_ext = extensions.getExtension('dolphindb.dolphindb-vscode').ext
 
 export let extctx: ExtensionContext
 
-/** 是否处于开发模式 */
 export let dev = false
-
-/** 项目根文件夹路径，dev 模式下才能用 */
-export const fpd_root = FPD_ROOT
-
-/** 项目 src 文件夹路径，dev 模式下才能用 */
-export const fpd_src = `${fpd_root}src/`
-
-export const fpd_node_modules = `${fpd_root}node_modules/`
 
 
 export async function activate (ctx: ExtensionContext) {

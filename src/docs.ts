@@ -24,7 +24,7 @@ import { fread_json } from 'xshell'
 import { constants, keywords } from 'dolphindb/language.js'
 
 import { language, t } from './i18n/index.js'
-import { dev, fpd_node_modules, fpd_ext } from './index.js'
+import { fpd_ext } from './index.js'
 
 
 const constants_lower = constants.map(constant => constant.toLowerCase())
@@ -297,11 +297,10 @@ function get_signature_and_params (func_name: string): {
 export async function load_docs () {
     const fname = `docs.${ language === 'zh' ? 'zh' : 'en' }.json`
     
-    docs = await fread_json(dev ? `${fpd_node_modules}dolphindb/${fname}` : `${fpd_ext}${fname}`)
+    docs = await fread_json(`${fpd_ext}${fname}`)
     
     funcs = Object.keys(docs)
-    funcs_lower = funcs.map(func => 
-        func.toLowerCase())
+    funcs_lower = funcs.map(func => func.toLowerCase())
     
     console.log(t('函数文档 {{fname}} 已加载', { fname }))
 }

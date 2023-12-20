@@ -8,7 +8,7 @@ import { Server } from 'xshell/server.js'
 import { type DDB, type DdbMessage, type InspectOptions } from 'dolphindb'
 
 import { t } from './i18n/index.js'
-import { dev, fpd_ext, fpd_node_modules, fpd_src } from './index.js'
+import { dev, fpd_ext } from './index.js'
 import { explorer, type DdbVar } from './explorer.js'
 import { dataview } from './dataview/dataview.js'
 
@@ -33,15 +33,7 @@ class DdbServer extends Server {
         if (request.path === '/window')
             request.path = '/window.html'
         
-        const { path } = request
-        
-        if (dev && path.startsWith('/vendors/'))
-            return this.try_send(ctx, fpd_node_modules, path.slice('/vendors/'.length), true)
-        
-        if (dev && await this.try_send(ctx, `${fpd_src}dataview/`, path, false))
-            return true
-        
-        return this.try_send(ctx, `${fpd_ext}dataview/`, path, true)
+        return this.try_send(ctx, `${fpd_ext}dataview/`, request.path, true)
     }
     
     
