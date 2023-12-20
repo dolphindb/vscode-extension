@@ -882,11 +882,17 @@ let dataview_webpack = {
             
             externals: {
                 react: 'React',
+                
                 'react-dom': 'ReactDOM',
+                
                 lodash: '_',
+                
                 antd: 'antd',
+                
                 dayjs: 'dayjs',
+                
                 '@ant-design/icons': 'icons',
+                
                 '@ant-design/plots': 'Plots',
             },
             

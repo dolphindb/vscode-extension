@@ -1,6 +1,6 @@
 import './obj.sass'
 
-import { useEffect, useRef, useState, type default as React, type FC, type MutableRefObject } from 'react'
+import { useEffect, useRef, useState, type default as React, type FC, type MutableRefObject, useCallback } from 'react'
 
 import {
     Pagination,
@@ -11,10 +11,12 @@ import {
     Switch,
     Select, type SelectProps,
     type TableColumnType,
+    Input,
+    Form,
+    type TableProps,
 } from 'antd'
 
-import { default as _Icon, CaretRightOutlined, PauseOutlined } from '@ant-design/icons'
-const Icon: typeof _Icon.default = _Icon as any
+import { default as Icon, CaretRightOutlined, PauseOutlined } from '@ant-design/icons'
 
 import { Line, Pie, Bar, Column, Scatter, Area, DualAxes, Histogram, Stock } from '@ant-design/plots'
 
@@ -71,7 +73,7 @@ const UpSelect: FC<SelectProps> & { Option: typeof Select.Option } = Object.assi
 )
 
 
-export type Context = 'page' | 'webview' | 'window' | 'embed'
+export type Context = 'page' | 'webview' | 'window' | 'embed' | 'dashboard'
 
 export interface Remote {
     /** 调用 remote 中的 func, 只适用于最简单的一元 rpc (请求, 响应) */
@@ -525,13 +527,15 @@ function StreamingCell ({
 }
 
 
-function Table ({
+export function Table ({
     obj,
     objref,
     ctx,
     remote,
     ddb,
     options,
+    show_bottom_bar = true,
+    ...others
 }: {
     obj?: DdbTableObj
     objref?: DdbObjRef<DdbObj<DdbVectorValue>[]>
@@ -539,7 +543,8 @@ function Table ({
     remote?: Remote
     ddb?: DDB
     options?: InspectOptions
-}) {
+    show_bottom_bar?: boolean
+} & TableProps<any>) {
     const info = obj || objref
     
     const ncols = info.cols
@@ -602,7 +607,7 @@ function Table ({
                     render: irow =>
                         page_size * page_index + irow
                 },
-                ...seq(ncols, index => 
+                ...seq(ncols, index =>
                     new TableColumn({
                         obj,
                         objref,
@@ -612,9 +617,10 @@ function Table ({
                         options,
                     }))
             ]}
+            {...others}
         />
         
-        <div className='bottom-bar'>
+        { show_bottom_bar && <div className='bottom-bar'>
             <div className='info'>
                 <span className='desc'>{ info.rows ? `${info.rows} ${t('行')} ` : ' ' }{info.cols} {t('列')}{ objref ? ` (${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
                 <span className='type'>{t('的表格')}</span>
@@ -649,27 +655,29 @@ function Table ({
                     }}
                 />}
             </div>
-        </div>
+        </div>}
     </div>
 }
 
 
 export function StreamingTable ({
     url,
-    table,
+    table: _table,
     username,
     password,
     ctx,
     options,
+    on_error,
 }: {
     url: string
-    table: string
+    table?: string
     username?: string
     password?: string
     ctx: Context
     options?: InspectOptions
+    on_error? (error: Error): void
 }) {
-    let rddb = useRef<DDB>()
+    let rsddb = useRef<DDB>()
     
     let rddbapi = useRef<DDB>()
     
@@ -693,6 +701,9 @@ export function StreamingTable ({
     
     let rlast = useRef<number>(0)
     
+    /** 订阅的流表 */
+    let [table, set_table] = useState(_table || new URLSearchParams(location.search).get('streaming-table') || 'prices')
+    
     let [, rerender] = useState({ })
     
     const [page_size, set_page_size] = useState(
@@ -702,71 +713,13 @@ export function StreamingTable ({
     const [page_index, set_page_index] = useState(0)
     
     
-    useEffect(() => {
-        let ddb = rddb.current = new DDB(url, {
-            autologin: Boolean(username),
-            username,
-            password,
-            streaming: {
-                table,
-                handler (message) {
-                    console.log(message)
-                    
-                    const { error } = message
-                    
-                    if (error) {
-                        console.error(error)
-                        return
-                    }
-                    
-                    const time = new Date().getTime()
-                    
-                    rreceived.current += message.rows
-                    
-                    // 冻结或者未到更新时间
-                    if (rrate.current === -1 || time - rlast.current < rrate.current)
-                        return
-                    
-                    rmessage.current = message
-                    rlast.current = time
-                    rerender({ })
-                }
-            }
-        })
-        
-        let ddbapi = rddbapi.current = new DDB(url)
-        
-        
-        ;(async () => {
-            // LOCAL: 创建流表
-            await ddbapi.eval(
-                'try {\n' +
-                "    if (!defined('prices', SHARED)) {\n" +
-                '        share(\n' +
-                '            streamTable(\n' +
-                '                10000:0,\n' +
-                "                ['time', 'stock', 'price'],\n" +
-                '                [TIMESTAMP, SYMBOL, DOUBLE]\n' +
-                '            ),\n' +
-                "            'prices'\n" +
-                '        )\n' +
-                "        print('prices 流表创建成功')\n" +
-                '    } else\n' +
-                "        print('prices 流表已存在')\n" +
-                '} catch (error) {\n' +
-                "    print('prices 流表创建失败')\n" +
-                '    print(error)\n' +
-                '}\n'
-            )
-            
-            // 开始订阅
-            await ddb.connect()
-            
-            rerender({ })
-        })()
-        
-        return () => { ddb.disconnect() }
-    }, [ ])
+    // 有可能会资源泄露，sddb 在 unmount 时还没有，后面才被赋值
+    useEffect(() => 
+        () => {
+            rsddb.current?.disconnect()
+            rddbapi.current?.disconnect()
+        }
+    , [ ])
     
     
     useEffect(() => {
@@ -790,8 +743,231 @@ export function StreamingTable ({
     }, [rauto_append.current])
     
     
-    if (!rddb.current || !rddbapi.current || !rmessage.current)
-        return null
+    const StreamingTableActions = useCallback(() => {
+        interface Fields {
+            table?: string
+            column?: string
+            expression?: string
+        }
+        
+        const label_span = 3
+        const wrapper_span = 24 - label_span
+        
+        return <div className='actions'>
+            <Form<Fields>
+                className='form'
+                name='流表配置表单'
+                labelCol={{ span: label_span }}
+                wrapperCol={{ span: wrapper_span }}
+                initialValues={{ table: table }}
+                autoComplete='off'
+                onFinish={async ({ table, column, expression }) => {
+                    set_table(table)
+                    
+                    try {
+                        rddbapi.current?.disconnect()
+                        
+                        rsddb.current?.disconnect()
+                        
+                        rmessage.current = null
+                        
+                        rappended.current = 0
+                        rreceived.current = 0
+                        
+                        
+                        ;(async () => {
+                            try {
+                                let apiddb = rddbapi.current = new DDB(url)
+                                
+                                if (table === 'prices')
+                                    await apiddb.eval(
+                                        'try {\n' +
+                                        "    if (!defined('prices', SHARED)) {\n" +
+                                        '        share(\n' +
+                                        '            streamTable(\n' +
+                                        '                10000:0,\n' +
+                                        "                ['time', 'stock', 'price'],\n" +
+                                        '                [TIMESTAMP, SYMBOL, DOUBLE]\n' +
+                                        '            ),\n' +
+                                        "            'prices'\n" +
+                                        '        )\n' +
+                                        "        setStreamTableFilterColumn(objByName('prices'), 'stock')\n" +
+                                        "        print('prices 流表创建成功')\n" +
+                                        '    } else\n' +
+                                        "        print('prices 流表已存在')\n" +
+                                        '} catch (error) {\n' +
+                                        "    print('prices 流表创建失败')\n" +
+                                        '    print(error)\n' +
+                                        '}\n'
+                                    )
+                                
+                                
+                                let sddb = rsddb.current = new DDB(url, {
+                                    autologin: Boolean(username),
+                                    username,
+                                    password,
+                                    streaming: {
+                                        table,
+                                        filters: {
+                                            ... column ? { column: await apiddb.eval(column) } : { },
+                                            expression: expression
+                                        },
+                                        handler (message) {
+                                            const { error } = message
+                                            
+                                            if (error) {
+                                                on_error?.(error)
+                                                throw error
+                                            }
+                                            
+                                            const time = new Date().getTime()
+                                            
+                                            rreceived.current += message.rows
+                                            
+                                            // 冻结或者未到更新时间
+                                            if (rrate.current === -1 || time - rlast.current < rrate.current)
+                                                return
+                                            
+                                            rmessage.current = message
+                                            rlast.current = time
+                                            rerender({ })
+                                        }
+                                    }
+                                })
+                                
+                                // 开始订阅
+                                await sddb.connect()
+                     
+                                rerender({ })
+                            } catch (error) {
+                                on_error?.(error)
+                                throw error
+                            }
+                        })()
+                    } catch (error) {
+                        on_error?.(error)
+                        throw error
+                    }
+                }}
+            >
+                <Form.Item<Fields> label='流表名称' name='table'>
+                    <Input placeholder='prices' />
+                </Form.Item>
+                
+                <Form.Item<Fields> label='列过滤' name='column'>
+                    <Input placeholder="['MSFT']" />
+                </Form.Item>
+                
+                <Form.Item<Fields> label='表达式过滤' name='expression'>
+                    <Input placeholder='price > 190'/>
+                </Form.Item>
+                
+                <Form.Item wrapperCol={{ offset: label_span, span: wrapper_span }}>
+                    <Button className='subscribe-button' type='primary' htmlType='submit'>
+                        开始订阅
+                    </Button>
+                </Form.Item>
+            </Form>
+            
+            {table === 'prices' && <>
+                <div><Button onClick={async () => {
+                    rlast.current = 0
+                    await append_data()
+                }}>向流表中添加三条数据</Button></div>
+                
+                <div><Button onClick={async () => {
+                    rlast.current = 0
+                    await append_data(1)
+                }}>向流表中添加一条数据</Button></div>
+                
+                <div><Button onClick={async () => {
+                    rlast.current = 0
+                    rappended.current += 2000 * 5
+                    
+                    await rddbapi.current.eval(
+                        'n = 2000\n' +
+                        '\n' +
+                        'for (i in 0..4)\n' +
+                        '    append!(\n' +
+                        '        prices,\n' +
+                        '        table([\n' +
+                        '            (now() + 0..(n-1)) as time,\n' +
+                        "            take(['MSFT', 'FUTU'], n) as stock,\n" +
+                        '            (0..(n-1) \\ 10) as price\n' +
+                        '        ])\n' +
+                        '    )\n'
+                    )
+                }}>测试插入 2000 条数据 5 次</Button></div>
+                
+                <div><Button onClick={async () => {
+                    rlast.current = 0
+                    rappended.current += 1_0000 * 10
+                    
+                    await rddbapi.current.eval(
+                        'n = 10000\n' +
+                        '\n' +
+                        'for (i in 0..9)\n' +
+                        '    append!(\n' +
+                        '        prices,\n' +
+                        '        table([\n' +
+                        '            (now() + 0..(n-1)) as time,\n' +
+                        "            take(['MSFT', 'FUTU'], n) as stock,\n" +
+                        '            (0..(n-1) \\ 10) as price\n' +
+                        '        ])\n' +
+                        '    )\n'
+                    )
+                }}>测试插入 1_0000 条数据 10 次</Button></div>
+                
+                <div><Button onClick={async () => {
+                    rlast.current = 0
+                    rappended.current += 10_0000 * 10
+                    
+                    await rddbapi.current.eval(
+                        'n = 100000\n' +
+                        '\n' +
+                        'for (i in 0..9)\n' +
+                        '    append!(\n' +
+                        '        prices,\n' +
+                        '        table([\n' +
+                        '            (now() + 0..(n-1)) as time,\n' +
+                        "            take(['MSFT', 'FUTU'], n) as stock,\n" +
+                        '            (0..(n-1) \\ 10) as price\n' +
+                        '        ])\n' +
+                        '    )\n'
+                    )
+                }}>测试插入 10_0000 条数据 10 次</Button></div>
+                
+                <div><Button onClick={async () => {
+                    rlast.current = 0
+                    rappended.current += 2000
+                    await rddbapi.current.eval(
+                        'n = 2000\n' +
+                        'for (i in 0..(n-1))\n' +
+                        "    insert into prices values (now(), 'MSFT', rand(100, 1)[0])\n"
+                    )
+                }}>测试添加一条数据 2000 次</Button></div>
+                
+                <div>应添加行数: {rappended.current}</div>
+                <div>实际的行数: {rreceived.current}</div>
+                <div>上面两个应该相等</div>
+                
+                <div>
+                    自动添加数据: <Switch onChange={checked => {
+                        rauto_append.current = checked
+                        rerender({ })
+                    }}/>
+                </div>
+            </>}
+            
+            <div>接收到推送的 message 之后，才会在下面显示出表格</div>
+        </div>
+    }, [table])
+    
+    
+    if (!rsddb.current || !rddbapi.current || !rmessage.current)
+        return <div className='streaming-table'>
+            <StreamingTableActions />
+        </div>
     
     
     const { current: message } = rmessage
@@ -811,118 +987,36 @@ export function StreamingTable ({
     async function append_data (n = 3) {
         rappended.current += n
         
-        await rddbapi.current.eval(
-            n === 3 ?
-                'append!(\n' +
-                '    prices,\n' +
-                '    table([\n' +
-                '        [now(), timestamp(now() + 10), timestamp(now() + 20)] as time,\n' +
-                "        ['MSFT', 'FUTU', 'MSFT'] as stock,\n" +
-                '        [1.0, 2.0, 3.0] as price\n' +
-                '    ])\n' +
-                ')\n'
-            :
-                'append!(\n' +
-                '    prices,\n' +
-                '    table([\n' +
-                '        [now()] as time,\n' +
-                "        ['MSFT'] as stock,\n" +
-                '        [1.0] as price\n' +
-                '    ])\n' +
-                ')\n'
-        )
+        try {
+            await rddbapi.current.eval(
+                n === 3 ?
+                    'append!(\n' +
+                    '    prices,\n' +
+                    '    table([\n' +
+                    '        [now(), timestamp(now() + 10), timestamp(now() + 20)] as time,\n' +
+                    "        ['MSFT', 'FUTU', 'MSFT'] as stock,\n" +
+                    '        [1.0, 2.0, 3.0] as price\n' +
+                    '    ])\n' +
+                    ')\n'
+                :
+                    'append!(\n' +
+                    '    prices,\n' +
+                    '    table([\n' +
+                    '        [now()] as time,\n' +
+                    "        ['MSFT'] as stock,\n" +
+                    '        [1.0] as price\n' +
+                    '    ])\n' +
+                    ')\n'
+            )
+        } catch (error) {
+            on_error?.(error)
+            throw error
+        }
     }
     
     
-    return <div>
-        <div><Button onClick={async () => {
-            rlast.current = 0
-            await append_data()
-        }}>向流表中添加三条数据</Button></div>
-        
-        <div><Button onClick={async () => {
-            rlast.current = 0
-            await append_data(1)
-        }}>向流表中添加一条数据</Button></div>
-        
-        <div><Button onClick={async () => {
-            rlast.current = 0
-            rappended.current += 2000 * 5
-            
-            await rddbapi.current.eval(
-                'n = 2000\n' +
-                '\n' +
-                'for (i in 0..4)\n' +
-                '    append!(\n' +
-                '        prices,\n' +
-                '        table([\n' +
-                '            (now() + 0..(n-1)) as time,\n' +
-                "            take(['MSFT', 'FUTU'], n) as stock,\n" +
-                '            (0..(n-1) \\ 10) as price\n' +
-                '        ])\n' +
-                '    )\n'
-            )
-        }}>测试插入 2000 条数据 5 次</Button></div>
-        
-        <div><Button onClick={async () => {
-            rlast.current = 0
-            rappended.current += 1_0000 * 10
-            
-            await rddbapi.current.eval(
-                'n = 10000\n' +
-                '\n' +
-                'for (i in 0..9)\n' +
-                '    append!(\n' +
-                '        prices,\n' +
-                '        table([\n' +
-                '            (now() + 0..(n-1)) as time,\n' +
-                "            take(['MSFT', 'FUTU'], n) as stock,\n" +
-                '            (0..(n-1) \\ 10) as price\n' +
-                '        ])\n' +
-                '    )\n'
-            )
-        }}>测试插入 1_0000 条数据 10 次</Button></div>
-        
-        <div><Button onClick={async () => {
-            rlast.current = 0
-            rappended.current += 10_0000 * 10
-            
-            await rddbapi.current.eval(
-                'n = 100000\n' +
-                '\n' +
-                'for (i in 0..9)\n' +
-                '    append!(\n' +
-                '        prices,\n' +
-                '        table([\n' +
-                '            (now() + 0..(n-1)) as time,\n' +
-                "            take(['MSFT', 'FUTU'], n) as stock,\n" +
-                '            (0..(n-1) \\ 10) as price\n' +
-                '        ])\n' +
-                '    )\n'
-            )
-        }}>测试插入 10_0000 条数据 10 次</Button></div>
-        
-        <div><Button onClick={async () => {
-            rlast.current = 0
-            rappended.current += 2000
-            await rddbapi.current.eval(
-                'n = 2000\n' +
-                'for (i in 0..(n-1))\n' +
-                "    insert into prices values (now(), 'MSFT', rand(100, 1)[0])\n"
-            )
-        }}>测试添加一条数据 2000 次</Button></div>
-        
-        <div>应添加行数: {rappended.current}</div>
-        <div>实际的行数: {rreceived.current}</div>
-        <div>上面两个应该相等</div>
-        
-        <div style={{ margin: '10px 0px' }}>
-            自动添加数据: <Switch onChange={checked => {
-                rauto_append.current = checked
-                rerender({ })
-            }}/>
-        </div>
-        
+    return <div className='streaming-table'>
+        <StreamingTableActions />
         
         <div className='table'>
             <AntTable
@@ -1553,14 +1647,16 @@ function Chart ({
                             xField='row'
                             yField='value'
                             seriesField='col'
-                            xAxis={{
-                                title: {
-                                    text: titles.x_axis
-                                }
-                            }}
-                            yAxis={{
-                                title: {
-                                    text: titles.y_axis
+                            axis={{
+                                x: {
+                                    title: {
+                                        text: titles.x_axis
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        text: titles.y_axis
+                                    }
                                 }
                             }}
                             isStack={stacking}
@@ -1571,16 +1667,18 @@ function Chart ({
                             className='chart-body'
                             data={[data, data]}
                             xField='row'
-                            yField={col_labels}
-                            xAxis={{
-                                title: {
-                                    text: titles.x_axis
-                                }
-                            }}
-                            yAxis={{
-                                [col_labels[0]]: {
+                            yField={col_labels as any}
+                            axis={{
+                                x: {
                                     title: {
-                                        text: titles.y_axis
+                                        text: titles.x_axis
+                                    }
+                                },
+                                y: {
+                                    [col_labels[0]]: {
+                                        title: {
+                                            text: titles.y_axis
+                                        }
                                     }
                                 }
                             }}
@@ -1679,17 +1777,19 @@ function Chart ({
                         xField='row'
                         yField='value'
                         seriesField='col'
-                        xAxis={{
-                            title: {
-                                text: titles.x_axis
+                        axis={{
+                            x: {
+                                title: {
+                                    text: titles.x_axis
+                                }
+                            },
+                            y: {
+                                title: {
+                                    text: titles.y_axis
+                                }
                             }
                         }}
-                        yAxis={{
-                            title: {
-                                text: titles.y_axis
-                            }
-                        }}
-                        isStack={stacking}
+                        stack={stacking}
                         padding='auto'
                     />
                 
@@ -1700,17 +1800,20 @@ function Chart ({
                         xField='row'
                         yField='value'
                         colorField='col'
-                        xAxis={{
-                            title: {
-                                text: titles.x_axis
+                        xAxis={
+                            {
+                                title: {
+                                    text: titles.x_axis
+                                }
                             }
-                        }}
-                        yAxis={{
-                            title: {
-                                text: titles.y_axis
+                        }
+                        yAxis={
+                            {
+                                title: {
+                                    text: titles.y_axis
+                                }
                             }
-                        }}
-                        shape='circle'
+                        }
                         padding='auto'
                     />
                 
@@ -1720,17 +1823,23 @@ function Chart ({
                         data={data}
                         binField='value'
                         stackField='col'
+                        // 修复类型错误
+                        binNumber={undefined}
                         { ... bin_count ? { binNumber: Number(bin_count.value) } : { } }
-                        xAxis={{
-                            title: {
-                                text: titles.x_axis
+                        axis={{
+                            x: {
+                                title: {
+                                    text: titles.x_axis
+                                }
+                            },
+                            y: {
+                                title: {
+                                    text: titles.y_axis
+                                }
                             }
                         }}
-                        yAxis={{
-                            title: {
-                                text: titles.y_axis
-                            }
-                        }}
+                        // 修复类型错误
+                        binWidth={undefined}
                         padding='auto'
                     />
                 
@@ -1738,7 +1847,7 @@ function Chart ({
                     return <Stock
                         data={data}
                         xField='row'
-                        yField={['open', 'close', 'high', 'low']}
+                        yField={['open', 'close', 'high', 'low'] as any}
                         xAxis={{
                             title: {
                                 text: titles.x_axis

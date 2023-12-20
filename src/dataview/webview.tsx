@@ -40,7 +40,7 @@ let vscode = acquireVsCodeApi()
     - 数组: 会自动被封装为 { id: 相同, data: 返回值, done: true } 这样的消息并调用 websocket.send 将其发送
     - void: 什么都不做
     - 以上的 promise */
-type MessageHandler = (message: Message) => void | any[] | Promise<void | any[]>
+type MessageHandler <TData extends any[] = any[]> = (message: Message<TData>) => void | any[] | Promise<void | any[]>
 
 
 let remote = {
