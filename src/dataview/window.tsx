@@ -12,10 +12,6 @@ import en from 'antd/locale/en_US.js'
 import ja from 'antd/locale/ja_JP.js'
 import ko from 'antd/locale/ko_KR.js'
 
-import type { MessageInstance } from 'antd/es/message/interface.js'
-import type { ModalStaticFunctions } from 'antd/es/modal/confirm.js'
-import type { NotificationInstance } from 'antd/es/notification/interface.js'
-
 
 import { Model } from 'react-object-model'
 
@@ -35,6 +31,9 @@ import {
 } from './obj.js'
 
 
+const locales = { zh, en, ja, ko }
+
+
 export class WindowModel extends Model<WindowModel> {
     obj?: DdbObj
     objref?: DdbObjRef
@@ -44,12 +43,6 @@ export class WindowModel extends Model<WindowModel> {
     ddb?: DDB
     
     options?: InspectOptions
-    
-    message: MessageInstance
-    
-    modal: Omit<ModalStaticFunctions, 'warn'>
-    
-    notification: NotificationInstance
 }
 
 let model = window.model = new WindowModel()
@@ -59,8 +52,6 @@ create_root(
     document.querySelector('.root')
 ).render(<Root />)
 
-
-const locales = { zh, en, ja, ko }
 
 function Root () {
     return <ConfigProvider
