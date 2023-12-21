@@ -201,7 +201,7 @@ async function build_package_json () {
         {
             command: 'inspect_schema',
             title: {
-                zh: 'DolphinDB: 查看表结构',
+                zh: 'DolphinDB: 查看结构',
                 en: 'DolphinDB: Inspect Schema'
             },
             icon: '$(symbol-structure)',
@@ -664,7 +664,7 @@ async function build_package_json () {
                     },
                     {
                         command: 'dolphindb.inspect_schema',
-                        when: "view == dolphindb.explorer && viewItem == 'var'",
+                        when: "view == dolphindb.explorer && (viewItem == 'var' || viewItem == 'scalar' || viewItem == 'pair' || viewItem == 'object') ",
                         group: 'inline',
                     },
                     {
