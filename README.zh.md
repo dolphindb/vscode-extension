@@ -145,20 +145,6 @@ DolphinDB 的 VSCode 插件支持用户上传文件。支持用户以以下两�
 此外，用户可以通过配置 dolphindb.connections 的 mappings 属性来自定义本地路径和 server 路径的映射关系，方便插件在后续文件上传过程根据 mappings 映射 server 路径。在 VSCode 设置界面，选中扩展下的 DolphinDB，打开 setting.json 文件，在需要配置的 connection 中添加或修改 mappings ，左侧 "键" 为本地地址，右侧 "值" 为服务器地址。
 <img src='./images/mappings.png' width='800'>
 
-
-#### 10. 配置函数名加粗高亮 (可选)
-在 VSCode 配置文件 `settings.json` 中加上下面的 textmate 规则
-```
-"editor.tokenColorCustomizations": {
-    "textMateRules": [        
-        // function: bold
-        { "scope": "entity.name.function", "settings": { "fontStyle": "bold" }},
-        { "scope": "support.function", "settings": { "fontStyle": "bold" }} ,
-    ]
-},
-```
-
-
 添加完成后，插件会根据当前连接中用户配置的 mappings 对路径进行映射。例如，用户当前连接中配置的 mappings 为: 
 ```json
 {
@@ -173,6 +159,20 @@ DolphinDB 的 VSCode 插件支持用户上传文件。支持用户以以下两�
 1. 以自动的方式进行映射，key 代表本地路径，value 代表 server 路径，配置完成后，会选择最长匹配项作为上传路径。例如，用户上传的文件路径为 `/path/to/local/dir1/file.dos` ,此时同时存在 `/path/to/local/` 和 `/path/to/local/dir1/` 均可匹配用户路径，但以最长匹配项 `/path/to/local/dir1/` 优先匹配
 2. 可配置 defalut 字段，作为默认匹配，如果当前路径没有命中 dolphindb.mappings 中的其余项，则以 default 对应的 server 路径作为上传路径，例如，用户上传的文件路径为 `/user/dosuments/file.dos`，此时匹配不到 mappings 的其余项，则以 `default` 字段映射的 server 路径作为上传路径，即 `/data/server/file.dos`
 3. 若 dolphindb.mappings 中没有匹配项，则以 `getHomeDir() + /uploads/ + 文件名` 作为上传路径
+
+
+#### 10. 配置函数名加粗高亮 (可选)
+在 VSCode 配置文件 `settings.json` 中加上下面的 textmate 规则
+```
+"editor.tokenColorCustomizations": {
+    "textMateRules": [        
+        // function: bold
+        { "scope": "entity.name.function", "settings": { "fontStyle": "bold" }},
+        { "scope": "support.function", "settings": { "fontStyle": "bold" }} ,
+    ]
+},
+```
+
 
 ## 开发说明
 ```shell
