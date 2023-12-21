@@ -669,7 +669,7 @@ async function build_package_json () {
                     },
                     {
                         command: 'dolphindb.open_variable',
-                        when: "view == dolphindb.explorer && (viewItem == 'var' || viewItem == 'table')",
+                        when: "view == dolphindb.explorer && viewItem == 'var' || view == dolphindb.explorer && viewItem == 'table'",
                         group: 'inline',
                     },
                 ],
