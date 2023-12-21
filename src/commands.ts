@@ -493,7 +493,7 @@ export const ddb_commands = [
     
     
     async function inspect_schema (ddbvar: DdbVar = lastvar) {
-        console.log(t('查看 dolphindb 结构:'), ddbvar)
+        console.log(t('查看 dolphindb 表结构:'), ddbvar)
         await ddbvar.inspect(false, true)
     },
     

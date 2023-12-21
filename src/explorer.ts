@@ -774,6 +774,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         [DdbForm.scalar]: 'scalar',
         [DdbForm.pair]: 'pair',
         [DdbForm.object]: 'object',
+        [DdbForm.table]: 'table',
     } as const
     
     node: string
