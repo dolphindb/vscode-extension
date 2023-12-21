@@ -664,7 +664,7 @@ async function build_package_json () {
                     },
                     {
                         command: 'dolphindb.inspect_schema',
-                        when: "view == dolphindb.explorer && viewItem == 'table' ",
+                        when: "view == dolphindb.explorer && viewItem == 'table'",
                         group: 'inline',
                     },
                     {
