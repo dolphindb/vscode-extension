@@ -433,5 +433,14 @@
     },
     "\n··· 等，共 {{num}} 个路径": {
         "en": "... and so on, a total of {{num}} paths"
+    },
+    "导出文件": {
+        "en": "Export File"
+    },
+    "确定": {
+        "en": "Confirm"
+    },
+    "文件已成功导出到 {{path}}": {
+        "en": "File successfully exported to {{path}}"
     }
 }

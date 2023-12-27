@@ -251,6 +251,14 @@ async function build_package_json () {
                 en: 'DolphinDB: Upload Module'
             }
         },
+        {
+            command: 'export_table',
+            title: {
+                zh: 'DolphinDB: 导出文件',
+                en: 'DolphinDB: Export File'
+            },
+            icon: './icons/export.svg'
+        }
     ]
     
     
@@ -689,6 +697,11 @@ async function build_package_json () {
                     },
                     {
                         command: 'dolphindb.open_variable',
+                        group: 'navigation',
+                        when: 'view == ddbdataview',
+                    },
+                    {
+                        command: 'dolphindb.export_table',
                         group: 'navigation',
                         when: 'view == ddbdataview',
                     }

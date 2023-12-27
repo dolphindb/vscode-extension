@@ -577,5 +577,19 @@ export const ddb_commands = [
             window.showErrorMessage(error.message)
             throw error
         }
+    },
+    
+    async function export_table (ddbvar?: DdbVar) { 
+        try {
+            ddbvar ||= lastvar
+            // 选择文件夹
+            const [uri] = await window.showOpenDialog({ title: t('导出文件'), openLabel: t('确定'), canSelectFiles: false, canSelectFolders: true })
+            await ddbvar.export_table(uri.fsPath)
+        } catch (e) { 
+            console.error(e)
+            window.showErrorMessage(e.message)
+            throw e
+        }
     }
+    
 ]
