@@ -1,5 +1,45 @@
 # Change Log (更新日志)
 
+## [2.0.1102] - 2023.12.27
+#### 新功能 / New Features
+-   可查看内存表的表结构  /  Support for displaying the schema of in-memory tables.
+
+#### 功能优化 / Enhancement
+-   新增配置导航按钮及文档链接便于用户对未配置 mappings 的连接补充配置。  
+    Added navigation buttons and a link to configuration guide for supplementing mappings configuration of dolphindb connections.  
+    
+-   上传按钮支持上传模块。  
+    Support for uploading modules over the Upload button.  
+    
+-   通过 plot 函数绘制的图表在显示时能够自动适应底部 DATAVIEW 的高度。   
+    The charts plotted using the plot function can automatically adapt to the height of the DATAVIEW zone when displayed.   
+    
+-   支持在浏览器中使用 VS Code 插件。  
+    Support using the VS Code plugin in browsers.   
+
+#### 缺陷修复 / Bug Fixes
+-   修复了上传文件较多时弹窗框体溢出 VS Code 边界的问题。   
+    Fixed the issue of dialog box overflowing the VS Code boundary when uploading a large number of files.  
+    
+-   修复了选择不加密上传时报错的问题，例如，"uris.map is not a function"。  
+    Fixed the issue of unexpected error messages that pop up when selecting non-encrypted upload, for example, "uris.map is not a function".  
+
+-   修复了 plot 函数绘制的图标无法在新窗口打开并报错 “Cannot read properties of null (reading 'inspect')" 的问题。  
+    Fixed the issue of being unable to open plot-generated charts in a new window and reporting the error message "Cannot read properties of null (reading 'inspect')".  
+
+-   修复了变量查看界面中向量、字典、矩阵列表中第一个按钮提示文字显示为 “查看表结构" 的问题。  
+    Fixed the issue of the tooltip for the first button of vectors, dictionaries, and matrix list items displaying as "View table structure" in the variable explorer.  
+
+## [2.0.1041] - 2023.08.31
+-   在 Python Parser 模式中，支持代码注释符 #  
+    In Python Parser mode, the code comment character # is supported  
+    
+-   支持高级函数的语法自动补全，并提供文档链接  
+    Supports syntax auto-completion for advanced functions and provides documentation links  
+    
+-   支持对中文函数名进行高亮显示  
+    Supports highlighting of Chinese function names  
+
 ## [2.0.900] - 2023.02.09
 -   优化连接出现报错的显示信息  
     Enhanced message for connection error. 
