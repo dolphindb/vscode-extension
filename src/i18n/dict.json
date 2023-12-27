@@ -442,5 +442,8 @@
     },
     "文件已成功导出到 {{path}}": {
         "en": "File successfully exported to {{path}}"
+    },
+    "仅表格支持导出": {
+        "en": "Only tables support exporting"
     }
 }

@@ -582,7 +582,10 @@ export const ddb_commands = [
     async function export_table (ddbvar?: DdbVar) { 
         try {
             ddbvar ||= lastvar
-            // 选择文件夹
+            if (ddbvar.form !== DdbForm.table) { 
+                window.showErrorMessage(t('仅表格支持导出'))
+                return 
+            }
             const [uri] = await window.showOpenDialog({ title: t('导出文件'), openLabel: t('确定'), canSelectFiles: false, canSelectFolders: true })
             await ddbvar.export_table(uri.fsPath)
         } catch (e) { 
