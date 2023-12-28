@@ -4,7 +4,7 @@ import { window, workspace, commands, ConfigurationTarget, ProgressLocation, typ
 
 import { path, Timer, delay, inspect } from 'xshell'
 
-import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions } from 'dolphindb'
+import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbBool, DdbChar, DdbInt } from 'dolphindb'
 
 
 import { i18n, t } from './i18n/index.js'
@@ -16,6 +16,7 @@ import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmu
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
+import { promises } from 'fs'
 
 
 let lastvar: DdbVar
@@ -586,13 +587,21 @@ export const ddb_commands = [
                 window.showErrorMessage(t('仅支持导出表格'))
                 return 
             }
+            console.log(ddbvar, 'ddbvar')
             const uri = await window.showSaveDialog({
                 title: t('导出文件'),
                 // @ts-ignore 
-                defaultUri: { scheme: 'file', path: `./${ddbvar.name ?? 'table'}.csv` },
+                defaultUri: { scheme: 'file', path: `./${ddbvar.name || 'table'}.csv` },
             })
-            if (uri)
-                await ddbvar.export_table(uri.fsPath)
+            if (uri) { 
+                let { connection } = explorer
+                let { ddb } = connection
+                const table_obj = ddbvar.obj ?? await ddb.call('objByName', [ddbvar.name])
+                const { value } = await ddb.call('generateTextFromTable', [table_obj, new DdbInt(0), new DdbInt(table_obj.rows), new DdbInt(0), new DdbChar(','), new DdbBool(true)])
+                const file_text = typeof value === 'string' ? value : new TextDecoder().decode(value as BufferSource)
+                await promises.writeFile(uri.fsPath, file_text)
+                window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
+            }
         } catch (e) { 
             window.showErrorMessage(e.message)
             throw e
