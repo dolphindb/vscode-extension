@@ -594,8 +594,7 @@ export const ddb_commands = [
                 defaultUri: { scheme: 'file', path: `./${ddbvar.name || 'table'}.csv` },
             })
             if (uri) { 
-                let { connection } = explorer
-                let { ddb } = connection
+                const { ddb } = explorer.connection
                 const table_obj = ddbvar.obj ?? await ddb.call('objByName', [ddbvar.name])
                 const { value } = await ddb.call('generateTextFromTable', [table_obj, new DdbInt(0), new DdbInt(table_obj.rows), new DdbInt(0), new DdbChar(','), new DdbBool(true)])
                 const file_text = typeof value === 'string' ? value : new TextDecoder().decode(value as BufferSource)
