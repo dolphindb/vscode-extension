@@ -583,11 +583,20 @@ export const ddb_commands = [
         try {
             ddbvar ||= lastvar
             if (ddbvar.form !== DdbForm.table) { 
-                window.showErrorMessage(t('仅表格支持导出'))
+                window.showErrorMessage(t('仅支持导出表格'))
                 return 
             }
-            const [uri] = await window.showOpenDialog({ title: t('导出文件'), openLabel: t('确定'), canSelectFiles: false, canSelectFolders: true })
-            await ddbvar.export_table(uri.fsPath)
+            const uri = await window.showSaveDialog({
+                title: t('导出文件'),
+                // 保存文件默认文件名为表名
+                // @ts-ignore 
+                defaultUri: {
+                    scheme: 'file',
+                    path: `./${ddbvar.name}.csv`,
+                },
+            })
+            if (uri)
+                await ddbvar.export_table(uri.fsPath)
         } catch (e) { 
             console.error(e)
             window.showErrorMessage(e.message)

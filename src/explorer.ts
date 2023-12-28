@@ -990,15 +990,14 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
                 `${this.get_value_type()}(${Number(this.bytes).to_fsize_str()})`
     }
     
-    async export_table (dir: string) {
+    async export_table (path: string) {
         const table_obj = await this.ddb.call('objByName', [this.name])
         const { value } = await this.ddb.call('generateTextFromTable', [table_obj, new DdbInt(0), new DdbInt(table_obj.rows), new DdbInt(0), new DdbChar(','), new DdbBool(true)])
         let file_text = value
         if (typeof value !== 'string')
             file_text = new TextDecoder().decode(value as BufferSource)
-        const file_path = path.join(dir, this.name + '.csv')
-        await promises.writeFile(file_path, file_text as string)
-        window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: file_path })}`)
+        await promises.writeFile(path, file_text as string)
+        window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path })}`)
     }
 }
 
