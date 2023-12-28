@@ -588,17 +588,12 @@ export const ddb_commands = [
             }
             const uri = await window.showSaveDialog({
                 title: t('导出文件'),
-                // 保存文件默认文件名为表名
                 // @ts-ignore 
-                defaultUri: {
-                    scheme: 'file',
-                    path: `./${ddbvar.name}.csv`,
-                },
+                defaultUri: { scheme: 'file', path: `./${ddbvar.name}.csv` },
             })
             if (uri)
                 await ddbvar.export_table(uri.fsPath)
         } catch (e) { 
-            console.error(e)
             window.showErrorMessage(e.message)
             throw e
         }
