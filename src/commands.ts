@@ -587,7 +587,6 @@ export const ddb_commands = [
                 window.showErrorMessage(t('仅支持导出表格'))
                 return 
             }
-            console.log(ddbvar, 'ddbvar')
             const uri = await window.showSaveDialog({
                 title: t('导出文件'),
                 // @ts-ignore 
