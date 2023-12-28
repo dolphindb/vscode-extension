@@ -257,7 +257,7 @@ async function build_package_json () {
                 zh: 'DolphinDB: 导出文件',
                 en: 'DolphinDB: Export File'
             },
-            icon: './icons/export.svg'
+            icon: '$(desktop-download)'
         }
     ]
     

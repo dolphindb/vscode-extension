@@ -445,5 +445,8 @@
     },
     "仅支持导出表格": {
         "en": "Only supports exporting tables"
+    },
+    "server 版本低于 2.00.11，请升级后再使用此功能": {
+        "en": "The server version is lower than 2.00.11, please upgrade before using this function."
     }
 }

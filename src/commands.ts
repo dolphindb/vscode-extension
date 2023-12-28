@@ -583,17 +583,26 @@ export const ddb_commands = [
     async function export_table (ddbvar?: DdbVar) { 
         try {
             ddbvar ||= lastvar
+            const { ddb } = explorer.connection
+            // 2.00.11 以上版本才能使用导出功能
+            const { value: server_version } = await ddb.eval<DdbObj<string>>('version()')
+            const [ver1, ,ver3] = server_version.split(' ')[0].split('.')
+            if (!(Number(ver1) >= 2 && Number(ver3) >= 11)) { 
+                window.showWarningMessage(t('server 版本低于 2.00.11，请升级后再使用此功能'))
+                return
+            }
+            
             if (ddbvar.form !== DdbForm.table) { 
                 window.showErrorMessage(t('仅支持导出表格'))
                 return 
             }
+            
             const uri = await window.showSaveDialog({
                 title: t('导出文件'),
-                // @ts-ignore 
+                // @ts-ignore
                 defaultUri: { scheme: 'file', path: `./${ddbvar.name || 'table'}.csv` },
             })
             if (uri) { 
-                const { ddb } = explorer.connection
                 const table_obj = ddbvar.obj ?? await ddb.call('objByName', [ddbvar.name])
                 const { value } = await ddb.call('generateTextFromTable', [table_obj, new DdbInt(0), new DdbInt(table_obj.rows), new DdbInt(0), new DdbChar(','), new DdbBool(true)])
                 const file_text = typeof value === 'string' ? value : new TextDecoder().decode(value as BufferSource)
