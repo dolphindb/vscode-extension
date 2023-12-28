@@ -22,7 +22,7 @@ import {
 
 import dayjs from 'dayjs'
 
-import { inspect, assert, defer, delay, path } from 'xshell'
+import { inspect, assert, defer, delay } from 'xshell'
 
 
 import {
