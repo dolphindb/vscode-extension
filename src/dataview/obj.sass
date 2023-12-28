@@ -18,7 +18,23 @@ $input-foreground-color: var(--vscode-input-foreground, #000000d9)
 $line-number-foreground-color: var(--vscode-editorLineNumber-foreground, #000000d9)
 $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForeground, #000000)
 
-
+.table
+    display: flex
+    flex-direction: column
+    .ant-table-wrapper
+        flex: 1
+        overflow: auto
+    .bottom-placeholder
+        height: 48px
+    .bottom-bar
+        width: 100%
+        height: 48px
+        position: fixed 
+        bottom: 0px
+        background-color: $background-color
+        flex-wrap: wrap
+        z-index: 1000
+    
 .vector, .table, .matrix
     user-select: text
     

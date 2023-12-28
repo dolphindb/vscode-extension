@@ -620,6 +620,9 @@ export function Table ({
             {...others}
         />
         
+        {/* 底部区占位 */}
+        { show_bottom_bar && <div className='bottom-placeholder' />}
+        
         { show_bottom_bar && <div className='bottom-bar'>
             <div className='info'>
                 <span className='desc'>{ info.rows ? `${info.rows} ${t('行')} ` : ' ' }{info.cols} {t('列')}{ objref ? ` (${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
@@ -1039,6 +1042,8 @@ export function StreamingTable ({
             />
         </div>
         
+        
+        <div className='bottom-placeholder' />
         <div className='bottom-bar'>
             <div className='info'>
                 <span className='desc'>{rreceived.current} {t('行')} {cols.length} {t('列')}{ message.window.offset > 0 ? ` ${message.window.offset} ${t('偏移')}` : '' }</span>{' '}
