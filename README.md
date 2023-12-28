@@ -94,7 +94,7 @@ Go to `File > Preferences > Keyboard Shortcuts` (`File > Preferences > Keyboard 
 If it still can't be solved, try the following methods to end all `Code.exe` processes and delete the service worker cache:
      - linux: `pkill code && rm -rf .config/Code/Service\ Worker/{CacheStorage,ScriptCache}`
      - windows:
-         - 1. Exit vscode, open the task manager, and end all vscode processes
+         - 1. After exiting vscode, open the task manager and end all remaining vscode zombie processes `taskkill /F /IM Code.exe`
          - 2. Open `C:/Users/your username/AppData/Roaming/Code/Service Worker/` in the file manager
          - 3. Delete `CacheStorage` and `ScriptCache` two folders
     
