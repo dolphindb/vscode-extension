@@ -92,7 +92,7 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 如果还不能解决，尝试下面的方法结束所有的 `Code.exe` 进程，并删除 service worker 缓存:
     - linux: `pkill code && rm -rf .config/Code/Service\ Worker/{CacheStorage,ScriptCache}`
     - windows:
-        - 1. 退出 vscode 打开任务管理器，结束所有 vscode 进程
+        - 1. 退出 vscode 之后，打开任务管理器，结束所有残留的 vscode 僵尸进程 `taskkill /F /IM Code.exe`
         - 2. 在文件管理器中打开 `C:/Users/你的用户名/AppData/Roaming/Code/Service Worker/`
         - 3. 删除 `CacheStorage` 和 `ScriptCache` 两个文件夹  
     
