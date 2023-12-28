@@ -593,7 +593,7 @@ export const ddb_commands = [
             }
             
             if (ddbvar.form !== DdbForm.table) { 
-                window.showErrorMessage(t('仅支持导出表格'))
+                window.showWarningMessage(t('仅支持导出表格'))
                 return 
             }
             
