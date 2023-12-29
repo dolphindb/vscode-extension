@@ -69,6 +69,9 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     /** 当前选中的连接 */
     connection: DdbConnection
     
+    /** 上传模块是否加密 */
+    encrypt: boolean
+    
     
     constructor () {
         this.load_connections()
