@@ -433,5 +433,11 @@
     },
     "\n··· 等，共 {{num}} 个路径": {
         "en": "... and so on, a total of {{num}} paths"
+    },
+    "总是加密": {
+        "en": "Always encrypted"
+    },
+    "总是不加密": {
+        "en": "Always unencrypted"
     }
 }
