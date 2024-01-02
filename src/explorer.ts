@@ -69,8 +69,6 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     /** 当前选中的连接 */
     connection: DdbConnection
     
-    get_csv_content_defined: boolean = false
-    
     
     constructor () {
         this.load_connections()
