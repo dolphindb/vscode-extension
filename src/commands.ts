@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 
 import { window, workspace, commands, ConfigurationTarget, ProgressLocation, type Uri, FileType } from 'vscode'
 
-import { path, Timer, delay, inspect } from 'xshell'
+import { path, Timer, delay, inspect, vercmp } from 'xshell'
 
 import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbBool, DdbChar, DdbInt } from 'dolphindb'
 
@@ -16,7 +16,6 @@ import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmu
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
-import { promises } from 'fs'
 
 
 let lastvar: DdbVar
@@ -586,8 +585,7 @@ export const ddb_commands = [
             const { ddb } = explorer.connection
             // 2.00.11 以上版本才能使用导出功能
             const { value: server_version } = await ddb.eval<DdbObj<string>>('version()')
-            const [ver1, ,ver3] = server_version.split(' ')[0].split('.')
-            if (!(Number(ver1) >= 2 && Number(ver3) >= 11)) { 
+            if (vercmp('2.00.11', server_version.split(' ')[0]) === 1) { 
                 window.showWarningMessage(t('server 版本低于 2.00.11，请升级后再使用此功能'))
                 return
             }
@@ -602,16 +600,16 @@ export const ddb_commands = [
                 // @ts-ignore
                 defaultUri: { scheme: 'file', path: `./${ddbvar.name || 'table'}.csv` },
             })
+            
             if (uri) { 
-                const table_obj = ddbvar.obj ?? await ddb.call('objByName', [ddbvar.name])
-                const { value } = await ddb.call('generateTextFromTable', [table_obj, new DdbInt(0), new DdbInt(table_obj.rows), new DdbInt(0), new DdbChar(','), new DdbBool(true)])
-                const file_text = typeof value === 'string' ? value : new TextDecoder().decode(value as BufferSource)
-                await promises.writeFile(uri.fsPath, file_text)
+                await explorer.connection.define_get_csv_content()
+                const { value: content } = await ddb.call('getCsvContent', [ddbvar.name ?? '', ddbvar.obj ?? ''])
+                await workspace.fs.writeFile(uri, typeof content === 'string' ? Buffer.from(content) : content as Buffer)
                 window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
             }
-        } catch (e) { 
-            window.showErrorMessage(e.message)
-            throw e
+        } catch (error) { 
+            window.showErrorMessage(error.message)
+            throw error
         }
     }
     

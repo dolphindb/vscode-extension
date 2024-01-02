@@ -69,6 +69,8 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     /** 当前选中的连接 */
     connection: DdbConnection
     
+    get_csv_content_defined: boolean = false
+    
     
     constructor () {
         this.load_connections()
@@ -303,7 +305,6 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     async resolveTreeItem (item: TreeItem, element: TreeItem, canceller: CancellationToken): Promise<TreeItem> {
         if (!(item instanceof DdbVar))
             return
-        await item.resolve_tooltip()
         return item
     }
 }
@@ -396,6 +397,27 @@ export class DdbConnection extends TreeItem {
     mappings: Record<string, string>
     
     load_table_variable_schema_defined = false
+    
+    get_csv_content_defined = false
+    
+    async define_get_csv_content () { 
+        if (this.get_csv_content_defined)
+            return
+        else { 
+            await this.ddb.eval(`
+                def getCsvContent(name, table_obj) {
+                    obj = table_obj
+                    if(name != "") {
+                        obj = objByName(name) 
+                    }
+                    table_size = size obj
+                    return generateTextFromTable(obj, 0, table_size, 0, ',', true)
+                }
+            `)
+            this.get_csv_content_defined = true
+        }
+            
+    }
     
     
     constructor (url: string, name: string = url, options: DdbOptions = { }) {
