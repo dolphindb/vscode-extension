@@ -227,6 +227,8 @@ function Dict ({
             motion={null}
         />
         
+        <div className='bottom-placeholder' />
+        
         <div className='bottom-bar'>
             <div className='info'>
                 <span className='desc'>{_obj.rows} {t('个键')}{ objref ? ` (${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
@@ -401,6 +403,8 @@ function Vector ({
             ]}
         />
         
+        
+        <div className='bottom-placeholder' />
         <div className='bottom-bar'>
             <div className='info'>
                 <span className='desc'>{info.rows} {t('个元素')}{ objref ? ` (${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>

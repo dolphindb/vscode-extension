@@ -18,7 +18,8 @@ $input-foreground-color: var(--vscode-input-foreground, #000000d9)
 $line-number-foreground-color: var(--vscode-editorLineNumber-foreground, #000000d9)
 $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForeground, #000000)
 
-.table
+.webview
+    .table, .vector, .dict
     display: flex
     flex-direction: column
     .ant-table-wrapper
@@ -33,6 +34,12 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
         bottom: 0px
         background-color: $background-color
         z-index: 1000
+    .dict
+        .table, .vector, .dict
+            .bottom-bar
+                position: relative
+            .bottom-placeholder
+                height: 0px
     
 .vector, .table, .matrix
     user-select: text
