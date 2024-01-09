@@ -189,6 +189,9 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         
         try {
             await pconnect
+            // 更新数据视图
+            const { webview } = dataview.view
+            webview.html = webview.html + ' '
         } catch (error) {
             const answer = await window.showErrorMessage<DdbMessageItem>(
                 error.message,
