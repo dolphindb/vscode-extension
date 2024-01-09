@@ -583,6 +583,10 @@ export const ddb_commands = [
         try {
             ddbvar ||= lastvar
             const { ddb } = explorer.connection
+            if (!ddbvar) { 
+                window.showErrorMessage(t('当前没有可导出的表格'))
+                return
+            }
             
             if (ddbvar.ddb.sid !== ddb.sid) { 
                 window.showErrorMessage(t('当前变量所属连接非选中连接，无法导出'))

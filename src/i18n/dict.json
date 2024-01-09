@@ -451,5 +451,8 @@
     },
     "当前变量所属连接非选中连接，无法导出": {
         "en": "The connection to which the current variable belongs is not a selected connection and cannot be exported."
+    },
+    "当前没有可导出的表格": {
+        "en": "There are currently no tables available for export"
     }
 }
