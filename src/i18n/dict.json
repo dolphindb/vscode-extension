@@ -448,5 +448,8 @@
     },
     "server 版本低于 2.00.11，请升级后再使用此功能": {
         "en": "The server version is lower than 2.00.11, please upgrade before using this function."
+    },
+    "当前变量所属连接非选中连接，无法导出": {
+        "en": "The connection to which the current variable belongs is not a selected connection and cannot be exported."
     }
 }

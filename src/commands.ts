@@ -583,12 +583,19 @@ export const ddb_commands = [
         try {
             ddbvar ||= lastvar
             const { ddb } = explorer.connection
+            
+            if (ddbvar.ddb.sid !== ddb.sid) { 
+                window.showErrorMessage(t('当前变量所属连接非选中连接，无法导出'))
+                return
+            }
+            
             // 2.00.11 以上版本才能使用导出功能
             const { value: server_version } = await ddb.eval<DdbObj<string>>('version()')
             if (vercmp('2.00.11', server_version.split(' ')[0]) === 1) { 
                 window.showWarningMessage(t('server 版本低于 2.00.11，请升级后再使用此功能'))
                 return
             }
+            
             
             if (ddbvar.form !== DdbForm.table) { 
                 window.showWarningMessage(t('仅支持导出表格'))
