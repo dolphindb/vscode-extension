@@ -583,6 +583,7 @@ export const ddb_commands = [
         try {
             ddbvar ||= lastvar
             const { ddb } = explorer.connection
+            // 当前数据面板无变量
             if (!ddbvar) { 
                 window.showErrorMessage(t('当前没有可导出的表格'))
                 return
