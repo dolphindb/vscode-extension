@@ -303,6 +303,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     async resolveTreeItem (item: TreeItem, element: TreeItem, canceller: CancellationToken): Promise<TreeItem> {
         if (!(item instanceof DdbVar))
             return
+        await item.resolve_tooltip()
         return item
     }
 }
