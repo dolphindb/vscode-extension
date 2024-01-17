@@ -1,10 +1,10 @@
 import dayjs from 'dayjs'
 
-import { window, workspace, commands, ConfigurationTarget, ProgressLocation, type Uri, FileType } from 'vscode'
+import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri as UriIns, type Uri, FileType, debug } from 'vscode'
 
 import { path, Timer, delay, inspect } from 'xshell'
 
-import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions } from 'dolphindb'
+import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbInt } from 'dolphindb'
 
 
 import { i18n, t } from './i18n/index.js'
@@ -16,7 +16,7 @@ import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmu
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
-
+import { type Variable } from '@vscode/debugadapter'
 
 let lastvar: DdbVar
 
@@ -576,6 +576,24 @@ export const ddb_commands = [
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
+        }
+    },
+    async function view_debug_variable (arg) {
+        const { name, variablesReference } = arg.variable as Variable
+    
+        const response = await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 })
+        const frameId = response.stackFrames[0].id
+    
+        const vid = variablesReference & 0xffff
+        
+        // 获取 sessionId
+        const res: any[] = await debug.activeDebugSession.customRequest('getCurrentSessionId')
+        try {           
+            const result = await explorer.connection.ddb.call('getVariable2', [new DdbInt(frameId), new DdbInt(vid), name, new DdbInt(res[0])])
+            lastvar = new DdbVar({ obj: result, ...result, bytes: 0n })
+            lastvar.inspect()
+        } catch (e) { 
+            window.showErrorMessage(e.message)
         }
     }
 ]
