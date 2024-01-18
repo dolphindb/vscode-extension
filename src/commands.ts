@@ -589,7 +589,7 @@ export const ddb_commands = [
         // 获取 sessionId
         const res: any[] = await debug.activeDebugSession.customRequest('getCurrentSessionId')
         try {           
-            const result = await explorer.connection.ddb.eval(`getVariable2(${frameId}, ${vid}, "${name}", ${res[0]})`)
+            const result = await explorer.connection.ddb.eval(`getVariable(${frameId}, ${vid}, "${name}", ${res[0]})`)
             lastvar = new DdbVar({ obj: result, ...result, bytes: 0n })
             lastvar.inspect()
         } catch (e) { 
