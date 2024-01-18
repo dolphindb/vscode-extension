@@ -4,7 +4,7 @@ import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri
 
 import { path, Timer, delay, inspect } from 'xshell'
 
-import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbInt } from 'dolphindb'
+import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbInt, DdbLong } from 'dolphindb'
 
 
 import { i18n, t } from './i18n/index.js'
@@ -589,11 +589,12 @@ export const ddb_commands = [
         // 获取 sessionId
         const res: any[] = await debug.activeDebugSession.customRequest('getCurrentSessionId')
         try {           
-            const result = await explorer.connection.ddb.call('getVariable2', [new DdbInt(frameId), new DdbInt(vid), name, new DdbInt(res[0])])
+            const result = await explorer.connection.ddb.eval(`getVariable2(${frameId}, ${vid}, "${name}", ${res[0]})`)
             lastvar = new DdbVar({ obj: result, ...result, bytes: 0n })
             lastvar.inspect()
         } catch (e) { 
             window.showErrorMessage(e.message)
         }
+       
     }
 ]
