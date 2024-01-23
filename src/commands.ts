@@ -1,21 +1,21 @@
 import dayjs from 'dayjs'
 
-import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri as UriIns, type Uri, FileType } from 'vscode'
+import { ConfigurationTarget, FileType, ProgressLocation, Uri as UriIns, commands, window, workspace, type Uri } from 'vscode'
 
-import { path, Timer, delay, inspect, vercmp } from 'xshell'
+import { Timer, delay, inspect, path, vercmp } from 'xshell'
 
-import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions } from 'dolphindb'
+import { DdbConnectionError, DdbForm, DdbType, type DdbObj, type InspectOptions } from 'dolphindb'
 
 
+import { dataview } from './dataview/dataview.js'
+import { DdbVar, explorer, type DdbConnection } from './explorer.js'
+import { formatter } from './formatter.js'
 import { i18n, t } from './i18n/index.js'
 import { type DdbMessageItem } from './index.js'
-import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
-import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
-import { dataview } from './dataview/dataview.js'
-import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
+import { fdmupload, fdupload, fmupload, fupload, get_text, open_workbench_settings_ui } from './utils.js'
 
 
 let lastvar: DdbVar
@@ -589,7 +589,7 @@ export const ddb_commands = [
                 return
             }
             
-            if (ddbvar.ddb.sid !== ddb.sid) { 
+            if (ddbvar.ddb && ddbvar.ddb.sid !== ddb.sid) { 
                 window.showErrorMessage(t('当前变量所属连接非选中连接，无法导出'))
                 return
             }
