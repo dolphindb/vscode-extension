@@ -1,14 +1,13 @@
 import { fileURLToPath } from 'url'
 
-import { default as Webpack, type Configuration, type Compiler, type Stats } from 'webpack'
+import { default as Webpack, type Compiler, type Configuration, type Stats } from 'webpack'
 
-import type { Options as TSLoaderOptions } from 'ts-loader'
-import type { Options as SassOptions } from 'sass-loader'
 import * as sass from 'sass'
+import type { Options as SassOptions } from 'sass-loader'
+import type { Options as TSLoaderOptions } from 'ts-loader'
 
 
-import { fdelete, fmkdir } from 'xshell'
-import { fwrite, fcopy, fexists } from 'xshell'
+import { fcopy, fdelete, fexists, fmkdir, fwrite } from 'xshell'
 import type { Item } from 'xshell/i18n/index.js'
 
 
@@ -703,7 +702,7 @@ async function build_package_json () {
                     {
                         command: 'dolphindb.export_table',
                         group: 'navigation',
-                        when: 'view == ddbdataview',
+                        when: 'view == ddbdataview && !inDebugMode',
                     }
                 ],
                 
