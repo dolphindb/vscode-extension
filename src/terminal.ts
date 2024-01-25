@@ -9,7 +9,6 @@ import {
 
 
 import { language, t } from './i18n/index.js'
-import { server } from './server.js'
 
 
 type DdbTerminal = Terminal & { printer: EventEmitter<string> }
@@ -26,10 +25,7 @@ export async function create_terminal () {
             
             pty: {
                 open (init_dimensions: TerminalDimensions | undefined) {
-                    printer.fire(
-                        `${t('DolphinDB 终端')}\r\n` +
-                        `${server.web_url}\r\n`
-                    )
+                    printer.fire(`${t('DolphinDB 终端')}\r\n`)
                     resolve()
                 },
                 

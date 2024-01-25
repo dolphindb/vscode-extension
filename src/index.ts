@@ -24,7 +24,7 @@ import { set_inspect_options } from 'xshell'
 
 import { t } from './i18n/index.js'
 import { load_docs, register_docs } from './docs.js'
-import { server, start_server } from './server.js'
+import { server } from './server.js'
 import { explorer, register_explorer } from './explorer.js'
 import { dataview } from './dataview/dataview.js'
 import { statbar } from './statbar.js'
@@ -92,9 +92,6 @@ export async function activate (ctx: ExtensionContext) {
     register_terminal_link_provider()
     
     register_docs(ctx)
-    
-    
-    await start_server()
     
     
     dataview.register()
