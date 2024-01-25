@@ -172,7 +172,7 @@ export async function open_obj ({
 
 
 function Default ({ obj, objref, options }: { obj?: DdbObj, objref?: DdbObjRef, options?: InspectOptions }) {
-    return <div>{(obj || objref).toString(options)}</div>
+    return <div className='default-obj'>{(obj || objref).toString(options)}</div>
 }
 
 function Dict ({
