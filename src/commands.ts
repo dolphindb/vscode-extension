@@ -163,8 +163,9 @@ async function execute (text: string, testing = false) {
                     for (const subscriber of dataview.subscribers_repl)
                         subscriber(message, ddb, { decimals: formatter.decimals })
                     
-                    for (const subscriber of server.subscribers_repl)
-                        subscriber(message, ddb, { decimals: formatter.decimals })
+                    if (server)
+                        for (const subscriber of server.subscribers_repl)
+                            subscriber(message, ddb, { decimals: formatter.decimals })
                 }
             }
         )
@@ -507,6 +508,11 @@ export const ddb_commands = [
     
     function reload_dataview () {
         const { webview } = dataview.view
+        
+        // 新版本设置 webview.html 好像没有触发旧 webview 的 dispose, 导致对应的 subscriber 没有清理，不知道是不是 bug, 这里先手动清理下，防止新的 rpc 报错找不到 handler
+        dataview.subscribers_inspection = [ ]
+        dataview.subscribers_repl = [ ]
+        
         webview.html = webview.html + ' '
     },
     
