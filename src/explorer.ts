@@ -44,7 +44,7 @@ import { t } from './i18n/index.js'
 import { fpd_ext, type DdbMessageItem } from './index.js'
 import { statbar } from './statbar.js'
 import { formatter } from './formatter.js'
-import { server } from './server.js'
+import { server, start_server } from './server.js'
 import { dataview } from './dataview/dataview.js'
 import { open_connection_settings } from './commands.js'
 
@@ -68,6 +68,9 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     
     /** 当前选中的连接 */
     connection: DdbConnection
+    
+    /** 上传模块是否加密 */
+    encrypt?: boolean | undefined
     
     
     constructor () {
@@ -921,6 +924,9 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
          - schema?: 是否是查看表结构 */
     async inspect (open = false, schema = false) {
         if (open) {
+            if (!server)
+                await start_server()
+            
             if (!server.subscribers_inspection.length) {
                 dataview.ppage = defer<void>()
                 
@@ -966,8 +972,9 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         for (const subscriber of dataview.subscribers_inspection)
             subscriber(...args)
         
-        for (const subscriber of server.subscribers_inspection)
-            subscriber(...args)
+        if (server)
+            for (const subscriber of server.subscribers_inspection)
+                subscriber(...args)
     }
     
     

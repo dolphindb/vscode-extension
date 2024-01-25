@@ -163,8 +163,9 @@ async function execute (text: string, testing = false) {
                     for (const subscriber of dataview.subscribers_repl)
                         subscriber(message, ddb, { decimals: formatter.decimals })
                     
-                    for (const subscriber of server.subscribers_repl)
-                        subscriber(message, ddb, { decimals: formatter.decimals })
+                    if (server)
+                        for (const subscriber of server.subscribers_repl)
+                            subscriber(message, ddb, { decimals: formatter.decimals })
                 }
             }
         )
@@ -507,6 +508,11 @@ export const ddb_commands = [
     
     function reload_dataview () {
         const { webview } = dataview.view
+        
+        // 新版本设置 webview.html 好像没有触发旧 webview 的 dispose, 导致对应的 subscriber 没有清理，不知道是不是 bug, 这里先手动清理下，防止新的 rpc 报错找不到 handler
+        dataview.subscribers_inspection = [ ]
+        dataview.subscribers_repl = [ ]
+        
         webview.html = webview.html + ' '
     },
     
@@ -547,6 +553,7 @@ export const ddb_commands = [
         // 文件上点右键 upload_module 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
             let { connection } = explorer
+            let title: string
             
             await connection.connect()
             
@@ -556,19 +563,33 @@ export const ddb_commands = [
             if (!Array.isArray(uris))
                 uris = [uri]
             
-            const { title } = await window.showInformationMessage(
-                t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
-                { modal: true },   
-                { title: t('是') },  
-                { title: t('否') },
-            ) || { }
-            
-            if (!title)
-                return
+            if (explorer.encrypt === undefined) {
+                ({ title } = await window.showInformationMessage(
+                    t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
+                    { modal: true },   
+                    { title: t('是') },  
+                    { title: t('否') },
+                    { title: t('总是加密') },  
+                    { title: t('总是不加密') },
+                ) || { })
+                
+                switch (title) {
+                    case undefined:
+                        return
+                    
+                    case t('总是加密'):
+                        explorer.encrypt = true
+                        break
+                    
+                    case t('总是不加密'):
+                        explorer.encrypt = false
+                        break
+                }
+            }
             
             const fps = (await Promise.all(
                 uris.map(async uri =>
-                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是'), ddb)
+                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || explorer.encrypt || false, ddb)
                 )
             )).flat()
             

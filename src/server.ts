@@ -13,6 +13,7 @@ import { explorer, type DdbVar } from './explorer.js'
 import { dataview } from './dataview/dataview.js'
 
 
+/** 懒初始化的，使用前先检查，未初始化需要调用 start_server 初始化 */
 export let server: DdbServer
 
 
@@ -44,6 +45,13 @@ class DdbServer extends Server {
 
 
 export async function start_server () {
+    const http_port = await Server.get_available_port(
+        workspace.getConfiguration('dolphindb').get<string>('ports'),
+        
+        // running remotely
+        extensions.getExtension('dolphindb.dolphindb-vscode').extensionKind === ExtensionKind.Workspace
+    )
+    
     server = new DdbServer({
         name: 'DdbServer',
         
@@ -54,12 +62,7 @@ export async function start_server () {
         // 因此，如果插件在远程运行，如 remote-ssh, 那么端口从后往前找第一个可用的，避免转发的端口与本地端口冲突的情况
         // https://code.visualstudio.com/api/advanced-topics/remote-extensions
         // Opening something in a local browser or application
-        http_port: await Server.get_available_port(
-            workspace.getConfiguration('dolphindb').get<string>('ports'),
-            
-            // running remotely
-            extensions.getExtension('dolphindb.dolphindb-vscode').extensionKind === ExtensionKind.Workspace
-        ),
+        http_port,
         
         
         funcs: {
@@ -131,6 +134,7 @@ export async function start_server () {
         },
     })
     
+    server.web_url = `http://localhost:${http_port}/`
     
     await server.start()
     
