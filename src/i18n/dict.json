@@ -454,5 +454,11 @@
     },
     "当前没有可导出的表格": {
         "en": "There are currently no tables available for export"
+    },
+    "总是加密": {
+        "en": "Always"
+    },
+    "总是不加密": {
+        "en": "Never"
     }
 }

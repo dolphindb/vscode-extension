@@ -13,6 +13,7 @@ import { explorer, type DdbVar } from './explorer.js'
 import { dataview } from './dataview/dataview.js'
 
 
+/** 懒初始化的，使用前先检查，未初始化需要调用 start_server 初始化 */
 export let server: DdbServer
 
 
