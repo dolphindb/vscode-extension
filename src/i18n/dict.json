@@ -435,9 +435,9 @@
         "en": "... and so on, a total of {{num}} paths"
     },
     "总是加密": {
-        "en": "Always encrypted"
+        "en": "Always"
     },
     "总是不加密": {
-        "en": "Always unencrypted"
+        "en": "Never"
     }
 }

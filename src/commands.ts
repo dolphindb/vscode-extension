@@ -550,6 +550,7 @@ export const ddb_commands = [
             let title: string
             
             await connection.connect()
+            
             let { ddb } = connection
             
             // 点击图标上传时 uris 不是数组
@@ -557,20 +558,23 @@ export const ddb_commands = [
                 uris = [uri]
             
             if (explorer.encrypt === undefined) {
-                title = (await window.showInformationMessage(
+                ({ title } = await window.showInformationMessage(
                     t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
                     { modal: true },   
                     { title: t('是') },  
                     { title: t('否') },
                     { title: t('总是加密') },  
                     { title: t('总是不加密') },
-                ) || { }).title
+                ) || { })
+                
                 switch (title) {
                     case undefined:
                         return
+                    
                     case t('总是加密'):
                         explorer.encrypt = true
                         break
+                    
                     case t('总是不加密'):
                         explorer.encrypt = false
                         break
@@ -579,7 +583,7 @@ export const ddb_commands = [
             
             const fps = (await Promise.all(
                 uris.map(async uri =>
-                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || explorer.encrypt === true, ddb)
+                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || explorer.encrypt || false, ddb)
                 )
             )).flat()
             

@@ -70,7 +70,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     connection: DdbConnection
     
     /** 上传模块是否加密 */
-    encrypt: boolean
+    encrypt?: boolean | undefined
     
     
     constructor () {
