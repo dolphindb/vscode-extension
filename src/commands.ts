@@ -9,7 +9,7 @@ import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions 
 
 import { i18n, t } from './i18n/index.js'
 import { type DdbMessageItem } from './index.js'
-import { DdbVar, explorer, type DdbConnection } from './explorer.js'
+import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
 import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
