@@ -1,21 +1,22 @@
 import dayjs from 'dayjs'
 
-import { ConfigurationTarget, FileType, ProgressLocation, Uri as UriIns, commands, window, workspace, type Uri } from 'vscode'
+import { window, workspace, commands, ConfigurationTarget, ProgressLocation, type Uri, FileType, Uri as UriIns } from 'vscode'
 
-import { Timer, delay, inspect, path, vercmp } from 'xshell'
+import { path, Timer, delay, inspect, vercmp } from 'xshell'
 
-import { DdbConnectionError, DdbForm, DdbType, type DdbObj, type InspectOptions } from 'dolphindb'
+import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions } from 'dolphindb'
 
 
-import { dataview } from './dataview/dataview.js'
 import { DdbVar, explorer, type DdbConnection } from './explorer.js'
-import { formatter } from './formatter.js'
 import { i18n, t } from './i18n/index.js'
 import { type DdbMessageItem } from './index.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
+
+import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
+import { dataview } from './dataview/dataview.js'
+import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
-import { fdmupload, fdupload, fmupload, fupload, get_text, open_workbench_settings_ui } from './utils.js'
 
 
 let lastvar: DdbVar
