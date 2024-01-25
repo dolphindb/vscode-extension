@@ -7,12 +7,11 @@ import { path, Timer, delay, inspect, vercmp } from 'xshell'
 import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions } from 'dolphindb'
 
 
-import { DdbVar, explorer, type DdbConnection } from './explorer.js'
 import { i18n, t } from './i18n/index.js'
 import { type DdbMessageItem } from './index.js'
+import { DdbVar, explorer, type DdbConnection } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
-
 import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
