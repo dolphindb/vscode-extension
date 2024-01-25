@@ -1,6 +1,6 @@
 import dayjs from 'dayjs'
 
-import { window, workspace, commands, ConfigurationTarget, ProgressLocation, type Uri, FileType, Uri as UriIns } from 'vscode'
+import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri, FileType } from 'vscode'
 
 import { path, Timer, delay, inspect, vercmp } from 'xshell'
 
@@ -609,7 +609,7 @@ export const ddb_commands = [
             
             const uri = await window.showSaveDialog({
                 title: t('导出文件'),
-                defaultUri: UriIns.file(`./${ddbvar.name || 'table'}.csv`) 
+                defaultUri: Uri.file(`./${ddbvar.name || 'table'}.csv`) 
             })
             
             if (uri) { 
