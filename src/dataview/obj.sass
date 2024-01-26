@@ -18,30 +18,6 @@ $input-foreground-color: var(--vscode-input-foreground, #000000d9)
 $line-number-foreground-color: var(--vscode-editorLineNumber-foreground, #000000d9)
 $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForeground, #000000)
 
-.webview
-    .table, .vector, .dict
-        display: flex
-        flex-direction: column
-    .ant-table-wrapper
-        flex: 1
-        overflow: auto
-    .bottom-placeholder
-        height: 36px
-    .bottom-bar
-        width: 100%
-        height: 36px
-        position: fixed 
-        bottom: 0px
-        background-color: $background-color
-        z-index: 1000
-        box-shadow: 0 -1px 2px $border-color
-    .dict
-        .table, .vector, .dict
-            .bottom-bar
-                position: relative
-            .bottom-placeholder
-                height: 0px
-
 .ant-app
     color: $font-color
 
@@ -85,7 +61,32 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
             
         &.ant-table-thead > tr > th
             padding: 4px 8px
+
+
+.webview
+    .bottom-placeholder
+        height: 30px
     
+    .bottom-bar
+        width: 100%
+        height: 30px
+        position: fixed 
+        bottom: 0px
+        background-color: $background-color
+        z-index: 1000
+        // box-shadow: 0 -1px 1px $border-color
+        border-top: 1px solid $border-color
+    
+    .dict
+        .table, .vector, .dict
+            .bottom-bar
+                position: unset
+                border-top: 0px solid $border-color
+                
+            .bottom-placeholder
+                display: none
+
+
 .bottom-bar
     display: flex
     
@@ -221,8 +222,9 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
     
     .ant-table
         background-color: $background-color !important
-        display: inline-block
-        
+        // 加上下面的会导致 table 下面多渲染 7px，不知道当初为什么要加上
+        // display: inline-block
+    
     .ant-table-has-fix-left
         .ant-table-container
             border-inline-start-width: 2px !important
