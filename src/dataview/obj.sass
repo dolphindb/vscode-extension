@@ -18,216 +18,187 @@ $input-foreground-color: var(--vscode-input-foreground, #000000d9)
 $line-number-foreground-color: var(--vscode-editorLineNumber-foreground, #000000d9)
 $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForeground, #000000)
 
-.ant-app
-    color: $font-color
 
-
-.default-obj
-    color: $font-color
-
-
-.vector, .table, .matrix
-    user-select: text
+.result
+    overflow-y: auto
     
-    .pagination
-        margin: 2px 0px
+    position: relative
     
-    table
-        text-align: right
-        
-        word-break: keep-all
-        
-        white-space: nowrap
+    height: 100%
     
-    .row-head
-        background-color: $table-head-color !important
-        font-weight: bold
-        
-        border-bottom: 1px solid $border-color !important
-        border-right: 1px solid $border-color !important
-        
-        // table 中的 height 等价于 min-height: https://stackoverflow.com/questions/19432092/can-i-use-a-min-height-for-table-tr-or-td
-        height: 22px
+    .default-obj
+        color: $font-color
     
-    thead
-        th.ant-table-cell
-            text-align: center
+    
+    .table, .vector, .matrix, .dict, .chart
+        display: flex
+        flex-direction: column
+        height: 100%
+    
+    
+    .vector, .table, .matrix
+        user-select: text
+        
+        .pagination
+            margin: 2px 0px
+        
+        table
+            text-align: right
+            
+            word-break: keep-all
+            
+            white-space: nowrap
+        
+        .row-head
+            background-color: $table-head-color !important
             font-weight: bold
             
-        .type
-            font-weight: normal
-            color: $icon-color !important
-            font-size: 12px
+            border-bottom: 1px solid $border-color !important
+            border-right: 1px solid $border-color !important
             
-        &.ant-table-thead > tr > th
-            padding: 4px 8px
-
-
-.webview
-    .bottom-placeholder
-        height: 30px
+            // table 中的 height 等价于 min-height: https://stackoverflow.com/questions/19432092/can-i-use-a-min-height-for-table-tr-or-td
+            height: 22px
+        
+        thead
+            th.ant-table-cell
+                text-align: center
+                font-weight: bold
+                
+            .type
+                font-weight: normal
+                color: $icon-color !important
+                font-size: 12px
+                
+            &.ant-table-thead > tr > th
+                padding: 4px 8px
     
-    .bottom-bar
-        width: 100%
-        height: 30px
-        position: fixed 
-        bottom: 0px
-        background-color: $background-color
-        z-index: 1000
-        // box-shadow: 0 -1px 1px $border-color
-        border-top: 1px solid $border-color
+    
+    .chart
+        .chart-title
+            margin-top: 8px
+            min-height: 0px
+            text-align: center
+            color: $font-color !important
+        
+        .chart-body
+            flex: 1
+            min-height: 0px
+            overflow: auto
+            padding: 0px 16px 8px 16px
+    
     
     .dict
-        .table, .vector, .dict
+        padding-top: 8px
+        
+        .table, .vector, .matrix
             .bottom-bar
+                padding-left: unset
                 position: unset
-                border-top: 0px solid $border-color
+                border-top: unset
                 
-            .bottom-placeholder
+            .bottom-bar-placeholder
                 display: none
-
-
-.bottom-bar
-    display: flex
-    
-    align-items: center
-    
-    min-height: 0px
-    
-    .info
-        font-size: 16px
-        white-space: break-spaces
-        flex-shrink: 0
-        color: $font-color
         
-        .name
-            margin-left: 8px
-            font-weight: bold
+        
+        .ant-tree-node-content-wrapper
+            user-select: text
+        
+        .ant-tree-show-line .ant-tree-indent-unit::before
+            border-right: unset !important
+        
+        .ant-tree-show-line .ant-tree-switcher
+            background: $background-color
+        
+        .ant-tree
+            transition: unset !important
             
-    .actions
+            color: $font-color
+            
+            background-color: $background-color
+            
+            .ant-tree-node-content-wrapper 
+                transition: unset !important
+            
+            .ant-tree-node-content-wrapper.ant-tree-node-selected
+                background-color: unset !important
+                
+            .ant-tree-node-content-wrapper:hover
+                background-color: unset !important
+                
+            .ant-tree-switcher-noop
+                visibility: hidden
+    
+    
+    .bottom-bar
         display: flex
-        
-        flex-shrink: 0
         
         align-items: center
         
-        margin-left: 10px
+        min-height: 0px
         
-        .icon-link, .pause-play
-            color: #888888
+        width: 100%
+        height: 30px
         
-        .icon-link
-            margin-right: 10px
-            font-size: 28px
+        position: absolute
+        bottom: 0px
         
-        .pause-play
-            font-size: 20px
+        border-top: 1px solid $border-color
+        
+        padding-left: 12px
         
         
-    .ant-pagination
-        margin-left: 10px
-        
-        flex-shrink: 0
-        
-        .ant-pagination-item a
-            color: $color !important
-        
-        .ant-pagination-item-active
-            background-color: $background-color !important
-            border: 0px
-            font-weight: bold
+        .info
+            font-size: 16px
+            white-space: break-spaces
+            flex-shrink: 0
+            color: $font-color
             
-            a
-                margin-top: 1px
-                color: $line-number-active-foreground-color !important
-        
-        .ant-pagination-item-ellipsis
-            color: $color !important
-        
-        .ant-pagination-item-link
-            color: $font-color !important
-        
-        .ant-pagination-item-link-icon
-            color: $font-color !important
-        
-        .ant-pagination-disabled svg
-            color: $color !important
-        
-        .ant-pagination-options
-            color: $font-color !important
-            display: inline-block !important
+            .name
+                margin-left: 8px
+                font-weight: bold
+                
+        .actions
+            display: flex
             
-            input
-                background-color: $input-background-color !important
-                color: $input-foreground-color !important
+            flex-shrink: 0
             
-        
-            .ant-select
-                color: $font-color
-                
-                .ant-select-selector
-                    background-color: $background-color !important
-                    border-color: $background-color !important
-                
-                .ant-select-arrow
-                    color: $font-color !important
-                
-                .ant-select-dropdown
-                    background-color: $dropdown-background-color !important
-                    color: $dropdown-foreground-color !important
-                    border: 1px solid $dropdown-border-color !important
-                
-                .ant-select-item 
-                    color: $dropdown-foreground-color !important
-                
-                .ant-select-item-option-active
-                    background-color: $dropdown-active-background-color !important
-                
-                .ant-select-item-option-selected
-                    background-color: $dropdown-selected-background-color !important
-                    color: $font-color !important
-                
-                .ant-select-selection-item
-                    color: $font-color !important
+            align-items: center
             
-            .ant-select:not(.ant-select-disabled):hover .ant-select-selector
-                border-color: #707070
-
-            .ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector
-                box-shadow: unset
-                
-            .ant-select-single.ant-select-open .ant-select-selection-item
-                color: $font-color
-                
-            .ant-select-item-option-selected:not(.ant-select-item-option-disabled)
-                background-color: $dropdown-selected-background-color !important
+            margin-left: 10px
             
-            .ant-pagination-options-quick-jumper
-                input
-                    border-color: $border-color
-                
-                input:hover
-                    border-color: #707070
-                    
-                input:focus, input-focused
-                    border-color: #707070
-                    box-shadow: unset
-                    
-        
+            .icon-link, .pause-play
+                color: #888888
+            
+            .icon-link
+                margin-right: 10px
+                font-size: 28px
+            
+            .pause-play
+                font-size: 20px
     
-.result
-    height: 100%
     
-    overflow-y: auto
+    .bottom-bar-placeholder
+        height: 30px
+    
+    
+    .ant-table-wrapper
+        flex: 1
+        overflow: auto
+        
+    .ant-tree
+        flex: 1
+        overflow: auto
     
     .ant-table
         background-color: $background-color !important
+        
         // 加上下面的会导致 table 下面多渲染 7px，不知道当初为什么要加上
         // display: inline-block
-    
-    .ant-table-has-fix-left
-        .ant-table-container
-            border-inline-start-width: 2px !important
+        
+    // 去掉为了 vscode 中 dataview 做的修复
+    // .ant-table-has-fix-left
+    //     .ant-table-container
+    //         border-inline-start-width: 2px !important
     
     .ant-table-thead > tr > td::before
         content: none !important
@@ -263,6 +234,10 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
     .ant-table-wrapper .ant-table-tbody > tr.ant-table-placeholder
         background-color: $background-color !important
         
+    // 去掉 table-container 顶部多余的分割线，宽度超出了 table 且占了 100% 的宽度
+    .ant-table-wrapper .ant-table.ant-table-bordered >.ant-table-container
+        border-top: unset
+    
     .ant-table-tbody > tr > td
         transition: none
         
@@ -280,48 +255,4 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
             
         .ant-empty-image
             display: none
-        
-    
-.chart
-    height: 100%
-    display: flex
-    flex-direction: column
-    
-    .chart-title
-        min-height: 0px
-        text-align: center
-        color: $font-color !important
-    
-    .chart-body
-        flex: 1
-        min-height: 0px
-    
-.dict
-    .ant-tree-node-content-wrapper
-        user-select: text
-    
-    .ant-tree-show-line .ant-tree-indent-unit::before
-        border-right: unset !important
-    
-    .ant-tree-show-line .ant-tree-switcher
-        background: $background-color
-    
-    .ant-tree
-        transition: unset !important
-        
-        color: $font-color
-        
-        background-color: $background-color
-        
-        .ant-tree-node-content-wrapper 
-            transition: unset !important
-        
-        .ant-tree-node-content-wrapper.ant-tree-node-selected
-            background-color: unset !important
-            
-        .ant-tree-node-content-wrapper:hover
-            background-color: unset !important
-            
-        .ant-tree-switcher-noop
-            visibility: hidden
-        
+

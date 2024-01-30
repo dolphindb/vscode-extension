@@ -256,7 +256,7 @@ function DataView () {
     
     const { type, data } = result
     
-    return <div className='result webview'>{
+    return <div className='result webview white-pagination'>{
         type === 'object' ?
             <Obj obj={data} remote={remote} ctx='webview' options={options} />
         :
