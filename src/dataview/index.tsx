@@ -148,7 +148,7 @@ function DataView () {
     
     const { type, data } = result
     
-    return <div className='obj-result themed page themed-pagination'>{
+    return <div className='obj-result themed page'>{
         type === 'object' ?
             <Obj obj={data} remote={remote} ctx='page' options={options} />
         :

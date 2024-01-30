@@ -257,7 +257,7 @@ function DataView () {
     
     const { type, data } = result
     
-    return <div className='obj-result themed webview themed-pagination'>{
+    return <div className='obj-result themed webview'>{
         type === 'object' ?
             <Obj obj={data} remote={remote} ctx='webview' options={options} />
         :

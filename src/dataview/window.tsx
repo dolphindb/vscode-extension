@@ -112,7 +112,7 @@ function DdbObjWindow () {
     if (!obj && !objref)
         return <div>DolphinDB Window</div>
     
-    return <div className='obj-result themed window themed-pagination'>
+    return <div className='obj-result themed window'>
         <Obj obj={obj} objref={objref} ctx='window' remote={remote} ddb={ddb} options={options} />
     </div>
 }
