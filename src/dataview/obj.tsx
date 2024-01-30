@@ -227,6 +227,8 @@ function Dict ({
             motion={null}
         />
         
+        <div className='bottom-bar-placeholder' />
+        
         <div className='bottom-bar'>
             <div className='info'>
                 <span className='desc'>{_obj.rows} {t('个键')}{ objref ? ` (${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
@@ -400,6 +402,8 @@ function Vector ({
                 )
             ]}
         />
+        
+        <div className='bottom-bar-placeholder' />
         
         <div className='bottom-bar'>
             <div className='info'>
@@ -619,6 +623,9 @@ export function Table ({
             ]}
             {...others}
         />
+        
+        {/* 底部区占位 */}
+        { show_bottom_bar && <div className='bottom-bar-placeholder' />}
         
         { show_bottom_bar && <div className='bottom-bar'>
             <div className='info'>
@@ -1039,6 +1046,8 @@ export function StreamingTable ({
             />
         </div>
         
+        <div className='bottom-bar-placeholder' />
+        
         <div className='bottom-bar'>
             <div className='info'>
                 <span className='desc'>{rreceived.current} {t('行')} {cols.length} {t('列')}{ message.window.offset > 0 ? ` ${message.window.offset} ${t('偏移')}` : '' }</span>{' '}
@@ -1324,6 +1333,8 @@ function Matrix ({
                 )
             ]}
         />
+        
+        <div className='bottom-bar-placeholder' />
         
         <div className='bottom-bar'>
             <div className='info'>
@@ -1683,6 +1694,7 @@ function Chart ({
                                 }
                             }}
                             padding='auto'
+                            animation={false}
                         />
                         
                 case DdbChartType.column:
@@ -1718,6 +1730,7 @@ function Chart ({
                             ],
                         }}
                         padding='auto'
+                        animation={false}
                     />
                 
                 case DdbChartType.bar:
@@ -1754,6 +1767,7 @@ function Chart ({
                             ],
                         }}
                         padding='auto'
+                        animation={false}
                     />
                 
                 case DdbChartType.pie:
@@ -1768,6 +1782,7 @@ function Chart ({
                             content: '{name}: {percentage}',
                         }}
                         padding='auto'
+                        animation={false}
                     />
                 
                 case DdbChartType.area:
@@ -1791,6 +1806,7 @@ function Chart ({
                         }}
                         stack={stacking}
                         padding='auto'
+                        animation={false}
                     />
                 
                 case DdbChartType.scatter:
@@ -1815,6 +1831,7 @@ function Chart ({
                             }
                         }
                         padding='auto'
+                        animation={false}
                     />
                 
                 case DdbChartType.histogram:
@@ -1841,10 +1858,12 @@ function Chart ({
                         // 修复类型错误
                         binWidth={undefined}
                         padding='auto'
+                        animation={false}
                     />
                 
                 case DdbChartType.kline:
                     return <Stock
+                        className='chart-body'
                         data={data}
                         xField='row'
                         yField={['open', 'close', 'high', 'low'] as any}
@@ -1913,6 +1932,7 @@ function Chart ({
                             
                             title: 'row_',
                         }}
+                        animation={false}
                     />
                 
                 default:
@@ -1934,11 +1954,14 @@ function Chart ({
                         }}
                         isStack={stacking}
                         padding='auto'
+                        animation={false}
                     />
             }
         })()}
         
-        <div className='bottom-bar'>
+        { ctx !== 'window' && <div className='bottom-bar-placeholder' /> }
+        
+        { ctx !== 'window' && <div className='bottom-bar'>
             <div className='actions'>
                 {(ctx === 'page' || ctx === 'embed') && <Icon
                     className='icon-link'
@@ -1949,6 +1972,6 @@ function Chart ({
                     }}
                 />}
             </div>
-        </div>
+        </div> }
     </div>
 }
