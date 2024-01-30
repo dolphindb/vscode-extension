@@ -436,5 +436,11 @@
     },
     "请将 server 版本升级至 2.00.11.2 及以上再使用此功能": {
         "en": "Please upgrade the server version to 2.00.11.2 and above before using this function"
+    },
+    "总是加密": {
+        "en": "Always"
+    },
+    "总是不加密": {
+        "en": "Never"
     }
 }
