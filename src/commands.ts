@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 
 import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri as UriIns, type Uri, FileType, debug } from 'vscode'
 
-import { path, Timer, delay, inspect } from 'xshell'
+import { path, Timer, delay, inspect, vercmp } from 'xshell'
 
 import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbInt, DdbLong } from 'dolphindb'
 
@@ -578,7 +578,24 @@ export const ddb_commands = [
             throw error
         }
     },
+    
     async function view_debug_variable (arg) {
+        
+        const { value } = await explorer.connection.ddb.eval<DdbObj<string>>('version()')
+        let [version] = value.split(' ')
+        
+        // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
+        const valid_version = '2.00.11.2'
+        // 如果版本号位数不一致，后面补 .0
+        if (version.split('.').length < valid_version.split('.').length)
+            version += '.0'
+        
+        // vercmp('2.00.11.2', '2.00.11.1') = 1
+        if (vercmp(version, '2.00.11.2') !== 1) { 
+            window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
+            return
+        }
+            
         const { name, variablesReference } = arg.variable as Variable
     
         const response = await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 })
