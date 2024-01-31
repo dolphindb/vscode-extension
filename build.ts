@@ -253,8 +253,8 @@ async function build_package_json () {
         {
             command: 'export_table',
             title: {
-                zh: 'DolphinDB: 导出文件',
-                en: 'DolphinDB: Export File'
+                zh: 'DolphinDB: 导出表格',
+                en: 'DolphinDB: Export Table'
             },
             icon: '$(desktop-download)'
         }

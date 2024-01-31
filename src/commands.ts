@@ -600,17 +600,20 @@ export const ddb_commands = [
         }
     },
     
-    async function export_table (ddbvar?: DdbVar) { 
+    async function export_table (ddbvar = lastvar) { 
         try {
-            ddbvar ||= lastvar
-            const { ddb } = explorer.connection
+            let { ddb } = explorer.connection
+            
             // 当前数据面板无变量
             if (!ddbvar) { 
                 window.showErrorMessage(t('当前没有可导出的表格'))
                 return
             }
             
-            if (ddbvar.ddb && ddbvar.ddb.sid !== ddb.sid) { 
+            // todo: 直接帮用户切换到表格对应的连接
+            // todo: 使用 execute 方法执行代码，这样可以显示导出进度，并且有弹窗提示，可以取消
+            
+            if (ddbvar.ddb && ddbvar.ddb !== ddb) { 
                 window.showErrorMessage(t('当前变量所属连接非选中连接，无法导出'))
                 return
             }
@@ -629,7 +632,7 @@ export const ddb_commands = [
             }
             
             const uri = await window.showSaveDialog({
-                title: t('导出文件'),
+                title: t('导出表格'),
                 defaultUri: Uri.file(`./${ddbvar.name || 'table'}.csv`) 
             })
             
@@ -644,5 +647,4 @@ export const ddb_commands = [
             throw error
         }
     }
-    
 ]
