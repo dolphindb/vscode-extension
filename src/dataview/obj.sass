@@ -1,34 +1,12 @@
-$color: var(--vscode-editor-foreground, #000000)
-$border-color: var(--vscode-tree-tableColumnsBorder, rgba(97, 97, 97, 0.13))
-$background-color: var(--vscode-editor-background, #ffffff)
-$icon-color: var(--vscode-editorGroupHeader-tabsBackground, #888888)
-$hover-color: var(--vscode-sideBar-background, #f8f8f8)
-$table-head-color: var(--vscode-sideBar-background, #eeeeee)
-$font-color: var(--vscode-editor-foreground, #000000)
-
-$dropdown-background-color: var(--vscode-dropdown-background, #ffffff)
-$dropdown-foreground-color: var(--vscode-dropdown-foreground, #000000d9)
-$dropdown-border-color: var(--vscode-dropdown-border, #ffffff)
-$dropdown-active-background-color: var(--vscode-inputOption-hoverBackground, #f5f5f5)
-$dropdown-selected-background-color: var(--vscode-editor-selectionBackground, #eeeeee)
-
-$input-background-color: var(--vscode-input-background, #ffffff)
-$input-foreground-color: var(--vscode-input-foreground, #000000d9)
-
-$line-number-foreground-color: var(--vscode-editorLineNumber-foreground, #000000d9)
-$line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForeground, #000000)
+@import './variables.sass'
 
 
-.result
+.obj-result
     overflow-y: auto
     
     position: relative
     
     height: 100%
-    
-    .default-obj
-        color: $font-color
-    
     
     .table, .vector, .matrix, .dict, .chart
         display: flex
@@ -50,15 +28,11 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
             white-space: nowrap
         
         .row-head
-            background-color: $table-head-color !important
             font-weight: bold
-            
-            border-bottom: 1px solid $border-color !important
-            border-right: 1px solid $border-color !important
             
             // table 中的 height 等价于 min-height: https://stackoverflow.com/questions/19432092/can-i-use-a-min-height-for-table-tr-or-td
             height: 22px
-        
+            
         thead
             th.ant-table-cell
                 text-align: center
@@ -66,7 +40,6 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
                 
             .type
                 font-weight: normal
-                color: $icon-color !important
                 font-size: 12px
                 
             &.ant-table-thead > tr > th
@@ -78,7 +51,6 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
             margin-top: 8px
             min-height: 0px
             text-align: center
-            color: $font-color !important
         
         .chart-body
             flex: 1
@@ -106,28 +78,21 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
         .ant-tree-show-line .ant-tree-indent-unit::before
             border-right: unset !important
         
-        .ant-tree-show-line .ant-tree-switcher
-            background: $background-color
-        
         .ant-tree
             transition: unset !important
-            
-            color: $font-color
-            
-            background-color: $background-color
             
             .ant-tree-node-content-wrapper 
                 transition: unset !important
             
-            .ant-tree-node-content-wrapper.ant-tree-node-selected
-                background-color: unset !important
-                
-            .ant-tree-node-content-wrapper:hover
-                background-color: unset !important
-                
             .ant-tree-switcher-noop
                 visibility: hidden
-    
+                
+        .ant-tree-node-content-wrapper.ant-tree-node-selected, .ant-tree-checkbox+span.ant-tree-node-selected
+            background-color: unset
+        
+        .ant-tree-node-content-wrapper:hover, .ant-tree-checkbox+span:hover
+            background-color: unset
+        
     
     .bottom-bar
         display: flex
@@ -142,8 +107,6 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
         position: absolute
         bottom: 0px
         
-        border-top: 1px solid $border-color
-        
         padding-left: 12px
         
         
@@ -151,7 +114,6 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
             font-size: 16px
             white-space: break-spaces
             flex-shrink: 0
-            color: $font-color
             
             .name
                 margin-left: 8px
@@ -189,13 +151,11 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
         flex: 1
         overflow: auto
     
-    .ant-table
-        background-color: $background-color !important
-        
-        // 加上下面的会导致 table 下面多渲染 7px，不知道当初为什么要加上
+    // .ant-table
+        // 加上下面的会导致 table 下面多渲染 7px，之前加上是为了让 dict 中的表格不要占 100% 的宽度，导致表格顶部的 border 超出表格
         // display: inline-block
         
-    // 去掉为了 vscode 中 dataview 做的修复
+    // 先去掉为了 vscode 中 dataview 做的修复看看还是否有必要，加上这个 web 里表格左框线特别粗
     // .ant-table-has-fix-left
     //     .ant-table-container
     //         border-inline-start-width: 2px !important
@@ -208,51 +168,114 @@ $line-number-active-foreground-color: var(--vscode-editorLineNumber-activeForegr
     .ant-table tfoot > tr > th,
     .ant-table tfoot > tr > td
         padding: 1px 8px
-        color: $font-color
-        border-color: $border-color !important
-
+    
     .ant-table-thead > tr > th,
     .ant-table-thead > tr > td
         text-align: center !important
-        background-color: $table-head-color !important
-        border-color: $border-color !important
     
     .ant-table.ant-table-bordered > .ant-table-container > .ant-table-content > table,
     .ant-table.ant-table-bordered > .ant-table-container > .ant-table-header > table
-        border-color: $border-color !important
+        thead
+            position: sticky
+            top: 0
+            z-index: 3
     
-    .ant-table.ant-table-bordered > .ant-table-container
-        border-color: $border-color !important
-    
-    .ant-table-tbody > tr.ant-table-row:hover > td,
-    .ant-table-tbody > tr > td.ant-table-cell-row-hover
-        background-color: $hover-color !important
-    
-    .ant-table-tbody > tr.ant-table-placeholder:hover > td
-        background-color: $background-color !important
-        
-    .ant-table-wrapper .ant-table-tbody > tr.ant-table-placeholder
-        background-color: $background-color !important
-        
     // 去掉 table-container 顶部多余的分割线，宽度超出了 table 且占了 100% 的宽度
     .ant-table-wrapper .ant-table.ant-table-bordered >.ant-table-container
         border-top: unset
     
     .ant-table-tbody > tr > td
         transition: none
-        
+    
     .ant-table table
         width: unset
     
     .ant-empty-normal
-        color: $font-color !important
-        
-        .ant-empty-img-simple-path, .ant-empty-img-simple-ellipse
-            fill: $background-color
-        
-        .ant-empty-description
-            color: $font-color !important
-            
         .ant-empty-image
             display: none
+    
+    
+    // 覆盖表格颜色配置，使其能适配 web, vscode 主题
+    &.themed
+        .default-obj
+            color: $font-color
+        
+        .vector, .table, .matrix
+            .row-head
+                background-color: $table-head-color !important
+                
+                border-bottom: 1px solid $border-color !important
+                border-right: 1px solid $border-color !important
+                
+            thead
+                .type
+                    color: $icon-color !important
+            
+        .chart
+            .chart-title
+                color: $font-color !important
+        
+        .dict
+            .ant-tree-show-line .ant-tree-switcher
+                background: $background-color
+            
+            .ant-tree
+                color: $font-color
+                
+                background-color: $background-color
+                
+                .ant-tree-node-content-wrapper.ant-tree-node-selected
+                    background-color: unset !important
+                    
+                .ant-tree-node-content-wrapper:hover
+                    background-color: unset !important
+                    
+        .bottom-bar
+            border-top: 1px solid $border-color
+            
+            .info
+                color: $font-color
+                
+        .ant-table
+            background-color: $background-color !important
+        
+        .ant-table-thead > tr > th,
+        .ant-table-tbody > tr > td,
+        .ant-table tfoot > tr > th,
+        .ant-table tfoot > tr > td
+            color: $font-color
+            border-color: $border-color !important
+        
+        .ant-table-thead > tr > th,
+        .ant-table-thead > tr > td
+            background-color: $table-head-color !important
+            border-color: $border-color !important
+        
+        .ant-table.ant-table-bordered > .ant-table-container > .ant-table-content > table,
+        .ant-table.ant-table-bordered > .ant-table-container > .ant-table-header > table
+            border-color: $border-color !important
+        
+        .ant-table.ant-table-bordered > .ant-table-container
+            border-color: $border-color !important
+        
+        .ant-table-tbody > tr.ant-table-row:hover > td,
+        .ant-table-tbody > tr > td.ant-table-cell-row-hover
+            background-color: $hover-color !important
+        
+        .ant-table-tbody > tr.ant-table-placeholder:hover > td
+            background-color: $background-color !important
+            
+        .ant-table-wrapper .ant-table-tbody > tr.ant-table-placeholder
+            background-color: $background-color !important
+        
+        
+        .ant-empty-normal
+            color: $font-color !important
+            
+            .ant-empty-img-simple-path, .ant-empty-img-simple-ellipse
+                fill: $background-color
+            
+            .ant-empty-description
+                color: $font-color !important
+        
 
