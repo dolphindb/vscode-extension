@@ -1,6 +1,7 @@
 import 'xshell/scroll-bar.sass'
 
 import './index.sass'
+import './pagination.sass'
 
 
 import { useEffect } from 'react'
@@ -147,7 +148,7 @@ function DataView () {
     
     const { type, data } = result
     
-    return <div className='result page'>{
+    return <div className='obj-result themed page'>{
         type === 'object' ?
             <Obj obj={data} remote={remote} ctx='page' options={options} />
         :

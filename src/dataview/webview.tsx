@@ -1,4 +1,5 @@
 import './webview.sass'
+import './pagination.sass'
 
 import { useEffect } from 'react'
 import { createRoot as create_root } from 'react-dom/client'
@@ -256,7 +257,7 @@ function DataView () {
     
     const { type, data } = result
     
-    return <div className='result webview'>{
+    return <div className='obj-result themed webview'>{
         type === 'object' ?
             <Obj obj={data} remote={remote} ctx='webview' options={options} />
         :
