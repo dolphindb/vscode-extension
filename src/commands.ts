@@ -600,39 +600,41 @@ export const ddb_commands = [
         }
     },
     
-    async function view_debug_variable (arg) {
-        
-        const { value } = await explorer.connection.ddb.eval<DdbObj<string>>('version()')
-        let [version] = value.split(' ')
-        
-        // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
-        const valid_version = '2.00.11.2'
-        // 如果版本号位数不一致，后面补 .0
-        if (version.split('.').length < valid_version.split('.').length)
-            version += '.0'
-        
-        // vercmp('2.00.11.2', '2.00.11.1') = 1
-        if (vercmp(version, valid_version) < 0) { 
-            window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
-            return
-        }
+    
+    async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
+        try {
+            let { ddb } = explorer.connection
             
-        const { name, variablesReference } = arg.variable as Variable
-    
-        const response = await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 })
-        const frameId = response.stackFrames[0].id
-    
-        const vid = variablesReference & 0xffff
-        
-        // 获取 sessionId
-        const res: any[] = await debug.activeDebugSession.customRequest('getCurrentSessionId')
-        try {           
-            const result = await explorer.connection.ddb.eval(`getVariable(${frameId}, ${vid}, "${name}", ${res[0]})`)
-            lastvar = new DdbVar({ obj: result, ...result, bytes: 0n })
-            lastvar.inspect()
-        } catch (e) { 
-            window.showErrorMessage(e.message)
+            const { value } = await ddb.call<DdbObj<string>>('version')
+            let [version] = value.split(' ')
+            
+            // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
+            const valid_version = '2.00.11.2'
+            
+            // 如果版本号位数不一致，后面补 .0
+            version += '.0'.repeat(valid_version.split('.').length - version.split('.').length)
+            
+            // vercmp('2.00.11.2', '2.00.11.1') = 1
+            if (vercmp(version, valid_version) < 0) { 
+                window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
+                return
+            }
+            
+            const response = await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 })
+            const frameId = response.stackFrames[0].id
+            
+            const vid = variablesReference & 0xffff
+            
+            // 获取 sessionId
+            const res: [number, string] = await debug.activeDebugSession.customRequest('getCurrentSessionId')
+            
+            // todo: 改为用 call 调用
+            const result = await ddb.eval(`getVariable(${frameId}, ${vid}, "${name}", ${res[0]})`)
+            lastvar = new DdbVar({ ...result, obj: result, bytes: 0n })
+            await lastvar.inspect()
+        } catch (error) {
+            window.showErrorMessage(error.message)
+            throw error
         }
-       
     }
 ]

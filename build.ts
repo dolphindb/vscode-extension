@@ -252,7 +252,7 @@ async function build_package_json () {
             }
         },
         {
-            command: 'view_debug_variable',
+            command: 'inspect_debug_variable',
             title: {
                 zh: '查看变量',
                 en: 'View Variable'
