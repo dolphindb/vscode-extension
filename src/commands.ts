@@ -7,7 +7,7 @@ import { path, Timer, delay, inspect, vercmp } from 'xshell'
 import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions } from 'dolphindb'
 
 
-import { i18n, t } from './i18n/index.js'
+import { i18n, language, t } from './i18n/index.js'
 import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
@@ -179,8 +179,12 @@ async function execute (text: string, testing = false) {
         
         let message = error.message as string
         
-        if (message.includes('RefId:'))
-            message = message.replaceAll(/RefId:\s*(\w+)/g, 'RefId: $1'.blue.underline)
+        if (message.includes('RefId:'))         
+            message = message.replaceAll(/RefId:\s*(\w+)/g, (_, ref_id) => 
+                language === 'en' && Number(ref_id.slice(1)) >= 4 
+                    ? '' 
+                    :  ('RefId: ' + ref_id).blue.underline)
+        
         
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
