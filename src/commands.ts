@@ -612,7 +612,7 @@ export const ddb_commands = [
             version += '.0'
         
         // vercmp('2.00.11.2', '2.00.11.1') = 1
-        if (vercmp(version, '2.00.11.2') !== 1) { 
+        if (vercmp(version, valid_version) < 0) { 
             window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
             return
         }
