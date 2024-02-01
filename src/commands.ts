@@ -619,8 +619,13 @@ export const ddb_commands = [
             }
             
             // 2.00.11 以上版本才能使用导出功能
-            const { value: server_version } = await ddb.eval<DdbObj<string>>('version()')
-            if (vercmp('2.00.11', server_version.split(' ')[0]) === 1) { 
+            const { value } = await ddb.eval<DdbObj<string>>('version()')
+            let server_version = value.split(' ')[0]
+            
+            if (server_version.split('.').length < 4)  
+                server_version += '.0'
+            
+            if (vercmp(server_version, '2.00.11.0') < 0) { 
                 window.showWarningMessage(t('server 版本低于 2.00.11，请升级后再使用此功能'))
                 return
             }
