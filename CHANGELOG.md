@@ -1,4 +1,23 @@
 # Change Log (更新日志)
+## [2.0.1115] - 2024.02.01
+#### 新功能 / New Features
+-   上传模块时增加两个按钮：“总是加密” 和 “总是不加密”，仅在当前会话中有效，不做持久化保存  
+    Added two buttons when uploading a module to choose whether to encrypt the module: `Always` and `Never`. The setting only applies to the current session  
+
+#### 功能优化 / Enhancement
+-   调整 http server 的启动策略为仅在用户于新窗口查看变量时启动  
+    HTTP server is initiated only when users view variables in a new window  
+    
+-   将数据视图表头固定到表格顶部，将分页提示信息固定到底部  
+    Fixed the table header to the top of the DATAVIEW and the paging information to the bottom when scrolling  
+    
+-   通过 plot 函数绘图时关闭过渡动画  
+    No transition animation when plotting with the plot function  
+
+#### 缺陷修复 / Bug Fixes
+-   修复了修改端口配置后无法在新窗口查看变量的问题   
+    Fixed the issue where variables could not be viewed in a new window after modifying port configurations  
+
 
 ## [2.0.1110] - 2024.01.19
 #### 功能优化 / Enhancement
