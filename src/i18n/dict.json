@@ -248,8 +248,8 @@
     "调用栈:\n": {
         "en": "call stack:\n"
     },
-    "连接数据库失败，连接数据库失败，当前连接配置可在 settings.json 中查看": {
-        "en": "Failed to connect to database, failed to connect to database, current connection configuration can be viewed in settings.json"
+    "连接数据库失败，当前连接配置为:\n": {
+        "en": "Failed to connect to the database, the current connection configuration is:\n"
     },
     "如果可以打开网页且正常登录使用，再检查:\n": {
         "en": "If you can open the webpage and log in normally, check:\n"
