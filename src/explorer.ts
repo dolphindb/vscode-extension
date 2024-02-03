@@ -148,6 +148,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
             }
         
         this.change_language_mode()
+        
         console.log(t('连接:'), connection)
         statbar.update()
         this.refresher.fire()
@@ -196,16 +197,24 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
                 error.message,
                 {
                     detail: 
-                        (connection.connected ?
+                        ((connection.connected ?
                             t('数据库连接被断开，请检查网络是否稳定、网络转发节点是否会自动关闭 websocket 长连接、server 日志\n')
                         :
-                            t('连接数据库失败，当前连接配置可在 settings.json 中查看') + '\n' +
+                            t('连接数据库失败，当前连接配置为:\n') +
+                            inspect(
+                                {
+                                    name: connection.name,
+                                    url: connection.url,
+                                    ... connection.options
+                                },
+                                { colors: false, compact: true }
+                            ) + '\n' +
                             t('先尝试用浏览器访问对应的 server 地址，如: {{url}}\n', { url: connection.url.replace(/^ws(s?):\/\//, 'http$1://') }) +
                             t('如果可以打开网页且正常登录使用，再检查:\n') +
                             t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
                             t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n')) +
                         t('调用栈:\n') +
-                        error.stack,
+                        error.stack).slice(0, 800),
                     modal: true
                 },
                 {
