@@ -2,7 +2,7 @@
 ## [2.0.1115] - 2024.02.01
 #### 新功能 / New Features
 -   上传模块时增加两个按钮：“总是加密” 和 “总是不加密”，仅在当前会话中有效，不做持久化保存  
-    Added two buttons when uploading a module to choose whether to encrypt the module: `Alway`` and `Never`. The setting only applies to the current session  
+    Added two buttons when uploading a module to choose whether to encrypt the module: `Always` and `Never`. The setting only applies to the current session  
 
 #### 功能优化 / Enhancement
 -   调整 http server 的启动策略为仅在用户于新窗口查看变量时启动  
