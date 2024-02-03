@@ -1,20 +1,25 @@
+@import './variables.sass'
+
+
 html, body
     margin: 0
     padding: 0
     height: 100%
     overscroll-behavior-y: contain
-    background-color: var(--vscode-editor-background)
-    color: var(--vscode-editor-foreground)
+    background-color: $background-color
+    color: $color
     
-*
-    box-sizing: inherit
+*, :before, :after
+    box-sizing: border-box
 
 .root
-    box-sizing: border-box
-    
     font-size: 20px
     
     height: 100%
     
+    .ant-app
+        color: $font-color
+    
     .app
         height: 100%
+    

@@ -1,13 +1,13 @@
 import dayjs from 'dayjs'
 
-import { window, workspace, commands, ConfigurationTarget, ProgressLocation, type Uri, FileType } from 'vscode'
+import { window, workspace, commands, ConfigurationTarget, ProgressLocation, type Uri, FileType, debug } from 'vscode'
 
-import { path, Timer, delay, inspect } from 'xshell'
+import { path, Timer, delay, inspect, vercmp } from 'xshell'
 
 import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions } from 'dolphindb'
 
 
-import { i18n, t } from './i18n/index.js'
+import { i18n, language, t } from './i18n/index.js'
 import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
@@ -16,7 +16,7 @@ import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmu
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
-
+import { type Variable } from '@vscode/debugadapter'
 
 let lastvar: DdbVar
 
@@ -163,8 +163,9 @@ async function execute (text: string, testing = false) {
                     for (const subscriber of dataview.subscribers_repl)
                         subscriber(message, ddb, { decimals: formatter.decimals })
                     
-                    for (const subscriber of server.subscribers_repl)
-                        subscriber(message, ddb, { decimals: formatter.decimals })
+                    if (server)
+                        for (const subscriber of server.subscribers_repl)
+                            subscriber(message, ddb, { decimals: formatter.decimals })
                 }
             }
         )
@@ -178,8 +179,11 @@ async function execute (text: string, testing = false) {
         
         let message = error.message as string
         
-        if (message.includes('RefId:'))
-            message = message.replaceAll(/RefId:\s*(\w+)/g, 'RefId: $1'.blue.underline)
+        if (message.includes('RefId:'))         
+            message = message.replaceAll(/RefId:\s*(\w+)/g, (_, ref_id) => 
+                language === 'en' && Number(ref_id.slice(1)) >= 4 
+                    ? ''
+                    :  `RefId: ${ref_id}`.blue.underline)
         
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
@@ -507,6 +511,11 @@ export const ddb_commands = [
     
     function reload_dataview () {
         const { webview } = dataview.view
+        
+        // 新版本设置 webview.html 好像没有触发旧 webview 的 dispose, 导致对应的 subscriber 没有清理，不知道是不是 bug, 这里先手动清理下，防止新的 rpc 报错找不到 handler
+        dataview.subscribers_inspection = [ ]
+        dataview.subscribers_repl = [ ]
+        
         webview.html = webview.html + ' '
     },
     
@@ -547,6 +556,7 @@ export const ddb_commands = [
         // 文件上点右键 upload_module 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
             let { connection } = explorer
+            let title: string
             
             await connection.connect()
             
@@ -556,23 +566,75 @@ export const ddb_commands = [
             if (!Array.isArray(uris))
                 uris = [uri]
             
-            const { title } = await window.showInformationMessage(
-                t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
-                { modal: true },   
-                { title: t('是') },  
-                { title: t('否') },
-            ) || { }
-            
-            if (!title)
-                return
+            if (explorer.encrypt === undefined) {
+                ({ title } = await window.showInformationMessage(
+                    t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
+                    { modal: true },   
+                    { title: t('是') },  
+                    { title: t('否') },
+                    { title: t('总是加密') },  
+                    { title: t('总是不加密') },
+                ) || { })
+                
+                switch (title) {
+                    case undefined:
+                        return
+                    
+                    case t('总是加密'):
+                        explorer.encrypt = true
+                        break
+                    
+                    case t('总是不加密'):
+                        explorer.encrypt = false
+                        break
+                }
+            }
             
             const fps = (await Promise.all(
                 uris.map(async uri =>
-                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是'), ddb)
+                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || explorer.encrypt || false, ddb)
                 )
             )).flat()
             
             window.showInformationMessage(`${t('模块成功上传到: ')}${fps.join_lines()}`)
+        } catch (error) {
+            window.showErrorMessage(error.message)
+            throw error
+        }
+    },
+    
+    
+    async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
+        try {
+            let { ddb } = explorer.connection
+            
+            const { value } = await ddb.call<DdbObj<string>>('version')
+            let [version] = value.split(' ')
+            
+            // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
+            const valid_version = '2.00.11.2'
+            
+            // 如果版本号位数不一致，后面补 .0
+            version += '.0'.repeat(valid_version.split('.').length - version.split('.').length)
+            
+            // vercmp('2.00.11.2', '2.00.11.1') = 1
+            if (vercmp(version, valid_version) < 0) { 
+                window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
+                return
+            }
+            
+            const response = await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 })
+            const frameId = response.stackFrames[0].id
+            
+            const vid = variablesReference & 0xffff
+            
+            // 获取 sessionId
+            const res: [number, string] = await debug.activeDebugSession.customRequest('getCurrentSessionId')
+            
+            // todo: 改为用 call 调用
+            const result = await ddb.eval(`getVariable(${frameId}, ${vid}, "${name}", ${res[0]})`)
+            lastvar = new DdbVar({ ...result, obj: result, bytes: 0n })
+            await lastvar.inspect()
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error

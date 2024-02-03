@@ -9,7 +9,6 @@ import {
 
 
 import { language, t } from './i18n/index.js'
-import { server } from './server.js'
 
 
 type DdbTerminal = Terminal & { printer: EventEmitter<string> }
@@ -26,10 +25,7 @@ export async function create_terminal () {
             
             pty: {
                 open (init_dimensions: TerminalDimensions | undefined) {
-                    printer.fire(
-                        `${t('DolphinDB 终端')}\r\n` +
-                        `${server.web_url}\r\n`
-                    )
+                    printer.fire(`${t('DolphinDB 终端')}\r\n`)
                     resolve()
                 },
                 
@@ -63,8 +59,9 @@ export function register_terminal_link_provider () {
                         startIndex: match.index,
                         length: str.length,
                         tooltip:
-                            (language === 'zh' ? 'https://dolphindb.cn/cn/' : 'https://dolphindb.com/') +
-                            `help/ErrorCode${ language === 'zh' ? 'List' : 'Reference' }/${id}/index.html`,
+                            // 原来的文档链接用不了了，英文的还没有更新，所以暂时只把中文文档的链接做了修改
+                            (language === 'zh' ? 'https://docs.dolphindb.cn/zh/' : 'https://dolphindb.com/') +
+                            `error_codes/${id.toLowerCase()}.html`,
                     })
                 }
                 return links
