@@ -214,7 +214,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
                             t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
                             t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n')) +
                         t('调用栈:\n') +
-                        error.stack).slice(0, 800),
+                        error.stack).slice(0, 600),
                     modal: true
                 },
                 {
