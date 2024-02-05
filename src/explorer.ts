@@ -193,6 +193,8 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         try {
             await pconnect
         } catch (error) {
+            const { autologin, username, password, python, sql } = connection.options
+            
             const answer = await window.showErrorMessage<DdbMessageItem>(
                 error.message,
                 {
@@ -200,12 +202,16 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
                         ((connection.connected ?
                             t('数据库连接被断开，请检查网络是否稳定、网络转发节点是否会自动关闭 websocket 长连接、server 日志\n')
                         :
-                            t('连接数据库失败，当前连接配置为:\n') +
+                            t('连接数据库失败，当前连接的一部分配置如下:\n') +
                             inspect(
                                 {
                                     name: connection.name,
                                     url: connection.url,
-                                    ... connection.options
+                                    autologin,
+                                    username,
+                                    password,
+                                    python, 
+                                    sql
                                 },
                                 { colors: false, compact: true }
                             ) + '\n' +
