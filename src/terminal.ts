@@ -58,10 +58,9 @@ export function register_terminal_link_provider () {
                     links.push({
                         startIndex: match.index,
                         length: str.length,
-                        tooltip:
-                            // 原来的文档链接用不了了，英文的还没有更新，所以暂时只把中文文档的链接做了修改
-                            (language === 'zh' ? 'https://docs.dolphindb.cn/zh/' : 'https://dolphindb.com/') +
-                            `error_codes/${id.toLowerCase()}.html`,
+                        tooltip: language === 'en'
+                            ? `https://docs.dolphindb.com/en/Maintenance/ErrorCodeReference/${id}.html`
+                            : `https://docs.dolphindb.cn/zh/error_codes/${id}.html`
                     })
                 }
                 return links
