@@ -88,13 +88,16 @@ https://marketplace.visualstudio.com/items?itemName=dolphindb.dolphindb-vscode
 到 VSCode 的 `文件 > 首选项 > 键盘快捷方式` (`File > Preferences > Keyboard Shortcuts`) 中修改，在搜索框中输入 `ctrl+e`, 删除和 `DolphinDB: 执行代码` 冲突的其他插件的快捷键
 <img src='./images/key-bindings.png' width='600'>
 
-- 如果出现执行代码后一直卡在执行中，打开 vscode 顶部的 `帮助 (Help)` > `切换开发人员工具 (DevTools)` 在弹出的窗口中切换到控制台标签页，看看有没有 `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..` 这样的错误，如果有，请重启 VSCode  
-如果还不能解决，尝试下面的方法结束所有的 `Code.exe` 进程，并删除 service worker 缓存:
-    - linux: `pkill code && rm -rf .config/Code/Service\ Worker/{CacheStorage,ScriptCache}`
-    - windows:
-        - 1. 退出 vscode 之后，打开任务管理器，结束所有残留的 vscode 僵尸进程 `taskkill /F /IM Code.exe`
-        - 2. 在文件管理器中打开 `C:/Users/你的用户名/AppData/Roaming/Code/Service Worker/`
-        - 3. 删除 `CacheStorage` 和 `ScriptCache` 两个文件夹  
+- 如果出现执行代码后一直卡在执行中，打开 vscode 顶部的 `帮助 (Help)` > `切换开发人员工具 (DevTools)` 在弹出的窗口中切换到控制台标签页，看看有没有 `Webview fatal error: Error: Could not register service workers: InvalidStateError: Failed to register a ServiceWorker: The document is in an invalid state..` 这样的错误，如果有，请按下面的步骤操作：
+    1. 先更新 VSCode 到最新版本
+    2. 如果还不能解决，尝试下面的方法结束所有的 `Code.exe` 进程，并删除 service worker 缓存:
+        - linux: `pkill code && rm -rf .config/Code/Service\ Worker/{CacheStorage,ScriptCache}`
+        - windows:
+            - 1. 退出 vscode 之后，打开任务管理器，结束所有残留的 vscode 僵尸进程 `taskkill /F /IM Code.exe`
+            - 2. 在文件管理器中打开 `C:/Users/你的用户名/AppData/Roaming/Code/Service Worker/`
+            - 3. 删除 `CacheStorage` 和 `ScriptCache` 两个文件夹  
+    
+    3. 还不行的话再重启电脑
     
     参考 https://github.com/microsoft/vscode/issues/125993
 
