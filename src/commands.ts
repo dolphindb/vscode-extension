@@ -641,6 +641,7 @@ export const ddb_commands = [
             })
             
             if (uri) { 
+                // todo: 使用 execute 方法执行代码，这样可以显示导出进度，并且有弹窗提示，可以取消
                 await explorer.connection.define_get_csv_content()
                 const { value: content } = await ddb.call('getCsvContent', [ddbvar.name ?? '', ddbvar.obj ?? ''])
                 await workspace.fs.writeFile(uri, typeof content === 'string' ? Buffer.from(content) : content as Buffer)
