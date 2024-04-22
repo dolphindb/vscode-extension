@@ -12,7 +12,7 @@ import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, explorer, DdbVar } from './explorer.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
-import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
+import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload, get_formatted_version } from './utils.js'
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
@@ -613,30 +613,26 @@ export const ddb_commands = [
                 return
             }
             
-            // todo: 直接帮用户切换到表格对应的连接
-            // todo: 使用 execute 方法执行代码，这样可以显示导出进度，并且有弹窗提示，可以取消
-            
-            if (ddbvar.ddb && ddbvar.ddb !== ddb) { 
-                window.showErrorMessage(t('当前变量所属连接非选中连接，无法导出'))
-                return
+            if (ddbvar.form !== DdbForm.table) { 
+                window.showWarningMessage(t('仅支持导出表格'))
+                return 
             }
             
             // 2.00.11 以上版本才能使用导出功能
-            const { value } = await ddb.eval<DdbObj<string>>('version()')
-            let server_version = value.split(' ')[0]
-            
-            if (server_version.split('.').length < 4)  
-                server_version += '.0'
-            
-            if (vercmp(server_version, '2.00.11.0') < 0) { 
+            const version = await get_formatted_version(ddb)
+            if (vercmp(version, '2.00.11.0') < 0) { 
                 window.showWarningMessage(t('server 版本低于 2.00.11，请升级后再使用此功能'))
                 return
             }
             
-            
-            if (ddbvar.form !== DdbForm.table) { 
-                window.showWarningMessage(t('仅支持导出表格'))
-                return 
+            // 视图展示的变量非当前连接的变量，切换至变量所属连接
+            if (ddbvar && ddbvar.ddb !== ddb) {
+                const var_connection = explorer.connections.find(item => item.ddb === ddbvar.ddb)
+                if (var_connection) {
+                    await explorer.connect(var_connection) 
+                    ddb = explorer.connection.ddb
+                }
+                
             }
             
             const uri = await window.showSaveDialog({
@@ -660,14 +656,9 @@ export const ddb_commands = [
         try {
             let { ddb } = explorer.connection
             
-            const { value } = await ddb.call<DdbObj<string>>('version')
-            let [version] = value.split(' ')
-            
             // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
             const valid_version = '2.00.11.2'
-            
-            // 如果版本号位数不一致，后面补 .0
-            version += '.0'.repeat(valid_version.split('.').length - version.split('.').length)
+            const version = await get_formatted_version(ddb)
             
             // vercmp('2.00.11.2', '2.00.11.1') = 1
             if (vercmp(version, valid_version) < 0) { 
