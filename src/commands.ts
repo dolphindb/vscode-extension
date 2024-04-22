@@ -640,13 +640,20 @@ export const ddb_commands = [
                 defaultUri: Uri.file(`./${ddbvar.name || 'table'}.csv`) 
             })
             
-            if (uri) { 
-                // todo: 使用 execute 方法执行代码，这样可以显示导出进度，并且有弹窗提示，可以取消
-                await explorer.connection.define_get_csv_content()
-                const { value: content } = await ddb.call('getCsvContent', [ddbvar.name ?? '', ddbvar.obj ?? ''])
-                await workspace.fs.writeFile(uri, typeof content === 'string' ? Buffer.from(content) : content as Buffer)
-                window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
-            }
+            if (uri)  
+                window.withProgress(
+                    { 
+                        title: t('正在导出...'),
+                        location: ProgressLocation.Notification,
+                    },
+                    async () => {
+                        await explorer.connection.define_get_csv_content()
+                        const { value: content } = await ddb.call('getCsvContent', [ddbvar.name ?? '', ddbvar.obj ?? ''])
+                        await workspace.fs.writeFile(uri, typeof content === 'string' ? Buffer.from(content) : content as Buffer)
+                        window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
+                    }
+                )
+            
         } catch (error) { 
             window.showErrorMessage(error.message)
             throw error
