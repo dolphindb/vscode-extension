@@ -361,7 +361,7 @@ async function build_package_json () {
                         default: [
                             {
                                 name: 'local8848',
-                                url: 'ws://192.168.0.200:20005',
+                                url: 'ws://127.0.0.1:8848',
                                 autologin: true,
                                 username: 'admin',
                                 password: '123456',
