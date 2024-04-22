@@ -248,8 +248,8 @@
     "调用栈:\n": {
         "en": "call stack:\n"
     },
-    "连接数据库失败，当前连接配置为:\n": {
-        "en": "Failed to connect to the database, the current connection configuration is:\n"
+    "连接数据库失败，当前连接的一部分配置如下:\n": {
+        "en": "Failed to connect to the database. Part of the current connection configuration is as follows:\n"
     },
     "如果可以打开网页且正常登录使用，再检查:\n": {
         "en": "If you can open the webpage and log in normally, check:\n"
@@ -454,6 +454,9 @@
     },
     "当前没有可导出的表格": {
         "en": "There are currently no tables available for export"
+    },
+    "请将 server 版本升级至 2.00.11.2 及以上再使用此功能": {
+        "en": "Please upgrade the server version to 2.00.11.2 and above before using this function"
     },
     "总是加密": {
         "en": "Always"

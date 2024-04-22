@@ -169,6 +169,7 @@ export class DdbDebugSession extends LoggingDebugSession {
     private _terminated: boolean = false
     private _restarting: boolean = false
     
+    
     constructor () {
         super()
         
@@ -731,5 +732,20 @@ export class DdbDebugSession extends LoggingDebugSession {
         }
         this.sendEvent(new StoppedEvent('exception', DdbDebugSession.threadID, error.message))
         this.sendEvent(new OutputEvent(error.message, 'stderr'))
+    }
+    
+    
+    protected override async customRequest (command: string, response: DebugProtocol.Response, args: any, request?: DebugProtocol.Request): Promise<void> {
+        switch (command) { 
+            // 用于获取调试 sessionId
+            case 'getCurrentSessionId':
+                const res = await this._remote.call('getCurrentSessionAndUser', [ ])
+                response.body = res
+                this.sendResponse(response)
+                break
+            default:
+                this.sendResponse(response)
+                break
+        }
     }
 }

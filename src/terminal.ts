@@ -58,10 +58,9 @@ export function register_terminal_link_provider () {
                     links.push({
                         startIndex: match.index,
                         length: str.length,
-                        tooltip:
-                        language === 'en'
-                        ? `https://docs.dolphindb.com/en/Maintenance/ErrorCodeReference/${id.toLocaleLowerCase()}.html`
-                        : `https://docs.dolphindb.cn/zh/error_codes/${id.toLocaleLowerCase()}.html`,
+                        tooltip: language === 'en'
+                            ? `https://docs.dolphindb.com/en/Maintenance/ErrorCodeReference/${id}.html`
+                            : `https://docs.dolphindb.cn/zh/error_codes/${id}.html`
                     })
                 }
                 return links

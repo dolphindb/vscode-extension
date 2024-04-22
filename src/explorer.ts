@@ -193,28 +193,34 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
         try {
             await pconnect
         } catch (error) {
+            const { autologin, username, password, python, sql } = connection.options
+            
             const answer = await window.showErrorMessage<DdbMessageItem>(
                 error.message,
                 {
                     detail: 
-                        (connection.connected ?
+                        ((connection.connected ?
                             t('数据库连接被断开，请检查网络是否稳定、网络转发节点是否会自动关闭 websocket 长连接、server 日志\n')
                         :
-                            t('连接数据库失败，当前连接配置为:\n') +
+                            t('连接数据库失败，当前连接的一部分配置如下:\n') +
                             inspect(
                                 {
                                     name: connection.name,
                                     url: connection.url,
-                                    ... connection.options
+                                    autologin,
+                                    username,
+                                    password,
+                                    python, 
+                                    sql
                                 },
-                                { colors: false }
+                                { colors: false, compact: true }
                             ) + '\n' +
                             t('先尝试用浏览器访问对应的 server 地址，如: {{url}}\n', { url: connection.url.replace(/^ws(s?):\/\//, 'http$1://') }) +
                             t('如果可以打开网页且正常登录使用，再检查:\n') +
                             t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
                             t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n')) +
                         t('调用栈:\n') +
-                        error.stack,
+                        error.stack).slice(0, 600),
                     modal: true
                 },
                 {

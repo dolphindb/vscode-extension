@@ -257,6 +257,13 @@ async function build_package_json () {
                 en: 'DolphinDB: Export Table'
             },
             icon: '$(desktop-download)'
+        },
+        {
+            command: 'inspect_debug_variable',
+            title: {
+                zh: '查看变量',
+                en: 'View Variable'
+            },
         }
     ]
     
@@ -741,6 +748,13 @@ async function build_package_json () {
                     },
                     {
                         command: 'dolphindb.upload_module',
+                        group: '2_workspace'
+                    },
+                ],
+                // 调试变量菜单
+                'debug/variables/context': [
+                    {
+                        command: 'dolphindb.view_debug_variable',
                         group: '2_workspace'
                     }
                 ]

@@ -14,46 +14,46 @@
     },
     "devDependencies": {
         "@svgr/webpack": "^8.1.0",
-        "@types/koa": "^2.13.12",
-        "@types/node": "^20.10.5",
-        "@types/react": "^18.2.45",
-        "@types/react-dom": "^18.2.18",
-        "@types/vscode": "^1.85.0",
+        "@types/koa": "^2.15.0",
+        "@types/node": "^20.11.20",
+        "@types/react": "^18.2.58",
+        "@types/react-dom": "^18.2.19",
+        "@types/vscode": "^1.86.0",
         "@types/ws": "^8.5.10",
-        "@typescript-eslint/eslint-plugin": "^6.15.0",
-        "@typescript-eslint/parser": "^6.15.0",
-        "css-loader": "^6.8.1",
+        "@typescript-eslint/eslint-plugin": "^7.0.2",
+        "@typescript-eslint/parser": "^7.0.2",
+        "css-loader": "^6.10.0",
         "eslint": "^8.56.0",
         "eslint-plugin-react": "^7.33.2",
-        "eslint-plugin-xlint": "^1.0.11",
-        "sass": "^1.69.5",
-        "sass-loader": "^13.3.2",
-        "source-map-loader": "^4.0.1",
-        "style-loader": "^3.3.3",
+        "eslint-plugin-xlint": "^1.0.13",
+        "sass": "^1.71.1",
+        "sass-loader": "^14.1.1",
+        "source-map-loader": "^5.0.0",
+        "style-loader": "^3.3.4",
         "ts-loader": "^9.5.1",
         "typescript": "^5.3.3",
-        "webpack": "^5.89.0"
+        "webpack": "^5.90.3"
     },
     "dependencies": {
-        "@ant-design/icons": "5.2.6",
+        "@ant-design/icons": "5.3.0",
         "@ant-design/plots": "^1.2.5",
         "@vscode/debugadapter": "^1.64.0",
         "@vscode/debugprotocol": "^1.64.0",
-        "antd": "^5.12.3",
+        "antd": "^5.14.1",
         "dayjs": "^1.11.10",
-        "dolphindb": "^2.0.1101",
-        "koa": "^2.14.2",
+        "dolphindb": "^2.0.1103",
+        "koa": "^2.15.0",
         "lodash": "^4.17.21",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "react-object-model": "^1.2.1",
+        "react-object-model": "^1.2.2",
         "tslib": "^2.6.2",
-        "ws": "^8.15.1",
-        "xshell": "^1.0.78"
+        "ws": "^8.16.0",
+        "xshell": "^1.0.83"
     },
     "pnpm": {
         "patchedDependencies": {
-            "koa@2.14.2": "patches/koa@2.14.2.patch"
+            "koa@2.15.0": "patches/koa@2.15.0.patch"
         }
     }
 }

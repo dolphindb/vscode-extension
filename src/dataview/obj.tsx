@@ -1672,6 +1672,7 @@ function Chart ({
                             }}
                             isStack={stacking}
                             padding='auto'
+                            animation={false}
                         />
                     else
                         return <DualAxes
