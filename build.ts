@@ -591,6 +591,13 @@ async function build_package_json () {
             
             
             viewsContainers: {
+                activitybar: [
+                    {
+                        id: 'dolphindb',
+                        title: 'DolphinDB',
+                        icon: './icons/activitybar.svg'
+                    }
+                ],
                 panel: [
                     {
                         id: 'ddbpanel',
@@ -601,10 +608,18 @@ async function build_package_json () {
             },
             
             views: {
-                explorer: [
+                dolphindb: [
                     {
-                        id: 'dolphindb.explorer',
-                        name: 'dolphindb',
+                        id: 'dolphindb.connection',
+                        name: 'connection',
+                    },
+                    {
+                        id: 'dolphindb.var',
+                        name: 'var',
+                    },
+                    {
+                        id: 'dolphindb.database',
+                        name: 'database',
                     }
                 ],
                 
@@ -666,17 +681,17 @@ async function build_package_json () {
                 'view/item/context': [
                     {
                         command: 'dolphindb.disconnect',
-                        when: "view == dolphindb.explorer && viewItem == 'connected'",
+                        when: "view == dolphindb.connection && viewItem == 'connected'",
                         group: 'inline',
                     },
                     {
                         command: 'dolphindb.inspect_schema',
-                        when: "view == dolphindb.explorer && viewItem == 'table'",
+                        when: "view == dolphindb.connection && viewItem == 'table'",
                         group: 'inline',
                     },
                     {
                         command: 'dolphindb.open_variable',
-                        when: "view == dolphindb.explorer && viewItem == 'var' || view == dolphindb.explorer && viewItem == 'table'",
+                        when: "view == dolphindb.connection && viewItem == 'var' || view == dolphindb.connection && viewItem == 'table'",
                         group: 'inline',
                     },
                 ],
@@ -686,7 +701,7 @@ async function build_package_json () {
                 'view/title': [
                     {
                         command: 'dolphindb.open_connection_settings',
-                        when: 'view == dolphindb.explorer',
+                        when: 'view == dolphindb.connection',
                         group: 'navigation',
                     },
                     {
@@ -742,7 +757,7 @@ async function build_package_json () {
                 // 调试变量菜单
                 'debug/variables/context': [
                     {
-                        command: 'dolphindb.view_debug_variable',
+                        command: 'dolphindb.inspect_debug_variable',
                         group: '2_workspace'
                     }
                 ]

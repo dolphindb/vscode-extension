@@ -8,7 +8,8 @@ import type { DDB, DdbMessage, InspectOptions } from 'dolphindb'
 import { language, t } from '../i18n/index.js'
 import { get_vendors } from '../config.js'
 import { dev, fpd_ext } from '../index.js'
-import { explorer, type DdbVar } from '../explorer.js'
+import { model } from '../model.js'
+import { type DdbVar } from '../provider/connection.js'
 
 
 type ViewMessageHandler <TData extends any[] = any[]> = (message: Message<TData>, view: WebviewView) => void | any[] | Promise<void | any[]>
@@ -85,7 +86,7 @@ export let dataview = {
         
         
         async eval ({ data: [node, script] }: Message<[string, string]>, view) {
-            let { ddb } = explorer.connections.find(({ name }) => name === node)
+            let { ddb } = model.connections.find(({ name }) => name === node)
             const { buffer, le } = await ddb.eval(script, { parse_object: false })
             return [buffer, le]
         },

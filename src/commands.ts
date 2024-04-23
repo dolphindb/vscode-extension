@@ -9,7 +9,7 @@ import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions 
 
 import { i18n, language, t } from './i18n/index.js'
 import { type DdbMessageItem } from './index.js'
-import { type DdbConnection, explorer, DdbVar } from './explorer.js'
+import { type DdbConnection, connection_provider, DdbVar } from './provider/connection.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
 import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
@@ -17,6 +17,7 @@ import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
 import { type Variable } from '@vscode/debugadapter'
+import { model } from './model.js'
 
 let lastvar: DdbVar
 
@@ -115,7 +116,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 
 
 async function execute (text: string, testing = false) {
-    let { connection } = explorer
+    let { connection } = model
     
     if (connection.running) {
         terminal.printer.fire(t('当前连接 ({{connection}}) 正在执行作业，请等待\r\n', { connection: connection.name }).yellow)
@@ -187,7 +188,7 @@ async function execute (text: string, testing = false) {
         
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
-            (connection === explorer.connection ? '' : ` (${connection.name})`) + 
+            (connection === model.connection ? '' : ` (${connection.name})`) + 
             '\r\n'
         ).red)
         
@@ -207,7 +208,7 @@ async function execute (text: string, testing = false) {
                 {
                     title: t('重连'),
                     async action () {
-                        await explorer.reconnect(connection)
+                        await connection_provider.reconnect(connection)
                     }
                 },
             )
@@ -232,7 +233,7 @@ async function execute (text: string, testing = false) {
     
     
     function get_execution_end () {
-        return timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
+        return timer.getstr(true) + (connection === model.connection ? '' : ` (${connection.name})`) + '\r\n'
     }
     
     
@@ -278,7 +279,7 @@ async function execute (text: string, testing = false) {
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
 async function execute_with_progress (text: string, testing?: boolean) {
-    let { connection } = explorer
+    let { connection } = model
     
     let done = false
     
@@ -317,7 +318,7 @@ async function execute_with_progress (text: string, testing?: boolean) {
 }
 
 
-async function cancel (connection: DdbConnection = explorer.connection) {
+async function cancel (connection: DdbConnection = model.connection) {
     if (!connection.running)
         return
     
@@ -332,7 +333,7 @@ async function cancel (connection: DdbConnection = explorer.connection) {
         {
             title: t('断开连接'),
             action () {
-                explorer.disconnect(connection)
+                connection_provider.disconnect(connection)
             }
         },
         { title: t('不要取消'), isCloseAffordance: true }
@@ -351,7 +352,7 @@ export async function open_connection_settings () {
 
 
 export async function upload (uri: Uri, uris: Uri[], silent = false) {
-    let { connection } = explorer
+    let { connection } = model
     
     if (should_remind_setting_mappings && !connection.mappings && !await remind_mappings())
         return [ ]
@@ -453,17 +454,17 @@ export const ddb_commands = [
     
     
     async function connect (connection: DdbConnection) {
-        await explorer.connect(connection)
+        await connection_provider.connect(connection)
     },
     
     
     function disconnect (connection: DdbConnection) {
-        explorer.disconnect(connection)
+        connection_provider.disconnect(connection)
     },
     
     
     async function reconnect (connection: DdbConnection) {
-        await explorer.reconnect(connection)
+        await connection_provider.reconnect(connection)
     },
     
     
@@ -555,7 +556,7 @@ export const ddb_commands = [
     async function upload_module (uri: Uri, uris: Uri[]) {
         // 文件上点右键 upload_module 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
-            let { connection } = explorer
+            let { connection, encrypt } = model
             let title: string
             
             await connection.connect()
@@ -566,7 +567,7 @@ export const ddb_commands = [
             if (!Array.isArray(uris))
                 uris = [uri]
             
-            if (explorer.encrypt === undefined) {
+            if (encrypt === undefined) {
                 ({ title } = await window.showInformationMessage(
                     t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
                     { modal: true },   
@@ -581,18 +582,18 @@ export const ddb_commands = [
                         return
                     
                     case t('总是加密'):
-                        explorer.encrypt = true
+                        encrypt = true
                         break
                     
                     case t('总是不加密'):
-                        explorer.encrypt = false
+                        encrypt = false
                         break
                 }
             }
             
             const fps = (await Promise.all(
                 uris.map(async uri =>
-                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || explorer.encrypt || false, ddb)
+                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || encrypt || false, ddb)
                 )
             )).flat()
             
@@ -606,7 +607,7 @@ export const ddb_commands = [
     
     async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
         try {
-            let { ddb } = explorer.connection
+            let { ddb } = model.connection
             
             const { value } = await ddb.call<DdbObj<string>>('version')
             let [version] = value.split(' ')

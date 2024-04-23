@@ -7,6 +7,8 @@
         "./src/debugger/",
         
         "./src/dataview/",
+        
+        "./src/provider/",
     ],
     
     "compilerOptions": {

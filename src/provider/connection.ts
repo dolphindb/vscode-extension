@@ -1,6 +1,5 @@
 import {
     window,
-    workspace,
     
     commands,
     
@@ -10,13 +9,7 @@ import {
     
     type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider, type ProviderResult,
     
-    type CancellationToken,
-    
-    type ConfigurationChangeEvent, 
-    
     ProgressLocation,
-    
-    languages,
 } from 'vscode'
 
 
@@ -40,118 +33,53 @@ import {
 } from 'dolphindb'
 
 
-import { t } from './i18n/index.js'
-import { fpd_ext, type DdbMessageItem } from './index.js'
-import { statbar } from './statbar.js'
-import { formatter } from './formatter.js'
-import { server, start_server } from './server.js'
-import { dataview } from './dataview/dataview.js'
-import { open_connection_settings } from './commands.js'
+import { t } from '../i18n/index.js'
+import { fpd_ext, type DdbMessageItem } from '../index.js'
+import { statbar } from '../statbar.js'
+import { formatter } from '../formatter.js'
+import { server, start_server } from '../server.js'
+import { dataview } from '../dataview/dataview.js'
+import { open_connection_settings } from '../commands.js'
+import { icon_checked, icon_empty, model } from '../model.js'
 
 
-let icon_empty: string
-let icon_checked: string
-
-
-export class DdbExplorer implements TreeDataProvider<TreeItem> {
+export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
     view: TreeView<TreeItem>
     
     refresher: EventEmitter<TreeItem | undefined | void> = new EventEmitter<TreeItem | undefined | void>()
     
     onDidChangeTreeData: Event<void | TreeItem> = this.refresher.event
     
-    single_connection_mode: boolean = false
-    
-    /** 从 dolphindb.connections 连接配置生成的，在面板中的显示所有连接  
-        每个连接维护了一个 ddb api 的实际连接，当出错需要重置时，需要用新的连接替换出错连接 */
-    connections: DdbConnection[]
-    
-    /** 当前选中的连接 */
-    connection: DdbConnection
-    
-    /** 上传模块是否加密 */
-    encrypt?: boolean | undefined
-    
-    
-    constructor () {
-        this.load_connections()
-    }
-    
     
     getParent (element: TreeItem): ProviderResult<TreeItem> {
-        if (element instanceof DdbExplorer)
+        if (element instanceof DdbConnectionProvider)
             return
         
         if (element instanceof DdbConnection)
-            return explorer.view
-    }
-    
-    
-    load_connections () {
-        if (this.connections)
-            for (const connection of this.connections)
-                connection.disconnect()
-        
-        const config = workspace.getConfiguration('dolphindb')
-        
-        this.single_connection_mode = config.get<boolean>('single_connection_mode')
-        
-        this.connections = config
-            .get<{ url: string, name?: string, sql?: string }[]>('connections')
-            .map(({ url, name, ...options }) =>
-                // 传入的 config 中 sql 为 string 类型，需要将其转换为对应的 SqlStandard 类型
-                new DdbConnection(url, name, {
-                    ...options,
-                    sql: SqlStandard[options.sql] as SqlStandard,
-                })
-            )
-        
-        this.connection = this.connections[0]
-        if (this.connection)
-            this.connection.iconPath = icon_checked
-        
-        this.change_language_mode()
-    }
-    
-    
-    on_config_change (event: ConfigurationChangeEvent) {
-        if (event.affectsConfiguration('dolphindb.connections') || event.affectsConfiguration('dolphindb.single_connection_mode')) {
-            explorer.load_connections()
-            explorer.refresher.fire()
-        }
-    }
-    
-    
-    change_language_mode () {
-        const languageId = window.activeTextEditor?.document?.languageId
-        const { python } = this.connection.options
-        
-        if ((languageId === 'dolphindb' && python) || (languageId === 'dolphindb-python' && !python))
-            languages.setTextDocumentLanguage(
-                window.activeTextEditor.document,
-                python ? 'dolphindb-python' : 'dolphindb'
-            )
+            return connection_provider.view
     }
     
     
     /** 执行连接操作后，如果超过 1s 还未完成，则显示进度 */
     async connect (connection: DdbConnection) {
         connection.iconPath = icon_checked
-        this.connection = connection
+        model.connection = connection
         
-        for (let _connection of this.connections)
+        for (let _connection of model.connections)
             if (_connection !== connection) {
                 _connection.iconPath = icon_empty
                 
-                if (this.single_connection_mode && _connection.connected)
+                if (model.single_connection_mode && _connection.connected)
                     this.disconnect(_connection)
             }
         
-        this.change_language_mode()
+        model.change_language_mode()
         
         console.log(t('连接:'), connection)
         statbar.update()
         this.refresher.fire()
+        
+        
         
         let done = false
         
@@ -230,7 +158,7 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
                 {
                     title: t('重连'),
                     async action () {
-                        await explorer.reconnect(connection)
+                        await connection_provider.reconnect(connection)
                     },
                 },
                 ... connection.connected ? [ ] : [
@@ -253,20 +181,22 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     disconnect (connection: DdbConnection) {
         console.log(t('断开 dolphindb 连接:'), connection)
         
+        const { name, url, options } = connection
+        
         /** 如果断开的是当前选中的连接，那么断开连接后恢复选中状态 */
-        const selected = connection.name === this.connection.name
+        const selected = name === model.connection.name
         
         connection.disconnect()
         
-        const index = this.connections.findIndex(conn => conn === connection)
+        const index = model.connections.findIndex(conn => conn === connection)
         if (index === -1)
             return
         
-        this.connections[index] = new DdbConnection(connection.url, connection.name, connection.options)
+        model.connections[index] = new DdbConnection(url, name, options)
         
         if (selected) {
-            this.connection = this.connections.find(conn => conn.name === connection.name)
-            this.connection.iconPath = icon_checked
+            model.connection = model.connections.find(conn => conn.name === name)
+            model.connection.iconPath = icon_checked
         }
         
         statbar.update()
@@ -276,9 +206,9 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     
     async reconnect (connection: DdbConnection) {
         console.log(t('重连连接:'), connection)
-        explorer.disconnect(connection)
-        await explorer.connect(
-            explorer.connections.find(conn => conn.name === connection.name)
+        connection_provider.disconnect(connection)
+        await connection_provider.connect(
+            model.connections.find(conn => conn.name === connection.name)
         )
     }
     
@@ -289,39 +219,29 @@ export class DdbExplorer implements TreeDataProvider<TreeItem> {
     
     
     getChildren (node?: TreeItem) {
-        switch (true) {
-            case !node:
-                return this.connections
+        // switch (true) {
+        //     case !node:
+        //         return this.connections
                 
-            case node instanceof DdbConnection: {
-                const { local, shared } = node as DdbConnection
-                return [local, shared].filter(node => node.vars.length)
-            }
+        //     case node instanceof DdbConnection: {
+        //         const { local, shared } = node as DdbConnection
+        //         return [local, shared].filter(node => node.vars.length)
+        //     }
             
-            case node instanceof DdbVarLocation: {
-                const { scalar, object, pair, vector, set, dict, matrix, table, chart, chunk } = node as DdbVarLocation
-                return [scalar, object, pair, vector, set, dict, matrix, table, chart, chunk].filter(node => node.vars.length)
-            }
+        //     case node instanceof DdbVarLocation: {
+        //         const { scalar, object, pair, vector, set, dict, matrix, table, chart, chunk } = node as DdbVarLocation
+        //         return [scalar, object, pair, vector, set, dict, matrix, table, chart, chunk].filter(node => node.vars.length)
+        //     }
             
-            case node instanceof DdbVarForm:
-                return (node as DdbVarForm).vars
-        }
-    }
-    
-    
-    async resolveTreeItem (item: TreeItem, element: TreeItem, canceller: CancellationToken): Promise<TreeItem> {
-        if (!(item instanceof DdbVar))
-            return
-        await item.resolve_tooltip()
-        return item
+        //     case node instanceof DdbVarForm:
+        //         return (node as DdbVarForm).vars
+        // }
+        return node ? null : model.connections
     }
 }
 
 
-/** 连接、变量管理 */
-export let explorer: DdbExplorer
-
-
+export let connection_provider: DdbConnectionProvider
 
 
 const pyobjs = new Set(['list', 'tuple', 'dict', 'set', '_ddb', 'Exception', 'AssertRaise', 'PyBox'])
@@ -459,7 +379,6 @@ export class DdbConnection extends TreeItem {
         this.connected = true
         this.description = this.url + ' ' + t('已连接')
         
-        this.collapsibleState = TreeItemCollapsibleState.Expanded
         this.contextValue = 'connected'
     }
     
@@ -467,10 +386,9 @@ export class DdbConnection extends TreeItem {
     disconnect () {
         this.ddb.disconnect()
         this.disconnected = true
-        this.collapsibleState = TreeItemCollapsibleState.None
         this.contextValue = 'disconnected'
         this.description = this.url
-        explorer.refresher.fire(this)
+        connection_provider.refresher.fire(this)
     }
     
     
@@ -611,7 +529,7 @@ export class DdbConnection extends TreeItem {
         this.local.update(locals)
         this.shared.update(shareds)
         
-        explorer.refresher.fire(this)
+        connection_provider.refresher.fire(this)
     }
 }
 
@@ -953,7 +871,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         let obj = this.obj
         
         if (schema) {
-            await explorer.connection.define_load_table_variable_schema()
+            await model.connection.define_load_table_variable_schema()
             obj = await this.ddb.call('load_table_variable_schema', [this.name])
         }
         
@@ -999,10 +917,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
 }
 
 
-export function register_explorer () {
-    icon_empty = `${fpd_ext}icons/radio.empty.svg`
-    icon_checked = `${fpd_ext}icons/radio.checked.svg`
-    
-    explorer = new DdbExplorer()
-    explorer.view = window.createTreeView('dolphindb.explorer', { treeDataProvider: explorer })
+export function register_connection_provider () {
+    connection_provider = new DdbConnectionProvider()
+    connection_provider.view = window.createTreeView('dolphindb.connection', { treeDataProvider: connection_provider })
 }
