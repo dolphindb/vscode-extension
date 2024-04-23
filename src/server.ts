@@ -11,7 +11,7 @@ import { t } from './i18n/index.js'
 import { dev, fpd_ext } from './index.js'
 import { model } from './model.js'
 import { dataview } from './dataview/dataview.js'
-import { type DdbVar } from './provider/connection.js'
+import { type DdbVar } from './provider/var.js'
 
 
 /** 懒初始化的，使用前先检查，未初始化需要调用 start_server 初始化 */

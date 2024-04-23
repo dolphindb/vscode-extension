@@ -9,7 +9,8 @@ import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions 
 
 import { i18n, language, t } from './i18n/index.js'
 import { type DdbMessageItem } from './index.js'
-import { type DdbConnection, connection_provider, DdbVar } from './provider/connection.js'
+import { type DdbConnection, connection_provider } from './provider/connection.js'
+import { DdbVar } from './provider/var.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
 import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
@@ -227,6 +228,7 @@ async function execute (text: string, testing = false) {
         return
     
     await connection.update()
+    model.refresh()
     
     connection.running = false
     statbar.update()

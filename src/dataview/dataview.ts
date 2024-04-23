@@ -9,7 +9,7 @@ import { language, t } from '../i18n/index.js'
 import { get_vendors } from '../config.js'
 import { dev, fpd_ext } from '../index.js'
 import { model } from '../model.js'
-import { type DdbVar } from '../provider/connection.js'
+import { type DdbVar } from '../provider/var.js'
 
 
 type ViewMessageHandler <TData extends any[] = any[]> = (message: Message<TData>, view: WebviewView) => void | any[] | Promise<void | any[]>

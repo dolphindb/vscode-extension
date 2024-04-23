@@ -614,12 +614,12 @@ async function build_package_json () {
                         name: 'connection',
                     },
                     {
-                        id: 'dolphindb.var',
-                        name: 'var',
-                    },
-                    {
                         id: 'dolphindb.database',
                         name: 'database',
+                    },
+                    {
+                        id: 'dolphindb.var',
+                        name: 'var',
                     }
                 ],
                 
@@ -686,12 +686,12 @@ async function build_package_json () {
                     },
                     {
                         command: 'dolphindb.inspect_schema',
-                        when: "view == dolphindb.connection && viewItem == 'table'",
+                        when: "view == dolphindb.var && viewItem == 'table'",
                         group: 'inline',
                     },
                     {
                         command: 'dolphindb.open_variable',
-                        when: "view == dolphindb.connection && viewItem == 'var' || view == dolphindb.connection && viewItem == 'table'",
+                        when: "view == dolphindb.var && viewItem == 'var' || view == dolphindb.var && viewItem == 'table'",
                         group: 'inline',
                     },
                 ],
