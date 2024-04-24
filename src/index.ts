@@ -33,6 +33,7 @@ import { ddb_commands } from './commands.js'
 import { register_terminal_link_provider } from './terminal.js'
 import { register_connection_provider } from './provider/connection.js'
 import { register_var_provider } from './provider/var.js'
+import { register_database_provider } from './provider/database.js'
 
 
 declare global {
@@ -77,6 +78,7 @@ export async function activate (ctx: ExtensionContext) {
     
     register_connection_provider()
     register_var_provider()
+    register_database_provider()
     
     window.onDidChangeActiveTextEditor(() => {
         model.change_language_mode()    

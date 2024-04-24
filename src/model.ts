@@ -6,6 +6,7 @@ import { SqlStandard } from 'dolphindb'
 import { DdbConnection, connection_provider } from './provider/connection.js'
 import { fpd_ext } from './index.js'
 import { var_provider } from './provider/var.js'
+import { database_provider } from './provider/database.js'
 
 
 export let icon_empty: string
@@ -79,6 +80,7 @@ export class DdbModel {
     refresh (connection?: DdbConnection) {
         connection_provider.refresher.fire(connection)
         var_provider.refresher.fire()
+        database_provider.refresher.fire()
     }
 }
 

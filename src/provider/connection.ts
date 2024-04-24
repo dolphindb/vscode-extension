@@ -33,6 +33,7 @@ import { open_connection_settings } from '../commands.js'
 import { icon_checked, icon_empty, model } from '../model.js'
 import { DdbVar, DdbVarLocation } from './var.js'
 import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from '../constant.js'
+import { DdbDatabase, DdbGroup, DdbTable } from './database.js'
 
 
 export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
@@ -41,15 +42,6 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
     refresher: EventEmitter<TreeItem | undefined | void> = new EventEmitter<TreeItem | undefined | void>()
     
     onDidChangeTreeData: Event<void | TreeItem> = this.refresher.event
-    
-    
-    getParent (element: TreeItem): ProviderResult<TreeItem> {
-        if (element instanceof DdbConnectionProvider)
-            return
-        
-        if (element instanceof DdbConnection)
-            return connection_provider.view
-    }
     
     
     /** 执行连接操作后，如果超过 1s 还未完成，则显示进度 */
@@ -253,6 +245,10 @@ export class DdbConnection extends TreeItem {
     
     /** 是否调用了 connection.disconnect */
     disconnected = false
+    
+    groups: DdbGroup[] = [ ]
+    
+    databases: DdbDatabase[] = [ ]
     
     vars: DdbVar[]
     
@@ -513,7 +509,88 @@ export class DdbConnection extends TreeItem {
             }),
         ])
         
-        console.log(db_paths, table_paths)
+        // const db_paths = [
+        //     'dfs://db1',
+        //     'dfs://g1.db1',
+        //     'dfs://g1.db2',
+        //     'dfs://g1./db1',
+        // ...]
+        
+        // const table_paths = [
+        //     'dfs://db1/tb1',
+        //     'dfs://g1.db1/tb1',
+        //     'dfs://g1.db1/tb.2',
+        //     'dfs://g1./db1/tb2',
+        //     'dfs://long.g1.sg1.ssg1.sssg1.db1/tb1',
+        //     // 即使有两个连续点号，也不进行任何特殊处理。用户在界面上看到的将会有一个 group 的标题为空
+        //     'dfs://double-dot..g1/db1/tb',
+        //     'dfs://double-dot..g1.sg1.db1/tb',
+        //     'dfs://double-dot..g1.sg2.db1/tb',
+        //     'dfs://db-with-slash/db1/tb1',
+        //     'dfs://group_with_slash/g1.sg1.db1/tb1'
+        // ]
+        
+        // 将 db_paths 和 table_paths 合并到 merged_paths 中。db_paths 内可能存在 table_paths 中没有的 db，例如能查到无表的库
+        // 需要手动为 db_paths 中的每个路径加上斜杠结尾
+        const merged_paths = db_paths.map((path: string) => `${path}/`).concat(table_paths).sort()
+        
+        // 假定所有的 table_name 值都不会以 / 结尾
+        // 库和表之间以最后一个 / 隔开。表名不可能有 /
+        // 全路径中可能没有组（也就是没有点号），但一定有库和表
+        const hash_map = new Map<string, DdbGroup | DdbDatabase>()
+        
+        this.groups = [ ]
+        this.databases = [ ]
+        
+        for (const path of merged_paths) {
+            // 找到数据库最后一个斜杠位置，截取前面部分的字符串作为库名
+            const index_slash = path.lastIndexOf('/')
+            
+            const db_path = `${path.slice(0, index_slash)}/`
+            const table_name = path.slice(index_slash + 1)
+            
+            let parent: DdbConnection | DdbGroup | DdbDatabase = this
+            
+            // for 循环用来处理 database group
+            for (let index = 0;  index = db_path.indexOf('.', index) + 1;  ) {
+                const group_key = path.slice(0, index)
+                const group = hash_map.get(group_key)
+                if (group)
+                    parent = group
+                else {
+                    const group = new DdbGroup(group_key, this)
+                    ;(parent as DdbConnection | DdbGroup).groups.push(group)
+                    hash_map.set(group_key, group)
+                    parent = group
+                }
+            }
+            
+            // 处理 database
+            const db = hash_map.get(db_path) as DdbDatabase
+            if (db)
+                parent = db
+            else {
+                const db = new DdbDatabase(db_path, this)
+                ;(parent as DdbConnection | DdbGroup).databases.push(db)
+                hash_map.set(db_path, db)
+                parent = db
+            }
+            
+            // 处理 table，如果 table_name 为空表明当前路径是 db_path 则不处理
+            if (table_name) {
+                const table = new DdbTable(parent as DdbDatabase, `${path}/`, this)
+                ;(parent as DdbDatabase).tables.push(table)
+            }
+        }
+        
+        // TEST: 测试多级数据库树
+        // for (let i = 0;  i <100 ;  i++) {
+        //     for (let j =0; j< 500; j++){
+        //         const path = `dfs://${i}.${j}`
+        //         const tables = [new TableEntity({name: `table_of_${i}_${j}`, ddb_path:path, labels:['sdsadfs'], column_schema:[{name:'Id', type:5}]})]
+        //         dbs.set(path, new DdbEntity({ path ,tables}))
+        //     }
+        //  }
     }
     
     

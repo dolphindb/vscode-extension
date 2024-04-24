@@ -41,15 +41,6 @@ export class DdbVarProvider implements TreeDataProvider<TreeItem> {
     onDidChangeTreeData: Event<void | TreeItem> = this.refresher.event
     
     
-    getParent (element: TreeItem): ProviderResult<TreeItem> {
-        if (element instanceof DdbVarProvider)
-            return
-        
-        if (element instanceof DdbVarLocation)
-            return var_provider.view
-    }
-    
-    
     getTreeItem (node: TreeItem): TreeItem | Thenable<TreeItem> {
         return node
     }
