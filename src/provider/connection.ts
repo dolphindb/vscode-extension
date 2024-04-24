@@ -11,7 +11,7 @@ import {
 
 import dayjs from 'dayjs'
 
-import { inspect, assert, delay } from 'xshell'
+import { inspect, assert, delay, strcmp } from 'xshell'
 
 import {
     DDB,
@@ -21,6 +21,8 @@ import {
     DdbType,
     type DdbOptions,
     type DdbTableObj,
+    type DdbVectorStringObj,
+    DdbFunctionType,
 } from 'dolphindb'
 
 
@@ -30,6 +32,7 @@ import { statbar } from '../statbar.js'
 import { open_connection_settings } from '../commands.js'
 import { icon_checked, icon_empty, model } from '../model.js'
 import { DdbVar, DdbVarLocation } from './var.js'
+import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from '../constant.js'
 
 
 export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
@@ -215,38 +218,6 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
 export let connection_provider: DdbConnectionProvider
 
 
-const pyobjs = new Set(['list', 'tuple', 'dict', 'set', '_ddb', 'Exception', 'AssertRaise', 'PyBox'])
-
-
-enum LicenseTypes {
-    /** 其他方式 */
-    Other = 0,
-    
-    /** 机器指纹绑定 */
-    MachineFingerprintBind = 1,
-    
-    /** 在线验证 */
-    OnlineVerify = 2,
-    
-    /** LicenseServer 验证 */
-    LicenseServerVerify = 3,
-}
-
-
-interface DdbLicense {
-    authorization: string
-    licenseType: LicenseTypes
-    maxMemoryPerNode: number
-    maxCoresPerNode: number
-    clientName: string
-    bindCPU: boolean
-    expiration: number
-    maxNodes: number
-    version: string
-    modules: bigint
-}
-
-
 /** 维护一个 ddb api 连接 */
 export class DdbConnection extends TreeItem {
     /** 连接名称 (连接 id)，如 local8848, controller, datanode0 */
@@ -297,6 +268,23 @@ export class DdbConnection extends TreeItem {
     
     load_table_variable_schema_defined = false
     
+    // --- 通过 getClusterPerf 拿到的集群节点信息
+    nodes: DdbNode[]
+    
+    node: DdbNode
+    
+    /** 控制节点 */
+    controller: DdbNode
+    
+    /** 通过 getClusterPerf 取集群中的某个数据节点，方便后续 rpc 到数据节点执行操作 */
+    datanode: DdbNode
+    
+    node_type: NodeType
+    
+    /** 通过 getControllerAlias 得到 */
+    controller_alias: string
+    
+    node_alias: string
     
     constructor (url: string, name: string = url, options: DdbOptions = { }) {
         super(`${name} `, TreeItemCollapsibleState.None)
@@ -345,6 +333,13 @@ export class DdbConnection extends TreeItem {
             return
         
         await this.ddb.connect()
+        
+        await Promise.all([
+            this.get_node_type(),
+            this.get_node_alias(),
+            this.get_controller_alias()
+        ])
+        await this.get_cluster_perf()
         
         console.log(`${t('连接成功:')} ${this.name}`)
         this.connected = true
@@ -502,12 +497,101 @@ export class DdbConnection extends TreeItem {
     
     
     async update_database () {
+        // 当前无数据节点和计算节点存活，且当前节点不为单机节点，则不进行数据库表获取
+        if (this.node.mode !== NodeType.single && !this.has_data_and_computing_nodes_alive()) 
+            return
         
+        // ['dfs://数据库路径(可能包含/)/表名', ...]
+        // 不能直接使用 getClusterDFSDatabases, 因为新的数据库权限版本 (2.00.9) 之后，用户如果只有表的权限，调用 getClusterDFSDatabases 无法拿到该表对应的数据库
+        // 但对于无数据表的数据库，仍然需要通过 getClusterDFSDatabases 来获取。因此要组合使用
+        const [{ value: table_paths }, { value: db_paths }] = await Promise.all([
+            this.ddb.call<DdbVectorStringObj>('getClusterDFSTables'),
+            // 可能因为用户没有数据库的权限报错，单独 catch 并返回空数组
+            this.ddb.call<DdbVectorStringObj>('getClusterDFSDatabases').catch(() => {
+                console.error('load_dbs: getClusterDFSDatabases error')
+                return { value: [ ] }
+            }),
+        ])
+        
+        console.log(db_paths, table_paths)
     }
     
     
     async update () {
         await Promise.all([this.update_var(), this.update_database()])
+    }
+    
+    
+    async get_node_type () {
+        const { value: node_type } = await this.ddb.call<DdbObj<NodeType>>('getNodeType', [ ], { urgent: true })
+        this.node_type = node_type
+        return node_type
+    }
+    
+    
+    async get_node_alias () {
+        const { value: node_alias } = await this.ddb.call<DdbObj<string>>('getNodeAlias', [ ], { urgent: true })
+        this.node_alias = node_alias
+        return node_alias
+    }
+    
+    
+    async get_controller_alias () {
+        const { value: controller_alias } = await this.ddb.call<DdbObj<string>>('getControllerAlias', [ ], { urgent: true })
+        this.controller_alias = controller_alias
+        return controller_alias
+    }
+        
+    
+    /** 获取 nodes 和 node 信息
+    https://www.dolphindb.cn/cn/help/FunctionsandCommands/FunctionReferences/g/getClusterPerf.html  
+    Only master or single mode supports function getClusterPerf. */
+    async get_cluster_perf () {
+        const nodes = (
+            await this.ddb.call<DdbObj<DdbObj[]>>('getClusterPerf', [true], {
+                urgent: true,
+                
+                ... this.node_type === NodeType.controller || this.node_type === NodeType.single ? 
+                    { }
+                :
+                    {
+                        node: this.controller_alias,
+                        func_type: DdbFunctionType.SystemFunc
+                    },
+            })
+        ).to_rows<DdbNode>()
+        .sort((a, b) => strcmp(a.name, b.name))
+        
+        let node: DdbNode, controller: DdbNode, datanode: DdbNode
+        
+        for (const _node of nodes) {
+            if (_node.name === this.node_alias)
+                node = _node
+            
+            if (_node.mode === NodeType.controller)
+                if (_node.isLeader)
+                    controller = _node
+                else
+                    controller ??= _node
+            
+            if (_node.mode === NodeType.data)
+                datanode ??= _node
+        }
+        
+        this.nodes = nodes
+        this.node = node
+        this.controller = controller
+        this.datanode = datanode
+    }
+    
+    
+    /** 判断当前集群是否有数据节点或计算节点正在运行 */
+    has_data_and_computing_nodes_alive () {
+        return Boolean(
+            this.nodes.find(node =>
+                (node.mode === NodeType.data || node.mode === NodeType.computing) && 
+                node.state === DdbNodeState.online)
+        )
     }
 }
 

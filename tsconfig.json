@@ -4,6 +4,8 @@
         
         "./src/index.ts",
         
+        "./src/constant.ts",
+        
         "./src/debugger/",
         
         "./src/dataview/",
