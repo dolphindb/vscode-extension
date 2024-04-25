@@ -65,9 +65,7 @@ export class DdbVarProvider implements TreeDataProvider<TreeItem> {
 }
 
 
-export class DdbVarLocation extends TreeItem {
-    connection: DdbConnection
-    
+export class DdbVarLocation extends TreeItem { 
     shared: boolean
     
     vars: DdbVar[] = [ ]
@@ -96,7 +94,6 @@ export class DdbVarLocation extends TreeItem {
     
     constructor (connection: DdbConnection, shared: boolean) {
         super(shared ? t('共享变量') : t('本地变量'), TreeItemCollapsibleState.Expanded)
-        this.connection = connection
         this.shared = shared
         
         this.scalar = new DdbVarForm(connection, this.shared, DdbForm.scalar)
@@ -199,9 +196,6 @@ export class DdbVarForm extends TreeItem {
         [DdbForm.object]: t('对象'),
     } as const
     
-    
-    connection: DdbConnection
-    
     shared: boolean
     
     form: DdbForm
@@ -211,7 +205,6 @@ export class DdbVarForm extends TreeItem {
     
     constructor (connection: DdbConnection, shared: boolean, form: DdbForm) {
         super(DdbVarForm.form_names[form] || DdbForm[form], TreeItemCollapsibleState.Expanded)
-        this.connection = connection
         this.shared = shared
         this.form = form
         this.iconPath = `${fpd_ext}icons/${DdbForm[form]}.svg`

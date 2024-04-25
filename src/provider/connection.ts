@@ -63,8 +63,6 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
         statbar.update()
         this.refresher.fire()
         
-        
-        
         let done = false
         
         const pconnect = (async () => {

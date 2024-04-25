@@ -87,8 +87,6 @@ export class DdbDatabase extends TreeItem {
 
 
 export class DdbTable extends TreeItem {
-    connection: DdbConnection
-    
     database: DdbDatabase
     
     name: string
@@ -100,7 +98,6 @@ export class DdbTable extends TreeItem {
     constructor (database: DdbDatabase, path: string, connection: DdbConnection) {
         const name = path.slice(database.path.length, -1)
         super(name, TreeItemCollapsibleState.None)
-        this.connection = connection
         this.database = database
         this.iconPath = `${fpd_ext}icons/table.svg`
         this.contextValue = 'table'
@@ -115,28 +112,29 @@ export class DdbTable extends TreeItem {
     
     async get_obj () {
         if (!this.obj) {
-            await this.connection.define_peek_table()
-            let obj = await this.connection.ddb.call(
+            await model.connection.define_peek_table()
+            let obj = await model.connection.ddb.call(
                 'peek_table',
                 [this.database.path.slice(0, -1), this.name],
-                model.connection.node_type === NodeType.controller ? { node: this.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
+                model.connection.node_type === NodeType.controller ? { node: model.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
             )
             obj.name = `${this.name} (${t('前 100 行')})`
             this.obj = obj
         }
+        
         return this.obj
     }
     
     
     async get_schema () {
         if (!this.schema) {
-            await this.connection.define_load_table_schema()
-            this.schema = await this.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
+            await model.connection.define_load_table_schema()
+            this.schema = await model.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
                 // 这个函数在 define_load_schema 中已定义
                 'load_table_schema',
                 // 调用该函数时，数据库路径不能以 / 结尾
                 [this.database.path.slice(0, -1), this.name],
-                this.connection.node_type === NodeType.controller ? { node: this.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
+                model.connection.node_type === NodeType.controller ? { node: model.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
             )
         }
         
