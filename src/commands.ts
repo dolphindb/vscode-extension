@@ -19,6 +19,7 @@ import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
 import { type Variable } from '@vscode/debugadapter'
 import { model } from './model.js'
+import { type DdbTable } from './provider/database.js'
 
 let lastvar: DdbVar
 
@@ -499,9 +500,26 @@ export const ddb_commands = [
     },
     
     
-    async function inspect_schema (ddbvar: DdbVar = lastvar) {
+    async function inspect_table_variable_schema (ddbvar: DdbVar = lastvar) {
         console.log(t('查看 dolphindb 表结构:'), ddbvar)
+        lastvar = ddbvar
         await ddbvar.inspect(false, true)
+    },
+    
+    
+    async function inspect_table (ddbtable: DdbTable) {  
+        const obj = await ddbtable.get_obj()      
+        console.log(t('查看 dolphindb 表格:'), ddbtable)
+        lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+        await lastvar.inspect()
+    },
+    
+    
+    async function inspect_table_schema (ddbtable: DdbTable) {  
+        const schema = await ddbtable.get_schema()      
+        console.log(t('查看 dolphindb 表结构:'), ddbtable)
+        lastvar = new DdbVar({ ...schema, obj: schema, bytes: 0n })
+        await lastvar.inspect()
     },
     
     
@@ -509,6 +527,13 @@ export const ddb_commands = [
         ddbvar ||= lastvar
         console.log(t('在新窗口查看变量:'), ddbvar)
         await ddbvar.inspect(true)
+    },
+    
+    
+    async function open_table (ddbtable: DdbTable) {
+        const obj = await ddbtable.get_obj()
+        console.log(t('在新窗口查看表格:'), ddbtable)
+        await new DdbVar({ ...obj, obj, bytes: 0n }).inspect(true)
     },
     
     

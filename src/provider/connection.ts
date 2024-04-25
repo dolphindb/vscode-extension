@@ -264,6 +264,10 @@ export class DdbConnection extends TreeItem {
     
     load_table_variable_schema_defined = false
     
+    load_table_schema_defined = false
+    
+    peek_table_defined = false
+    
     // --- 通过 getClusterPerf 拿到的集群节点信息
     nodes: DdbNode[]
     
@@ -364,6 +368,34 @@ export class DdbConnection extends TreeItem {
         )
         
         this.load_table_variable_schema_defined = true
+    }
+    
+    
+    async define_peek_table () {
+        if (this.peek_table_defined)
+            return
+        
+        await this.ddb.eval(
+            'def peek_table (db_path, tb_name) {\n' +
+            '    return select top 100 * from loadTable(db_path, tb_name)\n' +
+            '}\n'
+        )
+        
+        this.peek_table_defined = true
+    }
+        
+    
+    async define_load_table_schema () {
+        if (this.load_table_schema_defined)
+            return
+        
+        await this.ddb.eval(
+            'def load_table_schema (db_path, tb_name) {\n' +
+            '    return schema(loadTable(db_path, tb_name))\n' +
+            '}\n'
+        )
+        
+        this.load_table_schema_defined = true
     }
     
     

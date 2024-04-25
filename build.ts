@@ -199,7 +199,23 @@ async function build_package_json () {
             icon: '$(browser)',
         },
         {
-            command: 'inspect_schema',
+            command: 'inspect_table_variable_schema',
+            title: {
+                zh: 'DolphinDB: 查看表结构',
+                en: 'DolphinDB: Inspect Schema'
+            },
+            icon: '$(symbol-structure)',
+        },
+        {
+            command: 'inspect_table',
+            title: {
+                zh: 'DolphinDB: 查看表格',
+                en: 'DolphinDB: Inspect Table'
+            },
+            icon: '$(browser)',
+        },
+        {
+            command: 'inspect_table_schema',
             title: {
                 zh: 'DolphinDB: 查看表结构',
                 en: 'DolphinDB: Inspect Schema'
@@ -211,6 +227,14 @@ async function build_package_json () {
             title: {
                 zh: 'DolphinDB: 在新窗口中查看变量',
                 en: 'DolphinDB: Inspect Variable in New Window'
+            },
+            icon: '$(multiple-windows)',
+        },
+        {
+            command: 'open_table',
+            title: {
+                zh: 'DolphinDB: 在新窗口中查看表格',
+                en: 'DolphinDB: Inspect Table in New Window'
             },
             icon: '$(multiple-windows)',
         },
@@ -665,11 +689,23 @@ async function build_package_json () {
                         when: 'false',
                     },
                     {
-                        command: 'dolphindb.inspect_schema',
+                        command: 'dolphindb.inspect_table_variable_schema',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.inspect_table',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.inspect_table_schema',
                         when: 'false',
                     },
                     {
                         command: 'dolphindb.open_variable',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.open_table',
                         when: 'false',
                     },
                     {
@@ -685,13 +721,23 @@ async function build_package_json () {
                         group: 'inline',
                     },
                     {
-                        command: 'dolphindb.inspect_schema',
+                        command: 'dolphindb.inspect_table_variable_schema',
                         when: "view == dolphindb.var && viewItem == 'table'",
+                        group: 'inline',
+                    },
+                    {
+                        command: 'dolphindb.inspect_table_schema',
+                        when: "view == dolphindb.database && viewItem == 'table'",
                         group: 'inline',
                     },
                     {
                         command: 'dolphindb.open_variable',
                         when: "view == dolphindb.var && viewItem == 'var' || view == dolphindb.var && viewItem == 'table'",
+                        group: 'inline',
+                    },
+                    {
+                        command: 'dolphindb.open_table',
+                        when: "view == dolphindb.database && viewItem == 'table'",
                         group: 'inline',
                     },
                 ],
