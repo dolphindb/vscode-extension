@@ -61,7 +61,7 @@ export class DdbModel {
     on_config_change (event: ConfigurationChangeEvent) {
         if (event.affectsConfiguration('dolphindb.connections') || event.affectsConfiguration('dolphindb.single_connection_mode')) {
             this.load_connections()
-            connection_provider.refresher.fire()
+            model.refresh()
         }
     }
     

@@ -10,7 +10,7 @@ import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions 
 import { i18n, language, t } from './i18n/index.js'
 import { type DdbMessageItem } from './index.js'
 import { type DdbConnection, connection_provider } from './provider/connection.js'
-import { DdbVar } from './provider/var.js'
+import { DdbVar, var_provider } from './provider/var.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
 import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
@@ -19,7 +19,7 @@ import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
 import { type Variable } from '@vscode/debugadapter'
 import { model } from './model.js'
-import { type DdbTable } from './provider/database.js'
+import { database_provider, type DdbTable } from './provider/database.js'
 
 let lastvar: DdbVar
 
@@ -228,8 +228,8 @@ async function execute (text: string, testing = false) {
     if (connection.disconnected)
         return
     
-    await connection.update()
-    model.refresh()
+    await connection.update_var()
+    var_provider.refresher.fire()
     
     connection.running = false
     statbar.update()
@@ -530,13 +530,6 @@ export const ddb_commands = [
     },
     
     
-    async function open_table (ddbtable: DdbTable) {
-        const obj = await ddbtable.get_obj()
-        console.log(t('在新窗口查看表格:'), ddbtable)
-        await new DdbVar({ ...obj, obj, bytes: 0n }).inspect(true)
-    },
-    
-    
     function reload_dataview () {
         const { webview } = dataview.view
         
@@ -545,6 +538,12 @@ export const ddb_commands = [
         dataview.subscribers_repl = [ ]
         
         webview.html = webview.html + ' '
+    },
+    
+    
+    async function reload_database () {
+        await model.connection.update_database()
+        database_provider.refresher.fire()
     },
     
     

@@ -524,7 +524,7 @@ export class DdbConnection extends TreeItem {
     
     async update_database () {
         // 当前无数据节点和计算节点存活，且当前节点不为单机节点，则不进行数据库表获取
-        if (this.node.mode !== NodeType.single && !this.has_data_and_computing_nodes_alive()) 
+        if (!this.connected || this.node.mode !== NodeType.single && !this.has_data_and_computing_nodes_alive()) 
             return
         
         // ['dfs://数据库路径(可能包含/)/表名', ...]

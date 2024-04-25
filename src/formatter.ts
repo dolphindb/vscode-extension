@@ -85,7 +85,9 @@ export let formatter = {
             this.update_bar()
             
             if (connection.vars)
-                await connection.update()
+                await connection.update_var()
+            
+            model.refresh()
         }
     },
 }

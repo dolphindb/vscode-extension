@@ -231,12 +231,12 @@ async function build_package_json () {
             icon: '$(multiple-windows)',
         },
         {
-            command: 'open_table',
+            command: 'reload_database',
             title: {
-                zh: 'DolphinDB: 在新窗口中查看表格',
-                en: 'DolphinDB: Inspect Table in New Window'
+                zh: 'DolphinDB: 重新加载数据库',
+                en: 'DolphinDB: Reload DataBase'
             },
-            icon: '$(multiple-windows)',
+            icon: '$(refresh)',
         },
         {
             command: 'reload_dataview',
@@ -705,7 +705,7 @@ async function build_package_json () {
                         when: 'false',
                     },
                     {
-                        command: 'dolphindb.open_table',
+                        command: 'dolphindb.reload_database',
                         when: 'false',
                     },
                     {
@@ -734,12 +734,7 @@ async function build_package_json () {
                         command: 'dolphindb.open_variable',
                         when: "view == dolphindb.var && viewItem == 'var' || view == dolphindb.var && viewItem == 'table'",
                         group: 'inline',
-                    },
-                    {
-                        command: 'dolphindb.open_table',
-                        when: "view == dolphindb.database && viewItem == 'table'",
-                        group: 'inline',
-                    },
+                    }
                 ],
                 
                 // webview 上方加刷新按钮
@@ -749,6 +744,11 @@ async function build_package_json () {
                         command: 'dolphindb.open_connection_settings',
                         when: 'view == dolphindb.connection',
                         group: 'navigation',
+                    },
+                    {
+                        command: 'dolphindb.reload_database',
+                        group: 'navigation',
+                        when: 'view == dolphindb.database',
                     },
                     {
                         command: 'dolphindb.reload_dataview',
