@@ -92,7 +92,7 @@ export class DdbTable extends TreeItem {
     
     schema: DdbDictObj<DdbVectorStringObj>
     
-    constructor (database: DdbDatabase, path: string, connection: DdbConnection) {
+    constructor (database: DdbDatabase, path: string) {
         const name = path.slice(database.path.length, -1)
         super(name, TreeItemCollapsibleState.None)
         this.database = database

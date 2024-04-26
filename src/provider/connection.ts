@@ -677,7 +677,7 @@ export class DdbConnection extends TreeItem {
             
             // 处理 table，如果 table_name 为空表明当前路径是 db_path 则不处理
             if (table_name) {
-                const table = new DdbTable(parent as DdbDatabase, `${path}/`, this)
+                const table = new DdbTable(parent as DdbDatabase, `${path}/`)
                 ;(parent as DdbDatabase).tables.push(table)
             }
         }
