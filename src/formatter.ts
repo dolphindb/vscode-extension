@@ -10,7 +10,7 @@ import {
 } from 'vscode'
 
 import { t } from './i18n/index.js'
-import { model } from './model.js'
+import { connection_provider } from './provider/connection.js'
 
 
 export let formatter = {
@@ -77,7 +77,7 @@ export let formatter = {
     },
     
     async on_config_change (event: ConfigurationChangeEvent) {
-        const { connection } = model
+        const { connection } = connection_provider
         
         if (event.affectsConfiguration('dolphindb.decimals')) {
             console.log(t('dolphindb.decimals 配置被修改'))
@@ -87,7 +87,7 @@ export let formatter = {
             if (connection.vars)
                 await connection.update_var()
             
-            model.refresh()
+            connection_provider.refresh()
         }
     },
 }

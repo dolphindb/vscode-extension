@@ -6,6 +6,9 @@ import {
     type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider, type ProviderResult,
     
     ProgressLocation,
+    workspace,
+    type ConfigurationChangeEvent,
+    languages,
 } from 'vscode'
 
 
@@ -27,13 +30,12 @@ import {
 
 
 import { t } from '../i18n/index.js'
-import { type DdbMessageItem } from '../index.js'
+import { icon_checked, icon_empty, type DdbMessageItem } from '../index.js'
 import { statbar } from '../statbar.js'
 import { open_connection_settings } from '../commands.js'
-import { icon_checked, icon_empty, model } from '../model.js'
-import { DdbVar, DdbVarLocation } from './var.js'
+import { DdbVar, DdbVarLocation, var_provider } from './var.js'
 import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from '../constant.js'
-import { DdbDatabase, DdbGroup, DdbTable } from './database.js'
+import { DdbDatabase, DdbGroup, DdbTable, database_provider } from './database.js'
 
 
 export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
@@ -43,21 +45,37 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
     
     onDidChangeTreeData: Event<void | TreeItem> = this.refresher.event
     
+    single_connection_mode: boolean = false
+    
+    /** 从 dolphindb.connections 连接配置生成的，在面板中的显示所有连接  
+        每个连接维护了一个 ddb api 的实际连接，当出错需要重置时，需要用新的连接替换出错连接 */
+    connections: DdbConnection[]
+    
+    /** 当前选中的连接 */
+    connection: DdbConnection
+    
+    /** 上传模块是否加密 */
+    encrypt?: boolean | undefined
+    
+    constructor () {
+        this.load_connections()
+    }
+    
     
     /** 执行连接操作后，如果超过 1s 还未完成，则显示进度 */
     async connect (connection: DdbConnection) {
         connection.iconPath = icon_checked
-        model.connection = connection
+        this.connection = connection
         
-        for (let _connection of model.connections)
+        for (let _connection of this.connections)
             if (_connection !== connection) {
                 _connection.iconPath = icon_empty
                 
-                if (model.single_connection_mode && _connection.connected)
+                if (this.single_connection_mode && _connection.connected)
                     this.disconnect(_connection)
             }
         
-        model.change_language_mode()
+        this.change_language_mode()
         
         console.log(t('连接:'), connection)
         statbar.update()
@@ -75,7 +93,7 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
                 done = true
                 
                 statbar.update()
-                model.refresh(connection)
+                this.refresh(connection)
             }
         })()
         
@@ -165,23 +183,23 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
         const { name, url, options } = connection
         
         /** 如果断开的是当前选中的连接，那么断开连接后恢复选中状态 */
-        const selected = name === model.connection.name
+        const selected = name === this.connection.name
         
         connection.disconnect()
         
-        const index = model.connections.findIndex(conn => conn === connection)
+        const index = this.connections.findIndex(conn => conn === connection)
         if (index === -1)
             return
         
-        model.connections[index] = new DdbConnection(url, name, options)
+        this.connections[index] = new DdbConnection(url, name, options)
         
         if (selected) {
-            model.connection = model.connections.find(conn => conn.name === name)
-            model.connection.iconPath = icon_checked
+            this.connection = this.connections.find(conn => conn.name === name)
+            this.connection.iconPath = icon_checked
         }
         
         statbar.update()
-        model.refresh()
+        this.refresh()
     }
     
     
@@ -189,7 +207,7 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
         console.log(t('重连连接:'), connection)
         connection_provider.disconnect(connection)
         await connection_provider.connect(
-            model.connections.find(conn => conn.name === connection.name)
+            this.connections.find(conn => conn.name === connection.name)
         )
     }
     
@@ -200,7 +218,59 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
     
     
     getChildren (node?: TreeItem) {
-        return node ? null : model.connections
+        return node ? null : this.connections
+    }
+    
+    load_connections () {
+        if (this.connections)
+            for (const connection of this.connections)
+                connection.disconnect()
+        
+        const config = workspace.getConfiguration('dolphindb')
+        
+        this.single_connection_mode = config.get<boolean>('single_connection_mode')
+        
+        this.connections = config
+            .get<{ url: string, name?: string, sql?: string }[]>('connections')
+            .map(({ url, name, ...options }) =>
+                // 传入的 config 中 sql 为 string 类型，需要将其转换为对应的 SqlStandard 类型
+                new DdbConnection(url, name, {
+                    ...options,
+                    sql: SqlStandard[options.sql] as SqlStandard,
+                })
+            )
+        
+        this.connection = this.connections[0]
+        if (this.connection)
+            this.connection.iconPath = icon_checked
+        
+        this.change_language_mode()
+    }
+    
+    
+    on_config_change (event: ConfigurationChangeEvent) {
+        if (event.affectsConfiguration('dolphindb.connections') || event.affectsConfiguration('dolphindb.single_connection_mode')) {
+            this.load_connections()
+            this.refresh()
+        }
+    }
+    
+    
+    change_language_mode () {
+        const languageId = window.activeTextEditor?.document?.languageId
+        const { python } = this.connection.options
+        
+        if ((languageId === 'dolphindb' && python) || (languageId === 'dolphindb-python' && !python))
+            languages.setTextDocumentLanguage(
+                window.activeTextEditor.document,
+                python ? 'dolphindb-python' : 'dolphindb'
+            )
+    }
+    
+    refresh (connection?: DdbConnection) {
+        this.refresher.fire(connection)
+        var_provider.refresher.fire()
+        database_provider.refresher.fire()
     }
 }
 

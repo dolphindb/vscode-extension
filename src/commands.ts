@@ -18,7 +18,6 @@ import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
 import { type Variable } from '@vscode/debugadapter'
-import { model } from './model.js'
 import { database_provider, type DdbTable } from './provider/database.js'
 
 let lastvar: DdbVar
@@ -118,7 +117,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 
 
 async function execute (text: string, testing = false) {
-    let { connection } = model
+    let { connection } = connection_provider
     
     if (connection.running) {
         terminal.printer.fire(t('当前连接 ({{connection}}) 正在执行作业，请等待\r\n', { connection: connection.name }).yellow)
@@ -190,7 +189,7 @@ async function execute (text: string, testing = false) {
         
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
-            (connection === model.connection ? '' : ` (${connection.name})`) + 
+            (connection === connection_provider.connection ? '' : ` (${connection.name})`) + 
             '\r\n'
         ).red)
         
@@ -236,7 +235,7 @@ async function execute (text: string, testing = false) {
     
     
     function get_execution_end () {
-        return timer.getstr(true) + (connection === model.connection ? '' : ` (${connection.name})`) + '\r\n'
+        return timer.getstr(true) + (connection === connection_provider.connection ? '' : ` (${connection.name})`) + '\r\n'
     }
     
     
@@ -282,7 +281,7 @@ async function execute (text: string, testing = false) {
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
 async function execute_with_progress (text: string, testing?: boolean) {
-    let { connection } = model
+    let { connection } = connection_provider
     
     let done = false
     
@@ -321,7 +320,7 @@ async function execute_with_progress (text: string, testing?: boolean) {
 }
 
 
-async function cancel (connection: DdbConnection = model.connection) {
+async function cancel (connection: DdbConnection = connection_provider.connection) {
     if (!connection.running)
         return
     
@@ -355,7 +354,7 @@ export async function open_connection_settings () {
 
 
 export async function upload (uri: Uri, uris: Uri[], silent = false) {
-    let { connection } = model
+    let { connection } = connection_provider
     
     if (should_remind_setting_mappings && !connection.mappings && !await remind_mappings())
         return [ ]
@@ -542,7 +541,7 @@ export const ddb_commands = [
     
     
     async function reload_database () {
-        await model.connection.update_database()
+        await connection_provider.connection.update_database()
         database_provider.refresher.fire()
     },
     
@@ -582,7 +581,7 @@ export const ddb_commands = [
     async function upload_module (uri: Uri, uris: Uri[]) {
         // 文件上点右键 upload_module 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
-            let { connection, encrypt } = model
+            let { connection, encrypt } = connection_provider
             let title: string
             
             await connection.connect()
@@ -633,7 +632,7 @@ export const ddb_commands = [
     
     async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
         try {
-            let { ddb } = model.connection
+            let { ddb } = connection_provider.connection
             
             const { value } = await ddb.call<DdbObj<string>>('version')
             let [version] = value.split(' ')

@@ -27,9 +27,8 @@ import {
 import { formatter } from '../formatter.js'
 import { server, start_server } from '../server.js'
 import { dataview } from '../dataview/dataview.js'
-import { model } from '../model.js'
 import { t } from '../i18n/index.js'
-import { type DdbConnection } from './connection.js'
+import { connection_provider, type DdbConnection } from './connection.js'
 import { fpd_ext } from '../index.js'
 
 
@@ -49,7 +48,7 @@ export class DdbVarProvider implements TreeDataProvider<TreeItem> {
     getChildren (node?: TreeItem) {
         switch (true) {
             case !node: {
-                const { local, shared } = model.connection
+                const { local, shared } = connection_provider.connection
                 return [local, shared].filter(node => node.vars.length)
             }
             
@@ -395,7 +394,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         let obj = this.obj
         
         if (schema) {
-            await model.connection.define_load_table_variable_schema()
+            await connection_provider.connection.define_load_table_variable_schema()
             obj = await this.ddb.call('load_table_variable_schema', [this.name])
         }
         

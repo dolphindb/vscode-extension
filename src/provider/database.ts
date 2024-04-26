@@ -7,11 +7,10 @@ import {
     
     type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider, type ProviderResult,
 } from 'vscode'
-import { type DdbConnection } from './connection.js'
+import { connection_provider, type DdbConnection } from './connection.js'
 import { fpd_ext } from '../index.js'
 import { assert } from 'xshell/utils.js'
 import { t } from '../i18n/index.js'
-import { model } from '../model.js'
 import { type DdbDictObj, DdbFunctionType, type DdbVectorStringObj, type DdbObj } from 'dolphindb'
 import { NodeType } from '../constant.js'
 
@@ -32,7 +31,7 @@ export class DdbDatabaseProvider implements TreeDataProvider<TreeItem> {
     getChildren (node?: TreeItem) {
         switch (true) {
             case !node: {
-                const { groups, databases } = model.connection
+                const { groups, databases } = connection_provider.connection
                 return [...groups, ...databases]
             }
             
@@ -112,11 +111,11 @@ export class DdbTable extends TreeItem {
     
     async get_obj () {
         if (!this.obj) {
-            await model.connection.define_peek_table()
-            let obj = await model.connection.ddb.call(
+            await connection_provider.connection.define_peek_table()
+            let obj = await connection_provider.connection.ddb.call(
                 'peek_table',
                 [this.database.path.slice(0, -1), this.name],
-                model.connection.node_type === NodeType.controller ? { node: model.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
+                connection_provider.connection.node_type === NodeType.controller ? { node: connection_provider.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
             )
             obj.name = `${this.name} (${t('前 100 行')})`
             this.obj = obj
@@ -128,13 +127,13 @@ export class DdbTable extends TreeItem {
     
     async get_schema () {
         if (!this.schema) {
-            await model.connection.define_load_table_schema()
-            this.schema = await model.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
+            await connection_provider.connection.define_load_table_schema()
+            this.schema = await connection_provider.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
                 // 这个函数在 define_load_schema 中已定义
                 'load_table_schema',
                 // 调用该函数时，数据库路径不能以 / 结尾
                 [this.database.path.slice(0, -1), this.name],
-                model.connection.node_type === NodeType.controller ? { node: model.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
+                connection_provider.connection.node_type === NodeType.controller ? { node: connection_provider.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
             )
         }
         

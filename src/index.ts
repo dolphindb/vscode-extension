@@ -25,13 +25,12 @@ import { set_inspect_options } from 'xshell'
 import { t } from './i18n/index.js'
 import { load_docs, register_docs } from './docs.js'
 import { server } from './server.js'
-import { init_model, model } from './model.js'
 import { dataview } from './dataview/dataview.js'
 import { statbar } from './statbar.js'
 import { formatter } from './formatter.js'
 import { ddb_commands } from './commands.js'
 import { register_terminal_link_provider } from './terminal.js'
-import { register_connection_provider } from './provider/connection.js'
+import { connection_provider, register_connection_provider } from './provider/connection.js'
 import { register_var_provider } from './provider/var.js'
 import { register_database_provider } from './provider/database.js'
 
@@ -55,9 +54,13 @@ export let extctx: ExtensionContext
 
 export let dev = false
 
+export let icon_empty: string
+export let icon_checked: string
+
 
 export async function activate (ctx: ExtensionContext) {
-    init_model()
+    icon_empty = `${fpd_ext}icons/radio.empty.svg`
+    icon_checked = `${fpd_ext}icons/radio.checked.svg`
     
     extctx = ctx
     
@@ -81,7 +84,7 @@ export async function activate (ctx: ExtensionContext) {
     register_database_provider()
     
     window.onDidChangeActiveTextEditor(() => {
-        model.change_language_mode()    
+        connection_provider.change_language_mode()    
     })
     
     
@@ -93,7 +96,7 @@ export async function activate (ctx: ExtensionContext) {
     // 监听配置，dispatch 修改 event
     workspace.onDidChangeConfiguration(event => {
         formatter.on_config_change(event)
-        model.on_config_change(event)
+        connection_provider.on_config_change(event)
     })
     
     register_terminal_link_provider()
@@ -123,7 +126,7 @@ export async function activate (ctx: ExtensionContext) {
             
             
             // 默认使用当前插件连接的 server 作为 debugger
-            const { connection } = model
+            const { connection } = connection_provider
             config.url ??= connection.url
             config.username ??= connection.options.username
             config.password ??= connection.options.password
