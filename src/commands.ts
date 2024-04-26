@@ -9,8 +9,6 @@ import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions 
 
 import { i18n, language, t } from './i18n/index.js'
 import { type DdbMessageItem } from './index.js'
-import { type DdbConnection, connection_provider } from './provider/connection.js'
-import { DdbVar, var_provider } from './provider/var.js'
 import { server } from './server.js'
 import { statbar } from './statbar.js'
 import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
@@ -18,6 +16,8 @@ import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
 import { type Variable } from '@vscode/debugadapter'
+import { type DdbConnection, connection_provider } from './provider/connection.js'
+import { DdbVar, var_provider } from './provider/var.js'
 import { database_provider, type DdbTable } from './provider/database.js'
 
 let lastvar: DdbVar
@@ -146,7 +146,8 @@ async function execute (text: string, testing = false) {
     let obj: DdbObj
     
     try {
-        await connection.connect()
+        if (!connection.connected)
+            await connection_provider.connect(connection)
         
         // TEST: 测试 RefId 错误链接
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')

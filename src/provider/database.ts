@@ -1,11 +1,9 @@
 import {
     window,
     
-    commands,
-    
     EventEmitter, type Event,
     
-    type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider, type ProviderResult,
+    type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider
 } from 'vscode'
 import { connection_provider, type DdbConnection } from './connection.js'
 import { fpd_ext } from '../index.js'

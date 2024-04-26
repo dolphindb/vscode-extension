@@ -7,7 +7,7 @@ import {
     
     EventEmitter, type Event,
     
-    type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider, type ProviderResult,
+    type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider
 } from 'vscode'
 
 import { inspect, defer } from 'xshell'
@@ -28,7 +28,7 @@ import { formatter } from '../formatter.js'
 import { server, start_server } from '../server.js'
 import { dataview } from '../dataview/dataview.js'
 import { t } from '../i18n/index.js'
-import { connection_provider, type DdbConnection } from './connection.js'
+import { connection_provider } from './connection.js'
 import { fpd_ext } from '../index.js'
 
 
@@ -91,20 +91,20 @@ export class DdbVarLocation extends TreeItem {
     object: DdbVarForm
     
     
-    constructor (connection: DdbConnection, shared: boolean) {
+    constructor (shared: boolean) {
         super(shared ? t('共享变量') : t('本地变量'), TreeItemCollapsibleState.Expanded)
         this.shared = shared
         
-        this.scalar = new DdbVarForm(connection, this.shared, DdbForm.scalar)
-        this.vector = new DdbVarForm(connection, this.shared, DdbForm.vector)
-        this.pair   = new DdbVarForm(connection, this.shared, DdbForm.pair)
-        this.matrix = new DdbVarForm(connection, this.shared, DdbForm.matrix)
-        this.set    = new DdbVarForm(connection, this.shared, DdbForm.set)
-        this.dict   = new DdbVarForm(connection, this.shared, DdbForm.dict)
-        this.table  = new DdbVarForm(connection, this.shared, DdbForm.table)
-        this.chart  = new DdbVarForm(connection, this.shared, DdbForm.chart)
-        this.chunk  = new DdbVarForm(connection, this.shared, DdbForm.chunk)
-        this.object = new DdbVarForm(connection, this.shared, DdbForm.object)
+        this.scalar = new DdbVarForm(this.shared, DdbForm.scalar)
+        this.vector = new DdbVarForm(this.shared, DdbForm.vector)
+        this.pair   = new DdbVarForm(this.shared, DdbForm.pair)
+        this.matrix = new DdbVarForm(this.shared, DdbForm.matrix)
+        this.set    = new DdbVarForm(this.shared, DdbForm.set)
+        this.dict   = new DdbVarForm(this.shared, DdbForm.dict)
+        this.table  = new DdbVarForm(this.shared, DdbForm.table)
+        this.chart  = new DdbVarForm(this.shared, DdbForm.chart)
+        this.chunk  = new DdbVarForm(this.shared, DdbForm.chunk)
+        this.object = new DdbVarForm(this.shared, DdbForm.object)
     }
     
     
@@ -202,7 +202,7 @@ export class DdbVarForm extends TreeItem {
     vars: DdbVar[]
     
     
-    constructor (connection: DdbConnection, shared: boolean, form: DdbForm) {
+    constructor (shared: boolean, form: DdbForm) {
         super(DdbVarForm.form_names[form] || DdbForm[form], TreeItemCollapsibleState.Expanded)
         this.shared = shared
         this.form = form

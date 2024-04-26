@@ -54,14 +54,8 @@ export let extctx: ExtensionContext
 
 export let dev = false
 
-export let icon_empty: string
-export let icon_checked: string
-
 
 export async function activate (ctx: ExtensionContext) {
-    icon_empty = `${fpd_ext}icons/radio.empty.svg`
-    icon_checked = `${fpd_ext}icons/radio.checked.svg`
-    
     extctx = ctx
     
     dev = ctx.extensionMode === ExtensionMode.Development

@@ -1,12 +1,13 @@
 import {
     window,
-    
-    EventEmitter, type Event,
-    
-    type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider, type ProviderResult,
-    
+    EventEmitter, 
+    TreeItem, 
+    TreeItemCollapsibleState, 
     ProgressLocation,
     workspace,
+    type Event,
+    type TreeView, 
+    type TreeDataProvider,
     type ConfigurationChangeEvent,
     languages,
 } from 'vscode'
@@ -30,12 +31,16 @@ import {
 
 
 import { t } from '../i18n/index.js'
-import { icon_checked, icon_empty, type DdbMessageItem } from '../index.js'
+import { fpd_ext, type DdbMessageItem } from '../index.js'
 import { statbar } from '../statbar.js'
 import { open_connection_settings } from '../commands.js'
 import { DdbVar, DdbVarLocation, var_provider } from './var.js'
 import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from '../constant.js'
 import { DdbDatabase, DdbGroup, DdbTable, database_provider } from './database.js'
+
+
+let icon_empty: string
+let icon_checked: string
 
 
 export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
@@ -381,17 +386,14 @@ export class DdbConnection extends TreeItem {
         this.description = this.url
         this.iconPath = icon_empty
         this.contextValue = 'disconnected'
-        
         this.ddb = new DDB(this.url, this.options)
-        
         this.command = {
             command: 'dolphindb.connect',
             title: 'dolphindb.connect',
             arguments: [this],
         }
-        
-        this.local = new DdbVarLocation(this, false)
-        this.shared = new DdbVarLocation(this, true)
+        this.local = new DdbVarLocation(false)
+        this.shared = new DdbVarLocation(true)
     }
     
     
@@ -419,9 +421,6 @@ export class DdbConnection extends TreeItem {
     
     disconnect () {
         this.ddb.disconnect()
-        this.disconnected = true
-        this.contextValue = 'disconnected'
-        this.description = this.url
     }
     
     
@@ -774,6 +773,9 @@ export class DdbConnection extends TreeItem {
 
 
 export function register_connection_provider () {
+    icon_empty = `${fpd_ext}icons/radio.empty.svg`
+    icon_checked = `${fpd_ext}icons/radio.checked.svg`
+    
     connection_provider = new DdbConnectionProvider()
     connection_provider.view = window.createTreeView('dolphindb.connection', { treeDataProvider: connection_provider })
 }
