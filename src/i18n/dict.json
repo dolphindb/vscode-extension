@@ -442,5 +442,14 @@
     },
     "总是不加密": {
         "en": "Never"
+    },
+    "查看 dolphindb 表格:": {
+        "en": "Inspect the dolphindb table:"
+    },
+    "数据库路径应该以 dfs:// 开头": {
+        "en": "The database path should start with dfs://"
+    },
+    "前 100 行": {
+        "en": "The first 100 rows of table"
     }
 }

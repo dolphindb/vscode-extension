@@ -635,15 +635,15 @@ async function build_package_json () {
                 dolphindb: [
                     {
                         id: 'dolphindb.connection',
-                        name: 'connection',
+                        name: make('configs.dolphindb.connection.name', '连接', 'CONNECTION')
                     },
                     {
                         id: 'dolphindb.database',
-                        name: 'database',
+                        name: make('configs.dolphindb.database.name', '数据库', 'DATABASE')
                     },
                     {
                         id: 'dolphindb.var',
-                        name: 'var',
+                        name: make('configs.dolphindb.var.name', '变量', 'VARIABLE')
                     }
                 ],
                 

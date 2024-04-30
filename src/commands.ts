@@ -582,7 +582,7 @@ export const ddb_commands = [
     async function upload_module (uri: Uri, uris: Uri[]) {
         // 文件上点右键 upload_module 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
-            let { connection, encrypt } = connection_provider
+            let { connection } = connection_provider
             let title: string
             
             await connection.connect()
@@ -593,7 +593,7 @@ export const ddb_commands = [
             if (!Array.isArray(uris))
                 uris = [uri]
             
-            if (encrypt === undefined) {
+            if (connection_provider.encrypt === undefined) {
                 ({ title } = await window.showInformationMessage(
                     t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
                     { modal: true },   
@@ -608,18 +608,18 @@ export const ddb_commands = [
                         return
                     
                     case t('总是加密'):
-                        encrypt = true
+                        connection_provider.encrypt = true
                         break
                     
                     case t('总是不加密'):
-                        encrypt = false
+                        connection_provider.encrypt = false
                         break
                 }
             }
             
             const fps = (await Promise.all(
                 uris.map(async uri =>
-                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || encrypt || false, ddb)
+                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || connection_provider.encrypt || false, ddb)
                 )
             )).flat()
             
