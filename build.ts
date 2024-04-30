@@ -15,7 +15,7 @@ import type { Item } from 'xshell/i18n/index.js'
 import { tm_language, tm_language_python } from 'dolphindb/language.js'
 
 
-import package_json from './package.json' assert { type: 'json' }
+import package_json from './package.json' with { type: 'json' }
 
 import { get_vendors } from './src/config.js'
 
