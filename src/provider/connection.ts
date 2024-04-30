@@ -98,7 +98,7 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
                 done = true
                 
                 statbar.update()
-                this.refresh(connection)
+                this.refresh(true)
             }
         })()
         
@@ -204,7 +204,7 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
         }
         
         statbar.update()
-        this.refresh()
+        this.refresh(true)
     }
     
     
@@ -256,7 +256,7 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
     on_config_change (event: ConfigurationChangeEvent) {
         if (event.affectsConfiguration('dolphindb.connections') || event.affectsConfiguration('dolphindb.single_connection_mode')) {
             this.load_connections()
-            this.refresh()
+            this.refresh(true)
         }
     }
     
@@ -272,10 +272,11 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
             )
     }
     
-    refresh (connection?: DdbConnection) {
-        this.refresher.fire(connection)
+    refresh (refresh_database:boolean) {
+        this.refresher.fire()
         var_provider.refresher.fire()
-        database_provider.refresher.fire()
+        if(refresh_database)
+            database_provider.refresher.fire()
     }
 }
 

@@ -146,8 +146,7 @@ async function execute (text: string, testing = false) {
     let obj: DdbObj
     
     try {
-        if (!connection.connected)
-            await connection_provider.connect(connection)
+        await connection.connect()
         
         // TEST: 测试 RefId 错误链接
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
@@ -229,7 +228,7 @@ async function execute (text: string, testing = false) {
         return
     
     await connection.update_var()
-    var_provider.refresher.fire()
+    connection_provider.refresh(false)
     
     connection.running = false
     statbar.update()
@@ -516,9 +515,9 @@ export const ddb_commands = [
     
     
     async function inspect_table_schema (ddbtable: DdbTable) {  
-        const schema = await ddbtable.get_schema()      
+        const obj = await ddbtable.get_schema()      
         console.log(t('查看 dolphindb 表结构:'), ddbtable)
-        lastvar = new DdbVar({ ...schema, obj: schema, bytes: 0n })
+        lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
         await lastvar.inspect()
     },
     
