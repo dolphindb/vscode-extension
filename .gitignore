@@ -9,7 +9,7 @@ node_modules/
 /*.vsix
 
 /.vscode/settings.json
-/.eslintrc.schema.json
+/eslint.config.js
 
 /docs.zh.json
 /docs.en.json
