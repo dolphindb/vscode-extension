@@ -5,12 +5,18 @@ import {
     
     type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider
 } from 'vscode'
-import { connection_provider, type DdbConnection } from './connection.js'
-import { fpd_ext } from '../index.js'
+
 import { assert } from 'xshell/utils.js'
-import { t } from '../i18n/index.js'
+
 import { type DdbDictObj, DdbFunctionType, type DdbVectorStringObj, type DdbObj } from 'dolphindb'
+
+import { fpd_ext } from '../index.js'
+import { t } from '../i18n/index.js'
+
+
 import { NodeType } from '../constant.js'
+
+import { connection_provider, type DdbConnection } from './connection.js'
 
 
 export class DdbDatabaseProvider implements TreeDataProvider<TreeItem> {

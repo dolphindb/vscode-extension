@@ -87,7 +87,7 @@ export let formatter = {
             if (connection.vars)
                 await connection.update_var()
             
-            connection_provider.refresh()
+            connection_provider.refresh(true)
         }
     },
 }

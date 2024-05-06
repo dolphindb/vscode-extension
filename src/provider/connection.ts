@@ -34,8 +34,10 @@ import { t } from '../i18n/index.js'
 import { fpd_ext, type DdbMessageItem } from '../index.js'
 import { statbar } from '../statbar.js'
 import { open_connection_settings } from '../commands.js'
-import { DdbVar, DdbVarLocation, var_provider } from './var.js'
+
 import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from '../constant.js'
+
+import { DdbVar, DdbVarLocation, var_provider } from './var.js'
 import { DdbDatabase, DdbGroup, DdbTable, database_provider } from './database.js'
 
 
@@ -92,7 +94,7 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
             try {
                 await connection.connect()
                 await connection.check_license_expiration()
-                await connection.update()
+                await connection.update(true)
             } finally {
                 // 先在这里更新 done, 等后面 catch 了错误处理之后，可能会重试连接，会包含下一个连接进度
                 done = true
@@ -272,10 +274,10 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
             )
     }
     
-    refresh (refresh_database:boolean) {
+    refresh (refresh_database: boolean) {
         this.refresher.fire()
         var_provider.refresher.fire()
-        if(refresh_database)
+        if (refresh_database)
             database_provider.refresher.fire()
     }
 }
@@ -401,7 +403,7 @@ export class DdbConnection extends TreeItem {
     /** 调用 this.ddb.connect(), 确保和数据库的连接是正常的，更新连接显示状态 */
     async connect () {
         if (this.ddb.connected && /* 有可能 websocket 连接成功但 login 失败 */ this.connected)  // 这个方法后面有些操作会有副作用，已连接的话直接跳过吧
-            return
+            return false
         
         await this.ddb.connect()
         
@@ -417,6 +419,8 @@ export class DdbConnection extends TreeItem {
         this.description = this.url + ' ' + t('已连接')
         
         this.contextValue = 'connected'
+        
+        return true
     }
     
     
@@ -694,8 +698,8 @@ export class DdbConnection extends TreeItem {
     }
     
     
-    async update () {
-        await Promise.all([this.update_var(), this.update_database()])
+    async update (database: boolean) {
+        await Promise.all([this.update_var(), ...(database ? [this.update_database()] : [ ])])
     }
     
     
