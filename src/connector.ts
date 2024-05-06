@@ -31,7 +31,7 @@ import {
 
 
 import { t } from './i18n/index.js'
-import { fpd_ext, type DdbMessageItem } from './index.js'
+
 import { statbar } from './statbar.js'
 import { open_connection_settings } from './commands.js'
 
@@ -39,6 +39,8 @@ import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from '.
 
 import { DdbVar, DdbVarLocation, var_provider } from './vars.js'
 import { DdbDatabase, DdbGroup, DdbTable, database_provider } from './databases.js'
+
+import { fpd_ext, type DdbMessageItem } from './index.js'
 
 
 let icon_empty: string
@@ -274,10 +276,10 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
             )
     }
     
-    refresh (refresh_database: boolean) {
+    refresh (database: boolean) {
         this.refresher.fire()
         var_provider.refresher.fire()
-        if (refresh_database)
+        if (database)
             database_provider.refresher.fire()
     }
 }
@@ -322,9 +324,7 @@ export class DdbConnection extends TreeItem {
     /** 是否调用了 connection.disconnect */
     disconnected = false
     
-    groups: DdbGroup[] = [ ]
-    
-    databases: DdbDatabase[] = [ ]
+    children: Array<DdbGroup | DdbDatabase> = [ ]
     
     vars: DdbVar[]
     
@@ -434,9 +434,13 @@ export class DdbConnection extends TreeItem {
             return
         
         await this.ddb.eval(
-            'def load_table_variable_schema (table_name) {\n' +
-            '    return schema(objByName(table_name))\n' +
-            '}\n'
+            this.options.python ?
+                ('def load_table_variable_schema (table_name):\n' +
+                '    return schema(objByName(table_name))\n')
+            :
+                ('def load_table_variable_schema (table_name) {\n' +
+                '    return schema(objByName(table_name))\n' +
+                '}\n')
         )
         
         this.load_table_variable_schema_defined = true
@@ -448,9 +452,13 @@ export class DdbConnection extends TreeItem {
             return
         
         await this.ddb.eval(
-            'def peek_table (db_path, tb_name) {\n' +
-            '    return select top 100 * from loadTable(db_path, tb_name)\n' +
-            '}\n'
+            this.options.python ?
+                ('def peek_table (db_path, tb_name):\n' +
+                '    return select top 100 * from loadTable(db_path, tb_name)\n')
+            :
+                ('def peek_table (db_path, tb_name) {\n' +
+                '    return select top 100 * from loadTable(db_path, tb_name)\n' +
+                '}\n')
         )
         
         this.peek_table_defined = true
@@ -462,9 +470,13 @@ export class DdbConnection extends TreeItem {
             return
         
         await this.ddb.eval(
-            'def load_table_schema (db_path, tb_name) {\n' +
-            '    return schema(loadTable(db_path, tb_name))\n' +
-            '}\n'
+            this.options.python ?
+                ('def load_table_schema (db_path, tb_name):\n' +
+                '    return schema(loadTable(db_path, tb_name))\n')
+            :
+                ('def load_table_schema (db_path, tb_name) {\n' +
+                '    return schema(loadTable(db_path, tb_name))\n' +
+                '}\n')
         )
         
         this.load_table_schema_defined = true
@@ -500,7 +512,7 @@ export class DdbConnection extends TreeItem {
          (a, 0)  // 获取本地变量的值，展示在变量面板
          append!(a, 1)  // error: append!(a, 1) => Read only object or object without ownership can't be applied to mutable function append!
          ``` */
-    async update_var () {
+    async update_vars () {
         const objs = await this.ddb.call('objs', [true])
         
         const vars_data = objs.to_rows()
@@ -596,7 +608,7 @@ export class DdbConnection extends TreeItem {
     }
     
     
-    async update_database () {
+    async update_databases () {
         // 当前无数据节点和计算节点存活，且当前节点不为单机节点，则不进行数据库表获取
         if (!this.connected || this.node.mode !== NodeType.single && !this.has_data_and_computing_nodes_alive()) 
             return
@@ -643,8 +655,7 @@ export class DdbConnection extends TreeItem {
         // 全路径中可能没有组（也就是没有点号），但一定有库和表
         const hash_map = new Map<string, DdbGroup | DdbDatabase>()
         
-        this.groups = [ ]
-        this.databases = [ ]
+        this.children = [ ]
         
         for (const path of merged_paths) {
             // 找到数据库最后一个斜杠位置，截取前面部分的字符串作为库名
@@ -663,7 +674,7 @@ export class DdbConnection extends TreeItem {
                     parent = group
                 else {
                     const group = new DdbGroup(group_key, this)
-                    ;(parent as DdbConnection | DdbGroup).groups.push(group)
+                    ;(parent as DdbConnection | DdbGroup).children.push(group)
                     hash_map.set(group_key, group)
                     parent = group
                 }
@@ -675,7 +686,7 @@ export class DdbConnection extends TreeItem {
                 parent = db
             else {
                 const db = new DdbDatabase(db_path, this)
-                ;(parent as DdbConnection | DdbGroup).databases.push(db)
+                ;(parent as DdbConnection | DdbGroup).children.push(db)
                 hash_map.set(db_path, db)
                 parent = db
             }
@@ -699,7 +710,7 @@ export class DdbConnection extends TreeItem {
     
     
     async update (database: boolean) {
-        await Promise.all([this.update_var(), ...(database ? [this.update_database()] : [ ])])
+        await Promise.all([this.update_vars(), ...(database ? [this.update_databases()] : [ ])])
     }
     
     
@@ -782,5 +793,5 @@ export function register_connector () {
     icon_checked = `${fpd_ext}icons/radio.checked.svg`
     
     connector = new DdbConnector()
-    connector.view = window.createTreeView('dolphindb.connection', { treeDataProvider: connector })
+    connector.view = window.createTreeView('dolphindb.connections', { treeDataProvider: connector })
 }

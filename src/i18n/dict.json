@@ -450,6 +450,6 @@
         "en": "The database path should start with dfs://"
     },
     "前 100 行": {
-        "en": "The first 100 rows of table"
+        "en": "Top 100 rows of table"
     }
 }

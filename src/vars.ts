@@ -29,9 +29,10 @@ import { server, start_server } from './server.js'
 import { dataview } from './dataview/dataview.js'
 import { t } from './i18n/index.js'
 
+import { connector } from './connector.js'
+
 import { fpd_ext } from './index.js'
 
-import { connector } from './connector.js'
 
 
 export class DdbVarProvider implements TreeDataProvider<TreeItem> {
@@ -447,5 +448,5 @@ export let var_provider: DdbVarProvider
 
 export function register_vars () {
     var_provider = new DdbVarProvider()
-    var_provider.view = window.createTreeView('dolphindb.var', { treeDataProvider: var_provider })
+    var_provider.view = window.createTreeView('dolphindb.vars', { treeDataProvider: var_provider })
 }

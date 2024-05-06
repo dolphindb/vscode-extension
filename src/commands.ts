@@ -543,8 +543,8 @@ export const ddb_commands = [
     },
     
     
-    async function reload_database () {
-        await connector.connection.update_database()
+    async function reload_databases () {
+        await connector.connection.update_databases()
         database_provider.refresher.fire()
     },
     

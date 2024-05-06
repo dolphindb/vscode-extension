@@ -10,13 +10,14 @@ import { assert } from 'xshell/utils.js'
 
 import { type DdbDictObj, DdbFunctionType, type DdbVectorStringObj, type DdbObj } from 'dolphindb'
 
-import { fpd_ext } from './index.js'
 import { t } from './i18n/index.js'
 
 
 import { NodeType } from './constant.js'
 
 import { connector, type DdbConnection } from './connector.js'
+
+import { fpd_ext } from './index.js'
 
 
 export class DdbDatabases implements TreeDataProvider<TreeItem> {
@@ -34,18 +35,14 @@ export class DdbDatabases implements TreeDataProvider<TreeItem> {
     
     getChildren (node?: TreeItem) {
         switch (true) {
-            case !node: {
-                const { groups, databases } = connector.connection
-                return [...groups, ...databases]
-            }
+            case !node: 
+                return connector.connection.children
             
-            case node instanceof DdbGroup: {
-                const { groups, databases } = node as DdbGroup
-                return [...groups, ...databases]
-            }
+            case node instanceof DdbGroup: 
+                return node.children
             
             case node instanceof DdbDatabase:
-                return (node as DdbDatabase).tables
+                return node.tables
         }
     }
 }
@@ -57,9 +54,7 @@ export let database_provider: DdbDatabases
 export class DdbGroup extends TreeItem {
     connection: DdbConnection
     
-    groups: DdbGroup[] = [ ]
-    
-    databases: DdbDatabase[] = [ ]
+    children: Array<DdbGroup | DdbDatabase> = [ ]
     
     path: string
     
@@ -114,7 +109,9 @@ export class DdbTable extends TreeItem {
     
     
     async get_obj () {
-        if (!this.obj) {
+        if (this.obj) 
+            return this.obj
+        else {
             await connector.connection.define_peek_table()
             let obj = await connector.connection.ddb.call(
                 'peek_table',
@@ -123,14 +120,16 @@ export class DdbTable extends TreeItem {
             )
             obj.name = `${this.name} (${t('前 100 行')})`
             this.obj = obj
+            
+            return this.obj
         }
-        
-        return this.obj
     }
     
     
     async get_schema () {
-        if (!this.schema) {
+        if (this.schema)
+            return this.schema
+        else {
             await connector.connection.define_load_table_schema()
             this.schema = await connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
                 // 这个函数在 define_load_schema 中已定义
@@ -139,15 +138,15 @@ export class DdbTable extends TreeItem {
                 [this.database.path.slice(0, -1), this.name],
                 connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
             )
+            
+            return this.schema
         }
-        
-        return this.schema
     }
 }
 
 
 export function register_databases () {
     database_provider = new DdbDatabases()
-    database_provider.view = window.createTreeView('dolphindb.database', { treeDataProvider: database_provider })
+    database_provider.view = window.createTreeView('dolphindb.databases', { treeDataProvider: database_provider })
 }
 

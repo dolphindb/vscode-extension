@@ -230,7 +230,7 @@ async function build_package_json () {
             icon: '$(multiple-windows)',
         },
         {
-            command: 'reload_database',
+            command: 'reload_databases',
             title: {
                 zh: 'DolphinDB: 重新加载数据库',
                 en: 'DolphinDB: Reload DataBase'
@@ -633,16 +633,16 @@ async function build_package_json () {
             views: {
                 dolphindb: [
                     {
-                        id: 'dolphindb.connection',
-                        name: make('configs.dolphindb.connection.name', '连接', 'CONNECTION')
+                        id: 'dolphindb.connections',
+                        name: make('configs.dolphindb.connections.name', '连接', 'CONNECTIONS')
                     },
                     {
-                        id: 'dolphindb.database',
-                        name: make('configs.dolphindb.database.name', '数据库', 'DATABASE')
+                        id: 'dolphindb.databases',
+                        name: make('configs.dolphindb.databases.name', '数据库', 'DATABASES')
                     },
                     {
-                        id: 'dolphindb.var',
-                        name: make('configs.dolphindb.var.name', '变量', 'VARIABLE')
+                        id: 'dolphindb.vars',
+                        name: make('configs.dolphindb.vars.name', '变量', 'VARIABLES')
                     }
                 ],
                 
@@ -704,7 +704,7 @@ async function build_package_json () {
                         when: 'false',
                     },
                     {
-                        command: 'dolphindb.reload_database',
+                        command: 'dolphindb.reload_databases',
                         when: 'false',
                     },
                     {
@@ -716,22 +716,22 @@ async function build_package_json () {
                 'view/item/context': [
                     {
                         command: 'dolphindb.disconnect',
-                        when: "view == dolphindb.connection && viewItem == 'connected'",
+                        when: "view == dolphindb.connections && viewItem == 'connected'",
                         group: 'inline',
                     },
                     {
                         command: 'dolphindb.inspect_table_variable_schema',
-                        when: "view == dolphindb.var && viewItem == 'table'",
+                        when: "view == dolphindb.vars && viewItem == 'table'",
                         group: 'inline',
                     },
                     {
                         command: 'dolphindb.inspect_table_schema',
-                        when: "view == dolphindb.database && viewItem == 'table'",
+                        when: "view == dolphindb.databases && viewItem == 'table'",
                         group: 'inline',
                     },
                     {
                         command: 'dolphindb.open_variable',
-                        when: "view == dolphindb.var && viewItem == 'var' || view == dolphindb.var && viewItem == 'table'",
+                        when: "view == dolphindb.vars && viewItem == 'var' || view == dolphindb.vars && viewItem == 'table'",
                         group: 'inline',
                     }
                 ],
@@ -741,13 +741,13 @@ async function build_package_json () {
                 'view/title': [
                     {
                         command: 'dolphindb.open_connection_settings',
-                        when: 'view == dolphindb.connection',
+                        when: 'view == dolphindb.connections',
                         group: 'navigation',
                     },
                     {
-                        command: 'dolphindb.reload_database',
+                        command: 'dolphindb.reload_databases',
                         group: 'navigation',
-                        when: 'view == dolphindb.database',
+                        when: 'view == dolphindb.databases',
                     },
                     {
                         command: 'dolphindb.reload_dataview',
