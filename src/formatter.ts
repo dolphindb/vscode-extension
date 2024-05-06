@@ -87,6 +87,9 @@ export let formatter = {
             if (connection.vars)
                 await connection.update_vars()
             
+            if(connection.children)
+                await connection.update_databases()
+            
             connector.refresh(true)
         }
     },

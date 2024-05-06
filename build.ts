@@ -233,7 +233,7 @@ async function build_package_json () {
             command: 'reload_databases',
             title: {
                 zh: 'DolphinDB: 重新加载数据库',
-                en: 'DolphinDB: Reload DataBase'
+                en: 'DolphinDB: Reload Database'
             },
             icon: '$(refresh)',
         },
