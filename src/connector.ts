@@ -362,6 +362,7 @@ export class DdbConnection extends TreeItem {
     
     node_alias: string
     
+    
     constructor (url: string, name: string = url, options: DdbOptions = { }) {
         super(`${name} `, TreeItemCollapsibleState.None)
         
@@ -389,12 +390,15 @@ export class DdbConnection extends TreeItem {
         this.description = this.url
         this.iconPath = icon_empty
         this.contextValue = 'disconnected'
+        
         this.ddb = new DDB(this.url, this.options)
+        
         this.command = {
             command: 'dolphindb.connect',
             title: 'dolphindb.connect',
             arguments: [this],
         }
+        
         this.local = new DdbVarLocation(false)
         this.shared = new DdbVarLocation(true)
     }
@@ -710,7 +714,10 @@ export class DdbConnection extends TreeItem {
     
     
     async update (database: boolean) {
-        await Promise.all([this.update_vars(), ...(database ? [this.update_databases()] : [ ])])
+        await Promise.all([
+            this.update_vars(), 
+            ...(database ? [this.update_databases()] : [ ])
+        ])
     }
     
     

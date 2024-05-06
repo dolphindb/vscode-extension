@@ -119,9 +119,7 @@ export class DdbTable extends TreeItem {
                 connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
             )
             obj.name = `${this.name} (${t('前 100 行')})`
-            this.obj = obj
-            
-            return this.obj
+            return this.obj = obj
         }
     }
     
