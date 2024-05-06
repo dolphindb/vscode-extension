@@ -8,10 +8,12 @@ import { Server } from 'xshell/server.js'
 import { type DDB, type DdbMessage, type InspectOptions } from 'dolphindb'
 
 import { t } from './i18n/index.js'
-import { dev, fpd_ext } from './index.js'
+
 import { dataview } from './dataview/dataview.js'
-import { type DdbVar } from './provider/var.js'
-import { connection_provider } from './provider/connection.js'
+import { type DdbVar } from './vars.js'
+import { connector } from './connector.js'
+
+import { dev, fpd_ext } from './index.js'
 
 
 /** 懒初始化的，使用前先检查，未初始化需要调用 start_server 初始化 */
@@ -121,7 +123,7 @@ export async function start_server () {
             
             
             async eval ({ data: [node, script] }: Message<[string, string]>, websocket) {
-                let { ddb } = connection_provider.connections.find(({ name }) => name === node)
+                let { ddb } = connector.connections.find(({ name }) => name === node)
                 const { buffer, le } = await ddb.eval(script, { parse_object: false })
                 return [buffer, le]
             },

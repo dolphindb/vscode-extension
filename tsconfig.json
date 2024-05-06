@@ -8,11 +8,15 @@
         
         "./src/constant.ts",
         
+        "src/connector.ts", 
+        
+        "src/databases.ts", 
+        
+        "src/vars.ts",
+        
         "./src/debugger/",
         
-        "./src/dataview/",
-        
-        "./src/provider/",
+        "./src/dataview/"
     ],
     
     "compilerOptions": {

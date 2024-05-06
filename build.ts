@@ -7,8 +7,7 @@ import type { Options as SassOptions } from 'sass-loader'
 import * as sass from 'sass'
 
 
-import { fdelete, fmkdir } from 'xshell'
-import { fwrite, fcopy, fexists } from 'xshell'
+import { fdelete, fmkdir, fwrite, fcopy, fexists } from 'xshell'
 import type { Item } from 'xshell/i18n/index.js'
 
 
@@ -619,7 +618,7 @@ async function build_package_json () {
                     {
                         id: 'dolphindb',
                         title: 'DolphinDB',
-                        icon: './icons/activitybar.svg'
+                        icon: './icons/databases.svg'
                     }
                 ],
                 panel: [
