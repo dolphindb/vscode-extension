@@ -24,14 +24,14 @@ import {
     type InspectOptions,
 } from 'dolphindb'
 
-import { formatter } from '../formatter.js'
-import { server, start_server } from '../server.js'
-import { dataview } from '../dataview/dataview.js'
-import { t } from '../i18n/index.js'
+import { formatter } from './formatter.js'
+import { server, start_server } from './server.js'
+import { dataview } from './dataview/dataview.js'
+import { t } from './i18n/index.js'
 
-import { fpd_ext } from '../index.js'
+import { fpd_ext } from './index.js'
 
-import { connection_provider } from './connection.js'
+import { connector } from './connector.js'
 
 
 export class DdbVarProvider implements TreeDataProvider<TreeItem> {
@@ -50,7 +50,7 @@ export class DdbVarProvider implements TreeDataProvider<TreeItem> {
     getChildren (node?: TreeItem) {
         switch (true) {
             case !node: {
-                const { local, shared } = connection_provider.connection
+                const { local, shared } = connector.connection
                 return [local, shared].filter(node => node.vars.length)
             }
             
@@ -396,7 +396,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         let obj = this.obj
         
         if (schema) {
-            await connection_provider.connection.define_load_table_variable_schema()
+            await connector.connection.define_load_table_variable_schema()
             obj = await this.ddb.call('load_table_variable_schema', [this.name])
         }
         
@@ -445,7 +445,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
 export let var_provider: DdbVarProvider
 
 
-export function register_var_provider () {
+export function register_vars () {
     var_provider = new DdbVarProvider()
     var_provider.view = window.createTreeView('dolphindb.var', { treeDataProvider: var_provider })
 }

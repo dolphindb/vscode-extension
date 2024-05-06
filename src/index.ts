@@ -30,9 +30,9 @@ import { statbar } from './statbar.js'
 import { formatter } from './formatter.js'
 import { ddb_commands } from './commands.js'
 import { register_terminal_link_provider } from './terminal.js'
-import { connection_provider, register_connection_provider } from './provider/connection.js'
-import { register_var_provider } from './provider/var.js'
-import { register_database_provider } from './provider/database.js'
+import { connector, register_connector } from './connector.js'
+import { register_vars } from './vars.js'
+import { register_databases } from './databases.js'
 
 
 declare global {
@@ -73,12 +73,12 @@ export async function activate (ctx: ExtensionContext) {
         await config_window.update('dialogStyle', 'custom', ConfigurationTarget.Global)
     
     
-    register_connection_provider()
-    register_var_provider()
-    register_database_provider()
+    register_connector()
+    register_vars()
+    register_databases()
     
     window.onDidChangeActiveTextEditor(() => {
-        connection_provider.change_language_mode()    
+        connector.change_language_mode()    
     })
     
     
@@ -90,7 +90,7 @@ export async function activate (ctx: ExtensionContext) {
     // 监听配置，dispatch 修改 event
     workspace.onDidChangeConfiguration(event => {
         formatter.on_config_change(event)
-        connection_provider.on_config_change(event)
+        connector.on_config_change(event)
     })
     
     register_terminal_link_provider()
@@ -120,7 +120,7 @@ export async function activate (ctx: ExtensionContext) {
             
             
             // 默认使用当前插件连接的 server 作为 debugger
-            const { connection } = connection_provider
+            const { connection } = connector
             config.url ??= connection.url
             config.username ??= connection.options.username
             config.password ??= connection.options.password

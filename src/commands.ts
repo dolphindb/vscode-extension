@@ -16,9 +16,9 @@ import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
 import { i18n, language, t } from './i18n/index.js'
-import { type DdbConnection, connection_provider } from './provider/connection.js'
-import { DdbVar, var_provider } from './provider/var.js'
-import { database_provider, type DdbTable } from './provider/database.js'
+import { type DdbConnection, connector } from './connector.js'
+import { DdbVar } from './vars.js'
+import { database_provider, type DdbTable } from './databases.js'
 
 import { type DdbMessageItem } from './index.js'
 
@@ -119,7 +119,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 
 
 async function execute (text: string, testing = false) {
-    let { connection } = connection_provider
+    let { connection } = connector
     
     if (connection.running) {
         terminal.printer.fire(t('当前连接 ({{connection}}) 正在执行作业，请等待\r\n', { connection: connection.name }).yellow)
@@ -192,7 +192,7 @@ async function execute (text: string, testing = false) {
         
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
-            (connection === connection_provider.connection ? '' : ` (${connection.name})`) + 
+            (connection === connector.connection ? '' : ` (${connection.name})`) + 
             '\r\n'
         ).red)
         
@@ -212,7 +212,7 @@ async function execute (text: string, testing = false) {
                 {
                     title: t('重连'),
                     async action () {
-                        await connection_provider.reconnect(connection)
+                        await connector.reconnect(connection)
                     }
                 },
             )
@@ -231,14 +231,14 @@ async function execute (text: string, testing = false) {
         return
     
     await connection.update(refresh_database)
-    connection_provider.refresh(refresh_database)
+    connector.refresh(refresh_database)
     
     connection.running = false
     statbar.update()
     
     
     function get_execution_end () {
-        return timer.getstr(true) + (connection === connection_provider.connection ? '' : ` (${connection.name})`) + '\r\n'
+        return timer.getstr(true) + (connection === connector.connection ? '' : ` (${connection.name})`) + '\r\n'
     }
     
     
@@ -284,7 +284,7 @@ async function execute (text: string, testing = false) {
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
 async function execute_with_progress (text: string, testing?: boolean) {
-    let { connection } = connection_provider
+    let { connection } = connector
     
     let done = false
     
@@ -323,7 +323,7 @@ async function execute_with_progress (text: string, testing?: boolean) {
 }
 
 
-async function cancel (connection: DdbConnection = connection_provider.connection) {
+async function cancel (connection: DdbConnection = connector.connection) {
     if (!connection.running)
         return
     
@@ -338,7 +338,7 @@ async function cancel (connection: DdbConnection = connection_provider.connectio
         {
             title: t('断开连接'),
             action () {
-                connection_provider.disconnect(connection)
+                connector.disconnect(connection)
             }
         },
         { title: t('不要取消'), isCloseAffordance: true }
@@ -357,7 +357,7 @@ export async function open_connection_settings () {
 
 
 export async function upload (uri: Uri, uris: Uri[], silent = false) {
-    let { connection } = connection_provider
+    let { connection } = connector
     
     if (should_remind_setting_mappings && !connection.mappings && !await remind_mappings())
         return [ ]
@@ -459,17 +459,17 @@ export const ddb_commands = [
     
     
     async function connect (connection: DdbConnection) {
-        await connection_provider.connect(connection)
+        await connector.connect(connection)
     },
     
     
     function disconnect (connection: DdbConnection) {
-        connection_provider.disconnect(connection)
+        connector.disconnect(connection)
     },
     
     
     async function reconnect (connection: DdbConnection) {
-        await connection_provider.reconnect(connection)
+        await connector.reconnect(connection)
     },
     
     
@@ -544,7 +544,7 @@ export const ddb_commands = [
     
     
     async function reload_database () {
-        await connection_provider.connection.update_database()
+        await connector.connection.update_database()
         database_provider.refresher.fire()
     },
     
@@ -584,7 +584,7 @@ export const ddb_commands = [
     async function upload_module (uri: Uri, uris: Uri[]) {
         // 文件上点右键 upload_module 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
-            let { connection } = connection_provider
+            let { connection } = connector
             let title: string
             
             await connection.connect()
@@ -595,7 +595,7 @@ export const ddb_commands = [
             if (!Array.isArray(uris))
                 uris = [uri]
             
-            if (connection_provider.encrypt === undefined) {
+            if (connector.encrypt === undefined) {
                 ({ title } = await window.showInformationMessage(
                     t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
                     { modal: true },   
@@ -610,18 +610,18 @@ export const ddb_commands = [
                         return
                     
                     case t('总是加密'):
-                        connection_provider.encrypt = true
+                        connector.encrypt = true
                         break
                     
                     case t('总是不加密'):
-                        connection_provider.encrypt = false
+                        connector.encrypt = false
                         break
                 }
             }
             
             const fps = (await Promise.all(
                 uris.map(async uri =>
-                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || connection_provider.encrypt || false, ddb)
+                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || connector.encrypt || false, ddb)
                 )
             )).flat()
             
@@ -635,7 +635,7 @@ export const ddb_commands = [
     
     async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
         try {
-            let { ddb } = connection_provider.connection
+            let { ddb } = connector.connection
             
             const { value } = await ddb.call<DdbObj<string>>('version')
             let [version] = value.split(' ')

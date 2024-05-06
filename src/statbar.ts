@@ -7,7 +7,7 @@ import {
 } from 'vscode'
 
 import { t } from './i18n/index.js'
-import { connection_provider } from './provider/connection.js'
+import { connector } from './connector.js'
 
 
 /** 底部代码执行状态 status bar */
@@ -33,7 +33,7 @@ export let statbar = {
     
     /** 更新当前连接状态至状态栏 */
     update () {
-        this.set(connection_provider.connection?.running)
+        this.set(connector.connection?.running)
     },
     
     

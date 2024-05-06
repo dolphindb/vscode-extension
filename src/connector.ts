@@ -30,22 +30,22 @@ import {
 } from 'dolphindb'
 
 
-import { t } from '../i18n/index.js'
-import { fpd_ext, type DdbMessageItem } from '../index.js'
-import { statbar } from '../statbar.js'
-import { open_connection_settings } from '../commands.js'
+import { t } from './i18n/index.js'
+import { fpd_ext, type DdbMessageItem } from './index.js'
+import { statbar } from './statbar.js'
+import { open_connection_settings } from './commands.js'
 
-import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from '../constant.js'
+import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './constant.js'
 
-import { DdbVar, DdbVarLocation, var_provider } from './var.js'
-import { DdbDatabase, DdbGroup, DdbTable, database_provider } from './database.js'
+import { DdbVar, DdbVarLocation, var_provider } from './vars.js'
+import { DdbDatabase, DdbGroup, DdbTable, database_provider } from './databases.js'
 
 
 let icon_empty: string
 let icon_checked: string
 
 
-export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
+export class DdbConnector implements TreeDataProvider<TreeItem> {
     view: TreeView<TreeItem>
     
     refresher: EventEmitter<TreeItem | undefined | void> = new EventEmitter<TreeItem | undefined | void>()
@@ -164,7 +164,7 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
                 {
                     title: t('重连'),
                     async action () {
-                        await connection_provider.reconnect(connection)
+                        await connector.reconnect(connection)
                     },
                 },
                 ... connection.connected ? [ ] : [
@@ -212,8 +212,8 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
     
     async reconnect (connection: DdbConnection) {
         console.log(t('重连连接:'), connection)
-        connection_provider.disconnect(connection)
-        await connection_provider.connect(
+        connector.disconnect(connection)
+        await connector.connect(
             this.connections.find(conn => conn.name === connection.name)
         )
     }
@@ -283,7 +283,7 @@ export class DdbConnectionProvider implements TreeDataProvider<TreeItem> {
 }
 
 
-export let connection_provider: DdbConnectionProvider
+export let connector: DdbConnector
 
 
 /** 维护一个 ddb api 连接 */
@@ -777,10 +777,10 @@ export class DdbConnection extends TreeItem {
 }
 
 
-export function register_connection_provider () {
+export function register_connector () {
     icon_empty = `${fpd_ext}icons/radio.empty.svg`
     icon_checked = `${fpd_ext}icons/radio.checked.svg`
     
-    connection_provider = new DdbConnectionProvider()
-    connection_provider.view = window.createTreeView('dolphindb.connection', { treeDataProvider: connection_provider })
+    connector = new DdbConnector()
+    connector.view = window.createTreeView('dolphindb.connection', { treeDataProvider: connector })
 }
