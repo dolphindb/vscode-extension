@@ -1,5 +1,7 @@
 {
     "include": [
+        "./eslint.config.ts",
+        
         "./build.ts",
         
         "./src/index.ts",
