@@ -507,16 +507,16 @@ export const ddb_commands = [
     
     
     async function inspect_table (ddbtable: DdbTable) {  
-        const obj = await ddbtable.get_obj()      
         console.log(t('查看 dolphindb 表格:'), ddbtable)
+        const obj = await ddbtable.get_obj()      
         lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
         await lastvar.inspect()
     },
     
     
     async function inspect_table_schema (ddbtable: DdbTable) {  
-        const obj = await ddbtable.get_schema()      
         console.log(t('查看 dolphindb 表结构:'), ddbtable)
+        const obj = await ddbtable.get_schema()
         lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
         await lastvar.inspect()
     },

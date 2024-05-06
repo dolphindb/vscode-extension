@@ -108,7 +108,9 @@ export class DdbTable extends TreeItem {
     
     
     async get_obj () {
-        if (!this.obj) {
+        if (this.obj)
+            return this.obj
+        else {
             await connection_provider.connection.define_peek_table()
             let obj = await connection_provider.connection.ddb.call(
                 'peek_table',
@@ -116,10 +118,8 @@ export class DdbTable extends TreeItem {
                 connection_provider.connection.node_type === NodeType.controller ? { node: connection_provider.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
             )
             obj.name = `${this.name} (${t('前 100 行')})`
-            this.obj = obj
+            return this.obj = obj
         }
-        
-        return this.obj
     }
     
     
