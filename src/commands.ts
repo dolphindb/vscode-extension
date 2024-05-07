@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 
 import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri, FileType, debug } from 'vscode'
 
-import { path, Timer, delay, inspect, vercmp } from 'xshell'
+import { path, Timer, delay, inspect, vercmp, encode } from 'xshell'
 
 import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions } from 'dolphindb'
 
@@ -634,13 +634,14 @@ export const ddb_commands = [
         }
     },
     
+    
     async function export_table (ddbvar = lastvar) { 
         try {
             let { ddb } = connector.connection
             
             // 当前数据面板无变量
             if (!ddbvar) { 
-                window.showErrorMessage(t('当前没有可导出的表格'))                                                          
+                window.showErrorMessage(t('当前没有可导出的表格'))
                 return
             }
             
@@ -674,22 +675,22 @@ export const ddb_commands = [
             if (uri)  
                 window.withProgress(
                     { 
-                        title: t('正在导出...'),
+                        title: t('正在导出 ···'),
                         location: ProgressLocation.Notification,
                     },
                     async () => {
                         await connector.connection.define_get_csv_content()
                         const { value: content } = await ddb.call('getCsvContent', [ddbvar.obj || (await ddb.call('objByName', [ddbvar.name]))])
-                        await workspace.fs.writeFile(uri, typeof content === 'string' ? Buffer.from(content) : content as Buffer)
-                        window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
+                        await workspace.fs.writeFile(uri, typeof content === 'string' ? encode(content) : content as Buffer)
+                        window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath.fp })}`)
                     }
                 )
-            
         } catch (error) { 
             window.showErrorMessage(error.message)
             throw error
         }
     },
+    
     
     async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
         try {
