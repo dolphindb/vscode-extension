@@ -14,10 +14,9 @@ node_modules/
 /docs.zh.json
 /docs.en.json
 
-/src/i18n/*.js
-/src/i18n/*.js.map
-/src/i18n/stats.json
-/src/i18n/untranslateds.json
+/i18n/*.js
+/i18n/*.js.map
+/i18n/untranslateds.json
 
 /src/config.js.map
 /src/config.js

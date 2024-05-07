@@ -9,7 +9,7 @@ import {
     ConfigurationTarget, type ConfigurationChangeEvent, 
 } from 'vscode'
 
-import { t } from './i18n/index.js'
+import { t } from '../i18n/index.js'
 import { connector } from './connector.js'
 
 

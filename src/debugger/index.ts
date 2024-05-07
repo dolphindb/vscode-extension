@@ -7,8 +7,9 @@
 
 import { createServer, type Server, type Socket } from 'net'
 
+import { t } from '../../i18n/index.js'
+
 import { DdbDebugSession } from './adapter.js'
-import { t } from '../i18n/index.js'
 
 
 let port = 0

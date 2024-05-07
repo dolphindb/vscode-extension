@@ -16,7 +16,6 @@ import ko from 'antd/locale/ko_KR.js'
 
 import { Model } from 'react-object-model'
 
-import { language } from '../i18n/index.js'
 import {
     DdbForm,
     type DDB,
@@ -24,6 +23,8 @@ import {
     type InspectOptions,
 } from 'dolphindb/browser.js'
 import { delay } from 'xshell/utils.browser.js'
+
+import { language } from '../../i18n/index.js'
 
 import {
     Obj,

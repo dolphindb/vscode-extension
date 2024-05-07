@@ -5,7 +5,8 @@ import { type Message, Remote, genid, assert, defer } from 'xshell'
 import type { DDB, DdbMessage, InspectOptions } from 'dolphindb'
 
 
-import { language, t } from '../i18n/index.js'
+import { language, t } from '../../i18n/index.js'
+
 import { get_vendors } from '../config.js'
 import { dev, fpd_ext } from '../index.js'
 import { type DdbVar } from '../variables.js'

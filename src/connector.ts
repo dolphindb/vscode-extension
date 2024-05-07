@@ -30,7 +30,7 @@ import {
 } from 'dolphindb'
 
 
-import { t } from './i18n/index.js'
+import { t } from '../i18n/index.js'
 
 import { statbar } from './statbar.js'
 import { open_connection_settings } from './commands.js'

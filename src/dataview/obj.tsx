@@ -48,7 +48,7 @@ import {
 } from 'dolphindb/browser.js'
 import { assert, delay } from 'xshell/utils.browser.js'
 
-import { t } from '../i18n/index.js'
+import { t } from '../../i18n/index.js'
 
 import SvgLink from './link.icon.svg'
 import { type WindowModel } from './window.js'

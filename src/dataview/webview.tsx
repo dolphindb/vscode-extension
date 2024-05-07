@@ -20,7 +20,7 @@ import { genid } from 'xshell/utils.browser.js'
 import { Remote, type Message } from 'xshell/net.browser.js'
 import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
 
-import { language } from '../i18n/index.js'
+import { language } from '../../i18n/index.js'
 
 import { Obj, DdbObjRef } from './obj.js'
 

@@ -15,11 +15,12 @@ import type { DdbObj } from 'dolphindb'
 
 import { delay } from 'xshell'
 
+import { t } from '../../i18n/index.js'
+
 import { Remote } from './network.js'
 import { normalizePathAndCasing, loadSource } from './utils.js'
 
 import { Sources } from './sources.js'
-import { t } from '../i18n/index.js'
 
 
 interface DdbLaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {

@@ -6,14 +6,6 @@
         
         "./src/index.ts",
         
-        "./src/constant.ts",
-        
-        "src/connector.ts", 
-        
-        "src/databases.ts", 
-        
-        "src/variables.ts",
-        
         "./src/debugger/",
         
         "./src/dataview/"

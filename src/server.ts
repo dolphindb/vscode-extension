@@ -7,7 +7,7 @@ import { Server } from 'xshell/server.js'
 
 import { type DDB, type DdbMessage, type InspectOptions } from 'dolphindb'
 
-import { t } from './i18n/index.js'
+import { t } from '../i18n/index.js'
 
 import { dataview } from './dataview/dataview.js'
 import { type DdbVar } from './variables.js'
