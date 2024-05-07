@@ -7,14 +7,14 @@ import type { Options as SassOptions } from 'sass-loader'
 import * as sass from 'sass'
 
 
-import { fcopy, fdelete, fexists, fmkdir, fwrite } from 'xshell'
+import { fdelete, fmkdir, fwrite, fcopy, fexists } from 'xshell'
 import type { Item } from 'xshell/i18n/index.js'
 
 
 import { tm_language, tm_language_python } from 'dolphindb/language.js'
 
 
-import package_json from './package.json' assert { type: 'json' }
+import package_json from './package.json' with { type: 'json' }
 
 import { get_vendors } from './src/config.js'
 
@@ -198,7 +198,23 @@ async function build_package_json () {
             icon: '$(browser)',
         },
         {
-            command: 'inspect_schema',
+            command: 'inspect_table_variable_schema',
+            title: {
+                zh: 'DolphinDB: 查看表结构',
+                en: 'DolphinDB: Inspect Schema'
+            },
+            icon: '$(symbol-structure)',
+        },
+        {
+            command: 'inspect_table',
+            title: {
+                zh: 'DolphinDB: 查看表格',
+                en: 'DolphinDB: Inspect Table'
+            },
+            icon: '$(browser)',
+        },
+        {
+            command: 'inspect_table_schema',
             title: {
                 zh: 'DolphinDB: 查看表结构',
                 en: 'DolphinDB: Inspect Schema'
@@ -212,6 +228,14 @@ async function build_package_json () {
                 en: 'DolphinDB: Inspect Variable in New Window'
             },
             icon: '$(multiple-windows)',
+        },
+        {
+            command: 'reload_databases',
+            title: {
+                zh: 'DolphinDB: 重新加载数据库',
+                en: 'DolphinDB: Reload Database'
+            },
+            icon: '$(refresh)',
         },
         {
             command: 'reload_dataview',
@@ -598,6 +622,13 @@ async function build_package_json () {
             
             
             viewsContainers: {
+                activitybar: [
+                    {
+                        id: 'dolphindb',
+                        title: 'DolphinDB',
+                        icon: './icons/databases.svg'
+                    }
+                ],
                 panel: [
                     {
                         id: 'ddbpanel',
@@ -608,10 +639,18 @@ async function build_package_json () {
             },
             
             views: {
-                explorer: [
+                dolphindb: [
                     {
-                        id: 'dolphindb.explorer',
-                        name: 'dolphindb',
+                        id: 'dolphindb.connector',
+                        name: make('configs.dolphindb.connector.name', '连接', 'CONNECTIONS')
+                    },
+                    {
+                        id: 'dolphindb.databases',
+                        name: make('configs.dolphindb.databases.name', '数据库', 'DATABASES')
+                    },
+                    {
+                        id: 'dolphindb.variables',
+                        name: make('configs.dolphindb.variables.name', '变量', 'VARIABLES')
                     }
                 ],
                 
@@ -657,11 +696,23 @@ async function build_package_json () {
                         when: 'false',
                     },
                     {
-                        command: 'dolphindb.inspect_schema',
+                        command: 'dolphindb.inspect_table_variable_schema',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.inspect_table',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.inspect_table_schema',
                         when: 'false',
                     },
                     {
                         command: 'dolphindb.open_variable',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.reload_databases',
                         when: 'false',
                     },
                     {
@@ -673,19 +724,24 @@ async function build_package_json () {
                 'view/item/context': [
                     {
                         command: 'dolphindb.disconnect',
-                        when: "view == dolphindb.explorer && viewItem == 'connected'",
+                        when: "view == dolphindb.connector && viewItem == 'connected'",
                         group: 'inline',
                     },
                     {
-                        command: 'dolphindb.inspect_schema',
-                        when: "view == dolphindb.explorer && viewItem == 'table'",
+                        command: 'dolphindb.inspect_table_variable_schema',
+                        when: "view == dolphindb.variables && viewItem == 'table'",
+                        group: 'inline',
+                    },
+                    {
+                        command: 'dolphindb.inspect_table_schema',
+                        when: "view == dolphindb.databases && viewItem == 'table'",
                         group: 'inline',
                     },
                     {
                         command: 'dolphindb.open_variable',
-                        when: "view == dolphindb.explorer && viewItem == 'var' || view == dolphindb.explorer && viewItem == 'table'",
+                        when: "view == dolphindb.variables && viewItem == 'var' || view == dolphindb.variables && viewItem == 'table'",
                         group: 'inline',
-                    },
+                    }
                 ],
                 
                 // webview 上方加刷新按钮
@@ -693,8 +749,13 @@ async function build_package_json () {
                 'view/title': [
                     {
                         command: 'dolphindb.open_connection_settings',
-                        when: 'view == dolphindb.explorer',
+                        when: 'view == dolphindb.connector',
                         group: 'navigation',
+                    },
+                    {
+                        command: 'dolphindb.reload_databases',
+                        group: 'navigation',
+                        when: 'view == dolphindb.databases',
                     },
                     {
                         command: 'dolphindb.reload_dataview',

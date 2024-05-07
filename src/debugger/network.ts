@@ -2,8 +2,9 @@ import { type WebSocket, connect_websocket, inspect, WebSocketOpen } from 'xshel
 
 import { type DdbDict, DdbObj } from 'dolphindb'
 
+import { t } from '../../i18n/index.js'
+
 import { json2DdbDict } from './utils.js'
-import { t } from '../i18n/index.js'
 
 const decoder = new TextDecoder()
 

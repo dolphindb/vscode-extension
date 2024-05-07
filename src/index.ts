@@ -22,15 +22,18 @@ import {
 import { set_inspect_options } from 'xshell'
 
 
-import { t } from './i18n/index.js'
+import { t } from '../i18n/index.js'
+
 import { load_docs, register_docs } from './docs.js'
 import { server } from './server.js'
-import { explorer, register_explorer } from './explorer.js'
 import { dataview } from './dataview/dataview.js'
 import { statbar } from './statbar.js'
 import { formatter } from './formatter.js'
 import { ddb_commands } from './commands.js'
 import { register_terminal_link_provider } from './terminal.js'
+import { connector, register_connector } from './connector.js'
+import { register_variables } from './variables.js'
+import { register_databases } from './databases.js'
 
 
 declare global {
@@ -71,10 +74,12 @@ export async function activate (ctx: ExtensionContext) {
         await config_window.update('dialogStyle', 'custom', ConfigurationTarget.Global)
     
     
-    register_explorer()
+    register_connector()
+    register_variables()
+    register_databases()
     
     window.onDidChangeActiveTextEditor(() => {
-        explorer.change_language_mode()    
+        connector.change_language_mode()    
     })
     
     
@@ -86,7 +91,7 @@ export async function activate (ctx: ExtensionContext) {
     // 监听配置，dispatch 修改 event
     workspace.onDidChangeConfiguration(event => {
         formatter.on_config_change(event)
-        explorer.on_config_change(event)
+        connector.on_config_change(event)
     })
     
     register_terminal_link_provider()
@@ -116,7 +121,7 @@ export async function activate (ctx: ExtensionContext) {
             
             
             // 默认使用当前插件连接的 server 作为 debugger
-            const { connection } = explorer
+            const { connection } = connector
             config.url ??= connection.url
             config.username ??= connection.options.username
             config.password ??= connection.options.password

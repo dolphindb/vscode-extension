@@ -9,8 +9,9 @@ import {
     ConfigurationTarget, type ConfigurationChangeEvent, 
 } from 'vscode'
 
-import { t } from './i18n/index.js'
-import { explorer } from './explorer.js'
+import { t } from '../i18n/index.js'
+
+import { connector } from './connector.js'
 
 
 export let formatter = {
@@ -77,13 +78,20 @@ export let formatter = {
     },
     
     async on_config_change (event: ConfigurationChangeEvent) {
+        const { connection } = connector
+        
         if (event.affectsConfiguration('dolphindb.decimals')) {
             console.log(t('dolphindb.decimals 配置被修改'))
             this.read_config()
             this.update_bar()
             
-            if (explorer.connection.vars)
-                await explorer.connection.update()
+            if (connection.vars)
+                await connection.update_vars()
+            
+            if (connection.children)
+                await connection.update_databases()
+            
+            connector.refresh(true)
         }
     },
 }

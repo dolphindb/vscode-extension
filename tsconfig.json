@@ -1,12 +1,14 @@
 {
     "include": [
+        "./eslint.config.ts",
+        
         "./build.ts",
         
         "./src/index.ts",
         
         "./src/debugger/",
         
-        "./src/dataview/",
+        "./src/dataview/"
     ],
     
     "compilerOptions": {

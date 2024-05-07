@@ -426,7 +426,7 @@
         "en": "The current connection has no path mapping configured, and files will be uploaded to the <getHomeDir()>/uploads folder by default. It is recommended to add the mappings attribute to each connection configuration object of dolphindb.connections to associate the local path with the remote path. Subsequent uploads will perform path matching based on mappings. Do you want to configure it now?"
     },
     "查看文档": {
-        "en": "view document"
+        "en": "View Document"
     },
     "请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}} {{notice}}（目前版本暂不支持上传二进制文件，二进制文件会被自动忽略）": {
         "en": "Please confirm whether to upload the selected {{file_num}} files to {{fp_remote}} {{notice}} (the current version does not support uploading binary files, and binary files will be automatically ignored)"
@@ -466,5 +466,14 @@
     },
     "正在导出...": {
         "en": "Exporting..."    
+    },
+    "查看 dolphindb 表格:": {
+        "en": "Inspect the dolphindb table:"
+    },
+    "数据库路径应该以 dfs:// 开头": {
+        "en": "The database path should start with dfs://"
+    },
+    "前 100 行": {
+        "en": "Top 100 rows of table"
     }
 }

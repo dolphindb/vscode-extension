@@ -13,7 +13,7 @@ import {
 import { path, assert } from 'xshell'
 
 
-import { t } from './i18n/index.js'
+import { t } from '../i18n/index.js'
 
 
 /** 获取选择区域的文本，若选择为空，则根据 selector 确定 (当前 | 全部文本 | 空) */
@@ -180,7 +180,8 @@ export async function fdmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
 
 export async function get_formatted_version (ddb: DDB) {
     const { value } = await ddb.eval<DdbObj<string>>('version()')
-    let [version] = value.split(' ')[0] 
+    let version = value.split(' ')[0] 
     version += '.0'.repeat(4 - version.split('.').length)
+    console.log(version)
     return version
 }

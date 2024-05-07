@@ -4,19 +4,25 @@ import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri
 
 import { path, Timer, delay, inspect, vercmp } from 'xshell'
 
-import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions } from 'dolphindb'
+import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbVoid, DdbVoidType } from 'dolphindb'
 
 
-import { i18n, language, t } from './i18n/index.js'
-import { type DdbMessageItem } from './index.js'
-import { type DdbConnection, explorer, DdbVar } from './explorer.js'
+import type { Variable } from '@vscode/debugadapter'
+
+import { i18n, language, t } from '../i18n/index.js'
+
 import { server } from './server.js'
 import { statbar } from './statbar.js'
 import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload, get_formatted_version } from './utils.js'
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
-import { type Variable } from '@vscode/debugadapter'
+import { type DdbConnection, connector } from './connector.js'
+import { DdbVar } from './variables.js'
+import { databases, type DdbTable } from './databases.js'
+
+import type { DdbMessageItem } from './index.js'
+
 
 let lastvar: DdbVar
 
@@ -115,7 +121,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 
 
 async function execute (text: string, testing = false) {
-    let { connection } = explorer
+    let { connection } = connector
     
     if (connection.running) {
         terminal.printer.fire(t('当前连接 ({{connection}}) 正在执行作业，请等待\r\n', { connection: connection.name }).yellow)
@@ -142,9 +148,10 @@ async function execute (text: string, testing = false) {
     statbar.update()
     
     let obj: DdbObj
+    let refresh_database: boolean
     
     try {
-        await connection.connect()
+        refresh_database = await connection.connect()
         
         // TEST: 测试 RefId 错误链接
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
@@ -187,7 +194,7 @@ async function execute (text: string, testing = false) {
         
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
-            (connection === explorer.connection ? '' : ` (${connection.name})`) + 
+            (connection === connector.connection ? '' : ` (${connection.name})`) + 
             '\r\n'
         ).red)
         
@@ -207,7 +214,7 @@ async function execute (text: string, testing = false) {
                 {
                     title: t('重连'),
                     async action () {
-                        await explorer.reconnect(connection)
+                        await connector.reconnect(connection)
                     }
                 },
             )
@@ -225,14 +232,15 @@ async function execute (text: string, testing = false) {
     if (connection.disconnected)
         return
     
-    await connection.update()
+    await connection.update(refresh_database)
+    connector.refresh(refresh_database)
     
     connection.running = false
     statbar.update()
     
     
     function get_execution_end () {
-        return timer.getstr(true) + (connection === explorer.connection ? '' : ` (${connection.name})`) + '\r\n'
+        return timer.getstr(true) + (connection === connector.connection ? '' : ` (${connection.name})`) + '\r\n'
     }
     
     
@@ -278,7 +286,7 @@ async function execute (text: string, testing = false) {
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
 async function execute_with_progress (text: string, testing?: boolean) {
-    let { connection } = explorer
+    let { connection } = connector
     
     let done = false
     
@@ -317,7 +325,7 @@ async function execute_with_progress (text: string, testing?: boolean) {
 }
 
 
-async function cancel (connection: DdbConnection = explorer.connection) {
+async function cancel (connection: DdbConnection = connector.connection) {
     if (!connection.running)
         return
     
@@ -332,7 +340,7 @@ async function cancel (connection: DdbConnection = explorer.connection) {
         {
             title: t('断开连接'),
             action () {
-                explorer.disconnect(connection)
+                connector.disconnect(connection)
             }
         },
         { title: t('不要取消'), isCloseAffordance: true }
@@ -351,7 +359,7 @@ export async function open_connection_settings () {
 
 
 export async function upload (uri: Uri, uris: Uri[], silent = false) {
-    let { connection } = explorer
+    let { connection } = connector
     
     if (should_remind_setting_mappings && !connection.mappings && !await remind_mappings())
         return [ ]
@@ -453,17 +461,17 @@ export const ddb_commands = [
     
     
     async function connect (connection: DdbConnection) {
-        await explorer.connect(connection)
+        await connector.connect(connection)
     },
     
     
     function disconnect (connection: DdbConnection) {
-        explorer.disconnect(connection)
+        connector.disconnect(connection)
     },
     
     
     async function reconnect (connection: DdbConnection) {
-        await explorer.reconnect(connection)
+        await connector.reconnect(connection)
     },
     
     
@@ -496,9 +504,26 @@ export const ddb_commands = [
     },
     
     
-    async function inspect_schema (ddbvar: DdbVar = lastvar) {
+    async function inspect_table_variable_schema (ddbvar: DdbVar = lastvar) {
         console.log(t('查看 dolphindb 表结构:'), ddbvar)
+        lastvar = ddbvar
         await ddbvar.inspect(false, true)
+    },
+    
+    
+    async function inspect_table (ddbtable: DdbTable) {  
+        console.log(t('查看 dolphindb 表格:'), ddbtable)
+        const obj = await ddbtable.get_obj()      
+        lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+        await lastvar.inspect()
+    },
+    
+    
+    async function inspect_table_schema (ddbtable: DdbTable) {  
+        console.log(t('查看 dolphindb 表结构:'), ddbtable)
+        const obj = await ddbtable.get_schema()
+        lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+        await lastvar.inspect()
     },
     
     
@@ -517,6 +542,12 @@ export const ddb_commands = [
         dataview.subscribers_repl = [ ]
         
         webview.html = webview.html + ' '
+    },
+    
+    
+    async function reload_databases () {
+        await connector.connection.update_databases()
+        databases.refresher.fire()
     },
     
     
@@ -555,7 +586,7 @@ export const ddb_commands = [
     async function upload_module (uri: Uri, uris: Uri[]) {
         // 文件上点右键 upload_module 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         try {
-            let { connection } = explorer
+            let { connection } = connector
             let title: string
             
             await connection.connect()
@@ -566,7 +597,7 @@ export const ddb_commands = [
             if (!Array.isArray(uris))
                 uris = [uri]
             
-            if (explorer.encrypt === undefined) {
+            if (connector.encrypt === undefined) {
                 ({ title } = await window.showInformationMessage(
                     t('是否上传后加密模块？\n若加密，服务器端只保存加密后的 .dom 文件，无法查看源码\n若不加密，服务器端将保存原始文件'), 
                     { modal: true },   
@@ -581,18 +612,18 @@ export const ddb_commands = [
                         return
                     
                     case t('总是加密'):
-                        explorer.encrypt = true
+                        connector.encrypt = true
                         break
                     
                     case t('总是不加密'):
-                        explorer.encrypt = false
+                        connector.encrypt = false
                         break
                 }
             }
             
             const fps = (await Promise.all(
                 uris.map(async uri =>
-                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || explorer.encrypt || false, ddb)
+                    ((await workspace.fs.stat(uri)).type === FileType.Directory ? fdmupload : fmupload)(uri, title === t('是') || connector.encrypt || false, ddb)
                 )
             )).flat()
             
@@ -605,11 +636,11 @@ export const ddb_commands = [
     
     async function export_table (ddbvar = lastvar) { 
         try {
-            let { ddb } = explorer.connection
+            let { ddb } = connector.connection
             
             // 当前数据面板无变量
             if (!ddbvar) { 
-                window.showErrorMessage(t('当前没有可导出的表格'))
+                window.showErrorMessage(t('当前没有可导出的表格'))                                                          
                 return
             }
             
@@ -627,10 +658,10 @@ export const ddb_commands = [
             
             // 视图展示的变量非当前连接的变量，切换至变量所属连接
             if (ddbvar && ddbvar.ddb !== ddb) {
-                const var_connection = explorer.connections.find(item => item.ddb === ddbvar.ddb)
+                const var_connection = connector.connections.find(item => item.ddb === ddbvar.ddb)
                 if (var_connection) {
-                    await explorer.connect(var_connection) 
-                    ddb = explorer.connection.ddb
+                    await connector.connect(var_connection) 
+                    ddb = connector.connection.ddb
                 }
                 
             }
@@ -647,8 +678,8 @@ export const ddb_commands = [
                         location: ProgressLocation.Notification,
                     },
                     async () => {
-                        await explorer.connection.define_get_csv_content()
-                        const { value: content } = await ddb.call('getCsvContent', [ddbvar.name ?? '', ddbvar.obj ?? ''])
+                        await connector.connection.define_get_csv_content()
+                        const { value: content } = await ddb.call('getCsvContent', [ddbvar.obj || (await ddb.call('objByName', [ddbvar.name]))])
                         await workspace.fs.writeFile(uri, typeof content === 'string' ? Buffer.from(content) : content as Buffer)
                         window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
                     }
@@ -662,7 +693,7 @@ export const ddb_commands = [
     
     async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
         try {
-            let { ddb } = explorer.connection
+            let { ddb } = connector.connection
             
             // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
             const valid_version = '2.00.11.2'

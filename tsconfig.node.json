@@ -1,7 +1,10 @@
 {
     "extends": "./tsconfig.json",
     
-    "files": ["./build.ts"],
+    "files": [
+        "./eslint.config.ts",
+        "./build.ts"
+    ],
     
     "compilerOptions": {
         "outDir": "./",
