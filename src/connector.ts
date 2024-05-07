@@ -801,5 +801,5 @@ export function register_connector () {
     icon_checked = `${fpd_ext}icons/radio.checked.svg`
     
     connector = new DdbConnector()
-    connector.view = window.createTreeView('dolphindb.connections', { treeDataProvider: connector })
+    connector.view = window.createTreeView('dolphindb.connector', { treeDataProvider: connector })
 }

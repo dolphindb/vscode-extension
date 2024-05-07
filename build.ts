@@ -633,16 +633,16 @@ async function build_package_json () {
             views: {
                 dolphindb: [
                     {
-                        id: 'dolphindb.connections',
-                        name: make('configs.dolphindb.connections.name', '连接', 'CONNECTIONS')
+                        id: 'dolphindb.connector',
+                        name: make('configs.dolphindb.connector.name', '连接', 'CONNECTIONS')
                     },
                     {
                         id: 'dolphindb.databases',
                         name: make('configs.dolphindb.databases.name', '数据库', 'DATABASES')
                     },
                     {
-                        id: 'dolphindb.vars',
-                        name: make('configs.dolphindb.vars.name', '变量', 'VARIABLES')
+                        id: 'dolphindb.variables',
+                        name: make('configs.dolphindb.variables.name', '变量', 'VARIABLES')
                     }
                 ],
                 
@@ -716,12 +716,12 @@ async function build_package_json () {
                 'view/item/context': [
                     {
                         command: 'dolphindb.disconnect',
-                        when: "view == dolphindb.connections && viewItem == 'connected'",
+                        when: "view == dolphindb.connector && viewItem == 'connected'",
                         group: 'inline',
                     },
                     {
                         command: 'dolphindb.inspect_table_variable_schema',
-                        when: "view == dolphindb.vars && viewItem == 'table'",
+                        when: "view == dolphindb.variables && viewItem == 'table'",
                         group: 'inline',
                     },
                     {
@@ -731,7 +731,7 @@ async function build_package_json () {
                     },
                     {
                         command: 'dolphindb.open_variable',
-                        when: "view == dolphindb.vars && viewItem == 'var' || view == dolphindb.vars && viewItem == 'table'",
+                        when: "view == dolphindb.variables && viewItem == 'var' || view == dolphindb.variables && viewItem == 'table'",
                         group: 'inline',
                     }
                 ],
@@ -741,7 +741,7 @@ async function build_package_json () {
                 'view/title': [
                     {
                         command: 'dolphindb.open_connection_settings',
-                        when: 'view == dolphindb.connections',
+                        when: 'view == dolphindb.connector',
                         group: 'navigation',
                     },
                     {

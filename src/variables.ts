@@ -447,7 +447,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
 export let variables: DdbVars
 
 
-export function register_vars () {
+export function register_variables () {
     variables = new DdbVars()
-    variables.view = window.createTreeView('dolphindb.vars', { treeDataProvider: variables })
+    variables.view = window.createTreeView('dolphindb.variables', { treeDataProvider: variables })
 }
