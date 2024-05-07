@@ -10,6 +10,7 @@ import {
 } from 'vscode'
 
 import { t } from '../i18n/index.js'
+
 import { connector } from './connector.js'
 
 
@@ -87,7 +88,7 @@ export let formatter = {
             if (connection.vars)
                 await connection.update_vars()
             
-            if(connection.children)
+            if (connection.children)
                 await connection.update_databases()
             
             connector.refresh(true)

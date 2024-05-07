@@ -23,6 +23,7 @@ import { set_inspect_options } from 'xshell'
 
 
 import { t } from '../i18n/index.js'
+
 import { load_docs, register_docs } from './docs.js'
 import { server } from './server.js'
 import { dataview } from './dataview/dataview.js'

@@ -66,6 +66,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
     /** 上传模块是否加密 */
     encrypt?: boolean | undefined
     
+    
     constructor () {
         this.load_connections()
     }

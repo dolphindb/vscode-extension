@@ -24,10 +24,11 @@ import {
     type InspectOptions,
 } from 'dolphindb'
 
+import { t } from '../i18n/index.js'
+
 import { formatter } from './formatter.js'
 import { server, start_server } from './server.js'
 import { dataview } from './dataview/dataview.js'
-import { t } from '../i18n/index.js'
 
 import { connector } from './connector.js'
 

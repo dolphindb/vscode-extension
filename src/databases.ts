@@ -58,6 +58,7 @@ export class DdbGroup extends TreeItem {
     
     path: string
     
+    
     constructor (path: string, connection: DdbConnection) {
         super(path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
         this.connection = connection
@@ -73,6 +74,7 @@ export class DdbDatabase extends TreeItem {
     tables: DdbTable[] = [ ]
     
     path: string
+    
     
     constructor (path: string, connection: DdbConnection) {
         super(path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
@@ -92,6 +94,7 @@ export class DdbTable extends TreeItem {
     obj: DdbObj
     
     schema: DdbDictObj<DdbVectorStringObj>
+    
     
     constructor (database: DdbDatabase, path: string) {
         const name = path.slice(database.path.length, -1)
@@ -129,15 +132,13 @@ export class DdbTable extends TreeItem {
             return this.schema
         else {
             await connector.connection.define_load_table_schema()
-            this.schema = await connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
+            return this.schema = await connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
                 // 这个函数在 define_load_schema 中已定义
                 'load_table_schema',
                 // 调用该函数时，数据库路径不能以 / 结尾
                 [this.database.path.slice(0, -1), this.name],
                 connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
             )
-            
-            return this.schema
         }
     }
 }
