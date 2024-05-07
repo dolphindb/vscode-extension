@@ -8,7 +8,7 @@ import type { DDB, DdbMessage, InspectOptions } from 'dolphindb'
 import { language, t } from '../i18n/index.js'
 import { get_vendors } from '../config.js'
 import { dev, fpd_ext } from '../index.js'
-import { type DdbVar } from '../vars.js'
+import { type DdbVar } from '../variables.js'
 import { connector } from '../connector.js'
 
 

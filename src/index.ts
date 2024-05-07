@@ -31,7 +31,7 @@ import { formatter } from './formatter.js'
 import { ddb_commands } from './commands.js'
 import { register_terminal_link_provider } from './terminal.js'
 import { connector, register_connector } from './connector.js'
-import { register_vars } from './vars.js'
+import { register_vars } from './variables.js'
 import { register_databases } from './databases.js'
 
 

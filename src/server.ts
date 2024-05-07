@@ -10,7 +10,7 @@ import { type DDB, type DdbMessage, type InspectOptions } from 'dolphindb'
 import { t } from './i18n/index.js'
 
 import { dataview } from './dataview/dataview.js'
-import { type DdbVar } from './vars.js'
+import { type DdbVar } from './variables.js'
 import { connector } from './connector.js'
 
 import { dev, fpd_ext } from './index.js'

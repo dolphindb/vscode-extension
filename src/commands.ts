@@ -17,7 +17,7 @@ import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
 import { i18n, language, t } from './i18n/index.js'
 import { type DdbConnection, connector } from './connector.js'
-import { DdbVar } from './vars.js'
+import { DdbVar } from './variables.js'
 import { databases, type DdbTable } from './databases.js'
 
 import { type DdbMessageItem } from './index.js'

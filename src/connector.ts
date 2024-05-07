@@ -37,7 +37,7 @@ import { open_connection_settings } from './commands.js'
 
 import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './constant.js'
 
-import { DdbVar, DdbVarLocation, variables } from './vars.js'
+import { DdbVar, DdbVarLocation, variables } from './variables.js'
 import { DdbDatabase, DdbGroup, DdbTable, databases } from './databases.js'
 
 import { fpd_ext, type DdbMessageItem } from './index.js'

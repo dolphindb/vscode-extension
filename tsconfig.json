@@ -12,7 +12,7 @@
         
         "src/databases.ts", 
         
-        "src/vars.ts",
+        "src/variables.ts",
         
         "./src/debugger/",
         
