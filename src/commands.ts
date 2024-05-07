@@ -18,7 +18,7 @@ import { create_terminal, terminal } from './terminal.js'
 import { i18n, language, t } from './i18n/index.js'
 import { type DdbConnection, connector } from './connector.js'
 import { DdbVar } from './vars.js'
-import { database_provider, type DdbTable } from './databases.js'
+import { databases, type DdbTable } from './databases.js'
 
 import { type DdbMessageItem } from './index.js'
 
@@ -545,7 +545,7 @@ export const ddb_commands = [
     
     async function reload_databases () {
         await connector.connection.update_databases()
-        database_provider.refresher.fire()
+        databases.refresher.fire()
     },
     
     

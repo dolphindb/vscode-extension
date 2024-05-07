@@ -35,7 +35,7 @@ import { fpd_ext } from './index.js'
 
 
 
-export class DdbVarProvider implements TreeDataProvider<TreeItem> {
+export class DdbVars implements TreeDataProvider<TreeItem> {
     view: TreeView<TreeItem>
     
     refresher: EventEmitter<TreeItem | undefined | void> = new EventEmitter<TreeItem | undefined | void>()
@@ -443,10 +443,10 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
 }
 
 
-export let var_provider: DdbVarProvider
+export let variables: DdbVars
 
 
 export function register_vars () {
-    var_provider = new DdbVarProvider()
-    var_provider.view = window.createTreeView('dolphindb.vars', { treeDataProvider: var_provider })
+    variables = new DdbVars()
+    variables.view = window.createTreeView('dolphindb.vars', { treeDataProvider: variables })
 }

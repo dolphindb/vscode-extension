@@ -37,8 +37,8 @@ import { open_connection_settings } from './commands.js'
 
 import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './constant.js'
 
-import { DdbVar, DdbVarLocation, var_provider } from './vars.js'
-import { DdbDatabase, DdbGroup, DdbTable, database_provider } from './databases.js'
+import { DdbVar, DdbVarLocation, variables } from './vars.js'
+import { DdbDatabase, DdbGroup, DdbTable, databases } from './databases.js'
 
 import { fpd_ext, type DdbMessageItem } from './index.js'
 
@@ -278,9 +278,9 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
     
     refresh (database: boolean) {
         this.refresher.fire()
-        var_provider.refresher.fire()
+        variables.refresher.fire()
         if (database)
-            database_provider.refresher.fire()
+            databases.refresher.fire()
     }
 }
 

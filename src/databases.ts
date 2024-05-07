@@ -48,7 +48,7 @@ export class DdbDatabases implements TreeDataProvider<TreeItem> {
 }
 
 
-export let database_provider: DdbDatabases
+export let databases: DdbDatabases
 
 
 export class DdbGroup extends TreeItem {
@@ -144,7 +144,7 @@ export class DdbTable extends TreeItem {
 
 
 export function register_databases () {
-    database_provider = new DdbDatabases()
-    database_provider.view = window.createTreeView('dolphindb.databases', { treeDataProvider: database_provider })
+    databases = new DdbDatabases()
+    databases.view = window.createTreeView('dolphindb.databases', { treeDataProvider: databases })
 }
 
