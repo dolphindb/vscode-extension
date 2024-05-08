@@ -441,7 +441,7 @@
         "en": "Confirm"
     },
     "文件已成功导出到 {{path}}": {
-        "en": "File successfully exported to {{path}}"
+        "en": "File exported successfully to {{path}}"
     },
     "仅支持导出表格": {
         "en": "Only supports exporting tables"
@@ -464,8 +464,8 @@
     "总是不加密": {
         "en": "Never"
     },
-    "正在导出...": {
-        "en": "Exporting..."    
+    "正在导出 ···": {
+        "en": "Exporting ···"    
     },
     "查看 dolphindb 表格:": {
         "en": "Inspect the dolphindb table:"
