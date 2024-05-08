@@ -30,7 +30,7 @@ import { formatter } from './formatter.js'
 import { server, start_server } from './server.js'
 import { dataview } from './dataview/dataview.js'
 
-import { connector } from './connector.js'
+import { type DdbConnection, connector } from './connector.js'
 
 import { fpd_ext } from './index.js'
 
@@ -234,7 +234,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     
     node: string
     
-    ddb: DDB
+    connection: DdbConnection
     
     // --- by objs(true)
     name: string
@@ -257,10 +257,12 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     obj: TObj
     
     
-    constructor (data: Partial<DdbVar>) {
+    constructor (data: Partial<DdbVar>, connection: DdbConnection) {
         super(data.name, TreeItemCollapsibleState.None)
         
         Object.assign(this, data)
+        
+        this.connection = connection
         
         this.label = (() => {
             const tname = DdbType[this.type]
@@ -399,7 +401,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         
         if (schema) {
             await connector.connection.define_load_table_variable_schema()
-            obj = await this.ddb.call('load_table_variable_schema', [this.name])
+            obj = await this.connection.ddb.call('load_table_variable_schema', [this.name])
         }
         
         const args = [
@@ -431,7 +433,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     
     async resolve_tooltip () {
         if (!this.obj && this.bytes <= DdbVar.size_limit)
-            this.obj = await this.ddb.eval(this.name)
+            this.obj = await this.connection.ddb.eval(this.name)
         
         this.tooltip = this.obj ?
                 this.form === DdbForm.object ?

@@ -176,11 +176,3 @@ export async function fdmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
         )
     )).flat()
 }
-
-
-export async function get_formatted_version (ddb: DDB) {
-    const { value } = await ddb.eval<DdbObj<string>>('version()')
-    let version = value.split(' ')[0] 
-    version += '.0'.repeat(4 - version.split('.').length)
-    return version
-}

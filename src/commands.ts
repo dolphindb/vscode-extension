@@ -13,7 +13,7 @@ import { i18n, language, t } from '../i18n/index.js'
 
 import { server } from './server.js'
 import { statbar } from './statbar.js'
-import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload, get_formatted_version } from './utils.js'
+import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
 import { dataview } from './dataview/dataview.js'
 import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
@@ -263,7 +263,7 @@ async function execute (text: string, testing = false) {
         case DdbForm.table:
         case DdbForm.chart:
         case DdbForm.dict:
-            lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+            lastvar = new DdbVar({ ...obj, obj, bytes: 0n }, connection)
             to_inspect = true
             objstr = obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
             break
@@ -514,7 +514,7 @@ export const ddb_commands = [
     async function inspect_table (ddbtable: DdbTable) {  
         console.log(t('查看 dolphindb 表格:'), ddbtable)
         const obj = await ddbtable.get_obj()      
-        lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+        lastvar = new DdbVar({ ...obj, obj, bytes: 0n }, connector.connection)
         await lastvar.inspect()
     },
     
@@ -522,7 +522,7 @@ export const ddb_commands = [
     async function inspect_table_schema (ddbtable: DdbTable) {  
         console.log(t('查看 dolphindb 表结构:'), ddbtable)
         const obj = await ddbtable.get_schema()
-        lastvar = new DdbVar({ ...obj, obj, bytes: 0n })
+        lastvar = new DdbVar({ ...obj, obj, bytes: 0n }, connector.connection)
         await lastvar.inspect()
     },
     
@@ -636,7 +636,9 @@ export const ddb_commands = [
     
     async function export_table (ddbvar = lastvar) { 
         try {
-            let { ddb } = connector.connection
+            let { connection } = ddbvar
+            
+            let { ddb, version } = connection
             
             // 当前数据面板无变量
             if (!ddbvar) { 
@@ -650,21 +652,14 @@ export const ddb_commands = [
             }
             
             // 2.00.11 以上版本才能使用导出功能
-            const version = await get_formatted_version(ddb)
             if (vercmp(version, '2.00.11.0') < 0) { 
                 window.showWarningMessage(t('server 版本低于 2.00.11，请升级后再使用此功能'))
                 return
             }
             
             // 视图展示的变量非当前连接的变量，切换至变量所属连接
-            if (ddbvar && ddbvar.ddb !== ddb) {
-                const var_connection = connector.connections.find(item => item.ddb === ddbvar.ddb)
-                if (var_connection) {
-                    await connector.connect(var_connection) 
-                    ddb = connector.connection.ddb
-                }
-                
-            }
+            if (connector.connection !== connection) 
+                await connector.connect(connection) 
             
             const uri = await window.showSaveDialog({
                 title: t('导出表格'),
@@ -679,7 +674,7 @@ export const ddb_commands = [
                     },
                     async () => {
                         await connector.connection.define_get_csv_content()
-                        const { value: content } = await ddb.call('getCsvContent', [ddbvar.obj || (await ddb.call('objByName', [ddbvar.name]))])
+                        const { value: content } = await ddb.call('getCsvContent', [ddbvar.obj || ddbvar.name])
                         await workspace.fs.writeFile(uri, typeof content === 'string' ? Buffer.from(content) : content as Buffer)
                         window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
                     }
@@ -693,11 +688,10 @@ export const ddb_commands = [
     
     async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
         try {
-            let { ddb } = connector.connection
+            let { ddb, version } = connector.connection
             
             // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
             const valid_version = '2.00.11.2'
-            const version = await get_formatted_version(ddb)
             
             // vercmp('2.00.11.2', '2.00.11.1') = 1
             if (vercmp(version, valid_version) < 0) { 
@@ -713,9 +707,8 @@ export const ddb_commands = [
             // 获取 sessionId
             const res: [number, string] = await debug.activeDebugSession.customRequest('getCurrentSessionId')
             
-            // todo: 改为用 call 调用
-            const result = await ddb.eval(`getVariable(${frameId}, ${vid}, "${name}", ${res[0]})`)
-            lastvar = new DdbVar({ ...result, obj: result, bytes: 0n })
+            const result = await ddb.call('getVariable', [frameId, vid, name, res[0]])
+            lastvar = new DdbVar({ ...result, obj: result, bytes: 0n }, connector.connection)
             await lastvar.inspect()
         } catch (error) {
             window.showErrorMessage(error.message)

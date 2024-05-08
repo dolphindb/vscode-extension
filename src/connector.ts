@@ -319,6 +319,8 @@ export class DdbConnection extends TreeItem {
     
     ddb: DDB
     
+    version: string
+    
     /** 和 ddb.connected 含义不同，这里表示是否连接成功过，用来区分错误提示 */
     connected = false
     
@@ -417,7 +419,8 @@ export class DdbConnection extends TreeItem {
         await Promise.all([
             this.get_node_type(),
             this.get_node_alias(),
-            this.get_controller_alias()
+            this.get_controller_alias(),
+            this.get_formatted_version()
         ])
         await this.get_cluster_perf()
         
@@ -437,81 +440,85 @@ export class DdbConnection extends TreeItem {
     
     
     async define_load_table_variable_schema () {
-        if (this.load_table_variable_schema_defined)
-            return
-        
-        await this.ddb.eval(
-            this.options.python ?
-                ('def load_table_variable_schema (table_name):\n' +
-                '    return schema(objByName(table_name))\n')
-            :
-                ('def load_table_variable_schema (table_name) {\n' +
-                '    return schema(objByName(table_name))\n' +
-                '}\n')
-        )
-        
-        this.load_table_variable_schema_defined = true
+        if (!this.load_table_variable_schema_defined) {
+            await this.ddb.eval(
+                this.options.python ?
+                    ('def load_table_variable_schema (table_name):\n' +
+                    '    return schema(objByName(table_name))\n')
+                :
+                    ('def load_table_variable_schema (table_name) {\n' +
+                    '    return schema(objByName(table_name))\n' +
+                    '}\n')
+            )
+            
+            this.load_table_variable_schema_defined = true
+        }
     }
     
     
     async define_peek_table () {
-        if (this.peek_table_defined)
-            return
-        
-        await this.ddb.eval(
-            this.options.python ?
-                ('def peek_table (db_path, tb_name):\n' +
-                '    return select top 100 * from loadTable(db_path, tb_name)\n')
-            :
-                ('def peek_table (db_path, tb_name) {\n' +
-                '    return select top 100 * from loadTable(db_path, tb_name)\n' +
-                '}\n')
-        )
-        
-        this.peek_table_defined = true
+        if (!this.peek_table_defined) {
+            await this.ddb.eval(
+                this.options.python ?
+                    ('def peek_table (db_path, tb_name):\n' +
+                    '    return select top 100 * from loadTable(db_path, tb_name)\n')
+                :
+                    ('def peek_table (db_path, tb_name) {\n' +
+                    '    return select top 100 * from loadTable(db_path, tb_name)\n' +
+                    '}\n')
+            )
+            
+            this.peek_table_defined = true
+        }
     }
         
     
     async define_load_table_schema () {
-        if (this.load_table_schema_defined)
-            return
-        
-        await this.ddb.eval(
-            this.options.python ?
-                ('def load_table_schema (db_path, tb_name):\n' +
-                '    return schema(loadTable(db_path, tb_name))\n')
-            :
-                ('def load_table_schema (db_path, tb_name) {\n' +
-                '    return schema(loadTable(db_path, tb_name))\n' +
-                '}\n')
-        )
-        
-        this.load_table_schema_defined = true
+        if (this.load_table_schema_defined) {
+            await this.ddb.eval(
+                this.options.python ?
+                    ('def load_table_schema (db_path, tb_name):\n' +
+                    '    return schema(loadTable(db_path, tb_name))\n')
+                :
+                    ('def load_table_schema (db_path, tb_name) {\n' +
+                    '    return schema(loadTable(db_path, tb_name))\n' +
+                    '}\n')
+            )
+            
+            this.load_table_schema_defined = true
+        }
     }
     
     
     async define_get_csv_content () { 
-        if (this.get_csv_content_defined)
-            return
-        else { 
+        if (!this.get_csv_content_defined) {
             await this.ddb.eval(
                 this.options.python ?
                     `
                         def getCsvContent(obj) :
+                            if ((typestr name_or_obj) =='CHAR' || (typestr name_or_obj) =='STRING')
+                                obj = objByName(name_or_obj)
+                            else
+                                obj = name_or_obj
+                                
                             table_size = size obj
-                            return generateTextFromTable(obj, 0, table_size, 0, ',', true)
+                            return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, ',', true)
                     `
                 :
                     `
-                        def getCsvContent(obj) {
+                        def getCsvContent(name_or_obj) {
+                            if ((typestr name_or_obj) =='CHAR' || (typestr name_or_obj) =='STRING')
+                                obj = objByName(name_or_obj)
+                            else
+                                obj = name_or_obj
+                                
                             table_size = size obj
-                            return generateTextFromTable(obj, 0, table_size, 0, ',', true)
+                            return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, ',', true)
                         }
                     `
                 )
             this.get_csv_content_defined = true
-        }
-            
+        }  
     }
     
     
@@ -619,7 +626,7 @@ export class DdbConnection extends TreeItem {
                 
         }
         
-        this.vars = vars_data.map(data => new DdbVar(data))
+        this.vars = vars_data.map(data => new DdbVar(data, this))
         
         // this.varsmap = this.vars.reduce<Record<string, any>>((acc, row) => {
         //         acc[row.name] = row
@@ -809,6 +816,14 @@ export class DdbConnection extends TreeItem {
         this.node = node
         this.controller = controller
         this.datanode = datanode
+    }
+    
+    
+    async get_formatted_version () {
+        const { value } = await this.ddb.call<DdbObj<string>>('version')
+        let version = value.split(' ')[0] 
+        version += '.0'.repeat(4 - version.split('.').length)
+        this.version = version
     }
     
     
