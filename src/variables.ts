@@ -262,8 +262,6 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         
         Object.assign(this, data)
         
-        this.connection = data.connection
-        
         this.label = (() => {
             const tname = DdbType[this.type]
             
