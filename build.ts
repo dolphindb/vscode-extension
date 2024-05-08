@@ -203,7 +203,7 @@ async function build_package_json () {
                 zh: 'DolphinDB: 查看表结构',
                 en: 'DolphinDB: Inspect Schema'
             },
-            icon: '$(symbol-structure)',
+            icon: '$(outline-view-icon)',
         },
         {
             command: 'inspect_table',
@@ -219,7 +219,7 @@ async function build_package_json () {
                 zh: 'DolphinDB: 查看表结构',
                 en: 'DolphinDB: Inspect Schema'
             },
-            icon: '$(symbol-structure)',
+            icon: '$(outline-view-icon)',
         },
         {
             command: 'open_variable',
@@ -813,12 +813,12 @@ async function build_package_json () {
                     },
                 ],
                 // 调试变量菜单
-                'debug/variables/context': [
-                    {
-                        command: 'dolphindb.inspect_debug_variable',
-                        group: '2_workspace'
-                    }
-                ]
+                // 'debug/variables/context': [
+                //     {
+                //         command: 'dolphindb.inspect_debug_variable',
+                //         group: '2_workspace'
+                //     }
+                // ]
             },
             submenus: [
                 {
