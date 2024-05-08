@@ -257,12 +257,12 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     obj: TObj
     
     
-    constructor (data: Partial<DdbVar>, connection: DdbConnection) {
+    constructor (data: Partial<DdbVar>) {
         super(data.name, TreeItemCollapsibleState.None)
         
         Object.assign(this, data)
         
-        this.connection = connection
+        this.connection = data.connection
         
         this.label = (() => {
             const tname = DdbType[this.type]

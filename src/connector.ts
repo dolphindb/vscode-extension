@@ -475,7 +475,7 @@ export class DdbConnection extends TreeItem {
         
     
     async define_load_table_schema () {
-        if (this.load_table_schema_defined) {
+        if (!this.load_table_schema_defined) {
             await this.ddb.eval(
                 this.options.python ?
                     ('def load_table_schema (db_path, tb_name):\n' +
@@ -496,19 +496,21 @@ export class DdbConnection extends TreeItem {
             await this.ddb.eval(
                 this.options.python ?
                     `
-                        def getCsvContent(obj) :
-                            if ((typestr name_or_obj) =='CHAR' || (typestr name_or_obj) =='STRING')
+                        def getCsvContent(name_or_obj):
+                            type = typestr(name_or_obj)
+                            if type == 'CHAR' or type == 'STRING':
                                 obj = objByName(name_or_obj)
-                            else
+                            else:
                                 obj = name_or_obj
                                 
-                            table_size = size obj
-                            return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, ',', true)
+                            table_size = size(obj)
+                            return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, char(','), True)
                     `
                 :
                     `
                         def getCsvContent(name_or_obj) {
-                            if ((typestr name_or_obj) =='CHAR' || (typestr name_or_obj) =='STRING')
+                            type = typestr name_or_obj
+                            if (type =='CHAR' || type =='STRING')
                                 obj = objByName(name_or_obj)
                             else
                                 obj = name_or_obj
@@ -577,7 +579,7 @@ export class DdbConnection extends TreeItem {
             }) => ({
                 node: this.name,
                 
-                ddb: this.ddb,
+                connection: this,
                 
                 name,
                 
@@ -627,7 +629,7 @@ export class DdbConnection extends TreeItem {
                 
         }
         
-        this.vars = vars_data.map(data => new DdbVar(data, this))
+        this.vars = vars_data.map(data => new DdbVar(data))
         
         // this.varsmap = this.vars.reduce<Record<string, any>>((acc, row) => {
         //         acc[row.name] = row
