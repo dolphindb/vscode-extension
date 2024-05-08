@@ -676,7 +676,7 @@ export const ddb_commands = [
                     async () => {
                         await connector.connection.define_get_csv_content()
                         const { value: content } = await ddb.call('getCsvContent', [ddbvar.obj || ddbvar.name])
-                        await workspace.fs.writeFile(uri, typeof content === 'string' ? Buffer.from(content) : content as Buffer)
+                        await workspace.fs.writeFile(uri, typeof content === 'string' ? encode(content) : content as Buffer)
                         window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
                     }
                 )
