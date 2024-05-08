@@ -495,31 +495,28 @@ export class DdbConnection extends TreeItem {
         if (!this.get_csv_content_defined) {
             await this.ddb.eval(
                 this.options.python ?
-                    `
-                        def getCsvContent(name_or_obj):
-                            type = typestr(name_or_obj)
-                            if type == 'CHAR' or type == 'STRING':
-                                obj = objByName(name_or_obj)
-                            else:
-                                obj = name_or_obj
-                                
-                            table_size = size(obj)
-                            return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, char(','), True)
-                    `
+                    'def get_csv_content (name_or_obj):\n' +
+                    '    type = typestr(name_or_obj)\n' +
+                    "    if type == 'CHAR' or type == 'STRING':\n" +
+                    '        obj = objByName(name_or_obj)\n' +
+                    '    else:\n' +
+                    '        obj = name_or_obj\n' +
+                    '        \n' +
+                    '    table_size = size(obj)\n' +
+                    "    return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, char(','), True)\n"
                 :
-                    `
-                        def getCsvContent(name_or_obj) {
-                            type = typestr name_or_obj
-                            if (type =='CHAR' || type =='STRING')
-                                obj = objByName(name_or_obj)
-                            else
-                                obj = name_or_obj
-                                
-                            table_size = size obj
-                            return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, ',', true)
-                        }
-                    `
+                    'def get_csv_content (name_or_obj) {\n' +
+                    '    type = typestr name_or_obj\n' +
+                    "    if (type =='CHAR' || type =='STRING')\n" +
+                    '        obj = objByName(name_or_obj)\n' +
+                    '    else\n' +
+                    '        obj = name_or_obj\n' +
+                    '        \n' +
+                    '    table_size = size obj\n' +
+                    "    return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, ',', true)\n" +
+                    '}\n'
                 )
+            
             this.get_csv_content_defined = true
         }  
     }
