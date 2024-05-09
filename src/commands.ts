@@ -662,11 +662,9 @@ export const ddb_commands = [
             if (connector.connection !== connection) 
                 await connector.connect(connection) 
             
-            const workspace_folders = workspace.workspaceFolders
-            const export_root = workspace_folders && workspace_folders.length ? workspace_folders[0].uri.fsPath : '.' 
             const uri = await window.showSaveDialog({
                 title: t('导出表格'),
-                defaultUri: Uri.file(`${export_root}/${lastvar.name || 'table'}.csv`) 
+                defaultUri: Uri.file(`${workspace.workspaceFolders?.[0]?.uri.fsPath.fpd || '/'}${lastvar.name || 'table'}.csv`)
             })
             
             if (uri)  
