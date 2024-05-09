@@ -635,19 +635,19 @@ export const ddb_commands = [
     },
     
     
-    async function export_table (ddbvar = lastvar) { 
+    async function export_table () { 
         try {
-            let { connection } = ddbvar
-            
-            let { ddb, version } = connection
-            
             // 当前数据面板无变量
-            if (!ddbvar) { 
+            if (!lastvar) { 
                 window.showErrorMessage(t('当前没有可导出的表格'))
                 return
             }
             
-            if (ddbvar.form !== DdbForm.table) { 
+            let { connection } = lastvar
+            
+            let { ddb, version } = connection
+            
+            if (lastvar.form !== DdbForm.table) { 
                 window.showWarningMessage(t('仅支持导出表格'))
                 return 
             }
@@ -662,9 +662,11 @@ export const ddb_commands = [
             if (connector.connection !== connection) 
                 await connector.connect(connection) 
             
+            const workspace_folders = workspace.workspaceFolders
+            const export_root = workspace_folders && workspace_folders.length ? workspace_folders[0].uri.fsPath : '.' 
             const uri = await window.showSaveDialog({
                 title: t('导出表格'),
-                defaultUri: Uri.file(`./${ddbvar.name || 'table'}.csv`) 
+                defaultUri: Uri.file(`${export_root}/${lastvar.name || 'table'}.csv`) 
             })
             
             if (uri)  
@@ -675,7 +677,7 @@ export const ddb_commands = [
                     },
                     async () => {
                         await connector.connection.define_get_csv_content()
-                        const { value: content } = await ddb.call('get_csv_content', [ddbvar.obj || ddbvar.name])
+                        const { value: content } = await ddb.call('get_csv_content', [lastvar.obj || lastvar.name])
                         await workspace.fs.writeFile(uri, typeof content === 'string' ? encode(content) : content as Buffer)
                         window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
                     }
