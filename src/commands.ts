@@ -504,13 +504,6 @@ export const ddb_commands = [
     },
     
     
-    async function inspect_table_variable_schema (ddbvar: DdbVar = lastvar) {
-        console.log(t('查看 dolphindb 表结构:'), ddbvar)
-        lastvar = ddbvar
-        await ddbvar.inspect(false, true)
-    },
-    
-    
     async function inspect_table (ddbtable: DdbTable) {  
         console.log(t('查看 dolphindb 表格:'), ddbtable)
         const obj = await ddbtable.get_obj()      
@@ -519,9 +512,9 @@ export const ddb_commands = [
     },
     
     
-    async function inspect_table_schema (ddbtable: DdbTable) {  
-        console.log(t('查看 dolphindb 表结构:'), ddbtable)
-        const obj = await ddbtable.get_schema()
+    async function inspect_table_schema (table: DdbTable | DdbVar) {  
+        console.log(t('查看 dolphindb 表结构:'), table)
+        const obj = await table.get_schema()
         lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection: connector.connection })
         await lastvar.inspect()
     },
@@ -698,21 +691,21 @@ export const ddb_commands = [
             let { ddb } = connection
             
             // // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
-            const valid_version = '2.00.11.2'
+            // const valid_version = '2.00.11.2'
             
-            async function get_formatted_version (ddb: DDB) {
-                const { value } = await ddb.eval<DdbObj<string>>('version()')
-                let version = value.split(' ')[0] 
-                version += '.0'.repeat(4 - version.split('.').length)
-                return version
-            }
+            // async function get_formatted_version (ddb: DDB) {
+            //     const { value } = await ddb.eval<DdbObj<string>>('version()')
+            //     let version = value.split(' ')[0] 
+            //     version += '.0'.repeat(4 - version.split('.').length)
+            //     return version
+            // }
             
-            const version = await get_formatted_version(ddb)
-            // vercmp('2.00.11.2', '2.00.11.1') = 1
-            if (vercmp(version, valid_version) < 0) { 
-                window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
-                return
-            }
+            // const version = await get_formatted_version(ddb)
+            // // vercmp('2.00.11.2', '2.00.11.1') = 1
+            // if (vercmp(version, valid_version) < 0) { 
+            //     window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
+            //     return
+            // }
             
             const response = await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 })
             const frameId = response.stackFrames[0].id

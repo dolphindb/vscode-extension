@@ -198,14 +198,6 @@ async function build_package_json () {
             icon: '$(browser)',
         },
         {
-            command: 'inspect_table_variable_schema',
-            title: {
-                zh: 'DolphinDB: 查看表结构',
-                en: 'DolphinDB: Inspect Schema'
-            },
-            icon: '$(outline-view-icon)',
-        },
-        {
             command: 'inspect_table',
             title: {
                 zh: 'DolphinDB: 查看表格',
@@ -696,10 +688,6 @@ async function build_package_json () {
                         when: 'false',
                     },
                     {
-                        command: 'dolphindb.inspect_table_variable_schema',
-                        when: 'false',
-                    },
-                    {
                         command: 'dolphindb.inspect_table',
                         when: 'false',
                     },
@@ -728,7 +716,7 @@ async function build_package_json () {
                         group: 'inline',
                     },
                     {
-                        command: 'dolphindb.inspect_table_variable_schema',
+                        command: 'dolphindb.inspect_table_schema',
                         when: "view == dolphindb.variables && viewItem == 'table'",
                         group: 'inline',
                     },
