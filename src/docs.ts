@@ -94,10 +94,10 @@ function get_func_md (keyword: string) {
         `#### ${title}\n` +
         
         // 旧文档链接
-        // 'https://' + (language === 'zh' ? 'docs.dolphindb.cn/zh/help/' : 'dolphindb.com/help200/') +
+        'https://' + (language === 'zh' ? 'docs.dolphindb.cn/zh/help/' : 'dolphindb.com/help200/') +
         
         // 新文档链接
-        `https://docs.dolphindb.cn/${language === 'zh' ? 'zh' : 'en'}/` +
+        // `https://docs.dolphindb.cn/${language === 'zh' ? 'zh' : 'en'}/` +
         
         func_fps[type] +
         (type !== 'template' ? `${title[0]}/` : '') +
