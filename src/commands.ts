@@ -19,7 +19,7 @@ import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
 import { type DdbConnection, connector } from './connector.js'
 import { DdbVar } from './variables.js'
-import { databases, type DdbTable } from './databases.js'
+import { type DdbDatabase, databases, type DdbTable } from './databases.js'
 
 import type { DdbMessageItem } from './index.js'
 
@@ -504,13 +504,6 @@ export const ddb_commands = [
     },
     
     
-    async function inspect_table_variable_schema (ddbvar: DdbVar = lastvar) {
-        console.log(t('查看 dolphindb 表结构:'), ddbvar)
-        lastvar = ddbvar
-        await ddbvar.inspect(false, true)
-    },
-    
-    
     async function inspect_table (ddbtable: DdbTable) {  
         console.log(t('查看 dolphindb 表格:'), ddbtable)
         const obj = await ddbtable.get_obj()      
@@ -519,9 +512,17 @@ export const ddb_commands = [
     },
     
     
-    async function inspect_table_schema (ddbtable: DdbTable) {  
-        console.log(t('查看 dolphindb 表结构:'), ddbtable)
-        const obj = await ddbtable.get_schema()
+    async function inspect_table_schema (table: DdbTable | DdbVar) {  
+        console.log(t('查看 dolphindb 表结构:'), table)
+        const obj = await table.get_schema()
+        lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection: connector.connection })
+        await lastvar.inspect()
+    },
+    
+    
+    async function inspect_database_schema (database: DdbDatabase) {  
+        console.log(t('查看 dolphindb 数据库结构:'), database)
+        const obj = await database.get_schema()
         lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection: connector.connection })
         await lastvar.inspect()
     },
@@ -697,16 +698,9 @@ export const ddb_commands = [
             
             // // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
             const valid_version = '2.00.11.2'
+            const version = await debug.activeDebugSession.customRequest('getVersion')
             
-            async function get_formatted_version (ddb: DDB) {
-                const { value } = await ddb.eval<DdbObj<string>>('version()')
-                let version = value.split(' ')[0] 
-                version += '.0'.repeat(4 - version.split('.').length)
-                return version
-            }
-            
-            const version = await get_formatted_version(ddb)
-            // vercmp('2.00.11.2', '2.00.11.1') = 1
+            // // vercmp('2.00.11.2', '2.00.11.1') = 1
             if (vercmp(version, valid_version) < 0) { 
                 window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
                 return
@@ -718,10 +712,12 @@ export const ddb_commands = [
             const vid = variablesReference & 0xffff
             
             // 获取 sessionId
-            const res: [number, string] = await debug.activeDebugSession.customRequest('getCurrentSessionId')
-            const result = await ddb.call('getVariable', [new DdbInt(frameId), new DdbInt(vid), name, new DdbInt(res[0])])
-            lastvar = new DdbVar({ ...result, obj: result, bytes: 0n, connection })
-            await lastvar.inspect()
+            const session_id = (await debug.activeDebugSession.customRequest('getCurrentSessionId'))[0]
+            console.log(frameId, vid, name, session_id)
+            const result = await debug.activeDebugSession.customRequest('getVariable', { frameId, vid, name, session_id })
+            console.log(result)
+            // lastvar = new DdbVar({ ...result, obj: result, bytes: 0n, connection })
+            // await lastvar.inspect()
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error

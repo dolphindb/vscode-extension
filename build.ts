@@ -198,14 +198,6 @@ async function build_package_json () {
             icon: '$(browser)',
         },
         {
-            command: 'inspect_table_variable_schema',
-            title: {
-                zh: 'DolphinDB: 查看表结构',
-                en: 'DolphinDB: Inspect Schema'
-            },
-            icon: '$(outline-view-icon)',
-        },
-        {
             command: 'inspect_table',
             title: {
                 zh: 'DolphinDB: 查看表格',
@@ -217,7 +209,15 @@ async function build_package_json () {
             command: 'inspect_table_schema',
             title: {
                 zh: 'DolphinDB: 查看表结构',
-                en: 'DolphinDB: Inspect Schema'
+                en: 'DolphinDB: Inspect Table Schema'
+            },
+            icon: '$(outline-view-icon)',
+        },
+        {
+            command: 'inspect_database_schema',
+            title: {
+                zh: 'DolphinDB: 查看数据库结构',
+                en: 'DolphinDB: Inspect Database Schema'
             },
             icon: '$(outline-view-icon)',
         },
@@ -696,15 +696,15 @@ async function build_package_json () {
                         when: 'false',
                     },
                     {
-                        command: 'dolphindb.inspect_table_variable_schema',
-                        when: 'false',
-                    },
-                    {
                         command: 'dolphindb.inspect_table',
                         when: 'false',
                     },
                     {
                         command: 'dolphindb.inspect_table_schema',
+                        when: 'false',
+                    },
+                    {
+                        command: 'dolphindb.inspect_database_schema',
                         when: 'false',
                     },
                     {
@@ -728,13 +728,18 @@ async function build_package_json () {
                         group: 'inline',
                     },
                     {
-                        command: 'dolphindb.inspect_table_variable_schema',
+                        command: 'dolphindb.inspect_table_schema',
                         when: "view == dolphindb.variables && viewItem == 'table'",
                         group: 'inline',
                     },
                     {
                         command: 'dolphindb.inspect_table_schema',
                         when: "view == dolphindb.databases && viewItem == 'table'",
+                        group: 'inline',
+                    },
+                    {
+                        command: 'dolphindb.inspect_database_schema',
+                        when: "view == dolphindb.databases && viewItem == 'database'",
                         group: 'inline',
                     },
                     {
@@ -1014,6 +1019,10 @@ let dataview_webpack = {
                             configFile: `${fpd_root}tsconfig.json`,
                             onlyCompileBundledFiles: true,
                             transpileOnly: true,
+                            compilerOptions: {
+                                module: 'ESNext' as any,
+                                moduleResolution: 'Bundler' as any
+                            }
                         } as Partial<TSLoaderOptions>
                     },
                     {

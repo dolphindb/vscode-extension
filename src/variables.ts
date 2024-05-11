@@ -13,7 +13,6 @@ import {
 import { inspect, defer } from 'xshell'
 
 import {
-    type DDB,
     DdbForm,
     DdbObj,
     DdbType,
@@ -22,6 +21,8 @@ import {
     type DdbFunctionDefValue,
     type DdbVectorValue,
     type InspectOptions,
+    type DdbDictObj,
+    type DdbVectorStringObj,
 } from 'dolphindb'
 
 import { t } from '../i18n/index.js'
@@ -256,6 +257,9 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     /** this.bytes <= DdbVar.size_limit */
     obj: TObj
     
+    /** 存放 table 类型数据 schema */
+    schema: DdbDictObj<DdbVectorStringObj>
+    
     
     constructor (data: Partial<DdbVar>) {
         super(data.name, TreeItemCollapsibleState.None)
@@ -371,9 +375,20 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         }
     }
     
+    
+    async get_schema () {
+        if (this.schema)
+            return this.schema
+        else {
+            await connector.connection.define_load_table_variable_schema()
+            return this.schema = await this.connection.ddb.call('load_table_variable_schema', [this.name])
+        }
+    }
+    
+    
     /**  - open?: 是否在新窗口中打开 
          - schema?: 是否是查看表结构 */
-    async inspect (open = false, schema = false) {
+    async inspect (open = false) {
         if (open) {
             if (!server)
                 await start_server()
@@ -396,11 +411,6 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         }
         
         let obj = this.obj
-        
-        if (schema) {
-            await connector.connection.define_load_table_variable_schema()
-            obj = await this.connection.ddb.call('load_table_variable_schema', [this.name])
-        }
         
         const args = [
             {

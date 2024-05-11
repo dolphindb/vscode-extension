@@ -75,7 +75,7 @@
         "en": "Inspect the dolphindb variable:"
     },
     "查看 dolphindb 表结构:": {
-        "en": "Inspect the dolphindb schema:"
+        "en": "Inspect the dolphindb table schema:"
     },
     "在新窗口查看变量:": {
         "en": "View variables in new window:"
@@ -475,5 +475,14 @@
     },
     "前 100 行": {
         "en": "Top 100 rows of table"
+    },
+    "导出表格": {
+        "en": "Export Table"
+    },
+    "文件成功导出到 {{path}}": {
+        "en": "File successfully exported to {{path}}"
+    },
+    "查看 dolphindb 数据库结构:": {
+        "en": "Inspect the dolphindb database schema:"
     }
 }

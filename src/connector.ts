@@ -348,6 +348,8 @@ export class DdbConnection extends TreeItem {
     
     load_table_schema_defined = false
     
+    load_database_schema_defined = false
+    
     peek_table_defined = false
     
     // --- 通过 getClusterPerf 拿到的集群节点信息
@@ -487,6 +489,23 @@ export class DdbConnection extends TreeItem {
             )
             
             this.load_table_schema_defined = true
+        }
+    }
+    
+    
+    async define_load_database_schema () {
+        if (!this.load_database_schema_defined) {
+            await this.ddb.eval(
+                this.options.python ?
+                    'def load_database_schema (db_path):\n' +
+                    '    return schema(database(db_path))\n'
+                :
+                    'def load_database_schema (db_path) {\n' +
+                    '    return schema(database(db_path))\n' +
+                    '}\n'
+            )
+            
+            this.load_database_schema_defined = true
         }
     }
     

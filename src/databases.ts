@@ -75,13 +75,31 @@ export class DdbDatabase extends TreeItem {
     
     path: string
     
+    schema: DdbDictObj<DdbVectorStringObj>
     
     constructor (path: string, connection: DdbConnection) {
         super(path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
         assert(path.startsWith('dfs://'), t('数据库路径应该以 dfs:// 开头'))
         this.connection = connection
         this.path = path
+        this.contextValue = 'database'
         this.iconPath = `${fpd_ext}icons/database.svg`
+    }
+    
+    async get_schema () {
+        if (this.schema)
+            return this.schema
+        else {
+            await connector.connection.define_load_database_schema()
+            
+            return this.schema = await connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
+                // 这个函数在 define_load_database_schema 中已定义
+                'load_database_schema',
+                // 调用该函数时，数据库路径不能以 / 结尾
+                [this.path.slice(0, -1)],
+                connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
+            )
+        }
     }
 }
 
@@ -133,7 +151,7 @@ export class DdbTable extends TreeItem {
         else {
             await connector.connection.define_load_table_schema()
             return this.schema = await connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
-                // 这个函数在 define_load_schema 中已定义
+                // 这个函数在 define_load_table_schema 中已定义
                 'load_table_schema',
                 // 调用该函数时，数据库路径不能以 / 结尾
                 [this.database.path.slice(0, -1), this.name],
