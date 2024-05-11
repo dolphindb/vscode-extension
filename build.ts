@@ -1019,6 +1019,10 @@ let dataview_webpack = {
                             configFile: `${fpd_root}tsconfig.json`,
                             onlyCompileBundledFiles: true,
                             transpileOnly: true,
+                            compilerOptions: {
+                                module: 'ESNext' as any,
+                                moduleResolution: 'Bundler' as any
+                            }
                         } as Partial<TSLoaderOptions>
                     },
                     {

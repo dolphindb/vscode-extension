@@ -11,7 +11,7 @@ import {
 } from '@vscode/debugadapter'
 import type { DebugProtocol } from '@vscode/debugprotocol'
 
-import { type DdbObj } from 'dolphindb'
+import type { DdbObj } from 'dolphindb'
 
 import { delay } from 'xshell'
 
@@ -744,6 +744,7 @@ export class DdbDebugSession extends LoggingDebugSession {
                 this.sendResponse(response)
                 break
             }
+            
             case 'getVersion': {
                 let version = (await this._remote.call('version', [ ]))[0].split(' ')[0]
                 // 将 x.x.x 这样的三位版本号补全为 x.x.x.0 的四位版本号
@@ -751,13 +752,15 @@ export class DdbDebugSession extends LoggingDebugSession {
                 response.body = version
                 this.sendResponse(response)
                 break
-            } 
+            }
+            
             case 'getVariable': {
                 const { frameId, vid, name, session_id } = args
                 response.body = await this._remote.call('getVariable', [frameId, vid, name, session_id])
                 this.sendResponse(response)
                 break
             }
+            
             default:
                 this.sendResponse(response)
                 break

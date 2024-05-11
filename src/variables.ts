@@ -13,7 +13,6 @@ import {
 import { inspect, defer } from 'xshell'
 
 import {
-    type DDB,
     DdbForm,
     DdbObj,
     DdbType,

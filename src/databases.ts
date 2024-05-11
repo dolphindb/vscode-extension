@@ -91,6 +91,7 @@ export class DdbDatabase extends TreeItem {
             return this.schema
         else {
             await connector.connection.define_load_database_schema()
+            
             return this.schema = await connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
                 // 这个函数在 define_load_database_schema 中已定义
                 'load_database_schema',

@@ -497,13 +497,14 @@ export class DdbConnection extends TreeItem {
         if (!this.load_database_schema_defined) {
             await this.ddb.eval(
                 this.options.python ?
-                    ('def load_database_schema (db_path):\n' +
-                        '    return schema(database(db_path))\n')
+                    'def load_database_schema (db_path):\n' +
+                    '    return schema(database(db_path))\n'
                 :
-                    ('def load_database_schema (db_path) {\n' +
-                        '    return schema(database(db_path))\n' +
-                        '}\n')
+                    'def load_database_schema (db_path) {\n' +
+                    '    return schema(database(db_path))\n' +
+                    '}\n'
             )
+            
             this.load_database_schema_defined = true
         }
     }
