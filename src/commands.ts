@@ -689,21 +689,14 @@ export const ddb_commands = [
             let { ddb } = connection
             
             // // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
-            // const valid_version = '2.00.11.2'
+            const valid_version = '2.00.11.2'
+            const version = await debug.activeDebugSession.customRequest('getVersion')
             
-            // async function get_formatted_version (ddb: DDB) {
-            //     const { value } = await ddb.eval<DdbObj<string>>('version()')
-            //     let version = value.split(' ')[0] 
-            //     version += '.0'.repeat(4 - version.split('.').length)
-            //     return version
-            // }
-            
-            // const version = await get_formatted_version(ddb)
             // // vercmp('2.00.11.2', '2.00.11.1') = 1
-            // if (vercmp(version, valid_version) < 0) { 
-            //     window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
-            //     return
-            // }
+            if (vercmp(version, valid_version) < 0) { 
+                window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
+                return
+            }
             
             const response = await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 })
             const frameId = response.stackFrames[0].id
@@ -711,10 +704,12 @@ export const ddb_commands = [
             const vid = variablesReference & 0xffff
             
             // 获取 sessionId
-            const res: [number, string] = await debug.activeDebugSession.customRequest('getCurrentSessionId')
-            const result = await ddb.call('getVariable', [new DdbInt(frameId), new DdbInt(vid), name, new DdbInt(res[0])])
-            lastvar = new DdbVar({ ...result, obj: result, bytes: 0n, connection })
-            await lastvar.inspect()
+            const session_id = (await debug.activeDebugSession.customRequest('getCurrentSessionId'))[0]
+            console.log(frameId, vid, name, session_id)
+            const result = await debug.activeDebugSession.customRequest('getVariable', { frameId, vid, name, session_id })
+            console.log(result)
+            // lastvar = new DdbVar({ ...result, obj: result, bytes: 0n, connection })
+            // await lastvar.inspect()
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error
