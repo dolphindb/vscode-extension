@@ -19,7 +19,7 @@ import { formatter } from './formatter.js'
 import { create_terminal, terminal } from './terminal.js'
 import { type DdbConnection, connector } from './connector.js'
 import { DdbVar } from './variables.js'
-import { databases, type DdbTable } from './databases.js'
+import { type DdbDatabase, databases, type DdbTable } from './databases.js'
 
 import type { DdbMessageItem } from './index.js'
 
@@ -515,6 +515,14 @@ export const ddb_commands = [
     async function inspect_table_schema (table: DdbTable | DdbVar) {  
         console.log(t('查看 dolphindb 表结构:'), table)
         const obj = await table.get_schema()
+        lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection: connector.connection })
+        await lastvar.inspect()
+    },
+    
+    
+    async function inspect_database_schema (database: DdbDatabase) {  
+        console.log(t('查看 dolphindb 数据库结构:'), database)
+        const obj = await database.get_schema()
         lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection: connector.connection })
         await lastvar.inspect()
     },

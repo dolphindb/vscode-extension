@@ -209,7 +209,15 @@ async function build_package_json () {
             command: 'inspect_table_schema',
             title: {
                 zh: 'DolphinDB: 查看表结构',
-                en: 'DolphinDB: Inspect Schema'
+                en: 'DolphinDB: Inspect Table Schema'
+            },
+            icon: '$(outline-view-icon)',
+        },
+        {
+            command: 'inspect_database_schema',
+            title: {
+                zh: 'DolphinDB: 查看数据库结构',
+                en: 'DolphinDB: Inspect Database Schema'
             },
             icon: '$(outline-view-icon)',
         },
@@ -696,6 +704,10 @@ async function build_package_json () {
                         when: 'false',
                     },
                     {
+                        command: 'dolphindb.inspect_database_schema',
+                        when: 'false',
+                    },
+                    {
                         command: 'dolphindb.open_variable',
                         when: 'false',
                     },
@@ -723,6 +735,11 @@ async function build_package_json () {
                     {
                         command: 'dolphindb.inspect_table_schema',
                         when: "view == dolphindb.databases && viewItem == 'table'",
+                        group: 'inline',
+                    },
+                    {
+                        command: 'dolphindb.inspect_database_schema',
+                        when: "view == dolphindb.databases && viewItem == 'database'",
                         group: 'inline',
                     },
                     {
