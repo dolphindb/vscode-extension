@@ -19,6 +19,4 @@ const i18n = new I18N(
 
 const { t, r, language } = i18n
 
-console.log(t('当前使用的语言为:'), language)
-
 export { i18n, t, r, language }
