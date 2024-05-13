@@ -754,13 +754,6 @@ export class DdbDebugSession extends LoggingDebugSession {
                 break
             }
             
-            case 'getVariable': {
-                const { frameId, vid, name, session_id } = args
-                response.body = await this._remote.call('getVariable', [frameId, vid, name, session_id])
-                this.sendResponse(response)
-                break
-            }
-            
             default:
                 this.sendResponse(response)
                 break

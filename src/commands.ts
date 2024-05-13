@@ -691,8 +691,6 @@ export const ddb_commands = [
     async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
         try {
             const { connection } = connector
-            // console.log(connection.connected, connection.ddb.connected)
-            // await connection.connect()
             
             let { ddb } = connection
             
@@ -707,17 +705,14 @@ export const ddb_commands = [
             }
             
             const response = await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 })
-            const frameId = response.stackFrames[0].id
-            
-            const vid = variablesReference & 0xffff
-            
-            // 获取 sessionId
-            const session_id = (await debug.activeDebugSession.customRequest('getCurrentSessionId'))[0]
-            console.log(frameId, vid, name, session_id)
-            const result = await debug.activeDebugSession.customRequest('getVariable', { frameId, vid, name, session_id })
-            console.log(result)
-            // lastvar = new DdbVar({ ...result, obj: result, bytes: 0n, connection })
-            // await lastvar.inspect()
+            const obj = await ddb.call('getVariable', [
+                new DdbInt(response.stackFrames[0].id), // frameId
+                new DdbInt(variablesReference & 0xffff), // vid
+                name, 
+                new DdbInt((await debug.activeDebugSession.customRequest('getCurrentSessionId'))[0])]) // session_id
+                
+            lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection })
+            await lastvar.inspect()
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error

@@ -818,12 +818,12 @@ async function build_package_json () {
                     },
                 ],
                 // 调试变量菜单
-                // 'debug/variables/context': [
-                //     {
-                //         command: 'dolphindb.inspect_debug_variable',
-                //         group: '2_workspace'
-                //     }
-                // ]
+                'debug/variables/context': [
+                    {
+                        command: 'dolphindb.inspect_debug_variable',
+                        group: '2_workspace'
+                    }
+                ]
             },
             submenus: [
                 {
