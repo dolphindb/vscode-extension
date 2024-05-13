@@ -1019,12 +1019,6 @@ let dataview_webpack = {
                             configFile: `${fpd_root}tsconfig.json`,
                             onlyCompileBundledFiles: true,
                             transpileOnly: true,
-                            
-                            // 一定要加，否则 dataview i18n dict 导入不正确
-                            compilerOptions: {
-                                module: 'ESNext' as any,
-                                moduleResolution: 'Bundler' as any
-                            }
                         } as Partial<TSLoaderOptions>
                     },
                     {
