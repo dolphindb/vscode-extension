@@ -6,6 +6,7 @@
         
         "./src/index.ts",
         
+        // 一定要包含这个，否则 ts 输出时会错加 .default
         "./i18n/index.ts",
         
         "./src/debugger/",
