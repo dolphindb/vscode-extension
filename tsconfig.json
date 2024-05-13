@@ -13,8 +13,8 @@
     
     "compilerOptions": {
         // --- module
-        "module": "ESNext", // none, CommonJS, amd, system, umd, es6, es2015, ESNext
-        "moduleResolution": "Bundler",
+        "module": "NodeNext", // none, CommonJS, amd, system, umd, es6, es2015, ESNext
+        "moduleResolution": "NodeNext",
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": false,
         "resolveJsonModule": true,

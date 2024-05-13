@@ -1234,7 +1234,6 @@ const ext_webpack = {
                             compilerOptions: {
                                 module: 'ESNext' as any,
                                 moduleResolution: 'Bundler' as any,
-                                esModuleInterop: true
                             }
                         } as Partial<TSLoaderOptions>
                     }
