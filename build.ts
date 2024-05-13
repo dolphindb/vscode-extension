@@ -1019,6 +1019,10 @@ let dataview_webpack = {
                             configFile: `${fpd_root}tsconfig.json`,
                             onlyCompileBundledFiles: true,
                             transpileOnly: true,
+                            compilerOptions: {
+                                module: 'ESNext' as any,
+                                moduleResolution: 'Bundler' as any
+                            }
                         } as Partial<TSLoaderOptions>
                     },
                     {
@@ -1228,7 +1232,7 @@ const ext_webpack = {
                         loader: 'ts-loader',
                         // https://github.com/TypeStrong/ts-loader
                         options: {
-                            configFile: `${fpd_root}tsconfig.web.json`,
+                            configFile: `${fpd_root}tsconfig.json`,
                             onlyCompileBundledFiles: true,
                             transpileOnly: true,
                         } as Partial<TSLoaderOptions>

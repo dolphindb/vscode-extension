@@ -2,7 +2,7 @@ import process from 'process'
 
 import { I18N, type Language } from 'xshell/i18n/index.js'
 
-import _dict from './dict.json' assert { type: 'json' }
+import _dict from './dict.json' with { type: 'json' }
 
 
 // LOCAL
