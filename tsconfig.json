@@ -8,6 +8,7 @@
         
         // 一定要包含这个，否则 ts 输出时会错加 .default
         "./i18n/index.ts",
+        "./i18n/dict.json",
         
         "./src/debugger/",
         
