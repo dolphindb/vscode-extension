@@ -6,6 +6,8 @@
         
         "./src/index.ts",
         
+        "./i18n/index.ts",
+        
         "./src/debugger/",
         
         "./src/dataview/"
