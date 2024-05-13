@@ -1228,13 +1228,9 @@ const ext_webpack = {
                         loader: 'ts-loader',
                         // https://github.com/TypeStrong/ts-loader
                         options: {
-                            configFile: `${fpd_root}tsconfig.json`,
+                            configFile: `${fpd_root}tsconfig.web.json`,
                             onlyCompileBundledFiles: true,
                             transpileOnly: true,
-                            compilerOptions: {
-                                module: 'ESNext' as any,
-                                moduleResolution: 'Bundler' as any,
-                            }
                         } as Partial<TSLoaderOptions>
                     }
                 ]
