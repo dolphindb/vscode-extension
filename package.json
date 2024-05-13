@@ -37,15 +37,15 @@
         "@vscode/debugprotocol": "^1.65.0",
         "antd": "^5.17.0",
         "dayjs": "^1.11.11",
-        "dolphindb": "^3.0.20",
+        "dolphindb": "^3.0.21",
         "koa": "^2.15.3",
         "lodash": "^4.17.21",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "react-object-model": "^1.2.4",
+        "react-object-model": "^1.2.5",
         "tslib": "^2.6.2",
         "ws": "^8.17.0",
-        "xshell": "^1.0.97"
+        "xshell": "^1.0.99"
     },
     "pnpm": {
         "patchedDependencies": {
