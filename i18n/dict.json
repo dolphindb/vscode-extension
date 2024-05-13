@@ -484,5 +484,8 @@
     },
     "查看 dolphindb 数据库结构:": {
         "en": "Inspect the dolphindb database schema:"
+    },
+    "当前使用的语言为:": {
+        "en": "The language currently used is:"
     }
 }

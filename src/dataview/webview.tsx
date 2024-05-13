@@ -232,7 +232,7 @@ const locales = { zh, en, ja, ko }
 function Root () {
     return <ConfigProvider
         locale={locales[language] as any}
-        autoInsertSpaceInButton={false}
+        button={{ autoInsertSpace: false }}
         theme={{ hashed: false, token: { borderRadius: 0, motion: false } }}
     >
         <App className='app'>
