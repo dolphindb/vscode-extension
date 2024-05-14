@@ -50,7 +50,7 @@ Note: After the installation is complete, quit all windows in the VS Code and re
 
 
 #### 3. View and configure server connections
-After installing the DolphinDB extension, an icon will be added to the Activity Bar in the VS Code. Click the icon, the DolphinDB sidebar will be displayed with three views including Connections, Database, and Variables.
+After installing the DolphinDB extension, an icon will be added to the Activity Bar in the VS Code. Click the icon, the DolphinDB sidebar will be displayed with three views including CONNECTIONS, DATABASES, and VARIABLES.
 
 <img src='./images/connections.png' width='400'>
 
