@@ -4,7 +4,7 @@
 #### 新功能 / New Features
 -   活动栏（Activity Bar）新增单独的 DolphinDB 数据库管理面板，包含连接、数据库、变量管理三个子面板。
     
-    Added an icon to Activity Bar,  which contains Connection, Database, and Variables views in sidebar.
+    Added an icon to Activity Bar,  which contains CONNECTIONS, DATABASES, and VARIABLES views in sidebar.
 
 -   新增数据库管理面板（DATABASE），支持查看数据库及表。
     
