@@ -32,13 +32,13 @@ DolphinDB 公司开发了这个针对 DolphinDB 数据库的 VS Code 插件，�
 - 在侧边面板中管理多个数据库连接，展示会话变量
 - 在浏览器弹窗中显示表格
 
-更多功能介绍，请参考 DolphinDB 官网[VS Code 插件](https://docs.dolphindb.cn/zh/db_distr_comp/vscode.html)。
+更多功能介绍，请参考 DolphinDB 官网 [VS Code 插件](https://docs.dolphindb.cn/zh/db_distr_comp/vscode.html)。
 
 <img src='./images/demo.png' width='1200'>
 
 ## 使用说明
 
-具体使用说明请参考 DolphinDB 官网[VS Code 插件](https://docs.dolphindb.cn/zh/db_distr_comp/vscode.html)。
+具体使用说明请参考 DolphinDB 官网 [VS Code 插件](https://docs.dolphindb.cn/zh/db_distr_comp/vscode.html)。
 
 ## 开发说明
 ```shell

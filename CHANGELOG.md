@@ -2,27 +2,22 @@
 
 ## [2.0.1200]
 #### 新功能 / New Features
--   活动栏（Activity Bar）新增单独的 DolphinDB 数据库管理面板，包含连接、数据库、变量管理三个子面板。
-    
+-   活动栏（Activity Bar）新增单独的 DolphinDB 数据库管理面板，包含连接、数据库、变量管理三个子面板。  
     Added an icon to Activity Bar,  which contains CONNECTIONS, DATABASES, and VARIABLES views in sidebar.
 
--   新增数据库管理面板（DATABASE），支持查看数据库及表。
-    
+-   新增数据库管理面板（DATABASE），支持查看数据库及表。  
     Added DATABASE view to check databases and tables. 
 
--   数据视图栏新增导出表格的图标，支持从 DolphinDB 导出表格到磁盘。该功能要求 server 版本不小于 2.00.11。
-    
+-   数据视图栏新增导出表格的图标，支持从 DolphinDB 导出表格到磁盘。该功能要求 server 版本不小于 2.00.11。  
     Added an export icon for the Data Browser, enabling users to export tables to disk.
 
 #### 功能优化 / Enhancement
--   连接发生错误时，优化显示过长错误信息的内容。
-    
+-   连接发生错误时，优化显示过长错误信息的内容。  
     Optimized the overly long error message displayed when a connection error occurs. 
 
--   改进通过 plot 绘图的结果在深色主题下的展示效果。
-   
+-   改进通过 plot 绘图的结果在深色主题下的展示效果。  
     Enhanced the appearance of plots when using dark themes.
-  
+
 ## [2.0.1115] - 2024.02.01
 #### 新功能 / New Features
 -   上传模块时增加两个按钮：“总是加密” 和 “总是不加密”，仅在当前会话中有效，不做持久化保存  
