@@ -12,7 +12,7 @@
 
 -   数据视图栏新增导出表格的图标，支持从 DolphinDB 导出表格到磁盘。该功能要求 server 版本不小于 2.00.11。
     
-    Added an export icon for the Data Browser, enabling users to export tables to disk.
+    Added an export icon for the Data Browser, enabling users to export tables to disk. It requires the server version to be 2.00.11 or higher.
 
 #### 功能优化 / Enhancement
 -   连接发生错误时，优化显示过长错误信息的内容。
