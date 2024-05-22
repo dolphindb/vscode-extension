@@ -29,8 +29,9 @@ Install the DolphinDB Extension for VS Code to add the DolphinDB scripting langu
 - Displays code execution results and `print()` output in the integrated terminal
 - Displays running script status in bottom status bar with option to click to cancel
 - Displays data structures like tables, vectors, matrices in browser pop-up windows
-- Displays database connections and session variables in the side pane
-- Displays tables in browser pop-up windows 
+- Displays connections, databases and session variables in the sidebar
+- Displays tables, vectors, and matrices in browser pop-up windows 
+- Exports DolphinDB tables to disk (.csv file)
 
 <img src='./images/demo.png' width='1200'>
 
@@ -49,8 +50,7 @@ Note: After the installation is complete, quit all windows in the VS Code and re
 
 
 #### 3. View and configure server connections
-##### After installing the DolphinDB extension, the "DOLPHINDB" tab will be added to the Explorer view in the VS Code.
-All configured connections are listed in the **Explorer** view > **DOLPHINDB** tab.
+After installing the DolphinDB extension, an icon will be added to the Activity Bar in the VS Code. Click the icon, the DolphinDB sidebar will be displayed with three views including CONNECTIONS, DATABASES, and VARIABLES.
 
 <img src='./images/connections.png' width='400'>
 
@@ -138,13 +138,19 @@ You can also hover the mouse over a the name of a built-in function in your code
 The DolphinDB extension for VS Code provides debugging support for user scripts, which allows real-time tracing of script execution, displaying of intermediate variable values and showing function call stack information. For details, see [Debugging DolphinDB Scripts with DolphinDB Extension for Visual Studio Code](./README.debug.md) 
 
 
-#### 9. File upload
+#### 9. File upload and export
 DolphinDB's VS Code extension supports users to upload files. Users are supported to upload files in the following two ways:
 
 1. Select the file to be uploaded in the explorer of VS Code and right-click, and select "DolphinDB: Upload to Server" in the right-click menu
 2. After opening the file to be uploaded, click the upload button in the upper right corner of the VS Code interface
 
 After that, the user needs to input the path of the file uploaded to the server (cannot be empty), press Enter, and wait for the prompt "The file was uploaded successfully".
+
+DolphinDB's VS Code extension also supports users to export files. It requires the server version to be 2.00.11 or higher. Users can export tables with the following steps:
+1. Execute scripts and display the table in the panel.
+2. Click on the export icon in the top-left corner.
+3. A file explorer window will open, prompting you to choose the desired directory and enter a filename for the exported file. 
+4. Click “Save” to export the file to the specified location. Upon successful export, a notification message will appear in the bottom-right corner.
 
 In addition, users can customize the mapping relationship between the local path and the server path by configuring the mappings property of dolphindb.connections, so that the plug-in can map the server path according to the mappings in the subsequent file upload process. In the VS Code setting interface, select DolphinDB under extension, open the setting.json file, add or modify mappings in the connection that needs to be configured, the "key" on the left is the local address, and the "value" on the right is the server address.
 <img src='./images/mappings.png' width='800'>
