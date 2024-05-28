@@ -47,6 +47,17 @@ if (util.inspect.styles.number !== 'green')
     set_inspect_options()
 
 
+if (!Promise.withResolvers)
+    Promise.withResolvers = function PromiseWithResolvers () {
+        let resolve: any, reject: any
+        let promise = new Promise((_resolve, _reject) => {
+            resolve = _resolve
+            reject = _reject
+        })
+        return { promise, resolve, reject }
+    } as any
+
+
 /** 插件运行目录: 可能是 out 文件夹或实际安装文件夹 */
 export const fpd_ext = extensions.getExtension('dolphindb.dolphindb-vscode').extensionPath.fpd
 
