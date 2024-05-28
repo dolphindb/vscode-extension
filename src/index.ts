@@ -24,6 +24,7 @@ import { set_inspect_options } from 'xshell'
 
 import { t } from '../i18n/index.js'
 
+import './polyfill.js'
 import { load_docs, register_docs } from './docs.js'
 import { server } from './server.js'
 import { dataview } from './dataview/dataview.js'
@@ -45,17 +46,6 @@ export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void>
 
 if (util.inspect.styles.number !== 'green')
     set_inspect_options()
-
-
-if (!Promise.withResolvers)
-    Promise.withResolvers = function PromiseWithResolvers () {
-        let resolve: any, reject: any
-        let promise = new Promise((_resolve, _reject) => {
-            resolve = _resolve
-            reject = _reject
-        })
-        return { promise, resolve, reject }
-    } as any
 
 
 /** 插件运行目录: 可能是 out 文件夹或实际安装文件夹 */
