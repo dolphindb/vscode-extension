@@ -487,5 +487,11 @@
     },
     "当前使用的语言为:": {
         "en": "The language currently used is:"
+    },
+    "当前有 debug 进程进行中，无法切换连接": {
+        "en": "There is currently a debug process in progress and the connection cannot be switched."
+    },
+    "python parser 暂不支持调试功能": {
+        "en": "Python parser does not support debugging function."
     }
 }

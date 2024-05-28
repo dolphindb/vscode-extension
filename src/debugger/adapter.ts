@@ -746,17 +746,10 @@ export class DdbDebugSession extends LoggingDebugSession {
             }
             
             case 'getVersion': {
-                let version = (await this._remote.call('version', [ ]))[0].split(' ')[0]
+                let version = (await this._remote.call('version')).split(' ')[0]
                 // 将 x.x.x 这样的三位版本号补全为 x.x.x.0 的四位版本号
                 version += '.0'.repeat(4 - version.split('.').length)
                 response.body = version
-                this.sendResponse(response)
-                break
-            }
-            
-            case 'getVariable': {
-                const { frameId, vid, name, session_id } = args
-                response.body = await this._remote.call('getVariable', [frameId, vid, name, session_id])
                 this.sendResponse(response)
                 break
             }
