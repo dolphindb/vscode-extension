@@ -709,7 +709,7 @@ export const ddb_commands = [
                 new DdbInt(variablesReference & 0xffff), // vid
                 name, 
                 new DdbLong(BigInt((await debug.activeDebugSession.customRequest('getCurrentSessionId'))[0])) // session_id
-            ]) 
+            ])
                 
             lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection })
             await lastvar.inspect()
