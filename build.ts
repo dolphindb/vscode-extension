@@ -832,13 +832,13 @@ async function build_package_json () {
                     label: '上传',
                 }
             ],
-            breakpoints: [{ language: 'dolphindb' }, { language: 'dolphindb-python' }],
+            breakpoints: [{ language: 'dolphindb' }],
             
             debuggers: [
                 {
                     type: 'dolphindb',
                     label: make('debugger.label', '调试 DolphinDB 脚本文件', 'Debug DolphinDB script file'),
-                    languages: ['dolphindb', 'dolphindb-python'],
+                    languages: ['dolphindb'],
                     program: './debugger.cjs',
                     runtime: 'node',
                     configurationAttributes: {

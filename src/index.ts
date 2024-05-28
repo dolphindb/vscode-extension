@@ -104,6 +104,14 @@ export async function activate (ctx: ExtensionContext) {
     
     ctx.subscriptions.push(debug.registerDebugConfigurationProvider('dolphindb', {
         resolveDebugConfiguration (folder, config, token): ProviderResult<DebugConfiguration> {
+            // 默认使用当前插件连接的 server 作为 debugger
+            const { connection: { url, options: { python, password, username, autologin } } } = connector
+            
+            if (python) {
+                window.showWarningMessage(t('python parser 暂不支持调试功能'))
+                return
+            }
+            
             const languageId = window.activeTextEditor?.document.languageId
             
             // if launch.json is missing or empty
@@ -111,7 +119,7 @@ export async function activate (ctx: ExtensionContext) {
                 !config.type && 
                 !config.request && 
                 !config.name && 
-                (languageId === 'dolphindb' || languageId === 'dolphindb-python')
+                languageId === 'dolphindb'
             ) {
                 config.type = 'dolphindb'
                 config.request = 'launch'
@@ -119,13 +127,10 @@ export async function activate (ctx: ExtensionContext) {
                 config.program = '${file}'
             }
             
-            
-            // 默认使用当前插件连接的 server 作为 debugger
-            const { connection } = connector
-            config.url ??= connection.url
-            config.username ??= connection.options.username
-            config.password ??= connection.options.password
-            config.autologin = connection.options.autologin
+            config.url ??= url
+            config.username ??= username
+            config.password ??= password
+            config.autologin = autologin
             
             // 并不能在这里限制非. dos 文件被选中作为 debugee，此时 ${file} 还未被解析成绝对路径
             if (!config.program) {
