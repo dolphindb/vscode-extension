@@ -32,8 +32,8 @@ importers:
         specifier: ^1.11.11
         version: 1.11.11
       dolphindb:
-        specifier: ^3.0.31
-        version: 3.0.31(react-dom@18.3.1(react@18.3.1))
+        specifier: ^3.0.32
+        version: 3.0.32(react-dom@18.3.1(react@18.3.1))
       koa:
         specifier: ^2.15.3
         version: 2.15.3(patch_hash=p7ybv54qzz4vmboaajk6ep5psi)
@@ -56,8 +56,8 @@ importers:
         specifier: ^8.17.0
         version: 8.17.0
       xshell:
-        specifier: ^1.0.111
-        version: 1.0.111(react-dom@18.3.1(react@18.3.1))
+        specifier: ^1.0.112
+        version: 1.0.112(react-dom@18.3.1(react@18.3.1))
     devDependencies:
       '@svgr/webpack':
         specifier: ^8.1.0
@@ -1919,8 +1919,8 @@ packages:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
 
-  dolphindb@3.0.31:
-    resolution: {integrity: sha512-XD3gLfWsuC0zzcOGITt4LnOK663Ra3G+Jt5218ycX5FN89X5DlgL/R0/hZeQ7Kcm8N3jwUmuw3hMitryUqTAUw==}
+  dolphindb@3.0.32:
+    resolution: {integrity: sha512-zBFsi0BSfuJQ+YmSMdfzW+2YnGvvKgQ59qAQc7+lJql9CnHQFqrUyWTjnnutRX8OmlMJJmCndDKQk9M6YSnWEQ==}
     engines: {node: '>=22.1.0'}
 
   dom-serializer@2.0.0:
@@ -4084,8 +4084,8 @@ packages:
     resolution: {integrity: sha512-fDlsI/kFEx7gLvbecc0/ohLG50fugQp8ryHzMTuW9vSa1GJ0XYWKnhsUx7oie3G98+r56aTQIUB4kht42R3JvA==}
     engines: {node: '>=4.0'}
 
-  xshell@1.0.111:
-    resolution: {integrity: sha512-WUKDy0MsB2Bvh/aw2pY5bTnleKSvUyJOvfSKU6C/egwpXR6gjktlvUtURbTn4kiF0jwA4ezbSUU304qLN2YJ8Q==}
+  xshell@1.0.112:
+    resolution: {integrity: sha512-QyKBHsz9URr+S2iEBzNVVau6WugOzrUNmoqP7tioniGHqxGWYxEquX5Kv8Z0xJDLyPmoBCwxK2X8kblfl+VuaA==}
     engines: {node: '>=22.2.0', vscode: '>=1.81.0'}
     hasBin: true
 
@@ -6437,12 +6437,12 @@ snapshots:
     dependencies:
       esutils: 2.0.3
 
-  dolphindb@3.0.31(react-dom@18.3.1(react@18.3.1)):
+  dolphindb@3.0.32(react-dom@18.3.1(react@18.3.1)):
     dependencies:
       dayjs: 1.11.11
       ipaddr.js: 2.2.0
       tslib: 2.6.2
-      xshell: 1.0.111(react-dom@18.3.1(react@18.3.1))
+      xshell: 1.0.112(react-dom@18.3.1(react@18.3.1))
     transitivePeerDependencies:
       - bufferutil
       - eslint-import-resolver-typescript
@@ -8549,7 +8549,7 @@ snapshots:
   terser@5.27.2:
     dependencies:
       '@jridgewell/source-map': 0.3.5
-      acorn: 8.10.0
+      acorn: 8.11.3
       commander: 2.20.3
       source-map-support: 0.5.21
 
@@ -8909,7 +8909,7 @@ snapshots:
 
   xmlbuilder@11.0.1: {}
 
-  xshell@1.0.111(react-dom@18.3.1(react@18.3.1)):
+  xshell@1.0.112(react-dom@18.3.1(react@18.3.1)):
     dependencies:
       '@babel/core': 7.24.6
       '@babel/parser': 7.24.6
