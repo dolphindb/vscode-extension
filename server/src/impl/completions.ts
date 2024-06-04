@@ -1,6 +1,7 @@
 import {
 	CompletionItem,
 	CompletionItemKind,
+	InsertTextFormat,
 	TextDocumentPositionParams} from 'vscode-languageserver/node';
 import { connection } from "./connection";
 
@@ -20,7 +21,18 @@ connection.onCompletion(
 				label: 'JavaScript',
 				kind: CompletionItemKind.Text,
 				data: 2
-			}
+			},
+            {
+                label: 'def',
+                kind: CompletionItemKind.Snippet,
+                documentation: 'Define a function',
+                insertText: [
+                    'def ${1:functionName}(${2:params}) {',
+                    '\t${3:// body}',
+                    '}'
+                ].join('\n'),
+                insertTextFormat: InsertTextFormat.Snippet
+            }
 		];
 	}
 );
