@@ -180,6 +180,9 @@ export async function activate(ctx: ExtensionContext) {
         synchronize: {
             // Notify the server about file changes to '.clientrc files contained in the workspace
             fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+        },
+        initializationOptions: {
+            configuration: workspace.getConfiguration('dolphindb')
         }
     };
 

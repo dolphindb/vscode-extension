@@ -592,6 +592,16 @@ async function build_package_json () {
                             '小数点后显示的位数 (可取 0 ~ 20)，默认为 null (实际数据的位数)',
                             'The number of digits displayed after the decimal point (can be 0 ~ 20), the default is null (the actual number of digits)'
                         )
+                    } satisfies Schema,                   
+                    
+                    'dolphindb.moduleRoot': {
+                        type: ['string', 'null'],
+                        default: null,
+                        description: make(
+                            'configs.moduleRoot.description',
+                            'Dolphin DB 模块根目录',
+                            'The root directory of Dolphin DB Modules'
+                        )
                     } satisfies Schema,
                     
                     'dolphindb.single_connection_mode': {
