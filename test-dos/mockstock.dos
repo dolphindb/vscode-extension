@@ -1,0 +1,104 @@
+// 创建一个 DolphinDB 数据库和表，并模拟写入多种数据类型
+
+// 创建数据库
+dbPath = "dfs://st"
+if (existsDatabase(dbPath)) {
+    dropDatabase(dbPath)
+}
+db = database(dbPath, VALUE, 2024.03M..2024.05M)
+
+
+// 创建表
+schema = table(1000:0, `date`symbol`price`volume`boolCol`charCol`shortCol`intCol`longCol`floatCol`stringCol`uuidCol`dateCol`monthCol`timeCol`minuteCol`secondCol`datetimeCol`timestampCol`nanotimeCol`nanotimestampCol`int128Col`ipCol`complexCol`pointCol, 
+    [DATE, SYMBOL, DOUBLE, LONG, BOOL, CHAR, SHORT, INT, LONG, FLOAT, STRING, UUID, DATE, MONTH, TIME, MINUTE, SECOND, DATETIME, TIMESTAMP, NANOTIME, NANOTIMESTAMP, INT128, IPADDR, COMPLEX, POINT])
+db.createPartitionedTable(schema, `tb, `date)
+
+
+// 定义生成数据的函数
+def generateStockData(){
+    n = 92 // 3月1日至5月31日总共92天
+    dates = 2024.03.01..2024.05.31
+    symbols = take(`AAPL, n)
+
+    // 初始化价格数据
+    initialPrice = 150.0
+    prices = array(DOUBLE, n)
+    prices[0] = initialPrice
+    prices[1] = initialPrice
+    
+    // 生成价格数据
+    for (i in 2:n) {
+        priceChanges = 0.95 + rand(0.1,1)
+        prices[i] = prices[i-1] * priceChanges
+    }
+
+    // 生成其他列数据
+    volumes = 110 + rand(5, n)
+    boolCol = take(true, n)
+    charCol = take('A' 'B' 'C' 'D', n)
+    shortCol = 60 + rand(20, n)
+    intCol = 60 + rand(50, n)
+    longCol = 90 + rand(20, n)
+    floatCol = rand(155.0, n)
+    stringCol = take("AAPL" "GOOG" "MSFT" "AMZN", n)
+    uuidCol = array(UUID, n)
+    for (i in 0:n) {
+        uuidCol[i] = uuid()
+    }
+    dateCol = dates
+    monthCol = take(2024.03M 2024.04M 2024.05M, n)
+    timeCol = array(TIME, n)
+    for (i in 0:n) {
+        timeCol[i] = 9*3600 + i
+    }
+    minuteCol = array(MINUTE, n)
+    for (i in 0:n) {
+        minuteCol[i] = 9*60 + i
+    }
+    secondCol = array(SECOND, n)
+    for (i in 0:n) {
+        secondCol[i] = 9*3600 + i
+    }
+    datetimeCol = array(DATETIME, n)
+    for (i in 0:n) {
+        datetimeCol[i] = 2024.03.01T09:00:00 + i*86400
+    }
+    timestampCol = array(TIMESTAMP, n)
+    for (i in 0:n) {
+        timestampCol[i] = 2024.03.01T09:00:00.000 + i*86400000
+    }
+    nanotimeCol = array(NANOTIME, n)
+    for (i in 0:n) {
+        nanotimeCol[i] = 2024.03.01T09:00:00.000000000 + i*1000
+    }
+    nanotimestampCol = array(NANOTIMESTAMP, n)
+    for (i in 0:n) {
+        nanotimestampCol[i] = 2024.03.01T09:00:00.000000000 + i*1000000
+    }
+    int128Col = array(INT128,n)
+    for (i in 0:n) {
+        int128Col[i] = int128("e1671797c52e15f763380b45e841ec32")
+    }
+    ipCol = array(IPADDR,n)
+    for (i in 0:n) {
+        ipCol[i] = ipaddr("192.168.1.133");
+    }
+    complexCol = array(COMPLEX,n)
+    for (i in 0:n) {
+        complexCol[i] = complex(2,3);
+    }
+    pointCol = array(POINT,n)
+    for (i in 0:n) {
+        pointCol[i] = point(114,514);
+    }
+
+    return table(dates, symbols, prices, volumes, boolCol, charCol, shortCol, intCol, longCol, floatCol, stringCol, uuidCol, dateCol, monthCol, timeCol, minuteCol, secondCol, datetimeCol, timestampCol, nanotimeCol, nanotimestampCol, int128Col, ipCol, complexCol, pointCol)
+}
+
+// 生成数据并插入表中
+data = generateStockData()
+tb = loadTable(dbPath, `tb)
+tb.append!(data)
+
+// 显示表中的数据
+select * from tb
