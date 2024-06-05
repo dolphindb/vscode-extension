@@ -595,8 +595,8 @@ async function build_package_json () {
                     } satisfies Schema,                   
                     
                     'dolphindb.moduleRoot': {
-                        type: ['string', 'null'],
-                        default: null,
+                        type: 'string',
+                        default: "",
                         description: make(
                             'configs.moduleRoot.description',
                             'Dolphin DB 模块根目录',
