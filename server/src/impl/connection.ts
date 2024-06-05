@@ -5,6 +5,7 @@ import {
     TextDocumentSyncKind,
     InitializeResult
 } from 'vscode-languageserver/node';
+import { ddbModules } from './modules';
 
 
 // Create a connection for the server, using Node's IPC as a transport.
@@ -91,6 +92,7 @@ connection.onInitialized(() => {
         connection.client.register(DidChangeConfigurationNotification.type, undefined);
         connection.workspace.getConfiguration('dolphindb').then((settings: LanguageServerSettings) => {
             globalSettings = settings;
+            ddbModules.setModuleRoot(settings.moduleRoot)
         });
     }
     if (hasWorkspaceFolderCapability) {
@@ -103,16 +105,14 @@ connection.onInitialized(() => {
 connection.onDidChangeConfiguration(change => {
     if (hasConfigurationCapability) {
         // Reset all cached document settings
+        // 我也不知道 documentSettings 是做什么的，对这个插件也许没太大用吧
         documentSettings.clear();
-    } else {
-        globalSettings = <LanguageServerSettings>(
-            (change.settings.languageServerExample || defaultSettings)
-        );
     }
 
     if (hasConfigurationCapability) {
         connection.workspace.getConfiguration('dolphindb').then((settings: LanguageServerSettings) => {
             globalSettings = settings;
+            ddbModules.setModuleRoot(settings.moduleRoot)
         });
     }
     // Refresh the diagnostics since the `maxNumberOfProblems` could have changed.

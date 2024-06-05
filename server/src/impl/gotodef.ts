@@ -4,12 +4,12 @@ import {
     Range
 } from 'vscode-languageserver/node';
 
-import { connection, getDocumentSettings, getGlobalSettings } from "./connection";
+import { connection } from "./connection";
 import { documents } from './documents';
 import { getWordAtPosition } from './utils/texts';
 
 connection.onDefinition((params: DefinitionParams) => {
-    console.log(getGlobalSettings().moduleRoot)
+
     const document = documents.get(params.textDocument.uri);
     if (!document) {
         return null;
