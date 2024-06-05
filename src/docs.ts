@@ -18,6 +18,7 @@ const MAX_MATCH_LINES = 30
 
 let docs_analyser: DocsAnalyser
 
+
 export async function load_docs () {
     docs_analyser = new DocsAnalyser()
     
@@ -28,7 +29,7 @@ export async function load_docs () {
 
 
 export function register_docs (ctx: ExtensionContext) {
-    function wrapMarkdownString (md: string) {
+    function wrap_markdown_string (md: string) {
         return new MarkdownString(md)
     }
     
@@ -64,7 +65,7 @@ export function register_docs (ctx: ExtensionContext) {
                 const md = docs_analyser.get_function_markdown(item.label as string)
             
                 if (md)
-                    item.documentation = wrapMarkdownString(md)
+                    item.documentation = wrap_markdown_string(md)
                 
                 return item
             },
@@ -82,7 +83,7 @@ export function register_docs (ctx: ExtensionContext) {
                 if (!md)
                     return
                 return {
-                    contents: [wrapMarkdownString(md)],
+                    contents: [wrap_markdown_string(md)],
                 }
             },
         }),
@@ -109,7 +110,7 @@ export function register_docs (ctx: ExtensionContext) {
                             {
                                 label: signature.full,
                                 activeParameter: active_parameter,
-                                documentation: documentation_md ? wrapMarkdownString(documentation_md) : undefined,
+                                documentation: documentation_md ? wrap_markdown_string(documentation_md) : undefined,
                                 parameters: signature.parameters.map(param => ({
                                     label: param.full,
                                 })),
