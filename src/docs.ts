@@ -9,6 +9,8 @@ import {
 
 import { DocsAnalyser, parse_signature_help_from_text } from 'dolphindb/docs.js'
 
+import { fread_json } from 'xshell'
+
 import { language, t } from '../i18n/index.js'
 
 import { fpd_ext } from './index.js'
@@ -20,10 +22,8 @@ let docs_analyser: DocsAnalyser
 
 
 export async function load_docs () {
-    docs_analyser = new DocsAnalyser()
-    
     const fname = `docs.${ language === 'zh' ? 'zh' : 'en' }.json`
-    await docs_analyser.load_docs_async(`${fpd_ext}${fname}`)
+    docs_analyser = new DocsAnalyser(await fread_json(`${fpd_ext}${fname}`))
     console.log(t('函数文档 {{fname}} 已加载', { fname }))
 }
 
