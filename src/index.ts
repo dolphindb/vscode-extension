@@ -87,8 +87,6 @@ export async function activate (ctx: ExtensionContext) {
     formatter.init()
     statbar.init()
     
-    load_docs()
-    
     // 监听配置，dispatch 修改 event
     workspace.onDidChangeConfiguration(event => {
         formatter.on_config_change(event)
@@ -97,6 +95,7 @@ export async function activate (ctx: ExtensionContext) {
     
     register_terminal_link_provider()
     
+    await load_docs()
     register_docs(ctx)
     
     
