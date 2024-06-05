@@ -7,7 +7,7 @@ import {
 
 import { connection } from "./connection";
 import { documents } from './documents';
-import { getWordAtPosition } from './utils/texts';
+import { extractModuleName, getWordAtPosition } from './utils/texts';
 import { ddbModules } from './modules';
 import * as fsp from 'fs/promises';
 
@@ -37,7 +37,7 @@ connection.onDefinition(async (params: DefinitionParams) => {
     }
 
     // Check for module definition
-    const moduleDefinition = await findDefinitionInModules(word);
+    const moduleDefinition = await findDefinitionInModules(word, text);
     if (moduleDefinition) {
         return moduleDefinition;
     }
@@ -77,8 +77,17 @@ function findDefinitionOrDeclaration(lines: string[], word: string, currentLine:
     return null;
 }
 
-async function findDefinitionInModules(word: string, moduleNames: string[] = []): Promise<Location | null> {
-    const modules = ddbModules.getModules();
+async function findDefinitionInModules(word: string, code: string): Promise<Location | null> {
+    const lines = code.split('\n');
+    const moduleImported: string[] = [];
+    for (const ln of lines) {
+        const moduleName = extractModuleName(ln);
+        if (moduleName) {
+            moduleImported.push(moduleName)
+        }
+    }
+    // 只检查导入的模块
+    const modules = ddbModules.getModules().filter(e => moduleImported.includes(e.moduleName));
     for (const module of modules) {
         const modulePath = module.path;
         try {

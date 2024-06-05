@@ -2,6 +2,7 @@ import {
     Diagnostic,
     DiagnosticSeverity,
     DocumentDiagnosticReportKind,
+    Position,
     type DocumentDiagnosticReport
 } from 'vscode-languageserver/node';
 
@@ -10,6 +11,8 @@ import {
 } from 'vscode-languageserver-textdocument';
 import { connection, getDocumentSettings } from './connection';
 import { documents } from './documents';
+import { ddbModules } from './modules';
+import { extractModuleName } from './utils/texts';
 
 connection.languages.diagnostics.on(async (params) => {
     const document = documents.get(params.textDocument.uri);
@@ -29,46 +32,34 @@ connection.languages.diagnostics.on(async (params) => {
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<Diagnostic[]> {
-    // In this simple example we get the settings for every validate run.
-    const settings = await getDocumentSettings(textDocument.uri);
-
-    // The validator creates diagnostics for all uppercase words length 2 and more
     const text = textDocument.getText();
-    const pattern = /\b[A-Z]{2,}\b/g;
-    let m: RegExpExecArray | null;
+    const lines = text.split('\n')
 
-    let problems = 0;
     const diagnostics: Diagnostic[] = [];
-    while ((m = pattern.exec(text)) && problems < 200) {
-        problems++;
-        const diagnostic: Diagnostic = {
-            severity: DiagnosticSeverity.Warning,
-            range: {
-                start: textDocument.positionAt(m.index),
-                end: textDocument.positionAt(m.index + m[0].length)
-            },
-            message: `${m[0]} is all uppercase.`,
-            source: 'ex'
-        };
 
-        diagnostic.relatedInformation = [
-            {
-                location: {
-                    uri: textDocument.uri,
-                    range: Object.assign({}, diagnostic.range)
-                },
-                message: 'Spelling matters'
-            },
-            {
-                location: {
-                    uri: textDocument.uri,
-                    range: Object.assign({}, diagnostic.range)
-                },
-                message: 'Particularly for names'
-            }
-        ];
+    lines.forEach((line, index) => {
+        diagnostics.push(...validateUseModule(line, index))
+    })
 
-        diagnostics.push(diagnostic);
-    }
+
     return diagnostics;
+}
+
+function validateUseModule(line: string, lnindex: number): Diagnostic[] {
+    const ln = line.trim();
+    if (ln.startsWith('use')) {
+        const moduleName = extractModuleName(ln);
+        if (moduleName && !ddbModules.getModules().find(e => e.moduleName === moduleName)) {
+            return [{
+                severity: DiagnosticSeverity.Error,
+                range: {
+                    start: Position.create(lnindex, 0),
+                    end: Position.create(lnindex, line.length)
+                },
+                message: `Cannot find module ${moduleName}`,
+                source: 'dolphindb'
+            }];
+        }
+    }
+    return [];
 }

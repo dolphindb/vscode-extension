@@ -8,3 +8,9 @@ export function getWordAtPosition(line: string, character: number): string | nul
     }
     return null;
 }
+
+export function extractModuleName(line: string): string | null {
+    const regex = /use\s+([\w:]+)\s*[:;]?/;
+    const match = line.match(regex);
+    return match ? match[1] : null;
+}
