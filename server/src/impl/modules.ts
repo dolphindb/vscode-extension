@@ -1,6 +1,7 @@
 import * as fsp from 'fs/promises';
 import * as fs from 'fs';
 import * as path from 'path';
+import { connection } from './connection';
 
 interface DdbModule {
     path: string;
@@ -24,16 +25,18 @@ class DdbModules {
     private moduleWatchers: DdbModuleWatcher[] = [];
     private dirWatchers: DdbDirWatcher[] = [];
     private moduleFiles = new Set<string>();
+    private isModuleIndexInit = false;
 
     constructor() { }
 
     // 设置初始化或者更新的时候调用
     public setModuleRoot(root: string) {
         this.moduleRoot = root;
-        this.startWatchModuleRootDir();
+        this.buildModuleIndex();
     }
 
-    private startWatchModuleRootDir() {
+    private buildModuleIndex() {
+        this.isModuleIndexInit = false;
         // 停掉所有的监听
         for (const dw of this.dirWatchers) {
             dw.watcher.close()
@@ -65,7 +68,10 @@ class DdbModules {
                 }
             }
         }
-
+        // 初始化索引完毕
+        this.isModuleIndexInit = true;
+        // 刷新一下诊断
+        connection.languages.diagnostics.refresh();
     }
 
     private startWatchDir(path: string): DdbDirWatcher {
@@ -85,6 +91,10 @@ class DdbModules {
 
     public getModules() {
         return this.modules
+    }
+
+    public getIsInitModuleIndex() {
+        return this.isModuleIndexInit;
     }
 
 }

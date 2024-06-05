@@ -46,6 +46,8 @@ async function validateTextDocument(textDocument: TextDocument): Promise<Diagnos
 }
 
 function validateUseModule(line: string, lnindex: number): Diagnostic[] {
+    // 索引必须已经建立
+    if (!ddbModules.getIsInitModuleIndex()) return []
     const ln = line.trim();
     if (ln.startsWith('use')) {
         const moduleName = extractModuleName(ln);
