@@ -1,5 +1,4 @@
 // 创建一个 DolphinDB 数据库和表，并模拟写入多种数据类型
-use 
 // 创建数据库
 dbPath = "dfs://st"
 if (existsDatabase(dbPath)) {
@@ -7,6 +6,7 @@ if (existsDatabase(dbPath)) {
 }
 db = database(dbPath, VALUE, 2024.03M..2024.05M)
 
+unsubscribeAll()
 
 // 创建表
 schema = table(1000:0, `date`symbol`price`volume`boolCol`charCol`shortCol`intCol`longCol`floatCol`stringCol`uuidCol`dateCol`monthCol`timeCol`minuteCol`secondCol`datetimeCol`timestampCol`nanotimeCol`nanotimestampCol`int128Col`ipCol`complexCol`pointCol, 

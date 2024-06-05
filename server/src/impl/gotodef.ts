@@ -1,5 +1,6 @@
 import {
     DefinitionParams,
+    Location,
     Position,
     Range
 } from 'vscode-languageserver/node';
@@ -7,8 +8,10 @@ import {
 import { connection } from "./connection";
 import { documents } from './documents';
 import { getWordAtPosition } from './utils/texts';
+import { ddbModules } from './modules';
+import * as fsp from 'fs/promises';
 
-connection.onDefinition((params: DefinitionParams) => {
+connection.onDefinition(async (params: DefinitionParams) => {
 
     const document = documents.get(params.textDocument.uri);
     if (!document) {
@@ -24,15 +27,22 @@ connection.onDefinition((params: DefinitionParams) => {
         return null;
     }
 
-    const definition = findDefinitionOrDeclaration(lines, word, position.line);
-    if (!definition) {
-        return null;
+    // Check for local definition
+    let definition = findDefinitionOrDeclaration(lines, word, position.line);
+    if (definition) {
+        return {
+            uri: params.textDocument.uri,
+            range: definition.range
+        };
     }
 
-    return {
-        uri: params.textDocument.uri,
-        range: definition.range
-    };
+    // Check for module definition
+    const moduleDefinition = await findDefinitionInModules(word);
+    if (moduleDefinition) {
+        return moduleDefinition;
+    }
+
+    return null;
 });
 
 
@@ -64,5 +74,26 @@ function findDefinitionOrDeclaration(lines: string[], word: string, currentLine:
         }
     }
 
+    return null;
+}
+
+async function findDefinitionInModules(word: string, moduleNames: string[] = []): Promise<Location | null> {
+    const modules = ddbModules.getModules();
+    for (const module of modules) {
+        const modulePath = module.path;
+        try {
+            const moduleContent = await fsp.readFile(modulePath, 'utf-8');
+            const lines = moduleContent.split('\n');
+            const definition = await findDefinitionOrDeclaration(lines, word, 0);
+            if (definition) {
+                return {
+                    uri: `file:///${modulePath}`,
+                    range: definition.range
+                };
+            }
+        } catch (error) {
+            console.error(`Error reading module file ${module.path}:`, error);
+        }
+    }
     return null;
 }
