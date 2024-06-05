@@ -68,7 +68,8 @@ connection.onInitialize((params: InitializeParams) => {
             definitionProvider: true,
             // Tell the client that this server supports code completion.
             completionProvider: {
-                resolveProvider: true
+                resolveProvider: true,
+                triggerCharacters: ['.', ' ', '(', ')']
             },
             diagnosticProvider: {
                 interFileDependencies: false,

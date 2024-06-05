@@ -66,8 +66,6 @@ class DdbModules {
             }
         }
 
-        console.log(this.dirWatchers.map(e => e.path))
-        console.log(this.modules)
     }
 
     private startWatchDir(path: string): DdbDirWatcher {
@@ -83,6 +81,10 @@ class DdbModules {
             .split(/[\/\\]/) // 分割路径
             .filter(e => e !== ''); // 去掉空路径
         return pths.join('::').replace('.dos', '') // 去掉后缀名
+    }
+
+    public getModules() {
+        return this.modules
     }
 
 }

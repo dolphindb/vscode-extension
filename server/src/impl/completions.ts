@@ -1,53 +1,86 @@
 import {
-	CompletionItem,
-	CompletionItemKind,
-	InsertTextFormat,
-	TextDocumentPositionParams} from 'vscode-languageserver/node';
+    CompletionItem,
+    CompletionItemKind,
+    InsertTextFormat,
+    Position,
+    TextDocumentPositionParams
+} from 'vscode-languageserver/node';
 import { connection } from "./connection";
+import { snippets } from './data/completionitems';
+import { documents } from './documents';
+import {
+    TextDocument
+} from 'vscode-languageserver-textdocument';
+import { ddbModules } from './modules';
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-		// The pass parameter contains the position of the text document in
-		// which code complete got requested. For the example we ignore this
-		// info and always provide the same completion items.
-		return [
-			{
-				label: 'TypeScript',
-				kind: CompletionItemKind.Text,
-				data: 1
-			},
-			{
-				label: 'JavaScript',
-				kind: CompletionItemKind.Text,
-				data: 2
-			},
-            {
-                label: 'def',
-                kind: CompletionItemKind.Snippet,
-                documentation: 'Define a function',
-                insertText: [
-                    'def ${1:functionName}(${2:params}) {',
-                    '\t${3:// body}',
-                    '}'
-                ].join('\n'),
-                insertTextFormat: InsertTextFormat.Snippet
-            }
-		];
-	}
+    (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+        // The pass parameter contains the position of the text document in
+        // which code complete got requested. For the example we ignore this
+        // info and always provide the same completion items.
+
+        const items: CompletionItem[] = [];
+        const mc = getModuleCompletions(_textDocumentPosition)
+        if (mc.length > 0) { // 如果是模块提示，那么只给模块提示，因为不太可能用其他的提示
+            return mc;
+        }
+        items.push(...snippets);
+        return items;
+    }
 );
 
 // This handler resolves additional information for the item selected in
 // the completion list.
 connection.onCompletionResolve(
-	(item: CompletionItem): CompletionItem => {
-		if (item.data === 1) {
-			item.detail = 'TypeScript details';
-			item.documentation = 'TypeScript documentation';
-		} else if (item.data === 2) {
-			item.detail = 'JavaScript details';
-			item.documentation = 'JavaScript documentation';
-		}
-		return item;
-	}
+    // 一般来说用来根据item获取额外信息
+    // 其实就是一个管道，进来的是原来的 item，出去的是补充了额外信息的 item
+    // 留着参考
+    (item: CompletionItem): CompletionItem => {
+        if (item.data === 1) {
+            item.detail = 'TypeScript details';
+            item.documentation = 'TypeScript documentation';
+        }
+        return item;
+    }
 );
+
+function getModuleCompletions(pos: TextDocumentPositionParams): CompletionItem[] {
+    const doc = documents.get(pos.textDocument.uri)
+    if (doc) {
+        const lineContent = getLineContent(doc, pos.position.line);
+        if (lineContent.trim().startsWith('use')) {
+            const modules = ddbModules.getModules();
+            return modules.map(m => {
+                return {
+                    label: m.moduleName,
+                    kind: CompletionItemKind.Module,
+                    documentation: `Dolphin DB Module\n${m.moduleName}\n${m.path}`,
+                    insertText: m.moduleName,
+                }
+            })
+        }
+    }
+
+    return []
+}
+
+function getLineContent(document: TextDocument, line: number): string {
+    const lineStart = Position.create(line, 0);
+    const lineEnd = Position.create(line + 1, 0);
+
+    const range = {
+        start: lineStart,
+        end: lineEnd,
+    };
+
+    const text = document.getText(range);
+
+    // 如果行不存在，返回 ''
+    if (!text) {
+        return '';
+    }
+
+    // 去掉行尾的换行符
+    return text.trimEnd();
+}

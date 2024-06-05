@@ -1,5 +1,5 @@
 // 创建一个 DolphinDB 数据库和表，并模拟写入多种数据类型
-
+use 
 // 创建数据库
 dbPath = "dfs://st"
 if (existsDatabase(dbPath)) {
