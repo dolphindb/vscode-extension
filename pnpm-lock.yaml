@@ -30,7 +30,7 @@ importers:
         version: 15.2.3(rollup@3.29.4)
       '@rollup/plugin-typescript':
         specifier: ^9.0.2
-        version: 9.0.2(rollup@3.29.4)(tslib@2.6.2)(typescript@4.9.5)
+        version: 9.0.2(rollup@3.29.4)(tslib@2.6.2)(typescript@5.4.5)
       '@vscode/debugadapter':
         specifier: ^1.65.0
         version: 1.65.0
@@ -69,16 +69,13 @@ importers:
         version: 3.29.4
       rollup-plugin-dts:
         specifier: ^5.0.0
-        version: 5.3.1(rollup@3.29.4)(typescript@4.9.5)
+        version: 5.3.1(rollup@3.29.4)(typescript@5.4.5)
       rollup-plugin-typescript2:
         specifier: ^0.34.1
-        version: 0.34.1(rollup@3.29.4)(typescript@4.9.5)
+        version: 0.34.1(rollup@3.29.4)(typescript@5.4.5)
       tslib:
         specifier: ^2.6.2
         version: 2.6.2
-      typescript:
-        specifier: ^4.9.3
-        version: 4.9.5
       vscode-languageclient:
         specifier: ^9.0.1
         version: 9.0.1
@@ -130,7 +127,10 @@ importers:
         version: 4.0.0(webpack@5.91.0)
       ts-loader:
         specifier: ^9.5.1
-        version: 9.5.1(typescript@4.9.5)(webpack@5.91.0)
+        version: 9.5.1(typescript@5.4.5)(webpack@5.91.0)
+      typescript:
+        specifier: ^5.4.5
+        version: 5.4.5
       vscode-languageserver:
         specifier: ^9.0.1
         version: 9.0.1
@@ -4097,11 +4097,6 @@ packages:
     resolution: {integrity: sha512-/OxDN6OtAk5KBpGb28T+HZc2M+ADtvRxXrKKbUwtsLgdoxgX13hyy7ek6bFRl5+aBs2yZzB0c4CnQfAtVypW/g==}
     engines: {node: '>= 0.4'}
 
-  typescript@4.9.5:
-    resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
-    engines: {node: '>=4.2.0'}
-    hasBin: true
-
   typescript@5.4.5:
     resolution: {integrity: sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==}
     engines: {node: '>=14.17'}
@@ -5613,11 +5608,11 @@ snapshots:
     optionalDependencies:
       rollup: 3.29.4
 
-  '@rollup/plugin-typescript@9.0.2(rollup@3.29.4)(tslib@2.6.2)(typescript@4.9.5)':
+  '@rollup/plugin-typescript@9.0.2(rollup@3.29.4)(tslib@2.6.2)(typescript@5.4.5)':
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@3.29.4)
       resolve: 1.22.8
-      typescript: 4.9.5
+      typescript: 5.4.5
     optionalDependencies:
       rollup: 3.29.4
       tslib: 2.6.2
@@ -8586,15 +8581,15 @@ snapshots:
     dependencies:
       glob: 9.3.5
 
-  rollup-plugin-dts@5.3.1(rollup@3.29.4)(typescript@4.9.5):
+  rollup-plugin-dts@5.3.1(rollup@3.29.4)(typescript@5.4.5):
     dependencies:
       magic-string: 0.30.10
       rollup: 3.29.4
-      typescript: 4.9.5
+      typescript: 5.4.5
     optionalDependencies:
       '@babel/code-frame': 7.24.6
 
-  rollup-plugin-typescript2@0.34.1(rollup@3.29.4)(typescript@4.9.5):
+  rollup-plugin-typescript2@0.34.1(rollup@3.29.4)(typescript@5.4.5):
     dependencies:
       '@rollup/pluginutils': 4.2.1
       find-cache-dir: 3.3.2
@@ -8602,7 +8597,7 @@ snapshots:
       rollup: 3.29.4
       semver: 7.6.0
       tslib: 2.6.2
-      typescript: 4.9.5
+      typescript: 5.4.5
 
   rollup@0.25.8:
     dependencies:
@@ -9002,14 +8997,14 @@ snapshots:
     dependencies:
       typescript: 5.4.5
 
-  ts-loader@9.5.1(typescript@4.9.5)(webpack@5.91.0):
+  ts-loader@9.5.1(typescript@5.4.5)(webpack@5.91.0):
     dependencies:
       chalk: 4.1.2
       enhanced-resolve: 5.15.0
       micromatch: 4.0.5
       semver: 7.5.4
       source-map: 0.7.4
-      typescript: 4.9.5
+      typescript: 5.4.5
       webpack: 5.91.0
 
   tsconfig-paths@3.15.0:
@@ -9065,8 +9060,6 @@ snapshots:
       has-proto: 1.0.3
       is-typed-array: 1.1.13
       possible-typed-array-names: 1.0.0
-
-  typescript@4.9.5: {}
 
   typescript@5.4.5: {}
 
