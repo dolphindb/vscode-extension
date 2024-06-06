@@ -6,7 +6,7 @@ const mode = process.env.MODE;
 const isProd = mode === 'prod';
 
 export default {
-  input: `./src/server.ts`,
+  input: `./server/server.ts`,
   output: [
     // {
     //   file: './build/cjs/server.js',
@@ -15,7 +15,7 @@ export default {
     //   sourcemap: !isProd
     // },
     {
-      file: './build/server.js',
+      file: './out/server/server.js',
       format: 'es',
       sourcemap: !isProd
     },
@@ -26,14 +26,21 @@ export default {
     //   sourcemap: !isProd
     // },
   ],
-  plugins: [resolve(),commonjs(),typescript({
+  plugins: [resolve(), commonjs(), typescript({
     useTsconfigDeclarationDir: true,
     tsconfigOverride: {
       compilerOptions: {
         sourceMap: !isProd,
-        declarationDir: 'build',
-      }, include: ['src'],
+        "target": "es2020",
+        "lib": ["es2020"],
+        module: 'ESNext',
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "out",
+      },
+      include: ['server'],
+      exclude: ["node_modules", "src", "./build.ts"]
     }
   }),],
-  external:['react']
+  external: ['react']
 };
