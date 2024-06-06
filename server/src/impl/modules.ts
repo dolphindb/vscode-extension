@@ -5,6 +5,7 @@ import * as path from 'path';
 interface DdbModule {
     path: string;
     moduleName: string;
+    moduleParentPath: string;
 }
 
 interface DdbModuleWatcher {
@@ -21,9 +22,8 @@ class DdbModules {
 
     private moduleRoot: string = '';
     private modules: DdbModule[] = [];
-    private moduleWatchers: DdbModuleWatcher[] = [];
-    private dirWatchers: DdbDirWatcher[] = [];
-    private moduleFiles = new Set<string>();
+    private moduleWatchers = new Map<string, DdbModuleWatcher>;
+    private dirWatchers = new Map<string, DdbDirWatcher>;
     private isModuleIndexInit = false;
 
     constructor() { }
@@ -37,29 +37,24 @@ class DdbModules {
     private buildModuleIndex() {
         this.isModuleIndexInit = false;
         // 停掉所有的监听
-        for (const dw of this.dirWatchers) {
+        this.dirWatchers.forEach(dw => {
             dw.watcher.close()
-        }
-        this.dirWatchers = [];
+        })
+        this.dirWatchers.clear();
         // 写个广搜
         const dirsToWatch = [this.moduleRoot];
         while (dirsToWatch.length > 0) {
             const dir = dirsToWatch.shift();
             if (dir) {
-                const watcher = this.startWatchDir(dir);
-                this.dirWatchers.push(watcher);
+                // 监听这个目录
+                this.startWatchDir(dir);
                 // 读取当前目录中的子目录并加入待监听列表
-                const subDirs = fs.readdirSync(dir).filter(subDir => {
+                const dirs = fs.readdirSync(dir)
+                // 注册模块
+                this.registerDirModules(dir, dirs);
+                const subDirs = dirs.filter(subDir => {
                     const subDirPath = path.join(dir, subDir);
                     const isDir = fs.statSync(subDirPath).isDirectory();
-                    if (!isDir) {
-                        if (!this.modules.find(e => e.path === subDirPath)) {
-                            this.modules.push({
-                                moduleName: this.getModuleName(subDirPath),
-                                path: subDirPath,
-                            })
-                        }
-                    }
                     return isDir;
                 });
                 for (const subDir of subDirs) {
@@ -71,11 +66,46 @@ class DdbModules {
         this.isModuleIndexInit = true;
     }
 
-    private startWatchDir(path: string): DdbDirWatcher {
+    /**
+     * 监听指定目录
+     * @param path 要监听的目录
+     * @returns 
+     */
+    private startWatchDir(path: string) {
         const watcher = fs.watch(path);
-        return {
-            path, watcher
-        }
+        // 监听变化
+        watcher.on('change', () => {
+            const dirs = fs.readdirSync(path)
+            // 该目录下模块全部重新注册，把之前存在的都删除
+            this.modules = this.modules.filter(e => e.moduleParentPath !== path)
+            // 重新注册模块
+            this.registerDirModules(path, dirs);
+        })
+        this.dirWatchers.set(path, { path, watcher })
+    }
+
+    private registerDirModules(dir: string, dirInfo: string[]) {
+        dirInfo.forEach(subDir => {
+            const subDirPath = path.join(dir, subDir);
+            const stat = fs.statSync(subDirPath)
+            const isDir = stat.isDirectory();
+            const isDos = subDirPath.endsWith('.dos')
+            if (!isDir && isDos) {
+                if (!this.modules.find(e => e.path === subDirPath)) {
+                    const existModuleIndex = this.modules.findIndex(e => e.path === subDirPath)
+                    const moduleInfo = {
+                        moduleName: this.getModuleName(subDirPath),
+                        path: subDirPath,
+                        moduleParentPath: dir
+                    }
+                    // 如果有，修改信息
+                    if (existModuleIndex >= 0) {
+                        this.modules[existModuleIndex] = moduleInfo
+                    } else // 否则才添加
+                        this.modules.push(moduleInfo)
+                }
+            }
+        })
     }
 
     private getModuleName(path: string) {
