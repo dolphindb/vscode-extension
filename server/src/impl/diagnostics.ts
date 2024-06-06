@@ -9,7 +9,7 @@ import {
 import {
     TextDocument
 } from 'vscode-languageserver-textdocument';
-import { connection, getDocumentSettings } from './connection';
+import { connection } from './connection';
 import { documents } from './documents';
 import { ddbModules } from './modules';
 import { extractModuleName } from './utils/texts';

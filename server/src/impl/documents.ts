@@ -5,7 +5,11 @@ import {
 import {
     TextDocument
 } from 'vscode-languageserver-textdocument';
-import { connection, documentSettings } from './connection';
+import { connection } from './connection';
+
+/**
+ * 现在也没有什么监听文档状态需要用到的东西
+ */
 
 // Create a simple text document manager.
 export const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -16,7 +20,7 @@ documents.onDidOpen(e => {
 
 // Only keep settings for open documents
 documents.onDidClose(e => {
-    documentSettings.delete(e.document.uri);
+    // handle document close
 });
 
 // The content of a text document has changed. This event is emitted

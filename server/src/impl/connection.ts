@@ -15,46 +15,28 @@ export const connection = createConnection(ProposedFeatures.all);
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 
-// The example settings
+// The language server settings
 interface LanguageServerSettings {
     moduleRoot: string;
 }
 
-// The global settings, used when the `workspace/configuration` request is not supported by the client.
-// Please note that this is not the case when using this server with the client provided in this example
-// but could happen with other clients.
+// The global settings
 const defaultSettings: LanguageServerSettings = {
     moduleRoot: ""
 };
 let globalSettings: LanguageServerSettings = defaultSettings;
 
-export function getDocumentSettings(resource: string): Thenable<LanguageServerSettings> {
-    if (!hasConfigurationCapability) {
-        return Promise.resolve(globalSettings);
-    }
-    let result = documentSettings.get(resource);
-    if (!result) {
-        result = connection.workspace.getConfiguration({
-            scopeUri: resource,
-            section: 'ddbls'
-        });
-        documentSettings.set(resource, result);
-    }
-    return result;
-}
-
 export function getGlobalSettings() {
     return globalSettings;
 }
-
-// Cache the settings of all open documents
-export const documentSettings: Map<string, Thenable<LanguageServerSettings>> = new Map();
 
 connection.onInitialize((params: InitializeParams) => {
     const capabilities = params.capabilities;
 
     // Does the client support the `workspace/configuration` request?
     // If not, we fall back using global settings.
+    // 但是如果没有 workspace configuration，globalSettings 也没法用啊
+    // 一般来说都会有的，否则我们怎么从 workspage 里面加载设置呢
     hasConfigurationCapability = !!(
         capabilities.workspace && !!capabilities.workspace.configuration
     );
@@ -105,19 +87,12 @@ connection.onInitialized(() => {
     }
 });
 
-connection.onDidChangeConfiguration(change => {
-    if (hasConfigurationCapability) {
-        // Reset all cached document settings
-        // 我也不知道 documentSettings 是做什么的，对这个插件也许没太大用吧
-        documentSettings.clear();
-    }
+connection.onDidChangeConfiguration(change => { // 这个参数也用不着，我们直接用 workspace getConfiguration 全量重设
 
     if (hasConfigurationCapability) {
         connection.workspace.getConfiguration('dolphindb').then((settings: LanguageServerSettings) => {
             globalSettings = settings;
             ddbModules.setModuleRoot(settings.moduleRoot)
-            // 刷新一下诊断
-            connection.languages.diagnostics.refresh();
         });
     }
     // Refresh the diagnostics since the `maxNumberOfProblems` could have changed.
