@@ -9,6 +9,7 @@
         "dev": "tsc --project ./tsconfig.node.json && node ./build.js",
         "build-server": "cd server && npm run build && cd .. && cp -rf server/build/* out/server/",
         "build": "tsc --project ./tsconfig.node.json && node ./build.js --production",
+        "build-all": "pnpm run build && cd out && mkdir server && cd .. && pnpm run build-server",
         "scan": "i18n-scan --input \"**/*.{ts,tsx}\"",
         "lint": "eslint \"**/*.{ts,tsx}\"",
         "fix": "eslint --fix \"**/*.{ts,tsx}\""

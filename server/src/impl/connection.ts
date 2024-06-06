@@ -94,6 +94,8 @@ connection.onInitialized(() => {
         connection.workspace.getConfiguration('dolphindb').then((settings: LanguageServerSettings) => {
             globalSettings = settings;
             ddbModules.setModuleRoot(settings.moduleRoot)
+            // 刷新一下诊断
+            connection.languages.diagnostics.refresh();
         });
     }
     if (hasWorkspaceFolderCapability) {
@@ -114,6 +116,8 @@ connection.onDidChangeConfiguration(change => {
         connection.workspace.getConfiguration('dolphindb').then((settings: LanguageServerSettings) => {
             globalSettings = settings;
             ddbModules.setModuleRoot(settings.moduleRoot)
+            // 刷新一下诊断
+            connection.languages.diagnostics.refresh();
         });
     }
     // Refresh the diagnostics since the `maxNumberOfProblems` could have changed.

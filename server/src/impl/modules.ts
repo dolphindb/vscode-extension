@@ -1,7 +1,6 @@
 import * as fsp from 'fs/promises';
 import * as fs from 'fs';
 import * as path from 'path';
-import { connection } from './connection';
 
 interface DdbModule {
     path: string;
@@ -70,8 +69,6 @@ class DdbModules {
         }
         // 初始化索引完毕
         this.isModuleIndexInit = true;
-        // 刷新一下诊断
-        connection.languages.diagnostics.refresh();
     }
 
     private startWatchDir(path: string): DdbDirWatcher {
