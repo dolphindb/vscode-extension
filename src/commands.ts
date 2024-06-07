@@ -244,7 +244,7 @@ async function execute (text: string, testing = false) {
     
     if (testing) {
         printer.fire(
-            ((obj.value as (string | null))?.replaceAll('\n', '\r\n').blue || '') +
+            ((obj.data() as (string | null))?.replaceAll('\n', '\r\n').blue || '') +
             get_execution_end()
         )
         
