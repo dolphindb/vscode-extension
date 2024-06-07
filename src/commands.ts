@@ -188,9 +188,7 @@ async function execute (text: string, testing = false) {
         
         if (message.includes('RefId:'))         
             message = message.replaceAll(/RefId:\s*(\w+)/g, (_, ref_id) => 
-                language === 'en' && Number(ref_id.slice(1)) >= 4 
-                    ? ''
-                    :  `RefId: ${ref_id}`.blue.underline)
+                `RefId: ${ref_id}`.blue.underline)
         
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
@@ -246,7 +244,7 @@ async function execute (text: string, testing = false) {
     
     if (testing) {
         printer.fire(
-            ((obj.value as (string | null))?.replaceAll('\n', '\r\n').blue || '') +
+            (obj.data<string | null>()?.replaceAll('\n', '\r\n').blue || '') +
             get_execution_end()
         )
         

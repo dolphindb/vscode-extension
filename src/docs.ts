@@ -30,7 +30,12 @@ export async function load_docs () {
 
 export function register_docs (ctx: ExtensionContext) {
     function wrap_markdown_string (md: string) {
-        return new MarkdownString(md)
+        let mdstr = new MarkdownString(md)
+        
+        mdstr.isTrusted = true
+        mdstr.supportHtml = true
+        
+        return mdstr
     }
     
     const ddb_languages = ['dolphindb', 'dolphindb-python']
@@ -61,6 +66,7 @@ export function register_docs (ctx: ExtensionContext) {
                     })),
                 ] satisfies CompletionItem[]
             },
+            
             resolveCompletionItem (item, _canceller) {
                 const md = docs_analyser.get_function_markdown(item.label as string)
             
@@ -70,6 +76,7 @@ export function register_docs (ctx: ExtensionContext) {
                 return item
             },
         }),
+        
         // 悬浮提示
         languages.registerHoverProvider(ddb_languages, {
             provideHover (doc, pos, _canceller) {
@@ -87,6 +94,8 @@ export function register_docs (ctx: ExtensionContext) {
                 }
             },
         }),
+        
+        
         // 函数签名
         languages.registerSignatureHelpProvider(
             ddb_languages,
