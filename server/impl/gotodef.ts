@@ -65,13 +65,32 @@ function findDefinitionOrDeclaration(lines: string[], word: string, currentLine:
     // Then, look for variable declaration (from the current line upwards)
     for (let i = currentLine; i >= 0; i--) {
         if (declarationRegex.test(lines[i])) {
+            const startIdx = lines[i].indexOf(word);
+            const endIdx = startIdx + word.length;
             return {
                 range: {
-                    start: Position.create(i, 0),
-                    end: Position.create(i, lines[i].length)
+                    start: Position.create(i, startIdx),
+                    end: Position.create(i, endIdx)
                 }
             };
         }
+    
+        // Check if the line contains a function definition
+        const match = functionRegex.exec(lines[i]);
+        if (match) {
+            const params = match[1].split(',').map(param => param.trim());
+            if (params.includes(word)) {
+                const startIdx = lines[i].indexOf(word);
+                const endIdx = startIdx + word.length;
+                return {
+                    range: {
+                        start: Position.create(i, startIdx),
+                        end: Position.create(i, endIdx)
+                    }
+                };
+            }
+        }
+
     }
 
     return null;
