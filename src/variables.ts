@@ -10,7 +10,7 @@ import {
     type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider
 } from 'vscode'
 
-import { inspect, defer } from 'xshell'
+import { inspect, defer, strcmp } from 'xshell'
 
 import {
     DdbForm,
@@ -179,7 +179,7 @@ export class DdbVarLocation extends TreeItem {
         this.matrix.update(matrixs)
         this.set.update(sets)
         this.dict.update(dicts)
-        this.table.update(tables)
+        this.table.update(tables.sort((a, b) => strcmp(a.name, b.name)))
         this.chart.update(charts)
         this.chunk.update(chunks)
         this.object.update(objects)

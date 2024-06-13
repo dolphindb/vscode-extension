@@ -206,11 +206,11 @@
     "的词典": {
         "en": " dict"
     },
-    "的集合": {
-        "en": " set"
+    "的 {{type}} 集合": {
+        "en": " {{type}} set"
     },
-    "的向量": {
-        "en": " vector"
+    "的 {{type}} 向量": {
+        "en": "{{type}} vector"
     },
     "的表格": {
         "en": " table"
@@ -401,9 +401,6 @@
     "当前连接配置中的 mappings 中存在路径类型错误映射项（1. \"文件夹\" 路径错误映射到 \"文件\" 路径；2. \"文件\" 路径错误映射到 \"文件夹\" 路径；3. \"default\" 没有映射到 \"文件夹\" 路径。）请检查后修改。": {
         "en": "There is a path type error mapping item in the mappings in the current connection configuration (1. \"folder\" path is incorrectly mapped to \"file\" path; 2. \"file\" path is incorrectly mapped to \"folder\" path; 3. \"default\" is not mapped to \"folder\" path.) Please check and modify."
     },
-    "请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}}（目前版本暂不支持上传二进制文件，二进制文件会被自动忽略）": {
-        "en": "Please confirm whether to upload these {{file_num}} files to {{fp_remote}} (The current version does not support uploading binary files, and binary files will be automatically ignored)"
-    },
     "连接到:": {
         "en": "connect to:"
     },
@@ -428,8 +425,8 @@
     "查看文档": {
         "en": "View Document"
     },
-    "请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}} {{notice}}（目前版本暂不支持上传二进制文件，二进制文件会被自动忽略）": {
-        "en": "Please confirm whether to upload the selected {{file_num}} files to {{fp_remote}} {{notice}} (the current version does not support uploading binary files, and binary files will be automatically ignored)"
+    "请确认是否将选中的 {{file_num}} 个文件/文件夹上传至 {{fp_remote}} {{notice}}（目前版本暂不支持上传二进制文件，二进制文件会被自动忽略）": {
+        "en": "Please confirm whether to upload the selected {{file_num}} file(s)/folder(s) to {{fp_remote}} {{notice}} (the current version does not support uploading binary files, and binary files will be automatically ignored)"
     },
     "\n··· 等，共 {{num}} 个路径": {
         "en": "... and so on, a total of {{num}} paths"
