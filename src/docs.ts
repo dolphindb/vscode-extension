@@ -80,7 +80,7 @@ export function register_docs (ctx: ExtensionContext) {
         // 悬浮提示
         languages.registerHoverProvider(ddb_languages, {
             provideHover (doc, pos, _canceller) {
-                const word = doc.getText(doc.getWordRangeAtPosition(pos))
+                const word = doc.getText(doc.getWordRangeAtPosition(pos, /[^\d\W]\w*!?/))
                 
                 if (!word)
                     return
