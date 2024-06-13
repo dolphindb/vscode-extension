@@ -206,11 +206,11 @@
     "的词典": {
         "en": " dict"
     },
-    "的集合": {
-        "en": " set"
+    "的 {{type}} 集合": {
+        "en": " {{type}} set"
     },
-    "的向量": {
-        "en": " vector"
+    "的 {{type}} 向量": {
+        "en": "{{type}} vector"
     },
     "的表格": {
         "en": " table"

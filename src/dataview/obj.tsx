@@ -304,6 +304,10 @@ function Vector ({
 }) {
     const info = obj || objref
     
+    const { type } = info
+    const typestr = (64 <= type && type < 128 ? `${DdbType[type - 64]}[]` : DdbType[type]) || String(type)
+    
+    
     const ncols = Math.min(
         10,
         info.rows
@@ -407,7 +411,11 @@ function Vector ({
         <div className='bottom-bar'>
             <div className='info'>
                 <span className='desc'>{info.rows} {t('个元素')}{ objref ? ` (${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
-                <span className='type'>{ info.form === DdbForm.set ? t('的集合') : t('的向量') }</span>
+                <span className='type'>{ info.form === DdbForm.set ? 
+                    t('的 {{type}} 集合', { type: typestr })
+                :
+                    t('的 {{type}} 向量', { type: typestr })
+                }</span>
                 { info.name && <span className='name'>{info.name}</span> }
             </div>
             
