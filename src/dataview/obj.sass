@@ -278,4 +278,59 @@
             .ant-empty-description
                 color: $font-color !important
         
-
+.tensor
+    display: flex
+    flex-flow: column
+    height: 100%
+    overflow: auto
+    
+    
+.tensor-nav
+    display: flex
+    align-items: center
+    border-bottom: 1px solid rgba(125,125,125,0.5)
+    
+.tensor-view
+    flex:1
+    overflow: auto
+    height: 0
+    
+.tensor-title
+    padding: 4px 0 4px 2px
+    cursor: pointer
+    height: 100%
+    &:hover
+        background: rgba(125,125,125,0.5)
+    
+.tensor-elem-count
+    color: #3760f0
+    
+.type-name
+    color: #00a000
+    
+.tensor-nav-elem
+    cursor: pointer
+    padding: 4px 0 4px 2px
+    display: flex
+    margin-left:2px
+    height: 100%
+    &:hover
+        background: rgba(125,125,125,0.5)
+    
+.tensor-elem
+    font-family: MyFont, Menlo, "Ubuntu Mono", Consolas, "Dejavu Sans Mono", "Noto Sans Mono", PingFangSC, "Microsoft YaHei", monospace, Consolas, "Courier New", monospace
+    cursor: pointer
+    width: 100%
+    padding: 2px 5px 2px 5px
+    &:hover
+        background: rgba(125,125,125,0.5)
+        
+.tensor-page
+    display: flex
+    align-items: center
+    border-top: 1px solid rgba(125,125,125,0.5)
+    
+.tensor-desc
+    margin: 0 4px
+    font-weight: bold
+    line-height: 32px

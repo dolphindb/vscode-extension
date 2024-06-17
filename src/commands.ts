@@ -260,6 +260,7 @@ async function execute (text: string, testing = false) {
         case DdbForm.matrix:
         case DdbForm.table:
         case DdbForm.chart:
+        case DdbForm.tensor:
         case DdbForm.dict:
             lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection })
             to_inspect = true

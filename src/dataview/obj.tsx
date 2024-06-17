@@ -2027,9 +2027,7 @@ function Tensor ({
     
     if (!_obj)
         return null
-    
-    console.log(_obj)
-    
+        
     // 第 i 个维度的 size
     const shape: number[] = _obj.value.shape
     // 第 i 个维度，元素间距离
@@ -2128,9 +2126,7 @@ function Tensor ({
     const navItems = currentDir.map((e, i) => {
         return <div className='tensor-nav-elem' key={`tensor-index-${i}`} onClick={() => { popDimIndexTo(i + 1) }}>[{e}] <RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></div>
     })
-    
-    console.log(pageSize, currentDimSize)
-    
+        
     return <div className='tensor'>
         <div className='tensor-nav'>
             <span className='tensor-title' onClick={() => { popDimIndexTo(0) }}>Tensor <RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></span>{navItems}
