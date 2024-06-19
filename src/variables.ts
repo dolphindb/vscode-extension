@@ -307,6 +307,9 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
                     
                     case DdbForm.object:
                         return ''
+                        
+                    case DdbForm.tensor:
+                        return ` tensor<${DdbType[this.type]}>`
                     
                     default:
                         return ` ${DdbForm[this.form]} ${tname}`
