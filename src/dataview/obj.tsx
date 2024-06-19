@@ -2113,7 +2113,7 @@ function Tensor ({
             const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
             const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
             elems.push(<div key={`tensor-elem-offset-${offsetElem}`} className='tensor-elem'>
-                <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}</span> {val.toString()}
+                <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}</span> {String(val)}
             </div>)
         }
     
@@ -2124,7 +2124,7 @@ function Tensor ({
         
     return <div className='tensor'>
         <div className='tensor-nav'>
-            <span className='tensor-title' onClick={() => { popDimIndexTo(0) }}>Tensor <RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></span>{navItems}
+            <span className='tensor-title' onClick={() => { popDimIndexTo(0) }}>Tensor<RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></span>{navItems}
         </div>
         <div className='tensor-view'>
             {elems}
