@@ -2090,17 +2090,13 @@ function Tensor ({
                 for (let k = 0;  k < shape[currentDim + 1];  k++) {
                     const offsetElem = offset + i * dataByte * strides[currentDim] + k * dataByte * strides[currentDim + 1]
                     const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
-                    const val = getValueFromUint8Array(_obj.value.data_type, targetArr, _obj.le)
+                    const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
                     previewStr = previewStr + `${val}`
                     if ( k === previewLimit) {
                         previewStr = previewStr + ', ...'
                         break
-                    }
-                    else
-                    if (k !== shape[currentDim + 1] - 1) 
+                    } else if (k !== shape[currentDim + 1] - 1) 
                         previewStr = previewStr + ', '
-                    
-                    
                 }
                 previewStr = previewStr + ']'
         }
@@ -2111,12 +2107,11 @@ function Tensor ({
                 <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}{arrstr}</span> {previewStr}
             </div>
         )
-    }
-    else 
+    } else 
         for (let i = pageIndex * pageSize;  i < pageIndex * pageSize + pageSize && i < thisDimSize;  i++) {
             const offsetElem = offset + i * dataByte
             const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
-            const val = getValueFromUint8Array(_obj.value.data_type, targetArr, _obj.le)
+            const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
             elems.push(<div key={`tensor-elem-offset-${offsetElem}`} className='tensor-elem'>
                 <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}</span> {val.toString()}
             </div>)
@@ -2152,43 +2147,37 @@ function Tensor ({
     </div>
 }
 
-function getValueFromUint8Array (dataType: DdbType, data: Uint8Array, le: boolean) {
+
+function get_value_from_uint8_array (dataType: DdbType, data: Uint8Array, le: boolean) {
     const dv = new DataView(data.buffer, data.byteOffset)
     switch (dataType) {
-        case DdbType.bool:
-            {
-                const value = dv.getInt8(0)
-                return (value === nulls.int8 ? null : Boolean(value))
-            }
-        case DdbType.char:
-            {
-                const value = dv.getInt8(0)
-                return (value === nulls.int8 ? null : value)
-            }
-        case DdbType.short:
-            {
-                const value = dv.getInt16(0, le)
-                return (value === nulls.int16 ? null : value)
-            }
-        case DdbType.int:
-            {
-                const value = dv.getInt32(0, le)
-                return (value === nulls.int32 ? null : value)
-            }
-        case DdbType.long:
-            {
-                const value = dv.getBigInt64(0, le)
-                return (value === nulls.int64 ? null : value)
-            }
-        case DdbType.float:
-            {
-                const value = dv.getFloat32(0, le)
-                return (value === nulls.float32 ? null : value)
-            }
-        case DdbType.double:
-            {
-                const value = dv.getFloat64(0, le)
-                return (value === nulls.double ? null : value)
-            }
+        case DdbType.bool: {
+            const value = dv.getInt8(0)
+            return value === nulls.int8 ? null : Boolean(value)
+        }
+        case DdbType.char: {
+            const value = dv.getInt8(0)
+            return value === nulls.int8 ? null : value
+        }
+        case DdbType.short: {
+            const value = dv.getInt16(0, le)
+            return value === nulls.int16 ? null : value
+        }
+        case DdbType.int: {
+            const value = dv.getInt32(0, le)
+            return value === nulls.int32 ? null : value
+        }
+        case DdbType.long: {
+            const value = dv.getBigInt64(0, le)
+            return value === nulls.int64 ? null : value
+        }
+        case DdbType.float: {
+            const value = dv.getFloat32(0, le)
+            return value === nulls.float32 ? null : value
+        }
+        case DdbType.double: {
+            const value = dv.getFloat64(0, le)
+            return value === nulls.double ? null : value
+        }
     }
 }
