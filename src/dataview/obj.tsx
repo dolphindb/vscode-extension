@@ -2010,6 +2010,7 @@ function Tensor ({
     const [currentDir, setCurrentDir] = useState<number[]>([])
     const [pageSize, setPageSize] = useState(10)
     const [page, setPage] = useState(1)
+    const [previewLimit, setPreviewLimit] = useState(10)
     
     useEffect(() => {
         (async () => {
@@ -2048,7 +2049,6 @@ function Tensor ({
     const typeName = DdbType[_obj.value.data_type]
     
     const pageIndex = page - 1
-    const [previewLimit, setPreviewLimit] = useState(10)
     const currentDim = currentDir.length
     const isLeaf = currentDim === _obj.value.dimensions - 1
     const thisDimSize = shape[currentDim]
