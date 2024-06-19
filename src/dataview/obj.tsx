@@ -2071,7 +2071,7 @@ function Tensor ({
     let arrstrall = ''
     for (let j = 0;  j < _obj.value.dimensions;  j++) 
         // j 代表当前维度
-        arrstrall = arrstrall + `[${shape[j]}]`
+        arrstrall += `[${shape[j]}]`
     
     if (!isLeaf)
         for (let i = pageIndex * pageSize;  i < pageIndex * pageSize + pageSize && i < thisDimSize;  i++) {
@@ -2079,7 +2079,7 @@ function Tensor ({
         let arrstr = ''
         for (let j = currentDim + 1;  j < _obj.value.dimensions;  j++) 
             // j 代表当前维度
-            arrstr = arrstr + `[${shape[j]}]`
+            arrstr += `[${shape[j]}]`
         
         
         // 如果是倒数第二维
@@ -2091,14 +2091,14 @@ function Tensor ({
                     const offsetElem = offset + i * dataByte * strides[currentDim] + k * dataByte * strides[currentDim + 1]
                     const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
                     const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
-                    previewStr = previewStr + `${val}`
+                    previewStr += `${val}`
                     if ( k === previewLimit) {
-                        previewStr = previewStr + ', ...'
+                        previewStr += ', ...'
                         break
                     } else if (k !== shape[currentDim + 1] - 1) 
-                        previewStr = previewStr + ', '
+                        previewStr += ', '
                 }
-                previewStr = previewStr + ']'
+                previewStr += ']'
         }
         
         
