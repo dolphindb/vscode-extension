@@ -2006,6 +2006,11 @@ function Tensor ({
     
     const _obj = obj || objref.obj
     
+    // 接下来开始写当前浏览状态的维护
+    const [currentDir, setCurrentDir] = useState<number[]>([])
+    const [pageSize, setPageSize] = useState(10)
+    const [page, setPage] = useState(1)
+    
     useEffect(() => {
         (async () => {
             if (_obj)
@@ -2022,12 +2027,17 @@ function Tensor ({
             
             render({ })
         })()
+        
+        setCurrentDir([]);
+        setPageSize(10);
+        setPage(1);
     }, [obj, objref])
     
     
     if (!_obj)
         return null
-        
+    
+    
     // 第 i 个维度的 size
     const shape: number[] = _obj.value.shape
     // 第 i 个维度，元素间距离
@@ -2037,10 +2047,6 @@ function Tensor ({
     
     const typeName = DdbType[_obj.value.data_type]
     
-    // 接下来开始写当前浏览状态的维护
-    const [currentDir, setCurrentDir] = useState<number[]>([ ])
-    const [pageSize, setPageSize] = useState(10)
-    const [page, setPage] = useState(1)
     const pageIndex = page - 1
     const [previewLimit, setPreviewLimit] = useState(10)
     const currentDim = currentDir.length
@@ -2074,41 +2080,43 @@ function Tensor ({
         arrstrall += `[${shape[j]}]`
     
     if (!isLeaf)
-        for (let i = pageIndex * pageSize;  i < pageIndex * pageSize + pageSize && i < thisDimSize;  i++) {
-        // 搞清楚后面的维度的 size
-        let arrstr = ''
-        for (let j = currentDim + 1;  j < _obj.value.dimensions;  j++) 
-            // j 代表当前维度
-            arrstr += `[${shape[j]}]`
-        
-        
-        // 如果是倒数第二维
-        let previewStr = ''
-        if (currentDim === _obj.value.dimensions - 2) {
-            previewStr = '['
-            // 取每个维度的前 10 个
-                for (let k = 0;  k < shape[currentDim + 1];  k++) {
+        for (let i = pageIndex * pageSize; i < pageIndex * pageSize + pageSize && i < thisDimSize; i++) {
+            // 搞清楚后面的维度的 size
+            let arrstr = ''
+            for (let j = currentDim + 1; j < _obj.value.dimensions; j++)
+                // j 代表当前维度
+                arrstr += `[${shape[j]}]`
+
+
+            // 如果是倒数第二维
+            let previewStr = ''
+            if (currentDim === _obj.value.dimensions - 2) {
+                previewStr = '['
+                // 取每个维度的前 10 个
+                for (let k = 0; k < shape[currentDim + 1]; k++) {
                     const offsetElem = offset + i * dataByte * strides[currentDim] + k * dataByte * strides[currentDim + 1]
                     const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
                     const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
                     previewStr += `${val}`
-                    if ( k === previewLimit) {
+                    if (k === previewLimit) {
                         previewStr += ', ...'
                         break
-                    } else if (k !== shape[currentDim + 1] - 1) 
+                    } else if (k !== shape[currentDim + 1] - 1)
                         previewStr += ', '
+
+
                 }
                 previewStr += ']'
-        }
-        
-        
-        elems.push(
-            <div onClick={() => { pushDimIndex(i) }} className='tensor-elem' key={'dim' + `${i}`}>
-                <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}{arrstr}</span> {previewStr}
-            </div>
-        )
-    } else 
-        for (let i = pageIndex * pageSize;  i < pageIndex * pageSize + pageSize && i < thisDimSize;  i++) {
+            }
+
+
+            elems.push(
+                <div onClick={() => { pushDimIndex(i) }} className='tensor-elem' key={'dim' + `${i}`}>
+                    <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}{arrstr}</span> {previewStr}
+                </div>
+            )
+        } else
+        for (let i = pageIndex * pageSize; i < pageIndex * pageSize + pageSize && i < thisDimSize; i++) {
             const offsetElem = offset + i * dataByte
             const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
             const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
@@ -2121,7 +2129,8 @@ function Tensor ({
     const navItems = currentDir.map((e, i) => {
         return <div className='tensor-nav-elem' key={`tensor-index-${i}`} onClick={() => { popDimIndexTo(i + 1) }}>[{e}] <RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></div>
     })
-        
+    
+    
     return <div className='tensor'>
         <div className='tensor-nav'>
             <span className='tensor-title' onClick={() => { popDimIndexTo(0) }}>Tensor<RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></span>{navItems}
