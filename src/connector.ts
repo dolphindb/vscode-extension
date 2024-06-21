@@ -376,6 +376,8 @@ export class DdbConnection extends TreeItem {
     
     node_alias: string
     
+    logined = false
+    
     
     constructor (url: string, name: string = url, options: DdbOptions = { }) {
         super(`${name} `, TreeItemCollapsibleState.None)
@@ -426,6 +428,7 @@ export class DdbConnection extends TreeItem {
         await this.ddb.connect()
         
         await Promise.all([
+            this.update_logined(),
             this.get_node_type(),
             this.get_node_alias(),
             this.get_controller_alias(),
@@ -443,8 +446,17 @@ export class DdbConnection extends TreeItem {
     }
     
     
-    disconnect () {
+    async disconnect () {
         this.ddb.disconnect()
+        await this.update_logined()
+    }
+    
+    async update_logined () {
+        if (this.ddb.connected)
+            // 此处约定当前连接用户名为 guest 即为未登录状态
+            this.logined = (await this.ddb.call('getCurrentSessionAndUser')).value[1].value !== 'guest'
+        else
+            this.logined = false
     }
     
     
@@ -674,7 +686,7 @@ export class DdbConnection extends TreeItem {
     
     async update_databases () {
         // 当前无数据节点和计算节点存活，且当前节点不为单机节点，则不进行数据库表获取
-        if (!this.connected || this.node.mode !== NodeType.single && !this.has_data_and_computing_nodes_alive()) 
+        if (!this.logined || !this.connected || this.node.mode !== NodeType.single && !this.has_data_and_computing_nodes_alive()) 
             return
         
         // ['dfs://数据库路径(可能包含/)/表名', ...]
