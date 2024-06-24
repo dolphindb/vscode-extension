@@ -687,7 +687,7 @@ export class DdbConnection extends TreeItem {
     
     async update_databases () {
         if (!this.logined || !this.connected) 
-            databases.view.message = this.logined ? '' : t('请选择连接并登录后查看')
+            databases.view.message = t('请选择连接并登录后查看')
         // 当前集群无数据节点和计算节点存活，且当前节点不为单机节点，则不进行数据库表获取
         else if (this.node.mode !== NodeType.single && !this.has_data_and_computing_nodes_alive())
             databases.view.message = t('当前集群无数据节点和计算节点存活，且当前节点不为单机节点')
