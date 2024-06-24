@@ -165,5 +165,6 @@ export class DdbTable extends TreeItem {
 export function register_databases () {
     databases = new DdbDatabases()
     databases.view = window.createTreeView('dolphindb.databases', { treeDataProvider: databases })
+    databases.view.message = t('请选择连接并登录后查看')
 }
 

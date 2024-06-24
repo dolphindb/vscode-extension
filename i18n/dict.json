@@ -268,7 +268,7 @@
     },
     "标量": {
         "en": "scalar"
-    },    
+    },
     "张量": {
         "en": "tensor"
     },
@@ -493,5 +493,11 @@
     },
     "python parser 暂不支持调试功能": {
         "en": "Python parser does not support debugging function."
+    },
+    "请选择连接并登录后查看": {
+        "en": "Please select a connection and log in to view"
+    },
+    "当前集群无数据节点和计算节点存活，且当前节点不为单机节点": {
+        "en": "There are no data nodes or computing nodes alive in the current cluster, and the current node is not a stand-alone node"
     }
 }
