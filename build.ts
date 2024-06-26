@@ -97,7 +97,6 @@ async function build () {
                     ignores: ['dolphindb-vscode']
                 },
                 commonjs2: true,
-                single_chunk: false,
                 globals: {
                     FPD_ROOT: fpd_root.quote()
                 },
