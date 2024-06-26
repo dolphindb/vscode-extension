@@ -413,6 +413,41 @@ function Tensor ({
 }
 
 
+function get_value_from_uint8_array (dataType: DdbType, data: Uint8Array, le: boolean) {
+    const dv = new DataView(data.buffer, data.byteOffset)
+    switch (dataType) {
+        case DdbType.bool: {
+            const value = dv.getInt8(0)
+            return value === nulls.int8 ? null : Boolean(value)
+        }
+        case DdbType.char: {
+            const value = dv.getInt8(0)
+            return value === nulls.int8 ? null : value
+        }
+        case DdbType.short: {
+            const value = dv.getInt16(0, le)
+            return value === nulls.int16 ? null : value
+        }
+        case DdbType.int: {
+            const value = dv.getInt32(0, le)
+            return value === nulls.int32 ? null : value
+        }
+        case DdbType.long: {
+            const value = dv.getBigInt64(0, le)
+            return value === nulls.int64 ? null : value
+        }
+        case DdbType.float: {
+            const value = dv.getFloat32(0, le)
+            return value === nulls.float32 ? null : value
+        }
+        case DdbType.double: {
+            const value = dv.getFloat64(0, le)
+            return value === nulls.double ? null : value
+        }
+    }
+}
+
+
 function build_tree_data (
     obj: DdbDictObj,
     { remote, ctx, ddb, options }: { remote?: Remote, ctx?: Context, ddb?: DDB, options?: InspectOptions }
@@ -2156,38 +2191,4 @@ function Chart ({
             </div>
         </div> }
     </div>
-}
-
-function get_value_from_uint8_array (dataType: DdbType, data: Uint8Array, le: boolean) {
-    const dv = new DataView(data.buffer, data.byteOffset)
-    switch (dataType) {
-        case DdbType.bool: {
-            const value = dv.getInt8(0)
-            return (value === nulls.int8 ? null : Boolean(value))
-        }
-        case DdbType.char: {
-            const value = dv.getInt8(0)
-            return (value === nulls.int8 ? null : value)
-        }
-        case DdbType.short: {
-            const value = dv.getInt16(0, le)
-            return (value === nulls.int16 ? null : value)
-        }
-        case DdbType.int: {
-            const value = dv.getInt32(0, le)
-            return (value === nulls.int32 ? null : value)
-        }
-        case DdbType.long: {
-            const value = dv.getBigInt64(0, le)
-            return (value === nulls.int64 ? null : value)
-        }
-        case DdbType.float: {
-            const value = dv.getFloat32(0, le)
-            return (value === nulls.float32 ? null : value)
-        }
-        case DdbType.double: {
-            const value = dv.getFloat64(0, le)
-            return (value === nulls.double ? null : value)
-        }
-    }
 }
