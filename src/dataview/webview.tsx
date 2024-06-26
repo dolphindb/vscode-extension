@@ -257,11 +257,13 @@ function DataView () {
     
     const { type, data } = result
     
-    return <div className='obj-result themed webview'>{
-        type === 'object' ?
-            <Obj obj={data} remote={remote} ctx='webview' options={options} />
-        :
-            <Obj objref={data} remote={remote} ctx='webview' options={options} />
-    }</div>
+    return <div className='obj-result themed webview'>
+        <Obj 
+            remote={remote} 
+            ctx='webview' 
+            options={options} 
+            {...type === 'object' ? { obj: data } : { objref: data }}
+        />
+    </div>
 }
 

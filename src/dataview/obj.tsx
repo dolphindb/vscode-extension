@@ -20,6 +20,8 @@ import { default as Icon, CaretRightOutlined, PauseOutlined, RightOutlined } fro
 
 import { Line, Pie, Bar, Column, Scatter, Area, DualAxes, Histogram, Stock } from '@ant-design/plots'
 
+import { use_rerender } from 'react-object-model/hooks.js'
+
 import { genid, seq, assert, delay } from 'xshell/utils.browser.js'
 
 
@@ -32,7 +34,6 @@ import {
     nulls,
     formati,
     format,
-    winsize,
     type InspectOptions,
     type DdbValue,
     type DdbVectorValue,
@@ -43,15 +44,15 @@ import {
     type DdbTableObj,
     type DdbMatrixObj,
     type DdbChartObj,
-    type StreamingParams,
     type StreamingMessage,
     ddb_tensor_bytes,
-    DdbTensorObj,
+    type DdbTensorObj
 } from 'dolphindb/browser.js'
 
 import { t } from '../../i18n/index.js'
 
 import SvgLink from './link.icon.svg'
+
 import { type WindowModel } from './window.js'
 
 
@@ -94,6 +95,7 @@ export function Obj ({
     ctx = 'webview',
     remote,
     ddb,
+    ExportCsv,
     options,
 }: {
     obj?: DdbObj
@@ -101,13 +103,13 @@ export function Obj ({
     ctx?: Context
     remote?: Remote
     ddb?: DDB
+    ExportCsv?: React.FC<{ info: DdbTableObj | DdbObjRef<DdbObj<DdbVectorValue>[]> }>
     options?: InspectOptions
 }) {
     const info = obj || objref
-    
     const View = views[info.form] || Default
     
-    return <View obj={obj} objref={objref} ctx={ctx} remote={remote} ddb={ddb} options={options} />
+    return <View obj={obj} objref={objref} ctx={ctx} remote={remote} ddb={ddb} options={options} ExportCsv={ExportCsv}/>
 }
 
 
@@ -241,6 +243,176 @@ function Dict ({
 }
 
 
+function Tensor ({
+    obj,
+    objref,
+    remote,
+    ddb,
+    ctx,
+    options,
+}: {
+    obj?: DdbTensorObj
+    objref?: DdbObjRef<DdbTensorObj['value']>
+    remote?: Remote
+    ddb?: DDB
+    ctx?: Context
+    options?: InspectOptions
+}) {
+    const render = useState({ })[1]
+    
+    const _obj = obj || objref.obj
+    
+    // 接下来开始写当前浏览状态的维护
+    const [currentDir, setCurrentDir] = useState<number[]>([ ])
+    const [pageSize, setPageSize] = useState(10)
+    const [page, setPage] = useState(1)
+    const [previewLimit, setPreviewLimit] = useState(10)
+    
+    useEffect(() => {
+        (async () => {
+            if (_obj)
+                return
+            
+            const { node, name } = objref
+            
+            console.log('tensor.fetch:', name)
+            
+            objref.obj = ddb ?
+                await ddb.eval<DdbTensorObj>(name)
+            :
+                DdbObj.parse(... await remote.call<[Uint8Array, boolean]>('eval', [node, name])) as DdbTensorObj
+            
+            render({ })
+        })()
+        
+        setCurrentDir([ ])
+        setPageSize(10)
+        setPage(1)
+    }, [obj, objref])
+    
+    
+    if (!_obj)
+        return null
+    
+    
+    // 第 i 个维度的 size
+    const shape: number[] = _obj.value.shape
+    // 第 i 个维度，元素间距离
+    const strides: number[] = _obj.value.strides
+    // 元素间跳字节
+    const dataByte: number = ddb_tensor_bytes[_obj.value.data_type]
+    
+    const typeName = DdbType[_obj.value.data_type]
+    
+    const pageIndex = page - 1
+    const currentDim = currentDir.length
+    const isLeaf = currentDim === _obj.value.dimensions - 1
+    const thisDimSize = shape[currentDim]
+    const totalPageCount = Math.ceil(thisDimSize / pageSize)
+    const data: Uint8Array = _obj.value.data
+    
+    function pushDimIndex (index: number) {
+        setCurrentDir([...currentDir, index])
+        setPage(1)
+    }
+    
+    function popDimIndexTo (index: number) {
+        setCurrentDir(currentDir.slice(0, index))
+        setPage(1)
+    }
+    
+    // 如果不是最高维，没有数据，比较简单
+    // 只需要展示有一些低维数组存在就可以了
+    const currentDimSize: number = _obj.value.shape[currentDim]
+    // 搞这么多元素来
+    const elems = [ ]
+    const offset = currentDir.reduce((prev, curr, index) => {
+        return prev + strides[index] * curr * dataByte
+    }, 0)
+    
+    let arrstrall = ''
+    for (let j = 0;  j < _obj.value.dimensions;  j++) 
+        // j 代表当前维度
+        arrstrall += `[${shape[j]}]`
+    
+    if (!isLeaf)
+        for (let i = pageIndex * pageSize;  i < pageIndex * pageSize + pageSize && i < thisDimSize;  i++) {
+            // 搞清楚后面的维度的 size
+            let arrstr = ''
+            for (let j = currentDim + 1;  j < _obj.value.dimensions;  j++)
+                // j 代表当前维度
+                arrstr += `[${shape[j]}]`
+                
+                
+            // 如果是倒数第二维
+            let previewStr = ''
+            if (currentDim === _obj.value.dimensions - 2) {
+                previewStr = '['
+                // 取每个维度的前 10 个
+                for (let k = 0;  k < shape[currentDim + 1];  k++) {
+                    const offsetElem = offset + i * dataByte * strides[currentDim] + k * dataByte * strides[currentDim + 1]
+                    const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
+                    const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
+                    previewStr += `${val}`
+                    if (k === previewLimit) {
+                        previewStr += ', ...'
+                        break
+                    } else if (k !== shape[currentDim + 1] - 1)
+                        previewStr += ', '
+                        
+                        
+                }
+                previewStr += ']'
+            }
+            
+            
+            elems.push(
+                <div onClick={() => { pushDimIndex(i) }} className='tensor-elem' key={'dim' + `${i}`}>
+                    <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}{arrstr}</span> {previewStr}
+                </div>
+            )
+        } else
+        for (let i = pageIndex * pageSize;  i < pageIndex * pageSize + pageSize && i < thisDimSize;  i++) {
+            const offsetElem = offset + i * dataByte
+            const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
+            const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
+            elems.push(<div key={`tensor-elem-offset-${offsetElem}`} className='tensor-elem'>
+                <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}</span> {String(val)}
+            </div>)
+        }
+    
+    
+    const navItems = currentDir.map((e, i) => {
+        return <div className='tensor-nav-elem' key={`tensor-index-${i}`} onClick={() => { popDimIndexTo(i + 1) }}>[{e}] <RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></div>
+    })
+    
+    
+    return <div className='tensor'>
+        <div className='tensor-nav'>
+            <span className='tensor-title' onClick={() => { popDimIndexTo(0) }}>Tensor<RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></span>{navItems}
+        </div>
+        <div className='tensor-view'>
+            {elems}
+        </div>
+        <div className='tensor-page'>
+            <span className='tensor-desc'>
+                Tensor{`<${typeName}${arrstrall}>`}
+            </span>
+            {totalPageCount > 1 && <Pagination
+                current={page}
+                total={currentDimSize}
+                pageSize={pageSize}
+                onChange={(page, pageSize) => {
+                    setPage(page)
+                    setPageSize(pageSize)
+                }}
+                showSizeChanger
+            />}
+        </div>
+    </div>
+}
+
+
 function build_tree_data (
     obj: DdbDictObj,
     { remote, ctx, ddb, options }: { remote?: Remote, ctx?: Context, ddb?: DDB, options?: InspectOptions }
@@ -310,7 +482,6 @@ function Vector ({
     const { type } = info
     const typestr = (64 <= type && type < 128 ? `${DdbType[type - 64]}[]` : DdbType[type]) || String(type)
     
-    
     const ncols = Math.min(
         10,
         info.rows
@@ -325,7 +496,7 @@ function Vector ({
         :
             Math.min(
                 Math.ceil(info.rows / ncols),
-                page_size / ncols
+                Math.ceil(page_size / ncols)
             )
     
     const [page_index, set_page_index] = useState(0)
@@ -499,11 +670,7 @@ class VectorColumn implements TableColumnType <number> {
 
 
 function StreamingCell ({
-    window: {
-        segments,
-        rows,
-        offset,
-    },
+    window: { objs },
     
     icol,
     irow,
@@ -519,12 +686,12 @@ function StreamingCell ({
     
     options?: InspectOptions
 }) {
-    // 在 segments 中从后往前查找 index 所属的 segment, 这样能更快找到（最新的记录都在最后面）
+    // 在 objs 中从后往前查找 index 所属的 segment, 这样能更快找到（最新的记录都在最后面）
     // 最坏复杂度 O(page.size)，整个表格的渲染复杂度 page.size^2 * ncols
     
     let _rows = 0
-    for (let i = segments.length - 1;  i >= 0;  i--) {
-        const segment = segments[i]
+    for (let i = objs.length - 1;  i >= 0;  i--) {
+        const segment = objs[i]
         
         const { rows } = segment.value[0]  // 当前 segment 所包含的 rows
         
@@ -548,6 +715,7 @@ export function Table ({
     remote,
     ddb,
     options,
+    ExportCsv,
     show_bottom_bar = true,
     ...others
 }: {
@@ -557,6 +725,7 @@ export function Table ({
     remote?: Remote
     ddb?: DDB
     options?: InspectOptions
+    ExportCsv?: React.FC<{ info: DdbTableObj | DdbObjRef<DdbObj<DdbVectorValue>[]> }>
     show_bottom_bar?: boolean
 } & TableProps<any>) {
     const info = obj || objref
@@ -571,7 +740,7 @@ export function Table ({
     
     const [page_index, set_page_index] = useState(0)
     
-    const render = useState({ })[1]
+    const render = use_rerender()
     
     useEffect(() => {
         set_page_index(0)
@@ -600,7 +769,7 @@ export function Table ({
                 else
                     objref.obj = DdbObj.parse(... await remote.call<[Uint8Array, boolean]>('eval', [node, script])) as DdbTableObj
                 
-                render({ })
+                render()
             }
         })()
     }, [obj, objref, page_index, page_size])
@@ -663,14 +832,17 @@ export function Table ({
             />
             
             <div className='actions'>
-                {(ctx === 'page' || ctx === 'embed') && <Icon
-                    className='icon-link'
-                    title={t('在新窗口中打开')}
-                    component={SvgLink}
-                    onClick={async () => {
-                        await open_obj({ obj, objref, remote, ddb, options })
-                    }}
-                />}
+                {(ctx === 'page' || ctx === 'embed') && <>
+                    <Icon
+                        className='icon-link'
+                        title={t('在新窗口中打开')}
+                        component={SvgLink}
+                        onClick={async () => {
+                            await open_obj({ obj, objref, remote, ddb, options })
+                        }}
+                    />
+                    {ExportCsv && <ExportCsv info={info} />}
+                </>}
             </div>
         </div>}
     </div>
@@ -839,7 +1011,7 @@ export function StreamingTable ({
                                             
                                             const time = new Date().getTime()
                                             
-                                            rreceived.current += message.rows
+                                            rreceived.current += message.data.data.length
                                             
                                             // 冻结或者未到更新时间
                                             if (rrate.current === -1 || time - rlast.current < rrate.current)
@@ -988,10 +1160,9 @@ export function StreamingTable ({
     
     
     const { current: message } = rmessage
-    const { colnames } = message
     
     const cols = seq(
-        colnames.length,
+        message.data.columns.length,
         index => new StreamingTableColumn({
             rmessage,
             index,
@@ -1151,14 +1322,14 @@ class StreamingTableColumn implements TableColumnType <number> {
         
         this.key = this.index
         
-        const { current: { data: mdata, colnames } } = this.rmessage
+        const { current: { obj, data: { columns } } } = this.rmessage
         
-        this.col = mdata.value[this.index]
+        this.col = obj.value[this.index]
         assert(this.col.form === DdbForm.vector, t('this.streaming.data 中的元素应该是 vector'))
         
         this.title = <Tooltip
                 title={DdbType[this.col.type === DdbType.symbol_extended ? DdbType.symbol : this.col.type]}
-            >{colnames[this.index]}</Tooltip>
+            >{columns[this.index]}</Tooltip>
         
         this.align = TableColumn.left_align_types.has(this.col.type) ? 'left' : 'right'
     }
@@ -1987,206 +2158,36 @@ function Chart ({
     </div>
 }
 
-function Tensor ({
-    obj,
-    objref,
-    remote,
-    ddb,
-    ctx,
-    options,
-}: {
-    obj?: DdbTensorObj
-    objref?: DdbObjRef<DdbTensorObj['value']>
-    remote?: Remote
-    ddb?: DDB
-    ctx?: Context
-    options?: InspectOptions
-}) {
-    const render = useState({ })[1]
-    
-    const _obj = obj || objref.obj
-    
-    // 接下来开始写当前浏览状态的维护
-    const [currentDir, setCurrentDir] = useState<number[]>([])
-    const [pageSize, setPageSize] = useState(10)
-    const [page, setPage] = useState(1)
-    const [previewLimit, setPreviewLimit] = useState(10)
-    
-    useEffect(() => {
-        (async () => {
-            if (_obj)
-                return
-            
-            const { node, name } = objref
-            
-            console.log('tensor.fetch:', name)
-            
-            objref.obj = ddb ?
-                await ddb.eval<DdbTensorObj>(name)
-            :
-                DdbObj.parse(... await remote.call<[Uint8Array, boolean]>('eval', [node, name])) as DdbTensorObj
-            
-            render({ })
-        })()
-        
-        setCurrentDir([]);
-        setPageSize(10);
-        setPage(1);
-    }, [obj, objref])
-    
-    
-    if (!_obj)
-        return null
-    
-    
-    // 第 i 个维度的 size
-    const shape: number[] = _obj.value.shape
-    // 第 i 个维度，元素间距离
-    const strides: number[] = _obj.value.strides
-    // 元素间跳字节
-    const dataByte: number = ddb_tensor_bytes[_obj.value.data_type]
-    
-    const typeName = DdbType[_obj.value.data_type]
-    
-    const pageIndex = page - 1
-    const currentDim = currentDir.length
-    const isLeaf = currentDim === _obj.value.dimensions - 1
-    const thisDimSize = shape[currentDim]
-    const totalPageCount = Math.ceil(thisDimSize / pageSize)
-    const data: Uint8Array = _obj.value.data
-    
-    function pushDimIndex (index: number) {
-        setCurrentDir([...currentDir, index])
-        setPage(1)
-    }
-    
-    function popDimIndexTo (index: number) {
-        setCurrentDir(currentDir.slice(0, index))
-        setPage(1)
-    }
-    
-    // 如果不是最高维，没有数据，比较简单
-    // 只需要展示有一些低维数组存在就可以了
-    const currentDimSize: number = _obj.value.shape[currentDim]
-    // 搞这么多元素来
-    const elems = [ ]
-    const offset = currentDir.reduce((prev, curr, index) => {
-        return prev + strides[index] * curr * dataByte
-    }, 0)
-    
-    let arrstrall = ''
-    for (let j = 0;  j < _obj.value.dimensions;  j++) 
-        // j 代表当前维度
-        arrstrall += `[${shape[j]}]`
-    
-    if (!isLeaf)
-        for (let i = pageIndex * pageSize; i < pageIndex * pageSize + pageSize && i < thisDimSize; i++) {
-            // 搞清楚后面的维度的 size
-            let arrstr = ''
-            for (let j = currentDim + 1; j < _obj.value.dimensions; j++)
-                // j 代表当前维度
-                arrstr += `[${shape[j]}]`
-
-
-            // 如果是倒数第二维
-            let previewStr = ''
-            if (currentDim === _obj.value.dimensions - 2) {
-                previewStr = '['
-                // 取每个维度的前 10 个
-                for (let k = 0; k < shape[currentDim + 1]; k++) {
-                    const offsetElem = offset + i * dataByte * strides[currentDim] + k * dataByte * strides[currentDim + 1]
-                    const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
-                    const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
-                    previewStr += `${val}`
-                    if (k === previewLimit) {
-                        previewStr += ', ...'
-                        break
-                    } else if (k !== shape[currentDim + 1] - 1)
-                        previewStr += ', '
-
-
-                }
-                previewStr += ']'
-            }
-
-
-            elems.push(
-                <div onClick={() => { pushDimIndex(i) }} className='tensor-elem' key={'dim' + `${i}`}>
-                    <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}{arrstr}</span> {previewStr}
-                </div>
-            )
-        } else
-        for (let i = pageIndex * pageSize; i < pageIndex * pageSize + pageSize && i < thisDimSize; i++) {
-            const offsetElem = offset + i * dataByte
-            const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
-            const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
-            elems.push(<div key={`tensor-elem-offset-${offsetElem}`} className='tensor-elem'>
-                <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}</span> {String(val)}
-            </div>)
-        }
-    
-    
-    const navItems = currentDir.map((e, i) => {
-        return <div className='tensor-nav-elem' key={`tensor-index-${i}`} onClick={() => { popDimIndexTo(i + 1) }}>[{e}] <RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></div>
-    })
-    
-    
-    return <div className='tensor'>
-        <div className='tensor-nav'>
-            <span className='tensor-title' onClick={() => { popDimIndexTo(0) }}>Tensor<RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></span>{navItems}
-        </div>
-        <div className='tensor-view'>
-            {elems}
-        </div>
-        <div className='tensor-page'>
-            <span className='tensor-desc'>
-                Tensor{`<${typeName}${arrstrall}>`}
-            </span>
-            {totalPageCount > 1 && <Pagination
-                current={page}
-                total={currentDimSize}
-                pageSize={pageSize}
-                onChange={(page, pageSize) => {
-                    setPage(page)
-                    setPageSize(pageSize)
-                }}
-                showSizeChanger
-            />}
-        </div>
-    </div>
-}
-
-
 function get_value_from_uint8_array (dataType: DdbType, data: Uint8Array, le: boolean) {
     const dv = new DataView(data.buffer, data.byteOffset)
     switch (dataType) {
         case DdbType.bool: {
             const value = dv.getInt8(0)
-            return value === nulls.int8 ? null : Boolean(value)
+            return (value === nulls.int8 ? null : Boolean(value))
         }
         case DdbType.char: {
             const value = dv.getInt8(0)
-            return value === nulls.int8 ? null : value
+            return (value === nulls.int8 ? null : value)
         }
         case DdbType.short: {
             const value = dv.getInt16(0, le)
-            return value === nulls.int16 ? null : value
+            return (value === nulls.int16 ? null : value)
         }
         case DdbType.int: {
             const value = dv.getInt32(0, le)
-            return value === nulls.int32 ? null : value
+            return (value === nulls.int32 ? null : value)
         }
         case DdbType.long: {
             const value = dv.getBigInt64(0, le)
-            return value === nulls.int64 ? null : value
+            return (value === nulls.int64 ? null : value)
         }
         case DdbType.float: {
             const value = dv.getFloat32(0, le)
-            return value === nulls.float32 ? null : value
+            return (value === nulls.float32 ? null : value)
         }
         case DdbType.double: {
             const value = dv.getFloat64(0, le)
-            return value === nulls.double ? null : value
+            return (value === nulls.double ? null : value)
         }
     }
 }
