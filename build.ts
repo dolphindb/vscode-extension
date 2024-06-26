@@ -1,13 +1,8 @@
 import { fileURLToPath } from 'url'
 
-import { default as Webpack, type Configuration, type Compiler, type Stats } from 'webpack'
 
-import type { Options as TSLoaderOptions } from 'ts-loader'
-import type { Options as SassOptions } from 'sass-loader'
-import * as sass from 'sass'
-
-
-import { fdelete, fmkdir, fwrite, fcopy, fexists } from 'xshell'
+import { fdelete, fmkdir, fwrite, ramdisk } from 'xshell'
+import { Bundler } from 'xshell/builder.js'
 import type { Item } from 'xshell/i18n/index.js'
 
 
@@ -16,17 +11,10 @@ import { tm_language, tm_language_python } from 'dolphindb/language.js'
 
 import package_json from './package.json' with { type: 'json' }
 
-import { get_vendors } from './src/config.js'
-
 
 const fpd_root = fileURLToPath(import.meta.url).fdir
 
-const ramdisk = fexists('T:/TEMP/', { print: false })
 const fpd_ramdisk_root = 'T:/2/ddb/ext/' as const
-
-const fpd_node_modules = `${fpd_root}node_modules/`
-
-const fpd_dataview = `${fpd_root}src/dataview/`
 
 const fpd_out = `${ ramdisk ? fpd_ramdisk_root : fpd_root }out/`
 
@@ -42,56 +30,93 @@ async function build () {
     await fmkdir(fpd_out_dataview)
     
     await Promise.all([
-        copy_files(!production),
-        
         build_package_json(),
         
-        build_tm_language(),
-        
-        dataview_webpack.build(production),
-        
-        ext_webpack.build(production)
-    ])
-}
-
-
-async function copy_files (dev: boolean) {
-    const fpd_vendors = `${fpd_out_dataview}vendors/`
-    
-    console.log('复制 vendors')
-    
-    return Promise.all([
-        ... get_vendors(dev)
-                .map(async fp => 
-                    fcopy(`${fpd_node_modules}${fp}`, `${fpd_vendors}${fp}`, { print: false })),
-        
-        ... (['README.md', 'README.zh.md', 'icons/', 'LICENSE.txt'] as const).map(async fname =>
-            fcopy(fpd_root + fname, fpd_out + fname)
-        ),
-        
-        ... ([
-            `index${ dev ? '.dev' : '' }.html`,
-            'window.html',
-            'webview.html',
-            'logo.png'
-        ] as const).map(async fname =>
-            fcopy(fpd_dataview + fname, fpd_out_dataview + fname)
-        ),
-        
-        ... (['zh', 'en'] as const).map(async language => 
-            fcopy(`${fpd_node_modules}dolphindb/docs.${language}.json`, `${fpd_out}docs.${language}.json`)
-        ),
-    ])
-}
-
-
-async function build_tm_language () {
-    await Promise.all([
+        // build tm language
         fwrite(`${fpd_out}dolphindb.tmLanguage.json`, tm_language),
         fwrite(`${fpd_out}dolphindb-python.tmLanguage.json`, tm_language_python),
         
-        fcopy(`${fpd_root}dolphindb.language-configuration.json`, `${fpd_out}dolphindb.language-configuration.json`),
-        fcopy(`${fpd_root}dolphindb-python.language-configuration.json`, `${fpd_out}dolphindb-python.language-configuration.json`)
+        
+        new Bundler(
+            'dataview',
+            'web',
+            fpd_root,
+            fpd_out_dataview,
+            ramdisk ? `${fpd_ramdisk_root}webpack/` : undefined,
+            {
+                'index.js': './src/dataview/index.tsx',
+                'window.js': './src/dataview/window.tsx',
+                'webview.js': './src/dataview/webview.tsx',
+            },
+            {
+                globals: {
+                    PRODUCTION: (production ? 'true' : 'false').quote(),
+                },
+                external_dayjs: true,
+                production,
+                license: { },
+                dependencies: ['antd-icons', 'antd-plots', 'lodash'],
+                htmls: {
+                    'index.html': {
+                        title: 'DolphinDB',
+                        icon: {
+                            src: 'src/dataview/logo.png',
+                            out: 'logo.png'
+                        }
+                    },
+                    
+                    'window.html': {
+                        title: 'DdbObj',
+                        icon: {
+                            src: 'src/dataview/logo.png',
+                            out: 'logo.png'
+                        },
+                        fp_entry: './window.js',
+                    }
+                },
+                
+                resolve_fallback: {
+                    process: false
+                }
+            }
+        ).build_all_and_close(),
+        
+        new Bundler(
+            'extension',
+            'nodejs',
+            fpd_root,
+            fpd_out,
+            ramdisk ? `${fpd_ramdisk_root}webpack/` : undefined,
+            {
+                'index.cjs': './src/index.ts',
+                'debugger.cjs': './src/debugger/index.ts',
+            },
+            {
+                production,
+                license: {
+                    ignores: ['dolphindb-vscode']
+                },
+                commonjs2: true,
+                single_chunk: false,
+                globals: {
+                    FPD_ROOT: fpd_root.quote()
+                },
+                assets: {
+                    productions: [
+                        'README.md', 'README.zh.md', 'icons/', 'LICENSE.txt',
+                        
+                        ... ['zh', 'en'].map(language => 
+                            ({ src: `node_modules/dolphindb/docs.${language}.json`, out: `docs.${language}.json` })),
+                            
+                        'dolphindb.language-configuration.json',
+                        'dolphindb-python.language-configuration.json'
+                    ],
+                },
+                externals: {
+                    vscode: 'commonjs2 vscode'
+                },
+            }
+        ).build_all_and_close()
     ])
 }
 
@@ -926,411 +951,6 @@ async function build_package_json () {
             )
         })
     ])
-}
-
-
-let dataview_webpack = {
-    config: null as Configuration,
-    
-    compiler: null as Compiler,
-    
-    
-    async build (production: boolean) {
-        this.compiler = Webpack(this.config = {
-            name: 'dataview',
-            
-            mode: production ? 'production' : 'development',
-            
-            devtool: 'source-map',
-            
-            context: fpd_root,
-            
-            entry: {
-                'index.js': './src/dataview/index.tsx',
-                'window.js': './src/dataview/window.tsx',
-                'webview.js': './src/dataview/webview.tsx',
-            },
-            
-            
-            experiments: {
-                outputModule: true,
-            },
-            
-            output: {
-                path: fpd_out_dataview,
-                filename: '[name]',
-                publicPath: '/',
-                pathinfo: true,
-                globalObject: 'globalThis',
-                module: true,
-                library: {
-                    type: 'module',
-                }
-            },
-            
-            target: ['web', 'es2023'],
-            
-            externalsType: 'global',
-            
-            externals: {
-                react: 'React',
-                
-                'react-dom': 'ReactDOM',
-                
-                lodash: '_',
-                
-                antd: 'antd',
-                
-                dayjs: 'dayjs',
-                
-                '@ant-design/icons': 'icons',
-                
-                '@ant-design/plots': 'Plots',
-            },
-            
-            resolve: {
-                extensions: ['.js'],
-                
-                symlinks: true,
-                
-                extensionAlias: {
-                    '.js': ['.js', '.ts', '.tsx']
-                },
-                
-                fallback: {
-                    process: false
-                }
-            },
-            
-            
-            module: {
-                rules: [
-                    {
-                        test: /\.js$/,
-                        enforce: 'pre',
-                        use: ['source-map-loader'],
-                    },
-                    {
-                        test: /\.tsx?$/,
-                        exclude: /node_modules/,
-                        loader: 'ts-loader',
-                        // https://github.com/TypeStrong/ts-loader
-                        options: {
-                            configFile: `${fpd_root}tsconfig.json`,
-                            onlyCompileBundledFiles: true,
-                            transpileOnly: true,
-                            compilerOptions: {
-                                module: 'ESNext' as any,
-                                moduleResolution: 'Bundler' as any,
-                            }
-                        } as Partial<TSLoaderOptions>
-                    },
-                    {
-                        test: /\.s[ac]ss$/,
-                        use: [
-                            'style-loader',
-                            {
-                                // https://github.com/webpack-contrib/css-loader
-                                loader: 'css-loader',
-                                options: {
-                                    url: false,
-                                }
-                            },
-                            {
-                                // https://webpack.js.org/loaders/sass-loader
-                                loader: 'sass-loader',
-                                options: {
-                                    implementation: sass,
-                                    // 解决 url(search.png) 打包出错的问题
-                                    webpackImporter: false,
-                                    sassOptions: {
-                                        indentWidth: 4,
-                                    },
-                                } as SassOptions,
-                            }
-                        ]
-                    },
-                    {
-                        test: /\.css$/,
-                        use: [
-                            'style-loader',
-                            'css-loader',
-                        ]
-                    },
-                    {
-                        oneOf: [
-                            {
-                                test: /\.icon\.svg$/,
-                                issuer: /\.[jt]sx?$/,
-                                loader: '@svgr/webpack',
-                                options: {
-                                    icon: true,
-                                }
-                            },
-                            {
-                                test: /\.(svg|ico|png|jpe?g|gif|woff2?|ttf|eot|otf|mp4|webm|ogg|mp3|wav|flac|aac)$/,
-                                type: 'asset/inline',
-                            },
-                        ]
-                    },
-                    {
-                        test: /\.txt$/,
-                        type: 'asset/source',
-                    }
-                ],
-            },
-            
-            plugins: [
-                // 需要分析 bundle 大小时开启
-                // new BundleAnalyzerPlugin({ analyzerPort: 8880, openAnalyzer: false }),
-            ],
-            
-            
-            optimization: {
-                minimize: false
-            },
-            
-            performance: {
-                hints: false,
-            },
-            
-            cache: {
-                type: 'filesystem',
-                
-                ... ramdisk ? {
-                    cacheDirectory: `${fpd_ramdisk_root}webpack/`,
-                    compression: false
-                } : {
-                    compression: 'brotli',
-                }
-            },
-            
-            ignoreWarnings: [
-                /Failed to parse source map/
-            ],
-            
-            stats: {
-                colors: true,
-                
-                context: fpd_root,
-                
-                entrypoints: false,
-                
-                errors: true,
-                errorDetails: true,
-                
-                hash: false,
-                
-                version: false,
-                
-                timings: true,
-                
-                children: false,
-                
-                assets: true,
-                assetsSpace: 20,
-                
-                modules: false,
-                modulesSpace: 20,
-                
-                cachedAssets: false,
-                cachedModules: false,
-            },
-        })
-        
-        await new Promise<Stats>((resolve, reject) => {
-            this.compiler.run((error, stats) => {
-                if (stats)
-                    console.log(
-                        stats.toString(this.config.stats)
-                            .replace(/\n\s*.*dataview.* compiled .*successfully.* in (.*)/, '\nDdbDataview 编译成功，用时 $1'.green)
-                    )
-                
-                if (error)
-                    reject(error)
-                else if (stats.hasErrors())
-                    reject(new Error('dataview 编译失败'))
-                else
-                    resolve(stats)
-            })
-        })
-        
-        await new Promise<void>((resolve, reject) => {
-            this.compiler.close(error => {
-                if (error)
-                    reject(error)
-                else
-                    resolve()
-            })
-        })
-    }
-}
-
-
-const ext_webpack = {
-    config: null as Configuration,
-    
-    compiler: null as Compiler,
-    
-    
-    async build (production: boolean) {
-        this.compiler = Webpack(this.config = {
-            name: 'ext',
-            
-            mode: production ? 'production' : 'development',
-            
-            devtool: 'source-map',
-            
-            context: fpd_root,
-            
-            entry: {
-                'index.cjs': './src/index.ts',
-                'debugger.cjs': './src/debugger/index.ts',
-            },
-            
-            output: {
-                path: fpd_out,
-                filename: '[name]',
-                pathinfo: true,
-                globalObject: 'globalThis',
-                library: {
-                    type: 'commonjs2',
-                },
-                
-                // 关掉之后可以避免生成多个 chunk, 开着也挺好，按需加载
-                // chunkLoading: false,
-            },
-            
-            target: ['node20', 'es2023'],
-            
-            resolve: {
-                extensions: ['.js'],
-                
-                symlinks: true,
-                
-                extensionAlias: {
-                    '.js': ['.js', '.ts', '.tsx']
-                },
-            },
-            
-            externalsType: 'commonjs2',
-            
-            externals: {
-                vscode: 'commonjs2 vscode'
-            },
-            
-            module: {
-                rules: [
-                    {
-                        test: /\.js$/,
-                        enforce: 'pre',
-                        use: ['source-map-loader'],
-                    },
-                    {
-                        test: /\.ts$/,
-                        exclude: /node_modules/,
-                        loader: 'ts-loader',
-                        // https://github.com/TypeStrong/ts-loader
-                        options: {
-                            configFile: `${fpd_root}tsconfig.json`,
-                            onlyCompileBundledFiles: true,
-                            transpileOnly: true,
-                            compilerOptions: {
-                                module: 'ESNext' as any,
-                                moduleResolution: 'Bundler' as any,
-                                esModuleInterop: true
-                            }
-                        } as Partial<TSLoaderOptions>
-                    }
-                ]
-            },
-            
-            plugins: [
-                new Webpack.DefinePlugin({
-                    FPD_ROOT: fpd_root.quote()
-                }),
-                
-                // new BundleAnalyzerPlugin({
-                //     analyzerPort: 8880,
-                //     openAnalyzer: false,
-                // }),
-            ],
-            
-            optimization: {
-                minimize: false,
-            },
-            
-            cache: {
-                type: 'filesystem',
-                
-                ... ramdisk ? {
-                    cacheDirectory: `${fpd_ramdisk_root}webpack/`,
-                    compression: false
-                } : {
-                    compression: 'brotli',
-                }
-            },
-            
-            ignoreWarnings: [
-                /Failed to parse source map/,
-                /Can't resolve '(bufferutil|utf-8-validate)'/
-            ],
-            
-            stats: {
-                colors: true,
-                
-                context: fpd_root,
-                
-                entrypoints: false,
-                
-                errors: true,
-                errorDetails: true,
-                
-                hash: false,
-                
-                version: false,
-                
-                timings: true,
-                
-                children: false,
-                
-                assets: true,
-                assetsSpace: 20,
-                
-                modules: false,
-                modulesSpace: 20,
-                
-                cachedAssets: false,
-                cachedModules: false,
-            },
-        })
-        
-        await new Promise<Stats>((resolve, reject) => {
-            this.compiler.run((error, stats) => {
-                if (stats)
-                    console.log(
-                        stats.toString(this.config.stats)
-                            .replace(/\n\s*.*ext.* compiled .*successfully.* in (.*)/, '\n扩展编译成功，用时 $1'.green)
-                    )
-                
-                if (error)
-                    reject(error)
-                else if (stats.hasErrors())
-                    reject(new Error('扩展编译失败'))
-                else
-                    resolve(stats)
-            })
-        })
-        
-        new Promise<void>((resolve, reject) => {
-            this.compiler.close(error => {
-                if (error)
-                    reject(error)
-                else
-                    resolve()
-            })
-        })
-    }
 }
 
 
