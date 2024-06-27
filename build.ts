@@ -54,7 +54,9 @@ async function build () {
                 },
                 external_dayjs: true,
                 production,
-                license: { },
+                license: {
+                    ignores: ['dolphindb-vscode']
+                },
                 dependencies: ['antd-icons', 'antd-plots', 'lodash'],
                 htmls: {
                     'index.html': {
