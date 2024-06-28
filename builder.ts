@@ -1,6 +1,3 @@
-import { fileURLToPath } from 'url'
-
-
 import { fdelete, fmkdir, fwrite, ramdisk, set_inspect_options } from 'xshell'
 import { Git } from 'xshell/git.js'
 import { Bundler } from 'xshell/builder.js'
@@ -15,7 +12,7 @@ import package_json from './package.json' with { type: 'json' }
 
 set_inspect_options()
 
-export const fpd_root = fileURLToPath(import.meta.url).fdir
+export const fpd_root = import.meta.dirname.fpd
 
 const fpd_ramdisk_root = 'T:/2/ddb/ext/' as const
 
