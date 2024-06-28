@@ -11,3 +11,7 @@ declare module '*.svg' {
 interface Window {
     model?: import('react-object-model').Model<any>
 }
+
+declare const EXTENSION_VERSION: string
+
+declare const PRODUCTION: boolean

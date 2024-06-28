@@ -3,7 +3,8 @@
     
     "files": [
         "./eslint.config.ts",
-        "./build.ts"
+        "./build.ts",
+        "./dev.ts"
     ],
     
     "compilerOptions": {

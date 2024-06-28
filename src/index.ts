@@ -37,10 +37,6 @@ import { register_variables } from './variables.js'
 import { register_databases } from './databases.js'
 
 
-declare global {
-    const FPD_ROOT: string
-}
-
 export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }
 
 
@@ -61,7 +57,10 @@ export async function activate (ctx: ExtensionContext) {
     extctx = ctx
     
     dev = ctx.extensionMode === ExtensionMode.Development
-    console.log(t('dolphindb 插件运行在{{mode}}模式下', { mode: dev ? t('开发') : t('生产') }))
+    console.log(t('dolphindb 插件运行在{{mode}}模式下，版本为 {{version}}', {
+        mode: dev ? t('开发') : t('生产'),
+        version: EXTENSION_VERSION
+    }))
     
     
     // 命令注册
