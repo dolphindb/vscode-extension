@@ -52,7 +52,7 @@ export let databases: DdbDatabases
 
 
 export class DdbCatalog extends TreeItem {
-    children: Array<DdbDatabase> = [ ]
+    children: DdbDatabase[] = [ ]
     
     constructor (title: string) {
         super(title, TreeItemCollapsibleState.Collapsed)
@@ -62,7 +62,7 @@ export class DdbCatalog extends TreeItem {
 
 
 export class DdbGroup extends TreeItem {
-    children: Array<DdbGroup | DdbDatabase> = [ ]
+    children: (DdbGroup | DdbDatabase)[] = [ ]
     
     constructor (path: string) {
         super(path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
