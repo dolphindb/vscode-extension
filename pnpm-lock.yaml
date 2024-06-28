@@ -56,8 +56,8 @@ importers:
         specifier: ^8.17.1
         version: 8.17.1
       xshell:
-        specifier: ^1.0.154
-        version: 1.0.154(react-dom@18.3.1(react@18.3.1))
+        specifier: ^1.0.155
+        version: 1.0.155(react-dom@18.3.1(react@18.3.1))
     devDependencies:
       '@types/koa':
         specifier: ^2.15.0
@@ -4082,8 +4082,8 @@ packages:
     resolution: {integrity: sha512-fDlsI/kFEx7gLvbecc0/ohLG50fugQp8ryHzMTuW9vSa1GJ0XYWKnhsUx7oie3G98+r56aTQIUB4kht42R3JvA==}
     engines: {node: '>=4.0'}
 
-  xshell@1.0.154:
-    resolution: {integrity: sha512-0EDP6QWFHkuelkuuZZzJzaErx8ageE9SI1fFh+7j3/KeLFnxgwj39pucXV0e5cZwkMsoSSzgsX1t7b4DN99i9A==}
+  xshell@1.0.155:
+    resolution: {integrity: sha512-D0g9K9krMlvlhI2jUPMDQRwRvEfTuS1vVuH/Elhy7+K5yQPtQp/qipjq/eNpNlIqZmkcczBanQTi1UWMicZa5A==}
     hasBin: true
 
   xtend@4.0.2:
@@ -6397,7 +6397,7 @@ snapshots:
       dayjs: 1.11.11
       ipaddr.js: 2.2.0
       tslib: 2.6.3
-      xshell: 1.0.154(react-dom@18.3.1(react@18.3.1))
+      xshell: 1.0.155(react-dom@18.3.1(react@18.3.1))
     transitivePeerDependencies:
       - '@rspack/core'
       - '@swc/core'
@@ -8895,7 +8895,7 @@ snapshots:
 
   xmlbuilder@11.0.1: {}
 
-  xshell@1.0.154(react-dom@18.3.1(react@18.3.1)):
+  xshell@1.0.155(react-dom@18.3.1(react@18.3.1)):
     dependencies:
       '@babel/core': 7.24.7
       '@babel/parser': 7.24.7
