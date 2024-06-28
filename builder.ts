@@ -2,6 +2,7 @@ import { fileURLToPath } from 'url'
 
 
 import { fdelete, fmkdir, fwrite, ramdisk, set_inspect_options } from 'xshell'
+import { Git } from 'xshell/git.js'
 import { Bundler } from 'xshell/builder.js'
 import type { Item } from 'xshell/i18n/index.js'
 
@@ -35,6 +36,10 @@ export let builder = {
         await fdelete(fpd_out)
         
         await fmkdir(fpd_out_dataview)
+        
+        let git = new Git(fpd_root)
+        
+        let info = await git.get_version_info()
         
         await Promise.all([
             this.build_package_json(),
@@ -108,7 +113,8 @@ export let builder = {
                     commonjs2: true,
                     single_chunk: false,
                     globals: {
-                        FPD_ROOT: fpd_root.quote()
+                        FPD_ROOT: fpd_root.quote(),
+                        EXTENSION_VERSION: `${info.version} (${info.time} ${info.hash})`.quote(),
                     },
                     assets: {
                         productions: [
