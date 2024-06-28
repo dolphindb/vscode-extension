@@ -39,7 +39,7 @@ import { open_connection_settings } from './commands.js'
 import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './constant.js'
 
 import { DdbVar, DdbVarLocation, variables } from './variables.js'
-import { DdbDatabase, DdbGroup, DdbTable, databases } from './databases.js'
+import { DdbCatalog, DdbDatabase, DdbGroup, DdbTable, databases } from './databases.js'
 
 import { fpd_ext, type DdbMessageItem } from './index.js'
 
@@ -335,7 +335,7 @@ export class DdbConnection extends TreeItem {
     /** 是否调用了 connection.disconnect */
     disconnected = false
     
-    children: Array<DdbGroup | DdbDatabase> = [ ]
+    children: Array<DdbCatalog | DdbGroup | DdbDatabase> = [ ]
     
     vars: DdbVar[]
     
@@ -696,13 +696,16 @@ export class DdbConnection extends TreeItem {
             // ['dfs://数据库路径(可能包含/)/表名', ...]
             // 不能直接使用 getClusterDFSDatabases, 因为新的数据库权限版本 (2.00.9) 之后，用户如果只有表的权限，调用 getClusterDFSDatabases 无法拿到该表对应的数据库
             // 但对于无数据表的数据库，仍然需要通过 getClusterDFSDatabases 来获取。因此要组合使用
-            const [{ value: table_paths }, { value: db_paths }] = await Promise.all([
+            const v3 = this.version.startsWith('3.')
+            
+            const [{ value: table_paths }, { value: db_paths }, ...rest] = await Promise.all([
                 this.ddb.call<DdbVectorStringObj>('getClusterDFSTables'),
                 // 可能因为用户没有数据库的权限报错，单独 catch 并返回空数组
                 this.ddb.call<DdbVectorStringObj>('getClusterDFSDatabases').catch(() => {
                     console.error('load_dbs: getClusterDFSDatabases error')
                     return { value: [ ] }
                 }),
+                ...v3 ? [this.ddb.call<DdbVectorStringObj>('getAllCatalogs')] : [ ]
             ])
             
             // const db_paths = [
@@ -733,9 +736,27 @@ export class DdbConnection extends TreeItem {
             // 假定所有的 table_name 值都不会以 / 结尾
             // 库和表之间以最后一个 / 隔开。表名不可能有 /
             // 全路径中可能没有组（也就是没有点号），但一定有库和表
-            const hash_map = new Map<string, DdbGroup | DdbDatabase>()
+            let hash_map = new Map<string, DdbGroup | DdbDatabase>()
+            let catalog_map = new Map<string, DdbDatabase>()
             
             this.children = [ ]
+            
+            if (v3) 
+                await Promise.all(rest[0].value.sort().map(async catalog => {
+                    let catalog_node = new DdbCatalog(catalog)
+                    this.children.push(catalog_node)
+                    
+                    ;(
+                        await this.ddb.invoke('getSchemaByCatalog', [catalog])
+                    ).data
+                        .sort((a, b) => strcmp(a.schema, b.schema))
+                        .map(({ schema, dbUrl }) => {
+                            const db_path = `${dbUrl}/`
+                            const database = new DdbDatabase(db_path, this, schema)
+                            catalog_map.set(db_path, database)
+                            catalog_node.children.push(database)
+                        })
+                }))
             
             for (const path of merged_paths) {
                 // 找到数据库最后一个斜杠位置，截取前面部分的字符串作为库名
@@ -746,29 +767,33 @@ export class DdbConnection extends TreeItem {
                 
                 let parent: DdbConnection | DdbGroup | DdbDatabase = this
                 
-                // for 循环用来处理 database group
-                for (let index = 0;  index = db_path.indexOf('.', index) + 1;  ) {
-                    const group_key = path.slice(0, index)
-                    const group = hash_map.get(group_key)
-                    if (group)
-                        parent = group
-                    else {
-                        const group = new DdbGroup(group_key, this)
-                        ;(parent as DdbConnection | DdbGroup).children.push(group)
-                        hash_map.set(group_key, group)
-                        parent = group
-                    }
-                }
-                
-                // 处理 database
-                const db = hash_map.get(db_path) as DdbDatabase
-                if (db)
-                    parent = db
+                if (catalog_map.has(db_path)) 
+                    parent = catalog_map.get(db_path)
                 else {
-                    const db = new DdbDatabase(db_path, this)
-                    ;(parent as DdbConnection | DdbGroup).children.push(db)
-                    hash_map.set(db_path, db)
-                    parent = db
+                    // for 循环用来处理 database group
+                    for (let index = 0;  index = db_path.indexOf('.', index) + 1;  ) {
+                        const group_key = path.slice(0, index)
+                        const group = hash_map.get(group_key)
+                        if (group)
+                            parent = group
+                        else {
+                            const group = new DdbGroup(group_key)
+                            ;(parent as DdbConnection | DdbGroup).children.push(group)
+                            hash_map.set(group_key, group)
+                            parent = group
+                        }
+                    }
+                    
+                    // 处理 database
+                    const db = hash_map.get(db_path) as DdbDatabase
+                    if (db)
+                        parent = db
+                    else {
+                        const db = new DdbDatabase(db_path, this)
+                        ;(parent as DdbConnection | DdbGroup).children.push(db)
+                        hash_map.set(db_path, db)
+                        parent = db
+                    }
                 }
                 
                 // 处理 table，如果 table_name 为空表明当前路径是 db_path 则不处理

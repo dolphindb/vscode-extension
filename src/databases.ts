@@ -38,7 +38,7 @@ export class DdbDatabases implements TreeDataProvider<TreeItem> {
             case !node: 
                 return connector.connection.children
             
-            case node instanceof DdbGroup: 
+            case (node instanceof DdbGroup || node instanceof DdbCatalog): 
                 return node.children
             
             case node instanceof DdbDatabase:
@@ -51,18 +51,21 @@ export class DdbDatabases implements TreeDataProvider<TreeItem> {
 export let databases: DdbDatabases
 
 
-export class DdbGroup extends TreeItem {
-    connection: DdbConnection
+export class DdbCatalog extends TreeItem {
+    children: Array<DdbDatabase> = [ ]
     
+    constructor (title: string) {
+        super(title, TreeItemCollapsibleState.Collapsed)
+        this.iconPath = `${fpd_ext}icons/catalog.svg`
+    }
+}
+
+
+export class DdbGroup extends TreeItem {
     children: Array<DdbGroup | DdbDatabase> = [ ]
     
-    path: string
-    
-    
-    constructor (path: string, connection: DdbConnection) {
+    constructor (path: string) {
         super(path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
-        this.connection = connection
-        this.path = path
         this.iconPath = `${fpd_ext}icons/database-group.svg`
     }
 }
@@ -77,8 +80,8 @@ export class DdbDatabase extends TreeItem {
     
     schema: DdbDictObj<DdbVectorStringObj>
     
-    constructor (path: string, connection: DdbConnection) {
-        super(path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
+    constructor (path: string, connection: DdbConnection, title?: string) {
+        super(title ?? path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
         assert(path.startsWith('dfs://'), t('数据库路径应该以 dfs:// 开头'))
         this.connection = connection
         this.path = path
