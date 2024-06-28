@@ -1,5 +1,34 @@
 # Change Log (更新日志)
 
+## [3.0.100]
+#### 新功能 / New Features
+-   增加心跳机制，以避免连接长时间不使用后自动断开的情况。  
+    Added support for heartbeat mechanism to prevent automatic disconnection due to prolonged inactivity.
+
+-   在调试模式下，支持右键点击变量，并在数据视图中展示变量数据。  
+    In debug mode, right-click a variable and select View Variable to display it in data view.
+
+-   支持展示 tensor 类型数据。  
+    Added support for displaying tensor data.
+
+
+#### 功能优化 / Enhancement
+-   更新函数提示文档及链接。  
+    Updated documentation links in the function prompt.
+
+-   VS Code 插件英文界面中增加错误码编号及对应的文档链接（英文）。  
+    Error messages now include error codes and links to relevant documentation.
+
+-   变量栏中的表变量，支持根据表名排序。  
+    Tables in the VARIABLES view are now sorted alphabetically by name.
+
+-   增加提示：Python Parser 不支持调试功能（debug）。  
+    Added a message indicating that Python Parser is not supported in debugging.
+
+-   未登录状态下，会提示登陆后查看数据库。  
+    Added a message reminding users to log in to access the DATABASES view.
+
+
 ## [2.0.1200]
 #### 新功能 / New Features
 -   活动栏（Activity Bar）新增单独的 DolphinDB 数据库管理面板，包含连接、数据库、变量管理三个子面板。  
