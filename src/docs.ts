@@ -7,7 +7,7 @@ import {
     Range,
 } from 'vscode'
 
-import { DocsAnalyser, parse_signature_help_from_text } from 'dolphindb/docs.js'
+import { DocsProvider } from 'dolphindb/docs.js'
 
 import { fread_json } from 'xshell'
 
@@ -18,12 +18,12 @@ import { fpd_ext } from './index.js'
 
 const MAX_MATCH_LINES = 30
 
-let docs_analyser: DocsAnalyser
+let docs_provider: DocsProvider
 
 
 export async function load_docs () {
     const fname = `docs.${ language === 'zh' ? 'zh' : 'en' }.json`
-    docs_analyser = new DocsAnalyser(await fread_json(`${fpd_ext}${fname}`))
+    docs_provider = new DocsProvider(await fread_json(`${fpd_ext}${fname}`))
     console.log(t('函数文档 {{fname}} 已加载', { fname }))
 }
 
@@ -46,9 +46,9 @@ export function register_docs (ctx: ExtensionContext) {
             provideCompletionItems (doc, pos) {
                 const keyword = doc.getText(doc.getWordRangeAtPosition(pos))
                 
-                const { functions, constants, keywords } = docs_analyser.search_completion_items(keyword)
+                const { functions, constants, keywords } = docs_provider.complete(keyword)
                 
-                return [
+                const completions = [
                     ...keywords.map(kw => ({
                         label: kw,
                         insertText: kw,
@@ -65,10 +65,12 @@ export function register_docs (ctx: ExtensionContext) {
                         kind: CompletionItemKind.Function,
                     })),
                 ] satisfies CompletionItem[]
+                
+                return completions.length ? completions : null
             },
             
             resolveCompletionItem (item, _canceller) {
-                const md = docs_analyser.get_function_markdown(item.label as string)
+                const md = docs_provider.get_function_markdown(item.label as string)
             
                 if (md)
                     item.documentation = wrap_markdown_string(md)
@@ -85,7 +87,7 @@ export function register_docs (ctx: ExtensionContext) {
                 if (!word)
                     return
                 
-                const md = docs_analyser.get_function_markdown(word)
+                const md = docs_provider.get_function_markdown(word)
                 
                 if (!md)
                     return
@@ -105,7 +107,7 @@ export function register_docs (ctx: ExtensionContext) {
                         new Range(Math.max(position.line - MAX_MATCH_LINES, 0), 0, position.line, position.character)
                     )
                     
-                    const result = parse_signature_help_from_text(text, docs_analyser)
+                    const result = docs_provider.get_signature_help(text)
                     
                     if (!result)
                         return
