@@ -33,29 +33,29 @@ export function get_text (selector:
     const selection = editor.selection
     
     
-    const text_selection = document.getText(selection)
+    const text_selection = {
+        text: document.getText(selection),
+        start: selection.start.line
+    }
     
     if (selector === 'selection')
-        return {
-            text: text_selection,
-            start: selection.start.line
-        }
+        return text_selection
         
-    const text_all = document.getText()
+    const text_all = {
+        text: document.getText(),
+        start: 0
+    }
     
     if (selector === 'all')
-        return {
-            text: text_all,
-            start: 0
-        }
+        return text_all
         
-    const text_line = document.lineAt(selection.active.line).text
+    const text_line = {
+        text: document.lineAt(selection.active.line).text,
+        start: selection.active.line
+    }
         
     if (selector === 'line')
-        return {
-            text: text_line,
-            start: selection.active.line
-        }
+        return text_line
     
     if (selector === 'word')
         return {
@@ -66,29 +66,10 @@ export function get_text (selector:
         }
     
     if (selector === 'selection or all')
-        return text_selection ? 
-                {
-                    text: text_selection,
-                    start: selection.start.line
-                } 
-                    : 
-                {
-                    text: text_all,
-                    start: 0
-                }
+        return text_selection.text ? text_selection : text_all
     
     if (selector === 'selection or line')
-        return text_selection ? 
-                {
-                    text: text_selection,
-                    start: selection.start.line
-                } 
-                    : 
-                {
-                    text: text_line,
-                    start: selection.active.line
-                }
-        // return text_selection || text_line
+        return text_selection ? text_selection : text_line
     
     const start = selection.start
     const end   = selection.end
