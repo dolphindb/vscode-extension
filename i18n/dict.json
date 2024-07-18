@@ -499,5 +499,8 @@
     },
     "当前集群无数据节点和计算节点存活，且当前节点不为单机节点": {
         "en": "There are no data nodes or computing nodes alive in the current cluster, and the current node is not a stand-alone node"
+    },
+    "错误行:": {
+        "en": "Error Line:"
     }
 }
