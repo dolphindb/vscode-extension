@@ -120,7 +120,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 }
 
 
-async function execute (text: string, testing = false) {
+async function execute (text: string, testing = false, start: number) {
     let { connection } = connector
     
     if (connection.running) {
@@ -189,6 +189,15 @@ async function execute (text: string, testing = false) {
         if (message.includes('RefId:'))         
             message = message.replaceAll(/RefId:\s*(\w+)/g, (_, ref_id) => 
                 `RefId: ${ref_id}`.blue.underline)
+                
+        let original_line = -1
+        message = message.replace(/\[line #(\d+)\]/, (_, line) => {
+            original_line = line
+            return  `[line #${start + Number(line)}]`
+        })
+        if (original_line !== -1)
+            message += `\n${t('错误行：')}${text.split_lines()[original_line - 1]}`
+  
         
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
@@ -284,12 +293,12 @@ async function execute (text: string, testing = false) {
 
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
-async function execute_with_progress (text: string, testing?: boolean) {
+async function execute_with_progress (text: string, start: number, testing?: boolean) {
     let { connection } = connector
     
     let done = false
     
-    const pexecute = execute(text, testing)
+    const pexecute = execute(text, testing, start)
     
     // 1s 还未完成，则显示进度
     ;(async () => {
@@ -433,13 +442,15 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
 /** 和 webpack 中的 commands 定义需要一一对应 */
 export const ddb_commands = [
     async function execute () {
-        await execute_with_progress(get_text('selection or line'))
+        const { text, start } = get_text('selection or line')
+        await execute_with_progress(text, start)
     },
     
     
     async function execute_selection_or_line () {
         try {
-            await execute_with_progress(get_text('selection or line'))
+            const { text, start } = get_text('selection or line')
+            await execute_with_progress(text, start)
             // 点击图标执行 execute_ddb_line 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         } catch (error) {
             window.showErrorMessage(error.message)
@@ -449,7 +460,8 @@ export const ddb_commands = [
     
     async function execute_file () {
         try {
-            await execute_with_progress(get_text('all'))
+            const { text, start } = get_text('all')
+            await execute_with_progress(text, start)
         } catch (error) {
             window.showErrorMessage(error.message)
         }
@@ -574,7 +586,7 @@ export const ddb_commands = [
     async function unit_test (uri: Uri, uris: []) {
         try {
             for (const fp of await upload(uri, uris, true))
-                await execute_with_progress(`test('${fp}')`, true)
+                await execute_with_progress(`test('${fp}')`, 0, true)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error

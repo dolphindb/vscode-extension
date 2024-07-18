@@ -32,33 +32,63 @@ export function get_text (selector:
     const document  = editor.document
     const selection = editor.selection
     
+    
     const text_selection = document.getText(selection)
     
     if (selector === 'selection')
-        return text_selection
+        return {
+            text: text_selection,
+            start: selection.start.line
+        }
         
     const text_all = document.getText()
     
     if (selector === 'all')
-        return text_all
+        return {
+            text: text_all,
+            start: 0
+        }
         
     const text_line = document.lineAt(selection.active.line).text
         
     if (selector === 'line')
-        return text_line
+        return {
+            text: text_line,
+            start: selection.active.line
+        }
     
     if (selector === 'word')
-        return document.getText(
-            document.getWordRangeAtPosition(selection.active)
-        )
+        return {
+            text: document.getText(
+                document.getWordRangeAtPosition(selection.active)
+            ),
+            start: selection.active.line
+        }
     
     if (selector === 'selection or all')
-        return text_selection || text_all
+        return text_selection ? 
+                {
+                    text: text_selection,
+                    start: selection.start.line
+                } 
+                    : 
+                {
+                    text: text_all,
+                    start: 0
+                }
     
     if (selector === 'selection or line')
-        return text_selection || text_line
-        
-    
+        return text_selection ? 
+                {
+                    text: text_selection,
+                    start: selection.start.line
+                } 
+                    : 
+                {
+                    text: text_line,
+                    start: selection.active.line
+                }
+        // return text_selection || text_line
     
     const start = selection.start
     const end   = selection.end
@@ -68,24 +98,33 @@ export function get_text (selector:
     const line_start = new Position(start.line, 0)
     
     if (selector === 'selection before')
-        return document.getText(
-            new Range(line_start, start)
-        )
-    
+        return {
+            text: document.getText(
+                new Range(line_start, start)
+            ),
+            start: line_start.line
+        } 
     
     const line_end   = new Position(start.line, line.text.length)
     
     if (selector === 'selection after')
-        return document.getText(
-            new Range(end, line_end)
-        )
-    
+        return {
+            text: document.getText(
+                new Range(end, line_end)
+            ),
+            start: end.line
+        } 
     
     const line_text_start = new Position(start.line, line.firstNonWhitespaceCharacterIndex)
+    
     if (selector === 'selection to text start')
-        return document.getText(
-            new Range(line_text_start, start)
-        )
+        return {
+            text: document.getText(
+                new Range(line_text_start, start)
+            ),
+            start: line_text_start.line
+        } 
+        
 }
 
 
@@ -107,7 +146,7 @@ export async function fupload (file_uri: Uri, path: string, ddb: DDB, uploadeds:
     
     let text: string
     if (file_uri.scheme === 'untitled')
-        text = get_text('all')
+        text = get_text('all').text
     else {
         await workspace.textDocuments.find(doc => doc.fileName === file_uri.fsPath)?.save()
         const buffer = await workspace.fs.readFile(file_uri)
