@@ -120,7 +120,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 }
 
 
-async function execute (text: string,  start: number, testing = false) {
+async function execute (text: string, istart: number, testing = false) {
     let { connection } = connector
     
     if (connection.running) {
@@ -136,11 +136,12 @@ async function execute (text: string,  start: number, testing = false) {
     let { printer } = terminal
     
     let timer = new Timer()
+    const lines = text.split_lines()
     
     printer.fire(
         '\r\n' +
         `${dayjs(timer.started).format('HH:mm:ss.SSS')}  ${connection.name}\r\n` +
-        truncate_text(text.split_lines()).join('\r\n') + 
+        truncate_text(lines).join('\r\n') + 
         (text.trim().length ? '\r\n' : '')
     )
     
@@ -189,15 +190,17 @@ async function execute (text: string,  start: number, testing = false) {
         if (message.includes('RefId:'))         
             message = message.replaceAll(/RefId:\s*(\w+)/g, (_, ref_id) => 
                 `RefId: ${ref_id}`.blue.underline)
-                
-        let original_line = -1
-        message = message.replace(/\[line #(\d+)\]/, (_, line) => {
-            original_line = line
-            return  `[line #${start + Number(line)}]`
+        
+        let icode = -1
+        
+        message = message.replace(/\[line #(\d+)\]/, (_, _icode) => {
+            icode = _icode
+            return  `[line #${istart + Number(_icode)}]`
         })
-        if (original_line !== -1)
-            message += `\n${t('错误行：')}${text.split_lines()[original_line - 1]}`
-  
+        
+        if (icode !== -1)
+            message += `\n${t('错误行:')} ${lines[icode - 1]}`
+        
         
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
@@ -293,12 +296,12 @@ async function execute (text: string,  start: number, testing = false) {
 
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
-async function execute_with_progress (text: string, start: number, testing?: boolean) {
+async function execute_with_progress (text: string, istart: number, testing?: boolean) {
     let { connection } = connector
     
     let done = false
     
-    const pexecute = execute(text, start, testing)
+    const pexecute = execute(text, istart, testing)
     
     // 1s 还未完成，则显示进度
     ;(async () => {
@@ -442,15 +445,15 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
 /** 和 webpack 中的 commands 定义需要一一对应 */
 export const ddb_commands = [
     async function execute () {
-        const { text, start } = get_text('selection or line')
-        await execute_with_progress(text, start)
+        const { text, istart } = get_text('selection or line')
+        await execute_with_progress(text, istart)
     },
     
     
     async function execute_selection_or_line () {
         try {
-            const { text, start } = get_text('selection or line')
-            await execute_with_progress(text, start)
+            const { text, istart } = get_text('selection or line')
+            await execute_with_progress(text, istart)
             // 点击图标执行 execute_ddb_line 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         } catch (error) {
             window.showErrorMessage(error.message)
@@ -460,8 +463,8 @@ export const ddb_commands = [
     
     async function execute_file () {
         try {
-            const { text, start } = get_text('all')
-            await execute_with_progress(text, start)
+            const { text, istart } = get_text('all')
+            await execute_with_progress(text, istart)
         } catch (error) {
             window.showErrorMessage(error.message)
         }

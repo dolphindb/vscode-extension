@@ -32,28 +32,27 @@ export function get_text (selector:
     const document  = editor.document
     const selection = editor.selection
     
-    
     const text_selection = {
         text: document.getText(selection),
-        start: selection.start.line
+        istart: selection.start.line
     }
     
     if (selector === 'selection')
         return text_selection
-        
+    
     const text_all = {
         text: document.getText(),
-        start: 0
+        istart: 0
     }
     
     if (selector === 'all')
         return text_all
-        
+    
     const text_line = {
         text: document.lineAt(selection.active.line).text,
-        start: selection.active.line
+        istart: selection.active.line
     }
-        
+    
     if (selector === 'line')
         return text_line
     
@@ -62,7 +61,7 @@ export function get_text (selector:
             text: document.getText(
                 document.getWordRangeAtPosition(selection.active)
             ),
-            start: selection.active.line
+            istart: selection.active.line
         }
     
     if (selector === 'selection or all')
@@ -83,7 +82,7 @@ export function get_text (selector:
             text: document.getText(
                 new Range(line_start, start)
             ),
-            start: line_start.line
+            istart: line_start.line
         } 
     
     const line_end   = new Position(start.line, line.text.length)
@@ -93,7 +92,7 @@ export function get_text (selector:
             text: document.getText(
                 new Range(end, line_end)
             ),
-            start: end.line
+            istart: end.line
         } 
     
     const line_text_start = new Position(start.line, line.firstNonWhitespaceCharacterIndex)
@@ -103,9 +102,8 @@ export function get_text (selector:
             text: document.getText(
                 new Range(line_text_start, start)
             ),
-            start: line_text_start.line
-        } 
-        
+            istart: line_text_start.line
+        }
 }
 
 
