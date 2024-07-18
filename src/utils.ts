@@ -68,8 +68,8 @@ export function get_text (selector:
     if (selector === 'selection or all')
         return text_selection.text ? text_selection : text_all
     
-    if (selector === 'selection or line')
-        return text_selection ? text_selection : text_line
+    if (selector === 'selection or line') 
+        return text_selection.text ? text_selection : text_line
     
     const start = selection.start
     const end   = selection.end

@@ -120,7 +120,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 }
 
 
-async function execute (text: string, testing = false, start: number) {
+async function execute (text: string,  start: number, testing = false) {
     let { connection } = connector
     
     if (connection.running) {
@@ -298,7 +298,7 @@ async function execute_with_progress (text: string, start: number, testing?: boo
     
     let done = false
     
-    const pexecute = execute(text, testing, start)
+    const pexecute = execute(text, start, testing)
     
     // 1s 还未完成，则显示进度
     ;(async () => {
