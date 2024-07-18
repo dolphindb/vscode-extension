@@ -123,6 +123,8 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 async function execute (text: string,  start: number, testing = false) {
     let { connection } = connector
     
+    const text_lines = text.split_lines()
+    
     if (connection.running) {
         terminal.printer.fire(t('当前连接 ({{connection}}) 正在执行作业，请等待\r\n', { connection: connection.name }).yellow)
         return
@@ -140,7 +142,7 @@ async function execute (text: string,  start: number, testing = false) {
     printer.fire(
         '\r\n' +
         `${dayjs(timer.started).format('HH:mm:ss.SSS')}  ${connection.name}\r\n` +
-        truncate_text(text.split_lines()).join('\r\n') + 
+        truncate_text(text_lines).join('\r\n') + 
         (text.trim().length ? '\r\n' : '')
     )
     
@@ -196,9 +198,7 @@ async function execute (text: string,  start: number, testing = false) {
             return  `[line #${start + Number(line)}]`
         })
         if (original_line !== -1)
-            message += `\n${t('错误行：')}${text.split_lines()[original_line - 1]}`
-  
-        
+            message += `\n${t('错误行：')}${text_lines[original_line - 1]}`
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
             (connection === connector.connection ? '' : ` (${connection.name})`) + 
