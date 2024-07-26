@@ -9,7 +9,7 @@ import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions,
 
 import type { Variable } from '@vscode/debugadapter'
 
-import { i18n, language, t } from '../i18n/index.js'
+import { i18n, t } from '../i18n/index.js'
 
 import { server } from './server.js'
 import { statbar } from './statbar.js'
@@ -158,7 +158,8 @@ async function execute (text: string, istart: number, testing = false) {
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
         
         obj = await ddb.eval(
-            text.replace(/\r\n/g, '\n'),
+            `line://${istart}\n` +
+            `${text.replace(/\r\n/g, '\n')}`,
             {
                 listener (message) {
                     if (connection.disconnected)
@@ -190,18 +191,7 @@ async function execute (text: string, istart: number, testing = false) {
         if (message.includes('RefId:'))         
             message = message.replaceAll(/RefId:\s*(\w+)/g, (_, ref_id) => 
                 `RefId: ${ref_id}`.blue.underline)
-        
-        let icode = -1
-        
-        message = message.replace(/\[line #(\d+)\]/, (_, _icode) => {
-            icode = _icode
-            return  `[line #${istart + Number(_icode)}]`
-        })
-        
-        if (icode !== -1)
-            message += `\n${t('错误行:')} ${lines[icode - 1]}`
-        
-        
+             
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
             (connection === connector.connection ? '' : ` (${connection.name})`) + 

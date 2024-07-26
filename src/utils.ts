@@ -34,7 +34,7 @@ export function get_text (selector:
     
     const text_selection = {
         text: document.getText(selection),
-        istart: selection.start.line
+        istart: selection.start.line + 1
     }
     
     if (selector === 'selection')
@@ -42,7 +42,7 @@ export function get_text (selector:
     
     const text_all = {
         text: document.getText(),
-        istart: 0
+        istart: 1
     }
     
     if (selector === 'all')
@@ -50,7 +50,7 @@ export function get_text (selector:
     
     const text_line = {
         text: document.lineAt(selection.active.line).text,
-        istart: selection.active.line
+        istart: selection.active.line + 1
     }
     
     if (selector === 'line')
@@ -61,7 +61,7 @@ export function get_text (selector:
             text: document.getText(
                 document.getWordRangeAtPosition(selection.active)
             ),
-            istart: selection.active.line
+            istart: selection.active.line + 1
         }
     
     if (selector === 'selection or all')
@@ -75,7 +75,7 @@ export function get_text (selector:
     
     const line = document.lineAt(start.line)
     
-    const line_start = new Position(start.line, 0)
+    const line_start = new Position(start.line + 1, 0)
     
     if (selector === 'selection before')
         return {
@@ -85,17 +85,17 @@ export function get_text (selector:
             istart: line_start.line
         } 
     
-    const line_end   = new Position(start.line, line.text.length)
+    const line_end  = new Position(start.line + 1, line.text.length)
     
     if (selector === 'selection after')
         return {
             text: document.getText(
                 new Range(end, line_end)
             ),
-            istart: end.line
+            istart: end.line + 1
         } 
     
-    const line_text_start = new Position(start.line, line.firstNonWhitespaceCharacterIndex)
+    const line_text_start = new Position(start.line + 1, line.firstNonWhitespaceCharacterIndex)
     
     if (selector === 'selection to text start')
         return {
