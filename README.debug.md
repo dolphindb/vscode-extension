@@ -94,6 +94,21 @@ The **DEBUG CONSOLE** will display debugging output and exception information. I
 
 One possible reason is that the version of your DolphinDB server is outdated. In this case, the following error is reported: `socket hang up Debug server connection failed, please make sure DolphinDB Server version is not lower than 2.00.10.1 or 1.30.22.1`
 
+#### Example of debug configuration file launch.json
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Current DolphinDB Script File",
+            "type": "dolphindb",
+            "request": "launch",
+            "program": "${file}"
+        },
+    ]
+}
+```
+
 ### 3.4 Debugging Actions
 
 Once a debug session begins, a toolbar appears on the top of the editor. The following debugging actions are available: Continue, Step Over, Step Into, Step Out, Restart and Stop.
