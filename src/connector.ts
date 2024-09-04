@@ -31,17 +31,17 @@ import {
 } from 'dolphindb'
 
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
-import { statbar } from './statbar.js'
-import { open_connection_settings } from './commands.js'
+import { statbar } from './statbar.ts'
+import { open_connection_settings } from './commands.ts'
 
-import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './constant.js'
+import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './constant.ts'
 
-import { DdbVar, DdbVarLocation, variables } from './variables.js'
-import { DdbCatalog, DdbDatabase, DdbGroup, DdbTable, databases } from './databases.js'
+import { DdbVar, DdbVarLocation, variables } from './variables.ts'
+import { DdbCatalog, DdbDatabase, DdbGroup, DdbTable, databases } from './databases.ts'
 
-import { fpd_ext, type DdbMessageItem } from './index.js'
+import { fpd_ext, type DdbMessageItem } from './index.ts'
 
 
 let icon_empty: string

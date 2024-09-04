@@ -19,22 +19,22 @@ import {
     type MessageItem
 } from 'vscode'
 
+import 'xshell/polyfill.browser.js'
 import { set_inspect_options } from 'xshell'
 
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
-import './polyfill.js'
-import { load_docs, register_docs } from './docs.js'
-import { server } from './server.js'
-import { dataview } from './dataview/dataview.js'
-import { statbar } from './statbar.js'
-import { formatter } from './formatter.js'
-import { ddb_commands } from './commands.js'
-import { register_terminal_link_provider } from './terminal.js'
-import { connector, register_connector } from './connector.js'
-import { register_variables } from './variables.js'
-import { register_databases } from './databases.js'
+import { load_docs, register_docs } from './docs.ts'
+import { server } from './server.ts'
+import { dataview } from './dataview/dataview.ts'
+import { statbar } from './statbar.ts'
+import { formatter } from './formatter.ts'
+import { ddb_commands } from './commands.ts'
+import { register_terminal_link_provider } from './terminal.ts'
+import { connector, register_connector } from './connector.ts'
+import { register_variables } from './variables.ts'
+import { register_databases } from './databases.ts'
 
 
 export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }

@@ -24,9 +24,9 @@ import { genid } from 'xshell/utils.browser.js'
 import { Remote, type Message } from 'xshell/net.browser.js'
 import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
 
-import { language } from '../../i18n/index.js'
+import { language } from '@i18n/index.ts'
 
-import { Obj, DdbObjRef, open_obj } from './obj.js'
+import { Obj, DdbObjRef, open_obj } from './obj.tsx'
 
 
 let remote = new Remote({ url: `ws://${location.host}` })

@@ -6,38 +6,38 @@
         "vscode": ">=1.68.0"
     },
     "scripts": {
-        "dev": "tsc --project ./tsconfig.node.json && node ./dev.js",
-        "build": "tsc --project ./tsconfig.node.json && node ./build.js",
+        "dev": "node ./dev.ts",
+        "build": "node ./build.ts",
         "scan": "i18n-scan --input \"**/*.{ts,tsx}\"",
         "lint": "eslint \"**/*.{ts,tsx}\"",
         "fix": "eslint --fix \"**/*.{ts,tsx}\""
     },
     "devDependencies": {
         "@types/koa": "^2.15.0",
-        "@types/node": "^20.14.11",
-        "@types/react": "^18.3.3",
+        "@types/node": "^22.5.3",
+        "@types/react": "^18.3.5",
         "@types/react-dom": "^18.3.0",
-        "@types/vscode": "^1.91.0",
-        "@types/ws": "^8.5.11",
-        "eslint": "^9.7.0",
-        "typescript": "^5.5.3"
+        "@types/vscode": "^1.92.0",
+        "@types/ws": "^8.5.12",
+        "eslint": "^9.9.1",
+        "typescript": "^5.5.4"
     },
     "dependencies": {
-        "@ant-design/icons": "^5.3.7",
+        "@ant-design/icons": "^5.4.0",
         "@ant-design/plots": "1.2.5",
-        "@vscode/debugadapter": "^1.66.0",
-        "@vscode/debugprotocol": "^1.66.0",
-        "antd": "^5.19.2",
-        "dayjs": "^1.11.11",
-        "dolphindb": "^3.0.106",
+        "@vscode/debugadapter": "^1.67.0",
+        "@vscode/debugprotocol": "^1.67.0",
+        "antd": "^5.20.5",
+        "dayjs": "^1.11.13",
+        "dolphindb": "^3.0.114",
         "koa": "^2.15.3",
         "lodash": "^4.17.21",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "react-object-model": "^1.2.8",
-        "tslib": "^2.6.3",
+        "react-object-model": "^1.2.13",
+        "tslib": "^2.7.0",
         "ws": "^8.18.0",
-        "xshell": "^1.0.157"
+        "xshell": "^1.0.166"
     },
     "pnpm": {
         "patchedDependencies": {

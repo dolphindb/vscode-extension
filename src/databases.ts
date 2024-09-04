@@ -10,14 +10,14 @@ import { assert } from 'xshell/utils.js'
 
 import { type DdbDictObj, DdbFunctionType, type DdbVectorStringObj, type DdbObj } from 'dolphindb'
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
 
-import { NodeType } from './constant.js'
+import { NodeType } from './constant.ts'
 
-import { connector, type DdbConnection } from './connector.js'
+import { connector, type DdbConnection } from './connector.ts'
 
-import { fpd_ext } from './index.js'
+import { fpd_ext } from './index.ts'
 
 
 export class DdbDatabases implements TreeDataProvider<TreeItem> {

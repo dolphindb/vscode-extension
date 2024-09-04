@@ -11,9 +11,9 @@ import { DocsProvider } from 'dolphindb/docs.js'
 
 import { fread_json } from 'xshell'
 
-import { language, t } from '../i18n/index.js'
+import { language, t } from '../i18n/index.ts'
 
-import { fpd_ext } from './index.js'
+import { fpd_ext } from './index.ts'
 
 
 const MAX_MATCH_LINES = 30

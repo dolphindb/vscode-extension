@@ -80,6 +80,24 @@
   
   可能的原因有:
   - DolphinDB Server 版本太低: 会报错 `Server sent no subprotocol 调试服务器连接失败，请确保 DolphinDB Server 版本不低于 2.00.10.1 或 1.30.22.1`
+  
+#### 调试配置文件 launch.json 的例子
+```json
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "调试当前 DolphinDB 脚本文件",
+            "type": "dolphindb",
+            "request": "launch",
+            "program": "${file}"
+        },
+    ]
+}
+```
 
 ### 3.4 调试过程
   启动调试后，VSCode 的界面上方会出现如下图所示的调试工具栏。从左到右的名称及对应的键盘快捷键分别为继续（F5）、逐过程（F10）、单步调试（F11）、单步跳出（Shift + F11）、重启（Ctrl + Shift + F5）和停止（Shift + F5）。其中继续、逐过程和单步调试是调试中最常用的三个功能，推荐使用快捷键来操作。
