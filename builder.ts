@@ -660,6 +660,15 @@ export let builder = {
                             )
                         } satisfies Schema,
                         
+                        'dolphindb.show_connection_url': {
+                            type: 'boolean',
+                            default: true,
+                            description: make(
+                                'configs.show_connection_url.description',
+                                '在左侧连接面板中是否显示连接的 url 地址，关闭仅显示连接名称，避免信息泄露',
+                                'In the left connection panel, whether to display the connection URL address. If it is turned off, only the connection name is displayed to avoid information leakage'
+                            )
+                        } satisfies Schema
                     }
                 },
                 
@@ -984,8 +993,6 @@ export let builder = {
         ])
     },
 }
-
-
 
 
 interface VSCodeConfiguration {
