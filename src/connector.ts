@@ -55,7 +55,9 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
     
     onDidChangeTreeData: Event<void | TreeItem> = this.refresher.event
     
-    single_connection_mode: boolean = false
+    single_connection_mode = false
+    
+    show_connection_url = false
     
     /** 从 dolphindb.connections 连接配置生成的，在面板中的显示所有连接  
         每个连接维护了一个 ddb api 的实际连接，当出错需要重置时，需要用新的连接替换出错连接 */
@@ -66,11 +68,6 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
     
     /** 上传模块是否加密 */
     encrypt?: boolean | undefined
-    
-    
-    constructor () {
-        this.load_connections()
-    }
     
     
     /** 执行连接操作后，如果超过 1s 还未完成，则显示进度 */
@@ -238,6 +235,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
         return node ? null : this.connections
     }
     
+    
     load_connections () {
         if (this.connections)
             for (const connection of this.connections)
@@ -246,6 +244,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
         const config = workspace.getConfiguration('dolphindb')
         
         this.single_connection_mode = config.get<boolean>('single_connection_mode')
+        this.show_connection_url = config.get<boolean>('show_connection_url')
         
         this.connections = config
             .get<{ url: string, name?: string, sql?: string }[]>('connections')
@@ -266,7 +265,11 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
     
     
     on_config_change (event: ConfigurationChangeEvent) {
-        if (event.affectsConfiguration('dolphindb.connections') || event.affectsConfiguration('dolphindb.single_connection_mode')) {
+        if (
+            event.affectsConfiguration('dolphindb.connections') || 
+            event.affectsConfiguration('dolphindb.single_connection_mode') ||
+            event.affectsConfiguration('dolphindb.show_connection_url')
+        ) {
             this.load_connections()
             this.refresh(true)
         }
@@ -404,7 +407,8 @@ export class DdbConnection extends TreeItem {
         }
         
         this.mappings = this.options.mappings
-        this.description = this.url
+        if (connector.show_connection_url)
+            this.description = this.url
         this.iconPath = icon_empty
         this.contextValue = 'disconnected'
         
@@ -439,8 +443,7 @@ export class DdbConnection extends TreeItem {
         
         console.log(`${t('连接成功:')} ${this.name}`)
         this.connected = true
-        this.description = this.url + ' ' + t('已连接')
-        
+        this.description = `${ connector.show_connection_url ? `${this.url} ` : '' }${t('已连接')}`
         this.contextValue = 'connected'
         
         return true
@@ -451,6 +454,7 @@ export class DdbConnection extends TreeItem {
         this.ddb.disconnect()
         await this.update_logined()
     }
+    
     
     async update_logined () {
         if (this.ddb.connected)
@@ -911,5 +915,6 @@ export function register_connector () {
     icon_checked = `${fpd_ext}icons/radio.checked.svg`
     
     connector = new DdbConnector()
+    connector.load_connections()
     connector.view = window.createTreeView('dolphindb.connector', { treeDataProvider: connector })
 }
