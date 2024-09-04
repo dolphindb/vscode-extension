@@ -9,9 +9,9 @@ import {
     ConfigurationTarget, type ConfigurationChangeEvent, 
 } from 'vscode'
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
-import { connector } from './connector.js'
+import { connector } from './connector.ts'
 
 
 export let formatter = {

@@ -9,19 +9,19 @@ import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions,
 
 import type { Variable } from '@vscode/debugadapter'
 
-import { i18n, language, t } from '../i18n/index.js'
+import { i18n, language, t } from '../i18n/index.ts'
 
-import { server } from './server.js'
-import { statbar } from './statbar.js'
-import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
-import { dataview } from './dataview/dataview.js'
-import { formatter } from './formatter.js'
-import { create_terminal, terminal } from './terminal.js'
-import { type DdbConnection, connector } from './connector.js'
-import { DdbVar } from './variables.js'
-import { type DdbDatabase, databases, type DdbTable } from './databases.js'
+import { server } from './server.ts'
+import { statbar } from './statbar.ts'
+import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.ts'
+import { dataview } from './dataview/dataview.ts'
+import { formatter } from './formatter.ts'
+import { create_terminal, terminal } from './terminal.ts'
+import { type DdbConnection, connector } from './connector.ts'
+import { DdbVar } from './variables.ts'
+import { type DdbDatabase, databases, type DdbTable } from './databases.ts'
 
-import type { DdbMessageItem } from './index.js'
+import type { DdbMessageItem } from './index.ts'
 
 
 let lastvar: DdbVar

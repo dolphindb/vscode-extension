@@ -1,6 +1,6 @@
 import { type Source } from '@vscode/debugadapter'
 
-import { type Remote } from './network.js'
+import { type Remote } from './network.ts'
 
 type SourceData = {
     content?: string

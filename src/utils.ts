@@ -13,7 +13,7 @@ import {
 import { path, assert } from 'xshell'
 
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
 
 /** 获取选择区域的文本，若选择为空，则根据 selector 确定 (当前 | 全部文本 | 空) */

@@ -12,6 +12,11 @@
     ],
     
     "compilerOptions": {
+        "paths": {
+            "@i18n/*": ["./i18n/*"],
+        },
+        
+        
         // --- module
         "module": "ESNext", // none, CommonJS, amd, system, umd, es6, es2015, ESNext
         "moduleResolution": "Bundler",

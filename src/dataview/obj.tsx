@@ -49,11 +49,11 @@ import {
     type DdbTensorObj
 } from 'dolphindb/browser.js'
 
-import { t } from '../../i18n/index.js'
+import { t } from '@i18n/index.ts'
 
 import SvgLink from './link.icon.svg'
 
-import { type WindowModel } from './window.js'
+import { type WindowModel } from './window.tsx'
 
 
 const max_strlen = 10000

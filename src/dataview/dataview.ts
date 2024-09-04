@@ -5,11 +5,11 @@ import { type Message, Remote, genid, assert, defer } from 'xshell'
 import type { DDB, DdbMessage, InspectOptions } from 'dolphindb'
 
 
-import { language, t } from '../../i18n/index.js'
+import { language, t } from '../../i18n/index.ts'
 
-import { dev, fpd_ext } from '../index.js'
-import { type DdbVar } from '../variables.js'
-import { connector } from '../connector.js'
+import { dev, fpd_ext } from '../index.ts'
+import { type DdbVar } from '../variables.ts'
+import { connector } from '../connector.ts'
 
 
 type ViewMessageHandler <TData extends any[] = any[]> = (message: Message<TData>, view: WebviewView) => void | any[] | Promise<void | any[]>

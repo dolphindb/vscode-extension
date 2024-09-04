@@ -60,6 +60,9 @@ export let builder = {
                     globals: {
                         PRODUCTION: (production ? 'true' : 'false').quote(),
                     },
+                    resolve_alias: {
+                        '@i18n': `${fpd_root}i18n`,
+                    },
                     external_dayjs: true,
                     production,
                     license: {

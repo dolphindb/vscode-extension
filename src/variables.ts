@@ -25,15 +25,15 @@ import {
     type DdbVectorStringObj,
 } from 'dolphindb'
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
-import { formatter } from './formatter.js'
-import { server, start_server } from './server.js'
-import { dataview } from './dataview/dataview.js'
+import { formatter } from './formatter.ts'
+import { server, start_server } from './server.ts'
+import { dataview } from './dataview/dataview.ts'
 
-import { type DdbConnection, connector } from './connector.js'
+import { type DdbConnection, connector } from './connector.ts'
 
-import { fpd_ext } from './index.js'
+import { fpd_ext } from './index.ts'
 
 
 

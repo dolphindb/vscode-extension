@@ -1,4 +1,4 @@
-import { builder } from './builder.js'
+import { builder } from './builder.ts'
 
 
 await builder.build(true)

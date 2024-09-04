@@ -1,5 +1,5 @@
 import { ramdisk, Remote } from 'xshell'
-import { builder, fpd_root } from './builder.js'
+import { builder, fpd_root } from './builder.ts'
 
 await builder.build(false)
 
