@@ -13,8 +13,8 @@
     
     "compilerOptions": {
         // --- module
-        "module": "NodeNext", // none, CommonJS, amd, system, umd, es6, es2015, ESNext
-        "moduleResolution": "NodeNext",
+        "module": "ESNext", // none, CommonJS, amd, system, umd, es6, es2015, ESNext
+        "moduleResolution": "Bundler",
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": false,
         "resolveJsonModule": true,
@@ -31,6 +31,7 @@
         
         
         // --- emit
+        "noEmit": true,
         "declaration": false,
         "emitDeclarationOnly": false,
         "noEmitOnError": false,
@@ -47,6 +48,7 @@
         "removeComments": false,
         "preserveConstEnums": true,
         "forceConsistentCasingInFileNames": true,
+        "allowImportingTsExtensions": true,
         
         
         // --- type checking

@@ -3,25 +3,12 @@ node_modules/
 /out/
 /test/
 
-/*.js
-/*.js.map
 /*.zip
 /*.vsix
 
 /.vscode/settings.json
-/eslint.config.js
 
-/docs.zh.json
-/docs.en.json
-
-/i18n/*.js
-/i18n/*.js.map
 /i18n/untranslateds.json
-
-/src/config.js.map
-/src/config.js
-
-!/prepare.js
 
 /workspace/
 !/workspace/.vscode/*
