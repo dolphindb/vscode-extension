@@ -120,7 +120,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 }
 
 
-async function execute (text: string, istart: number, testing = false) {
+async function execute (text: string, iline: number, testing = false) {
     let { connection } = connector
     
     if (connection.running) {
@@ -158,7 +158,7 @@ async function execute (text: string, istart: number, testing = false) {
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
         
         obj = await ddb.eval(
-            `line://${istart}\n` +
+            `line://${iline + 1}\n` +
             `${text.replace(/\r\n/g, '\n')}`,
             {
                 listener (message) {
@@ -191,7 +191,7 @@ async function execute (text: string, istart: number, testing = false) {
         if (message.includes('RefId:'))         
             message = message.replaceAll(/RefId:\s*(\w+)/g, (_, ref_id) => 
                 `RefId: ${ref_id}`.blue.underline)
-             
+        
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
             (connection === connector.connection ? '' : ` (${connection.name})`) + 
@@ -286,12 +286,12 @@ async function execute (text: string, istart: number, testing = false) {
 
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
-async function execute_with_progress (text: string, istart: number, testing?: boolean) {
+async function execute_with_progress (text: string, iline: number, testing?: boolean) {
     let { connection } = connector
     
     let done = false
     
-    const pexecute = execute(text, istart, testing)
+    const pexecute = execute(text, iline, testing)
     
     // 1s 还未完成，则显示进度
     ;(async () => {
@@ -435,15 +435,15 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
 /** 和 webpack 中的 commands 定义需要一一对应 */
 export const ddb_commands = [
     async function execute () {
-        const { text, istart } = get_text('selection or line')
-        await execute_with_progress(text, istart)
+        const { text, iline } = get_text('selection or line')
+        await execute_with_progress(text, iline)
     },
     
     
     async function execute_selection_or_line () {
         try {
-            const { text, istart } = get_text('selection or line')
-            await execute_with_progress(text, istart)
+            const { text, iline } = get_text('selection or line')
+            await execute_with_progress(text, iline)
             // 点击图标执行 execute_ddb_line 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         } catch (error) {
             window.showErrorMessage(error.message)
@@ -453,8 +453,8 @@ export const ddb_commands = [
     
     async function execute_file () {
         try {
-            const { text, istart } = get_text('all')
-            await execute_with_progress(text, istart)
+            const { text, iline } = get_text('all')
+            await execute_with_progress(text, iline)
         } catch (error) {
             window.showErrorMessage(error.message)
         }

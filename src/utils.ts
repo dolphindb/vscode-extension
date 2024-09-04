@@ -34,7 +34,7 @@ export function get_text (selector:
     
     const text_selection = {
         text: document.getText(selection),
-        istart: selection.start.line + 1
+        iline: selection.start.line
     }
     
     if (selector === 'selection')
@@ -42,7 +42,7 @@ export function get_text (selector:
     
     const text_all = {
         text: document.getText(),
-        istart: 1
+        iline: 0
     }
     
     if (selector === 'all')
@@ -50,7 +50,7 @@ export function get_text (selector:
     
     const text_line = {
         text: document.lineAt(selection.active.line).text,
-        istart: selection.active.line + 1
+        iline: selection.active.line
     }
     
     if (selector === 'line')
@@ -61,7 +61,7 @@ export function get_text (selector:
             text: document.getText(
                 document.getWordRangeAtPosition(selection.active)
             ),
-            istart: selection.active.line + 1
+            iline: selection.active.line
         }
     
     if (selector === 'selection or all')
@@ -75,34 +75,34 @@ export function get_text (selector:
     
     const line = document.lineAt(start.line)
     
-    const line_start = new Position(start.line + 1, 0)
+    const line_start = new Position(start.line, 0)
     
     if (selector === 'selection before')
         return {
             text: document.getText(
                 new Range(line_start, start)
             ),
-            istart: line_start.line
+            iline: line_start.line
         } 
     
-    const line_end  = new Position(start.line + 1, line.text.length)
+    const line_end = new Position(start.line, line.text.length)
     
     if (selector === 'selection after')
         return {
             text: document.getText(
                 new Range(end, line_end)
             ),
-            istart: end.line + 1
+            iline: end.line
         } 
     
-    const line_text_start = new Position(start.line + 1, line.firstNonWhitespaceCharacterIndex)
+    const line_text_start = new Position(start.line, line.firstNonWhitespaceCharacterIndex)
     
     if (selector === 'selection to text start')
         return {
             text: document.getText(
                 new Range(line_text_start, start)
             ),
-            istart: line_text_start.line
+            iline: line_text_start.line
         }
 }
 
