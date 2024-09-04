@@ -70,11 +70,6 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
     encrypt?: boolean | undefined
     
     
-    constructor () {
-        this.load_connections()
-    }
-    
-    
     /** 执行连接操作后，如果超过 1s 还未完成，则显示进度 */
     async connect (connection: DdbConnection) {
         if (debug.activeDebugSession) {
@@ -239,6 +234,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
     getChildren (node?: TreeItem) {
         return node ? null : this.connections
     }
+    
     
     load_connections () {
         if (this.connections)
@@ -919,5 +915,6 @@ export function register_connector () {
     icon_checked = `${fpd_ext}icons/radio.checked.svg`
     
     connector = new DdbConnector()
+    connector.load_connections()
     connector.view = window.createTreeView('dolphindb.connector', { treeDataProvider: connector })
 }
