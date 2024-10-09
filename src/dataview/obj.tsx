@@ -795,7 +795,7 @@ export function Table ({
                 rows === 0 && offset === 0 ||
                 offset < rows
             ) {
-                const script = `${name}[${offset}:${Math.min(offset + page_size, rows)}]`
+                const script = `select * from ${name} limit ${offset}, ${page_size}`
                 
                 console.log('table.fetch:', script)
                 
