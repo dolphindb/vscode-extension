@@ -90,19 +90,15 @@ export class DdbDatabase extends TreeItem {
     }
     
     async get_schema () {
-        if (this.schema)
-            return this.schema
-        else {
-            await connector.connection.define_load_database_schema()
+        await connector.connection.define_load_database_schema()
             
-            return this.schema = await connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
-                // 这个函数在 define_load_database_schema 中已定义
-                'load_database_schema',
-                // 调用该函数时，数据库路径不能以 / 结尾
-                [this.path.slice(0, -1)],
-                connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
-            )
-        }
+        return this.schema = await connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
+            // 这个函数在 define_load_database_schema 中已定义
+            'load_database_schema',
+            // 调用该函数时，数据库路径不能以 / 结尾
+            [this.path.slice(0, -1)],
+            connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
+        )
     }
 }
 
@@ -133,34 +129,26 @@ export class DdbTable extends TreeItem {
     
     
     async get_obj () {
-        if (this.obj) 
-            return this.obj
-        else {
-            await connector.connection.define_peek_table()
-            let obj = await connector.connection.ddb.call(
-                'peek_table',
-                [this.database.path.slice(0, -1), this.name],
-                connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
-            )
-            obj.name = `${this.name} (${t('前 100 行')})`
-            return this.obj = obj
-        }
+        await connector.connection.define_peek_table()
+        let obj = await connector.connection.ddb.call(
+            'peek_table',
+            [this.database.path.slice(0, -1), this.name],
+            connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
+        )
+        obj.name = `${this.name} (${t('前 100 行')})`
+        return this.obj = obj
     }
     
     
     async get_schema () {
-        if (this.schema)
-            return this.schema
-        else {
-            await connector.connection.define_load_table_schema()
-            return this.schema = await connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
-                // 这个函数在 define_load_table_schema 中已定义
-                'load_table_schema',
-                // 调用该函数时，数据库路径不能以 / 结尾
-                [this.database.path.slice(0, -1), this.name],
-                connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
-            )
-        }
+        await connector.connection.define_load_table_schema()
+        return this.schema = await connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
+            // 这个函数在 define_load_table_schema 中已定义
+            'load_table_schema',
+            // 调用该函数时，数据库路径不能以 / 结尾
+            [this.database.path.slice(0, -1), this.name],
+            connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name, func_type: DdbFunctionType.UserDefinedFunc } : { }
+        )
     }
 }
 
