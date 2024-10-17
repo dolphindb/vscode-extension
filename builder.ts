@@ -84,7 +84,7 @@ export let builder = {
                                 src: 'src/dataview/logo.png',
                                 out: 'logo.png'
                             },
-                            fp_entry: './window.js',
+                            entry: 'window.js',
                         }
                     },
                     
