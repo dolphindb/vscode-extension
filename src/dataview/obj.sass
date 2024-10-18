@@ -1,4 +1,4 @@
-@import './variables.sass'
+@use './variables'
 
 
 .obj-result
@@ -103,7 +103,7 @@
         .tensor-nav
             display: flex
             align-items: center
-            border-bottom: 1px solid $dropdown-active-background-color
+            border-bottom: 1px solid variables.$dropdown-active-background-color
         
         .tensor-view
             flex:1
@@ -115,7 +115,7 @@
             cursor: pointer
             height: 100%
             &:hover
-                background: $dropdown-active-background-color
+                background: variables.$dropdown-active-background-color
         .type-name
             color: #2d6ebe
     
@@ -126,7 +126,7 @@
             margin-left:2px
             height: 100%
             &:hover
-                background: $dropdown-active-background-color
+                background: variables.$dropdown-active-background-color
     
         .tensor-elem
             font-family: MyFont, Menlo, "Ubuntu Mono", Consolas, "Dejavu Sans Mono", "Noto Sans Mono", PingFangSC, "Microsoft YaHei", monospace, Consolas, "Courier New", monospace
@@ -134,12 +134,12 @@
             width: 100%
             padding: 2px 5px 2px 8px
             &:hover
-                background: $dropdown-active-background-color
+                background: variables.$dropdown-active-background-color
         
         .tensor-page
             display: flex
             align-items: center
-            border-top: 1px solid $dropdown-active-background-color
+            border-top: 1px solid variables.$dropdown-active-background-color
     
         .tensor-desc
             margin: 0 8px
@@ -250,31 +250,31 @@
     // 覆盖表格颜色配置，使其能适配 web, vscode 主题
     &.themed
         .default-obj
-            color: $font-color
+            color: variables.$font-color
         
         .vector, .table, .matrix
             .row-head
-                background-color: $table-head-color !important
+                background-color: variables.$table-head-color !important
                 
-                border-bottom: 1px solid $border-color !important
-                border-right: 1px solid $border-color !important
+                border-bottom: 1px solid variables.$border-color !important
+                border-right: 1px solid variables.$border-color !important
                 
             thead
                 .type
-                    color: $icon-color !important
+                    color: variables.$icon-color !important
             
         .chart
             .chart-title
-                color: $font-color !important
+                color: variables.$font-color !important
         
         .dict
             .ant-tree-show-line .ant-tree-switcher
-                background: $background-color
+                background: variables.$background-color
             
             .ant-tree
-                color: $font-color
+                color: variables.$font-color
                 
-                background-color: $background-color
+                background-color: variables.$background-color
                 
                 .ant-tree-node-content-wrapper.ant-tree-node-selected
                     background-color: unset !important
@@ -283,50 +283,50 @@
                     background-color: unset !important
                     
         .bottom-bar
-            border-top: 1px solid $border-color
+            border-top: 1px solid variables.$border-color
             
             .info
-                color: $font-color
+                color: variables.$font-color
                 
         .ant-table
-            background-color: $background-color !important
+            background-color: variables.$background-color !important
         
         .ant-table-thead > tr > th,
         .ant-table-tbody > tr > td,
         .ant-table tfoot > tr > th,
         .ant-table tfoot > tr > td
-            color: $font-color
-            border-color: $border-color !important
+            color: variables.$font-color
+            border-color: variables.$border-color !important
         
         .ant-table-thead > tr > th,
         .ant-table-thead > tr > td
-            background-color: $table-head-color !important
-            border-color: $border-color !important
+            background-color: variables.$table-head-color !important
+            border-color: variables.$border-color !important
         
         .ant-table.ant-table-bordered > .ant-table-container > .ant-table-content > table,
         .ant-table.ant-table-bordered > .ant-table-container > .ant-table-header > table
-            border-color: $border-color !important
+            border-color: variables.$border-color !important
         
         .ant-table.ant-table-bordered > .ant-table-container
-            border-color: $border-color !important
+            border-color: variables.$border-color !important
         
         .ant-table-tbody > tr.ant-table-row:hover > td,
         .ant-table-tbody > tr > td.ant-table-cell-row-hover
-            background-color: $hover-color !important
+            background-color: variables.$hover-color !important
         
         .ant-table-tbody > tr.ant-table-placeholder:hover > td
-            background-color: $background-color !important
+            background-color: variables.$background-color !important
             
         .ant-table-wrapper .ant-table-tbody > tr.ant-table-placeholder
-            background-color: $background-color !important
+            background-color: variables.$background-color !important
         
         
         .ant-empty-normal
-            color: $font-color !important
+            color: variables.$font-color !important
             
             .ant-empty-img-simple-path, .ant-empty-img-simple-ellipse
-                fill: $background-color
+                fill: variables.$background-color
             
             .ant-empty-description
-                color: $font-color !important
+                color: variables.$font-color !important
         

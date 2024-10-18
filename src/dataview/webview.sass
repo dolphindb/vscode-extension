@@ -1,4 +1,4 @@
-@import './variables.sass'
+@use './variables'
 
 
 html, body
@@ -6,8 +6,8 @@ html, body
     padding: 0
     height: 100%
     overscroll-behavior-y: contain
-    background-color: $background-color
-    color: $color
+    background-color: variables.$background-color
+    color: variables.$color
     
 *, :before, :after
     box-sizing: border-box
@@ -18,7 +18,7 @@ html, body
     height: 100%
     
     .ant-app
-        color: $font-color
+        color: variables.$font-color
     
     .app
         height: 100%
