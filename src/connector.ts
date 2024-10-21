@@ -860,8 +860,7 @@ export class DdbConnection extends TreeItem {
                     { }
                 :
                     {
-                        node: this.controller_alias,
-                        func_type: DdbFunctionType.SystemFunc
+                        node: this.controller_alias
                     },
             })
         ).to_rows<DdbNode>()
