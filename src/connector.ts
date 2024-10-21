@@ -856,12 +856,9 @@ export class DdbConnection extends TreeItem {
             await this.ddb.call<DdbObj<DdbObj[]>>('getClusterPerf', [true], {
                 urgent: true,
                 
-                ... this.node_type === NodeType.controller || this.node_type === NodeType.single ? 
-                    { }
-                :
-                    {
-                        node: this.controller_alias
-                    },
+                ... this.node_type === NodeType.controller || this.node_type === NodeType.single
+                    ? { }
+                    : { node: this.controller_alias },
             })
         ).to_rows<DdbNode>()
         .sort((a, b) => strcmp(a.name, b.name))
