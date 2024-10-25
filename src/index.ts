@@ -39,6 +39,18 @@ import { register_databases } from './databases.ts'
 
 export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }
 
+type TokenColorCustomizations = {
+    textMateRules?: Array<TextMateRule>
+}
+
+type TextMateRule = {
+    scope: string | string[]
+    settings: {
+        foreground?: string
+        background?: string
+        fontStyle?: string
+    }
+}
 
 if (util.inspect.styles.number !== 'green')
     set_inspect_options()
@@ -141,6 +153,35 @@ export async function activate (ctx: ExtensionContext) {
         }
     }))
     
+    /** 添加 decorator 颜色 */
+    const config = workspace.getConfiguration('editor')
+    
+    // 获取当前的 tokenColorCustomizations，不存在则创建
+    const token_color_customizations: TokenColorCustomizations = config.get<TokenColorCustomizations>('tokenColorCustomizations') || { }
+    const textmate_rules: TextMateRule[] = token_color_customizations.textMateRules || [ ]
+    
+    // 添加新的规则
+    const new_rule: TextMateRule = {
+        scope: 'meta.decorator.dolphindb',
+        settings: {
+            foreground: '#aa6f00'
+        }
+    }
+    
+    // 检查是否已经存在该规则，避免重复添加
+    const rule_exists = textmate_rules.some((rule: TextMateRule) => rule.scope === 'meta.decorator.dolphindb')
+    if (!rule_exists) {
+        textmate_rules.push(new_rule)
+        token_color_customizations.textMateRules = textmate_rules
+        
+        // 更新配置
+        config.update('tokenColorCustomizations', token_color_customizations, ConfigurationTarget.Global)
+            .then(() => {
+                // 更新规则成功，什么也不做
+            }, _ => {
+                window.showErrorMessage('Failed to update token color customization')
+            })
+    }
     console.log(t('DolphinDB 插件初始化成功'))
 }
 
