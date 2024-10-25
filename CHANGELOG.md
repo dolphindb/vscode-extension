@@ -16,7 +16,7 @@
 -   报错中的行号显示为代码块内的行号。   
     Aligned error line numbers in terminal with Code Editor line numbers.
 
--   支持高亮 @state, @jit, @transform 等宏
+-   支持高亮 @state, @jit, @transform 等宏  
     Support highlighting of @state, @jit, @transform and other macros
 
 
