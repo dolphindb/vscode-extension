@@ -2,7 +2,7 @@
 
 ## [3.0.200]
 #### 新功能 / New Features
--   支持展示分布式表的 iotany 类型的列。 
+-   支持展示分布式表的 iotany 类型的列。  
     Display of IOTANY columns in DFS tables.
 
 -   新增 `dolphindb.show_connection_url` 配置项，支持设置是否在侧连接面板中显示连接的 url 地址。   
