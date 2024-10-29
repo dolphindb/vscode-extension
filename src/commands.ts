@@ -9,7 +9,7 @@ import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions,
 
 import type { Variable } from '@vscode/debugadapter'
 
-import { i18n, language, t } from '../i18n/index.ts'
+import { i18n, t } from '../i18n/index.ts'
 
 import { server } from './server.ts'
 import { statbar } from './statbar.ts'
@@ -18,7 +18,7 @@ import { dataview } from './dataview/dataview.ts'
 import { formatter } from './formatter.ts'
 import { create_terminal, terminal } from './terminal.ts'
 import { type DdbConnection, connector } from './connector.ts'
-import { DdbVar } from './variables.ts'
+import { DdbVar, variables } from './variables.ts'
 import { type DdbDatabase, databases, type DdbTable } from './databases.ts'
 
 import type { DdbMessageItem } from './index.ts'
@@ -559,6 +559,15 @@ export const ddb_commands = [
         databases.refresher.fire()
     },
     
+    
+    async function reload_variables () {
+        const { connection } = connector
+        
+        await connection.update_logined()
+        await connection.update_vars()
+        
+        variables.refresher.fire()
+    },
     
     /** 批量上传文件  
         uri 为右键选中的文件，uris 为所有选中的文件列表  */
