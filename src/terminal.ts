@@ -8,7 +8,7 @@ import {
 } from 'vscode'
 
 
-import { language, t } from '../i18n/index.js'
+import { language, t } from '../i18n/index.ts'
 
 
 type DdbTerminal = Terminal & { printer: EventEmitter<string> }

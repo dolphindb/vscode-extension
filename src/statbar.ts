@@ -6,9 +6,9 @@ import {
     StatusBarAlignment, type StatusBarItem,
 } from 'vscode'
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
-import { connector } from './connector.js'
+import { connector } from './connector.ts'
 
 
 /** 底部代码执行状态 status bar */

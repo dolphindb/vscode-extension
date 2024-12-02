@@ -19,37 +19,24 @@ import {
     type MessageItem
 } from 'vscode'
 
+import 'xshell/polyfill.browser.js'
 import { set_inspect_options } from 'xshell'
 
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
-import './polyfill.js'
-import { load_docs, register_docs } from './docs.js'
-import { server } from './server.js'
-import { dataview } from './dataview/dataview.js'
-import { statbar } from './statbar.js'
-import { formatter } from './formatter.js'
-import { ddb_commands } from './commands.js'
-import { register_terminal_link_provider } from './terminal.js'
-import { connector, register_connector } from './connector.js'
-import { register_variables } from './variables.js'
-import { register_databases } from './databases.js'
-import * as path from 'path';
+import { load_docs, register_docs } from './docs.ts'
+import { server } from './server.ts'
+import { dataview } from './dataview/dataview.ts'
+import { statbar } from './statbar.ts'
+import { formatter } from './formatter.ts'
+import { ddb_commands } from './commands.ts'
+import { register_terminal_link_provider } from './terminal.ts'
+import { connector, register_connector } from './connector.ts'
+import { register_variables } from './variables.ts'
+import { register_databases } from './databases.ts'
+import { register_settings } from './settings.ts'
 
-import {
-    LanguageClient,
-    LanguageClientOptions,
-    ServerOptions,
-    TransportKind
-} from 'vscode-languageclient/node.js';
-
-let client: LanguageClient;
-
-
-declare global {
-    const FPD_ROOT: string
-}
 
 export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }
 
@@ -71,9 +58,12 @@ export async function activate(ctx: ExtensionContext) {
     extctx = ctx
 
     dev = ctx.extensionMode === ExtensionMode.Development
-    console.log(t('dolphindb 插件运行在{{mode}}模式下', { mode: dev ? t('开发') : t('生产') }))
-
-
+    console.log(t('dolphindb 插件运行在{{mode}}模式下，版本为 {{version}}', {
+        mode: dev ? t('开发') : t('生产'),
+        version: EXTENSION_VERSION
+    }))
+    
+    
     // 命令注册
     for (const func of ddb_commands)
         ctx.subscriptions.push(commands.registerCommand(`dolphindb.${func.name}`, func))
@@ -96,9 +86,7 @@ export async function activate(ctx: ExtensionContext) {
 
     formatter.init()
     statbar.init()
-
-    load_docs()
-
+    
     // 监听配置，dispatch 修改 event
     workspace.onDidChangeConfiguration(event => {
         formatter.on_config_change(event)
@@ -106,7 +94,8 @@ export async function activate(ctx: ExtensionContext) {
     })
 
     register_terminal_link_provider()
-
+    
+    await load_docs()
     register_docs(ctx)
 
 
@@ -152,6 +141,9 @@ export async function activate(ctx: ExtensionContext) {
             return config
         }
     }))
+    
+    await register_settings()
+    
 
     /**
      * 初始化 Language Server

@@ -31,17 +31,17 @@ import {
 } from 'dolphindb'
 
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
-import { statbar } from './statbar.js'
-import { open_connection_settings } from './commands.js'
+import { statbar } from './statbar.ts'
+import { open_connection_settings } from './commands.ts'
 
-import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './constant.js'
+import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './constant.ts'
 
-import { DdbVar, DdbVarLocation, variables } from './variables.js'
-import { DdbDatabase, DdbGroup, DdbTable, databases } from './databases.js'
+import { DdbVar, DdbVarLocation, variables } from './variables.ts'
+import { DdbCatalog, DdbDatabase, DdbGroup, DdbTable, databases } from './databases.ts'
 
-import { fpd_ext, type DdbMessageItem } from './index.js'
+import { fpd_ext, type DdbMessageItem } from './index.ts'
 
 
 let icon_empty: string
@@ -55,7 +55,9 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
     
     onDidChangeTreeData: Event<void | TreeItem> = this.refresher.event
     
-    single_connection_mode: boolean = false
+    single_connection_mode = false
+    
+    show_connection_url = false
     
     /** 从 dolphindb.connections 连接配置生成的，在面板中的显示所有连接  
         每个连接维护了一个 ddb api 的实际连接，当出错需要重置时，需要用新的连接替换出错连接 */
@@ -66,11 +68,6 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
     
     /** 上传模块是否加密 */
     encrypt?: boolean | undefined
-    
-    
-    constructor () {
-        this.load_connections()
-    }
     
     
     /** 执行连接操作后，如果超过 1s 还未完成，则显示进度 */
@@ -212,6 +209,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
         if (selected) {
             this.connection = this.connections.find(conn => conn.name === name)
             this.connection.iconPath = icon_checked
+            databases.view.message = t('请选择连接并登录后查看')
         }
         
         statbar.update()
@@ -237,6 +235,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
         return node ? null : this.connections
     }
     
+    
     load_connections () {
         if (this.connections)
             for (const connection of this.connections)
@@ -245,6 +244,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
         const config = workspace.getConfiguration('dolphindb')
         
         this.single_connection_mode = config.get<boolean>('single_connection_mode')
+        this.show_connection_url = config.get<boolean>('show_connection_url')
         
         this.connections = config
             .get<{ url: string, name?: string, sql?: string }[]>('connections')
@@ -265,7 +265,11 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
     
     
     on_config_change (event: ConfigurationChangeEvent) {
-        if (event.affectsConfiguration('dolphindb.connections') || event.affectsConfiguration('dolphindb.single_connection_mode')) {
+        if (
+            event.affectsConfiguration('dolphindb.connections') || 
+            event.affectsConfiguration('dolphindb.single_connection_mode') ||
+            event.affectsConfiguration('dolphindb.show_connection_url')
+        ) {
             this.load_connections()
             this.refresh(true)
         }
@@ -334,7 +338,7 @@ export class DdbConnection extends TreeItem {
     /** 是否调用了 connection.disconnect */
     disconnected = false
     
-    children: Array<DdbGroup | DdbDatabase> = [ ]
+    children: Array<DdbCatalog | DdbGroup | DdbDatabase> = [ ]
     
     vars: DdbVar[]
     
@@ -376,6 +380,8 @@ export class DdbConnection extends TreeItem {
     
     node_alias: string
     
+    logined = false
+    
     
     constructor (url: string, name: string = url, options: DdbOptions = { }) {
         super(`${name} `, TreeItemCollapsibleState.None)
@@ -401,7 +407,8 @@ export class DdbConnection extends TreeItem {
         }
         
         this.mappings = this.options.mappings
-        this.description = this.url
+        if (connector.show_connection_url)
+            this.description = this.url
         this.iconPath = icon_empty
         this.contextValue = 'disconnected'
         
@@ -426,6 +433,7 @@ export class DdbConnection extends TreeItem {
         await this.ddb.connect()
         
         await Promise.all([
+            this.update_logined(),
             this.get_node_type(),
             this.get_node_alias(),
             this.get_controller_alias(),
@@ -435,16 +443,25 @@ export class DdbConnection extends TreeItem {
         
         console.log(`${t('连接成功:')} ${this.name}`)
         this.connected = true
-        this.description = this.url + ' ' + t('已连接')
-        
+        this.description = `${ connector.show_connection_url ? `${this.url} ` : '' }${t('已连接')}`
         this.contextValue = 'connected'
         
         return true
     }
     
     
-    disconnect () {
+    async disconnect () {
         this.ddb.disconnect()
+        await this.update_logined()
+    }
+    
+    
+    async update_logined () {
+        if (this.ddb.connected)
+            // 此处约定当前连接用户名为 guest 即为未登录状态
+            this.logined = (await this.ddb.call('getCurrentSessionAndUser')).value[1].value !== 'guest'
+        else
+            this.logined = false
     }
     
     
@@ -673,103 +690,132 @@ export class DdbConnection extends TreeItem {
     
     
     async update_databases () {
-        // 当前无数据节点和计算节点存活，且当前节点不为单机节点，则不进行数据库表获取
-        if (!this.connected || this.node.mode !== NodeType.single && !this.has_data_and_computing_nodes_alive()) 
-            return
-        
-        // ['dfs://数据库路径(可能包含/)/表名', ...]
-        // 不能直接使用 getClusterDFSDatabases, 因为新的数据库权限版本 (2.00.9) 之后，用户如果只有表的权限，调用 getClusterDFSDatabases 无法拿到该表对应的数据库
-        // 但对于无数据表的数据库，仍然需要通过 getClusterDFSDatabases 来获取。因此要组合使用
-        const [{ value: table_paths }, { value: db_paths }] = await Promise.all([
-            this.ddb.call<DdbVectorStringObj>('getClusterDFSTables'),
-            // 可能因为用户没有数据库的权限报错，单独 catch 并返回空数组
-            this.ddb.call<DdbVectorStringObj>('getClusterDFSDatabases').catch(() => {
-                console.error('load_dbs: getClusterDFSDatabases error')
-                return { value: [ ] }
-            }),
-        ])
-        
-        // const db_paths = [
-        //     'dfs://db1',
-        //     'dfs://g1.db1',
-        //     'dfs://g1.db2',
-        //     'dfs://g1./db1',
-        // ...]
-        
-        // const table_paths = [
-        //     'dfs://db1/tb1',
-        //     'dfs://g1.db1/tb1',
-        //     'dfs://g1.db1/tb.2',
-        //     'dfs://g1./db1/tb2',
-        //     'dfs://long.g1.sg1.ssg1.sssg1.db1/tb1',
-        //     // 即使有两个连续点号，也不进行任何特殊处理。用户在界面上看到的将会有一个 group 的标题为空
-        //     'dfs://double-dot..g1/db1/tb',
-        //     'dfs://double-dot..g1.sg1.db1/tb',
-        //     'dfs://double-dot..g1.sg2.db1/tb',
-        //     'dfs://db-with-slash/db1/tb1',
-        //     'dfs://group_with_slash/g1.sg1.db1/tb1'
-        // ]
-        
-        // 将 db_paths 和 table_paths 合并到 merged_paths 中。db_paths 内可能存在 table_paths 中没有的 db，例如能查到无表的库
-        // 需要手动为 db_paths 中的每个路径加上斜杠结尾
-        const merged_paths = db_paths.map((path: string) => `${path}/`).concat(table_paths).sort()
-        
-        // 假定所有的 table_name 值都不会以 / 结尾
-        // 库和表之间以最后一个 / 隔开。表名不可能有 /
-        // 全路径中可能没有组（也就是没有点号），但一定有库和表
-        const hash_map = new Map<string, DdbGroup | DdbDatabase>()
-        
-        this.children = [ ]
-        
-        for (const path of merged_paths) {
-            // 找到数据库最后一个斜杠位置，截取前面部分的字符串作为库名
-            const index_slash = path.lastIndexOf('/')
+        if (!this.logined || !this.connected) 
+            databases.view.message = t('请选择连接并登录后查看')
+        // 当前集群无数据节点和计算节点存活，且当前节点不为单机节点，则不进行数据库表获取
+        else if (this.node.mode !== NodeType.single && !this.has_data_and_computing_nodes_alive())
+            databases.view.message = t('当前集群无数据节点和计算节点存活，且当前节点不为单机节点')
+        else {
+            databases.view.message = ''
+            // ['dfs://数据库路径(可能包含/)/表名', ...]
+            // 不能直接使用 getClusterDFSDatabases, 因为新的数据库权限版本 (2.00.9) 之后，用户如果只有表的权限，调用 getClusterDFSDatabases 无法拿到该表对应的数据库
+            // 但对于无数据表的数据库，仍然需要通过 getClusterDFSDatabases 来获取。因此要组合使用
+            const v3 = this.version.startsWith('3.')
             
-            const db_path = `${path.slice(0, index_slash)}/`
-            const table_name = path.slice(index_slash + 1)
+            const [{ value: table_paths }, { value: db_paths }, ...rest] = await Promise.all([
+                this.ddb.call<DdbVectorStringObj>('getClusterDFSTables'),
+                // 可能因为用户没有数据库的权限报错，单独 catch 并返回空数组
+                this.ddb.call<DdbVectorStringObj>('getClusterDFSDatabases').catch(() => {
+                    console.error('load_dbs: getClusterDFSDatabases error')
+                    return { value: [ ] }
+                }),
+                ...v3 ? [this.ddb.call<DdbVectorStringObj>('getAllCatalogs')] : [ ]
+            ])
             
-            let parent: DdbConnection | DdbGroup | DdbDatabase = this
+            // const db_paths = [
+            //     'dfs://db1',
+            //     'dfs://g1.db1',
+            //     'dfs://g1.db2',
+            //     'dfs://g1./db1',
+            // ...]
             
-            // for 循环用来处理 database group
-            for (let index = 0;  index = db_path.indexOf('.', index) + 1;  ) {
-                const group_key = path.slice(0, index)
-                const group = hash_map.get(group_key)
-                if (group)
-                    parent = group
+            // const table_paths = [
+            //     'dfs://db1/tb1',
+            //     'dfs://g1.db1/tb1',
+            //     'dfs://g1.db1/tb.2',
+            //     'dfs://g1./db1/tb2',
+            //     'dfs://long.g1.sg1.ssg1.sssg1.db1/tb1',
+            //     // 即使有两个连续点号，也不进行任何特殊处理。用户在界面上看到的将会有一个 group 的标题为空
+            //     'dfs://double-dot..g1/db1/tb',
+            //     'dfs://double-dot..g1.sg1.db1/tb',
+            //     'dfs://double-dot..g1.sg2.db1/tb',
+            //     'dfs://db-with-slash/db1/tb1',
+            //     'dfs://group_with_slash/g1.sg1.db1/tb1'
+            // ]
+            
+            // 将 db_paths 和 table_paths 合并到 merged_paths 中。db_paths 内可能存在 table_paths 中没有的 db，例如能查到无表的库
+            // 需要手动为 db_paths 中的每个路径加上斜杠结尾
+            const merged_paths = db_paths.map((path: string) => `${path}/`).concat(table_paths).sort()
+            
+            // 假定所有的 table_name 值都不会以 / 结尾
+            // 库和表之间以最后一个 / 隔开。表名不可能有 /
+            // 全路径中可能没有组（也就是没有点号），但一定有库和表
+            let hash_map = new Map<string, DdbGroup | DdbDatabase>()
+            let catalog_map = new Map<string, DdbDatabase>()
+            
+            this.children = [ ]
+            
+            if (v3) 
+                await Promise.all(rest[0].value.sort().map(async catalog => {
+                    let catalog_node = new DdbCatalog(catalog)
+                    this.children.push(catalog_node)
+                    
+                    ;(
+                        await this.ddb.invoke('getSchemaByCatalog', [catalog])
+                    ).data
+                        .sort((a, b) => strcmp(a.schema, b.schema))
+                        .map(({ schema, dbUrl }) => {
+                            const db_path = `${dbUrl}/`
+                            const database = new DdbDatabase(db_path, this, schema)
+                            catalog_map.set(db_path, database)
+                            catalog_node.children.push(database)
+                        })
+                }))
+            
+            for (const path of merged_paths) {
+                // 找到数据库最后一个斜杠位置，截取前面部分的字符串作为库名
+                const index_slash = path.lastIndexOf('/')
+                
+                const db_path = `${path.slice(0, index_slash)}/`
+                const table_name = path.slice(index_slash + 1)
+                
+                let parent: DdbConnection | DdbGroup | DdbDatabase = this
+                
+                if (catalog_map.has(db_path)) 
+                    parent = catalog_map.get(db_path)
                 else {
-                    const group = new DdbGroup(group_key, this)
-                    ;(parent as DdbConnection | DdbGroup).children.push(group)
-                    hash_map.set(group_key, group)
-                    parent = group
+                    // for 循环用来处理 database group
+                    for (let index = 0;  index = db_path.indexOf('.', index) + 1;  ) {
+                        const group_key = path.slice(0, index)
+                        const group = hash_map.get(group_key)
+                        if (group)
+                            parent = group
+                        else {
+                            const group = new DdbGroup(group_key)
+                            ;(parent as DdbConnection | DdbGroup).children.push(group)
+                            hash_map.set(group_key, group)
+                            parent = group
+                        }
+                    }
+                    
+                    // 处理 database
+                    const db = hash_map.get(db_path) as DdbDatabase
+                    if (db)
+                        parent = db
+                    else {
+                        const db = new DdbDatabase(db_path, this)
+                        ;(parent as DdbConnection | DdbGroup).children.push(db)
+                        hash_map.set(db_path, db)
+                        parent = db
+                    }
+                }
+                
+                // 处理 table，如果 table_name 为空表明当前路径是 db_path 则不处理
+                if (table_name) {
+                    const table = new DdbTable(parent as DdbDatabase, `${path}/`)
+                    ;(parent as DdbDatabase).tables.push(table)
                 }
             }
             
-            // 处理 database
-            const db = hash_map.get(db_path) as DdbDatabase
-            if (db)
-                parent = db
-            else {
-                const db = new DdbDatabase(db_path, this)
-                ;(parent as DdbConnection | DdbGroup).children.push(db)
-                hash_map.set(db_path, db)
-                parent = db
-            }
-            
-            // 处理 table，如果 table_name 为空表明当前路径是 db_path 则不处理
-            if (table_name) {
-                const table = new DdbTable(parent as DdbDatabase, `${path}/`)
-                ;(parent as DdbDatabase).tables.push(table)
-            }
+            // TEST: 测试多级数据库树
+            // for (let i = 0;  i <100 ;  i++) {
+            //     for (let j =0; j< 500; j++){
+            //         const path = `dfs://${i}.${j}`
+            //         const tables = [new TableEntity({name: `table_of_${i}_${j}`, ddb_path:path, labels:['sdsadfs'], column_schema:[{name:'Id', type:5}]})]
+            //         dbs.set(path, new DdbEntity({ path ,tables}))
+            //     }
+            //  }
         }
-        
-        // TEST: 测试多级数据库树
-        // for (let i = 0;  i <100 ;  i++) {
-        //     for (let j =0; j< 500; j++){
-        //         const path = `dfs://${i}.${j}`
-        //         const tables = [new TableEntity({name: `table_of_${i}_${j}`, ddb_path:path, labels:['sdsadfs'], column_schema:[{name:'Id', type:5}]})]
-        //         dbs.set(path, new DdbEntity({ path ,tables}))
-        //     }
-        //  }
     }
     
     
@@ -810,13 +856,9 @@ export class DdbConnection extends TreeItem {
             await this.ddb.call<DdbObj<DdbObj[]>>('getClusterPerf', [true], {
                 urgent: true,
                 
-                ... this.node_type === NodeType.controller || this.node_type === NodeType.single ? 
-                    { }
-                :
-                    {
-                        node: this.controller_alias,
-                        func_type: DdbFunctionType.SystemFunc
-                    },
+                ... this.node_type === NodeType.controller || this.node_type === NodeType.single
+                    ? { }
+                    : { node: this.controller_alias },
             })
         ).to_rows<DdbNode>()
         .sort((a, b) => strcmp(a.name, b.name))
@@ -869,5 +911,6 @@ export function register_connector () {
     icon_checked = `${fpd_ext}icons/radio.checked.svg`
     
     connector = new DdbConnector()
+    connector.load_connections()
     connector.view = window.createTreeView('dolphindb.connector', { treeDataProvider: connector })
 }

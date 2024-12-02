@@ -9,19 +9,19 @@ import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions,
 
 import type { Variable } from '@vscode/debugadapter'
 
-import { i18n, language, t } from '../i18n/index.js'
+import { i18n, language, t } from '../i18n/index.ts'
 
-import { server } from './server.js'
-import { statbar } from './statbar.js'
-import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.js'
-import { dataview } from './dataview/dataview.js'
-import { formatter } from './formatter.js'
-import { create_terminal, terminal } from './terminal.js'
-import { type DdbConnection, connector } from './connector.js'
-import { DdbVar } from './variables.js'
-import { type DdbDatabase, databases, type DdbTable } from './databases.js'
+import { server } from './server.ts'
+import { statbar } from './statbar.ts'
+import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmupload } from './utils.ts'
+import { dataview } from './dataview/dataview.ts'
+import { formatter } from './formatter.ts'
+import { create_terminal, terminal } from './terminal.ts'
+import { type DdbConnection, connector } from './connector.ts'
+import { DdbVar } from './variables.ts'
+import { type DdbDatabase, databases, type DdbTable } from './databases.ts'
 
-import type { DdbMessageItem } from './index.js'
+import type { DdbMessageItem } from './index.ts'
 
 
 let lastvar: DdbVar
@@ -120,7 +120,7 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 }
 
 
-async function execute (text: string, testing = false) {
+async function execute (text: string, iline: number, testing = false) {
     let { connection } = connector
     
     if (connection.running) {
@@ -136,11 +136,12 @@ async function execute (text: string, testing = false) {
     let { printer } = terminal
     
     let timer = new Timer()
+    const lines = text.split_lines()
     
     printer.fire(
         '\r\n' +
         `${dayjs(timer.started).format('HH:mm:ss.SSS')}  ${connection.name}\r\n` +
-        truncate_text(text.split_lines()).join('\r\n') + 
+        truncate_text(lines).join('\r\n') + 
         (text.trim().length ? '\r\n' : '')
     )
     
@@ -157,7 +158,8 @@ async function execute (text: string, testing = false) {
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
         
         obj = await ddb.eval(
-            text.replace(/\r\n/g, '\n'),
+            `line://${iline + 1}\n` +
+            `${text.replace(/\r\n/g, '\n')}`,
             {
                 listener (message) {
                     if (connection.disconnected)
@@ -188,9 +190,7 @@ async function execute (text: string, testing = false) {
         
         if (message.includes('RefId:'))         
             message = message.replaceAll(/RefId:\s*(\w+)/g, (_, ref_id) => 
-                language === 'en' && Number(ref_id.slice(1)) >= 4 
-                    ? ''
-                    :  `RefId: ${ref_id}`.blue.underline)
+                `RefId: ${ref_id}`.blue.underline)
         
         printer.fire((
             message.replaceAll('\n', '\r\n') + 
@@ -246,7 +246,7 @@ async function execute (text: string, testing = false) {
     
     if (testing) {
         printer.fire(
-            ((obj.value as (string | null))?.replaceAll('\n', '\r\n').blue || '') +
+            (obj.data<string | null>()?.replaceAll('\n', '\r\n').blue || '') +
             get_execution_end()
         )
         
@@ -262,6 +262,7 @@ async function execute (text: string, testing = false) {
         case DdbForm.matrix:
         case DdbForm.table:
         case DdbForm.chart:
+        case DdbForm.tensor:
         case DdbForm.dict:
             lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection })
             to_inspect = true
@@ -285,12 +286,12 @@ async function execute (text: string, testing = false) {
 
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
-async function execute_with_progress (text: string, testing?: boolean) {
+async function execute_with_progress (text: string, iline: number, testing?: boolean) {
     let { connection } = connector
     
     let done = false
     
-    const pexecute = execute(text, testing)
+    const pexecute = execute(text, iline, testing)
     
     // 1s 还未完成，则显示进度
     ;(async () => {
@@ -400,7 +401,7 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
     const remote_fps_str = (remote_fps.length > 10 ? remote_fps.slice(0, 10) : remote_fps).join_lines(false)
     
     if (!silent && !await window.showInformationMessage(
-        t('请确认是否将选中的 {{file_num}} 个文件上传至 {{fp_remote}} {{notice}}（目前版本暂不支持上传二进制文件，二进制文件会被自动忽略）',
+        t('请确认是否将选中的 {{file_num}} 个文件/文件夹上传至 {{fp_remote}} {{notice}}（目前版本暂不支持上传二进制文件，二进制文件会被自动忽略）',
         { file_num: uris.length, 
           fp_remote: remote_fps_str,
           notice: remote_fps.length > 10 ? t('\n··· 等，共 {{num}} 个路径', { num: remote_fps.length }) : '' }),
@@ -434,13 +435,15 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
 /** 和 webpack 中的 commands 定义需要一一对应 */
 export const ddb_commands = [
     async function execute () {
-        await execute_with_progress(get_text('selection or line'))
+        const { text, iline } = get_text('selection or line')
+        await execute_with_progress(text, iline)
     },
     
     
     async function execute_selection_or_line () {
         try {
-            await execute_with_progress(get_text('selection or line'))
+            const { text, iline } = get_text('selection or line')
+            await execute_with_progress(text, iline)
             // 点击图标执行 execute_ddb_line 时直接向上层 throw error 不能展示出错误 message, 因此调用 api 强制显示
         } catch (error) {
             window.showErrorMessage(error.message)
@@ -450,7 +453,8 @@ export const ddb_commands = [
     
     async function execute_file () {
         try {
-            await execute_with_progress(get_text('all'))
+            const { text, iline } = get_text('all')
+            await execute_with_progress(text, iline)
         } catch (error) {
             window.showErrorMessage(error.message)
         }
@@ -547,7 +551,11 @@ export const ddb_commands = [
     
     
     async function reload_databases () {
-        await connector.connection.update_databases()
+        const { connection } = connector
+        
+        await connection.update_logined()
+        await connection.update_databases()
+        
         databases.refresher.fire()
     },
     
@@ -571,7 +579,7 @@ export const ddb_commands = [
     async function unit_test (uri: Uri, uris: []) {
         try {
             for (const fp of await upload(uri, uris, true))
-                await execute_with_progress(`test('${fp}')`, true)
+                await execute_with_progress(`test('${fp}')`, 0, true)
         } catch (error) {
             window.showErrorMessage(error.message)
             throw error

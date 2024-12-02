@@ -7,13 +7,13 @@ import { Server } from 'xshell/server.js'
 
 import { type DDB, type DdbMessage, type InspectOptions } from 'dolphindb'
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
-import { dataview } from './dataview/dataview.js'
-import { type DdbVar } from './variables.js'
-import { connector } from './connector.js'
+import { dataview } from './dataview/dataview.ts'
+import { type DdbVar } from './variables.ts'
+import { connector } from './connector.ts'
 
-import { dev, fpd_ext } from './index.js'
+import { dev, fpd_ext } from './index.ts'
 
 
 /** 懒初始化的，使用前先检查，未初始化需要调用 start_server 初始化 */

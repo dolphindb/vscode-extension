@@ -13,7 +13,7 @@ import {
 import { path, assert } from 'xshell'
 
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
 
 /** 获取选择区域的文本，若选择为空，则根据 selector 确定 (当前 | 全部文本 | 空) */
@@ -32,33 +32,43 @@ export function get_text (selector:
     const document  = editor.document
     const selection = editor.selection
     
-    const text_selection = document.getText(selection)
+    const text_selection = {
+        text: document.getText(selection),
+        iline: selection.start.line
+    }
     
     if (selector === 'selection')
         return text_selection
-        
-    const text_all = document.getText()
+    
+    const text_all = {
+        text: document.getText(),
+        iline: 0
+    }
     
     if (selector === 'all')
         return text_all
-        
-    const text_line = document.lineAt(selection.active.line).text
-        
+    
+    const text_line = {
+        text: document.lineAt(selection.active.line).text,
+        iline: selection.active.line
+    }
+    
     if (selector === 'line')
         return text_line
     
     if (selector === 'word')
-        return document.getText(
-            document.getWordRangeAtPosition(selection.active)
-        )
+        return {
+            text: document.getText(
+                document.getWordRangeAtPosition(selection.active)
+            ),
+            iline: selection.active.line
+        }
     
     if (selector === 'selection or all')
-        return text_selection || text_all
+        return text_selection.text ? text_selection : text_all
     
-    if (selector === 'selection or line')
-        return text_selection || text_line
-        
-    
+    if (selector === 'selection or line') 
+        return text_selection.text ? text_selection : text_line
     
     const start = selection.start
     const end   = selection.end
@@ -68,24 +78,32 @@ export function get_text (selector:
     const line_start = new Position(start.line, 0)
     
     if (selector === 'selection before')
-        return document.getText(
-            new Range(line_start, start)
-        )
+        return {
+            text: document.getText(
+                new Range(line_start, start)
+            ),
+            iline: line_start.line
+        } 
     
-    
-    const line_end   = new Position(start.line, line.text.length)
+    const line_end = new Position(start.line, line.text.length)
     
     if (selector === 'selection after')
-        return document.getText(
-            new Range(end, line_end)
-        )
-    
+        return {
+            text: document.getText(
+                new Range(end, line_end)
+            ),
+            iline: end.line
+        } 
     
     const line_text_start = new Position(start.line, line.firstNonWhitespaceCharacterIndex)
+    
     if (selector === 'selection to text start')
-        return document.getText(
-            new Range(line_text_start, start)
-        )
+        return {
+            text: document.getText(
+                new Range(line_text_start, start)
+            ),
+            iline: line_text_start.line
+        }
 }
 
 
@@ -107,7 +125,7 @@ export async function fupload (file_uri: Uri, path: string, ddb: DDB, uploadeds:
     
     let text: string
     if (file_uri.scheme === 'untitled')
-        text = get_text('all')
+        text = get_text('all').text
     else {
         await workspace.textDocuments.find(doc => doc.fileName === file_uri.fsPath)?.save()
         const buffer = await workspace.fs.readFile(file_uri)

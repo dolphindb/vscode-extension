@@ -24,13 +24,13 @@ import {
 } from 'dolphindb/browser.js'
 import { delay } from 'xshell/utils.browser.js'
 
-import { language } from '../../i18n/index.js'
+import { language } from '@i18n/index.ts'
 
 import {
     Obj,
     type DdbObjRef,
     type Remote,
-} from './obj.js'
+} from './obj.tsx'
 
 
 const locales = { zh, en, ja, ko }

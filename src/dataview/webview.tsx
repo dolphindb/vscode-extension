@@ -20,9 +20,9 @@ import { genid } from 'xshell/utils.browser.js'
 import { Remote, type Message } from 'xshell/net.browser.js'
 import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
 
-import { language } from '../../i18n/index.js'
+import { language } from '@i18n/index.ts'
 
-import { Obj, DdbObjRef } from './obj.js'
+import { Obj, DdbObjRef } from './obj.tsx'
 
 
 interface VSCodeWebview {
@@ -257,11 +257,13 @@ function DataView () {
     
     const { type, data } = result
     
-    return <div className='obj-result themed webview'>{
-        type === 'object' ?
-            <Obj obj={data} remote={remote} ctx='webview' options={options} />
-        :
-            <Obj objref={data} remote={remote} ctx='webview' options={options} />
-    }</div>
+    return <div className='obj-result themed webview'>
+        <Obj 
+            remote={remote} 
+            ctx='webview' 
+            options={options} 
+            {...type === 'object' ? { obj: data } : { objref: data }}
+        />
+    </div>
 }
 

@@ -10,7 +10,7 @@ import {
     type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider
 } from 'vscode'
 
-import { inspect, defer } from 'xshell'
+import { inspect, defer, strcmp } from 'xshell'
 
 import {
     DdbForm,
@@ -25,15 +25,15 @@ import {
     type DdbVectorStringObj,
 } from 'dolphindb'
 
-import { t } from '../i18n/index.js'
+import { t } from '../i18n/index.ts'
 
-import { formatter } from './formatter.js'
-import { server, start_server } from './server.js'
-import { dataview } from './dataview/dataview.js'
+import { formatter } from './formatter.ts'
+import { server, start_server } from './server.ts'
+import { dataview } from './dataview/dataview.ts'
 
-import { type DdbConnection, connector } from './connector.js'
+import { type DdbConnection, connector } from './connector.ts'
 
-import { fpd_ext } from './index.js'
+import { fpd_ext } from './index.ts'
 
 
 
@@ -58,8 +58,8 @@ export class DdbVars implements TreeDataProvider<TreeItem> {
             }
             
             case node instanceof DdbVarLocation: {
-                const { scalar, object, pair, vector, set, dict, matrix, table, chart, chunk } = node as DdbVarLocation
-                return [scalar, object, pair, vector, set, dict, matrix, table, chart, chunk].filter(node => node.vars.length)
+                const { scalar, object, pair, vector, set, dict, matrix, table, chart, chunk, tensor } = node as DdbVarLocation
+                return [scalar, object, pair, vector, set, dict, matrix, table, chart, chunk, tensor].filter(node => node.vars.length)
             }
             
             case node instanceof DdbVarForm:
@@ -95,6 +95,8 @@ export class DdbVarLocation extends TreeItem {
     
     object: DdbVarForm
     
+    tensor: DdbVarForm
+    
     
     constructor (shared: boolean) {
         super(shared ? t('共享变量') : t('本地变量'), TreeItemCollapsibleState.Expanded)
@@ -110,6 +112,7 @@ export class DdbVarLocation extends TreeItem {
         this.chart  = new DdbVarForm(this.shared, DdbForm.chart)
         this.chunk  = new DdbVarForm(this.shared, DdbForm.chunk)
         this.object = new DdbVarForm(this.shared, DdbForm.object)
+        this.tensor = new DdbVarForm(this.shared, DdbForm.tensor)
     }
     
     
@@ -129,6 +132,7 @@ export class DdbVarLocation extends TreeItem {
         let charts:  DdbVar[] = [ ]
         let chunks:  DdbVar[] = [ ]
         let objects:  DdbVar[] = [ ]
+        let tensors: DdbVar[] = [ ]
         
         for (const v of this.vars)
             switch (v.form) {
@@ -171,6 +175,10 @@ export class DdbVarLocation extends TreeItem {
                 case DdbForm.object:
                     objects.push(v)
                     break
+                    
+                case DdbForm.tensor:
+                    tensors.push(v)
+                    break
             }
         
         this.scalar.update(scalars)
@@ -179,10 +187,11 @@ export class DdbVarLocation extends TreeItem {
         this.matrix.update(matrixs)
         this.set.update(sets)
         this.dict.update(dicts)
-        this.table.update(tables)
+        this.table.update(tables.sort((a, b) => strcmp(a.name, b.name)))
         this.chart.update(charts)
         this.chunk.update(chunks)
         this.object.update(objects)
+        this.tensor.update(tensors)
     }
 }
 
@@ -198,6 +207,7 @@ export class DdbVarForm extends TreeItem {
         [DdbForm.table]: t('表格'),
         [DdbForm.chart]: t('绘图'),
         [DdbForm.object]: t('对象'),
+        [DdbForm.tensor]: t('张量'),
     } as const
     
     shared: boolean
@@ -297,6 +307,9 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
                     
                     case DdbForm.object:
                         return ''
+                        
+                    case DdbForm.tensor:
+                        return `<${DdbType[this.type]}>`
                     
                     default:
                         return ` ${DdbForm[this.form]} ${tname}`

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="15" height="15" viewBox="0 0 15 15">
+  <defs>
+    <style>
+      .cls-1 {
+        opacity: .2;
+      }
+
+      .cls-1, .cls-2 {
+        fill: #000;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        stroke-width: 0px;
+      }
+
+      .cls-4, .cls-5 {
+        display: none;
+      }
+
+      .cls-5 {
+        opacity: .5;
+      }
+
+      .cls-3 {
+        fill: #3760f0;
+      }
+    </style>
+  </defs>
+  <g id="_图层_1" data-name="图层 1" class="cls-4">
+    <g id="_图层_1-2" data-name=" 图层 1" class="cls-5">
+      <g>
+        <path class="cls-2" d="M8,3l1.8,1.8-3.8,3.8,1.4,1.4,3.8-3.8,1.8,1.8V3h-5Z"/>
+        <path class="cls-2" d="M11,11h-6v-6h2v-2H3v10h10v-4h-2v2Z"/>
+      </g>
+    </g>
+  </g>
+  <g id="_图层_2" data-name="图层 2" class="cls-4">
+    <rect class="cls-1" x="2" y="2" width="12" height="12"/>
+  </g>
+  <g id="_图层_3" data-name="图层 3">
+    <path class="cls-3" d="M13,3v1.5H3v-1.5h10M14,2H2v3.5h12v-3.5h0Z"/>
+    <rect class="cls-3" x="3.7" y="3.5" width="2.5" height=".5"/>
+    <rect class="cls-3" x="3.7" y="7.8" width="2.5" height=".5"/>
+    <rect class="cls-3" x="3.7" y="12" width="2.5" height=".5"/>
+    <path class="cls-3" d="M13,7.2v1.5H3v-1.5h10M14,6.2H2v3.5h12v-3.5h0Z"/>
+    <path class="cls-3" d="M13,11.5v1.5H3v-1.5h10M14,10.5H2v3.5h12v-3.5h0Z"/>
+  </g>
+</svg>

@@ -5,12 +5,11 @@ import { type Message, Remote, genid, assert, defer } from 'xshell'
 import type { DDB, DdbMessage, InspectOptions } from 'dolphindb'
 
 
-import { language, t } from '../../i18n/index.js'
+import { language, t } from '../../i18n/index.ts'
 
-import { get_vendors } from '../config.js'
-import { dev, fpd_ext } from '../index.js'
-import { type DdbVar } from '../variables.js'
-import { connector } from '../connector.js'
+import { dev, fpd_ext } from '../index.ts'
+import { type DdbVar } from '../variables.ts'
+import { connector } from '../connector.ts'
 
 
 type ViewMessageHandler <TData extends any[] = any[]> = (message: Message<TData>, view: WebviewView) => void | any[] | Promise<void | any[]>
@@ -127,9 +126,15 @@ export let dataview = {
                         `            window.language = '${language}'\n` +
                         '        </script>\n' +
                         
-                        get_vendors(dev)
-                            .filter(fp => !fp.endsWith('.map'))
-                            .map(vendor => `        <script src='${webview.asWebviewUri(Uri.file(`${fpd_ext}dataview/vendors/${vendor}`))}' defer></script>\n`)
+                        [
+                            `react/umd/react.${ dev ? 'development' : 'production.min' }.js`,
+                            `react-dom/umd/react-dom.${ dev ? 'development' : 'production.min' }.js`,
+                            'dayjs/dayjs.min.js',
+                            `lodash/lodash${ dev ? '' : '.min' }.js`,
+                            `antd/dist/antd${ dev ? '' : '.min' }.js`,
+                            `@ant-design/icons/dist/index.umd${ dev ? '' : '.min' }.js`,
+                            '@ant-design/plots/dist/plots.min.js',
+                        ].map(vendor => `        <script src='${webview.asWebviewUri(Uri.file(`${fpd_ext}dataview/vendors/${vendor}`))}' defer></script>\n`)
                             .join_lines() +
                         
                         `        <script src='${webview.asWebviewUri(Uri.file(`${fpd_ext}dataview/webview.js`))}' type='module'></script>\n` +
@@ -221,5 +226,5 @@ export let dataview = {
                 reject(error)
             }
         })
-    }
+    },
 }
