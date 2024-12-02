@@ -8,6 +8,8 @@
     "scripts": {
         "dev": "node ./dev.ts",
         "build": "node ./build.ts",
+        "dev-server": "rimraf ./out/server && rollup --config --watch",
+        "build-server": "rimraf ./out/server && rollup --config",
         "scan": "i18n-scan --input \"**/*.{ts,tsx}\"",
         "lint": "eslint \"**/*.{ts,tsx}\"",
         "fix": "eslint --fix \"**/*.{ts,tsx}\""

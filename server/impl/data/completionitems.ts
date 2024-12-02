@@ -1,4 +1,4 @@
-import { InsertTextFormat, CompletionItemKind } from "vscode-languageserver/node";
+import { InsertTextFormat, CompletionItemKind } from 'vscode-languageserver/node'
 
 export const snippets = [
     {

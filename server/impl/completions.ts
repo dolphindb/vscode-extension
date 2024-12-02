@@ -1,17 +1,19 @@
 import {
-    CompletionItem,
+    type CompletionItem,
     CompletionItemKind,
     InsertTextFormat,
     Position,
-    TextDocumentPositionParams
-} from 'vscode-languageserver/node';
-import { connection } from "./connection";
-import { snippets } from './data/completionitems';
-import { documents } from './documents';
+    type TextDocumentPositionParams
+} from 'vscode-languageserver/node'
+
 import {
-    TextDocument
-} from 'vscode-languageserver-textdocument';
-import { ddbModules } from './modules';
+    type TextDocument
+} from 'vscode-languageserver-textdocument'
+
+import { connection } from './connection'
+import { snippets } from './data/completionitems'
+import { documents } from './documents'
+import { ddbModules } from './modules'
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
@@ -19,16 +21,16 @@ connection.onCompletion(
         // The pass parameter contains the position of the text document in
         // which code complete got requested. For the example we ignore this
         // info and always provide the same completion items.
-
-        const items: CompletionItem[] = [];
+        
+        const items: CompletionItem[] = [ ]
         const mc = getModuleCompletions(_textDocumentPosition)
-        if (mc.length > 0) { // 如果是模块提示，那么只给模块提示，因为不太可能用其他的提示
-            return mc;
-        }
-        items.push(...snippets);
-        return items;
+        if (mc.length > 0)  // 如果是模块提示，那么只给模块提示，因为不太可能用其他的提示
+            return mc
+        
+        items.push(...snippets)
+        return items
     }
-);
+)
 
 // This handler resolves additional information for the item selected in
 // the completion list.
@@ -38,19 +40,19 @@ connection.onCompletionResolve(
     // 留着参考
     (item: CompletionItem): CompletionItem => {
         if (item.data === 1) {
-            item.detail = 'TypeScript details';
-            item.documentation = 'TypeScript documentation';
+            item.detail = 'TypeScript details'
+            item.documentation = 'TypeScript documentation'
         }
-        return item;
+        return item
     }
-);
+)
 
-function getModuleCompletions(pos: TextDocumentPositionParams): CompletionItem[] {
+function getModuleCompletions (pos: TextDocumentPositionParams): CompletionItem[] {
     const doc = documents.get(pos.textDocument.uri)
     if (doc) {
-        const lineContent = getLineContent(doc, pos.position.line);
+        const lineContent = getLineContent(doc, pos.position.line)
         if (lineContent.trim().startsWith('use')) {
-            const modules = ddbModules.getModules();
+            const modules = ddbModules.getModules()
             return modules.map(m => {
                 return {
                     label: m.moduleName,
@@ -61,26 +63,26 @@ function getModuleCompletions(pos: TextDocumentPositionParams): CompletionItem[]
             })
         }
     }
-
-    return []
+    
+    return [ ]
 }
 
-function getLineContent(document: TextDocument, line: number): string {
-    const lineStart = Position.create(line, 0);
-    const lineEnd = Position.create(line + 1, 0);
-
+function getLineContent (document: TextDocument, line: number): string {
+    const lineStart = Position.create(line, 0)
+    const lineEnd = Position.create(line + 1, 0)
+    
     const range = {
         start: lineStart,
         end: lineEnd,
-    };
-
-    const text = document.getText(range);
-
-    // 如果行不存在，返回 ''
-    if (!text) {
-        return '';
     }
-
+    
+    const text = document.getText(range)
+    
+    // 如果行不存在，返回 ''
+    if (!text) 
+        return ''
+    
+    
     // 去掉行尾的换行符
-    return text.trimEnd();
+    return text.trimEnd()
 }

@@ -35,6 +35,7 @@ export default {
         "lib": ["es2020"],
         module: 'ESNext',
         "moduleResolution": "node",
+        allowImportingTsExtensions: false,
         "sourceMap": true,
         "outDir": "out",
       },
