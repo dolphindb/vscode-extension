@@ -36,6 +36,16 @@ import { connector, register_connector } from './connector.ts'
 import { register_variables } from './variables.ts'
 import { register_databases } from './databases.ts'
 import { register_settings } from './settings.ts'
+import * as path from 'path';
+
+import {
+    LanguageClient,
+    LanguageClientOptions,
+    ServerOptions,
+    TransportKind
+} from 'vscode-languageclient/node.js';
+
+let client: LanguageClient;
 
 
 export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }
