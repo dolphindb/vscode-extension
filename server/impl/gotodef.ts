@@ -3,124 +3,68 @@ import * as fsp from 'fs/promises'
 import {
     type DefinitionParams,
     type Location,
-    Position,
+    type Position,
     type Range
 } from 'vscode-languageserver/node'
 
 import { connection } from './connection'
 import { documents } from './documents'
-import { extractModuleName, getWordAtPosition } from './utils/texts'
-import { ddbModules } from './modules'
+import { symbolService } from './symbols/symbols'
 
 connection.onDefinition(async (params: DefinitionParams) => {
 
     const document = documents.get(params.textDocument.uri)
-    if (!document) 
+    if (!document)
         return null
-    
-    
-    const text = document.getText()
-    const lines = text.split('\n')
+        
     const position = params.position
-    
-    const word = getWordAtPosition(lines[position.line], position.character)
-    if (!word) 
+    const text = document.getText()
+    // 获取光标所在的单词
+    const word = getWordAtPosition(text, position)
+    if (!word)
         return null
+        
+    const symbols = symbolService.getSymbols(document.uri)
+    
+    const symbol = symbols.find(s => s.name === word)
+    if (!symbol)
+        return null
+        
+    // 创建 Location 对象
+    const location: Location = {
+        uri: document.uri,
+        range: {
+            start: symbol.position,
+            end: symbol.range ? symbol.range.end : symbol.position,
+        },
+    }
     
     
-    // Check for local definition
-    let definition = findDefinitionOrDeclaration(lines, word, position.line)
-    if (definition) 
-        return {
-            uri: params.textDocument.uri,
-            range: definition.range
-        }
-    
-    
-    // Check for module definition
-    const moduleDefinition = await findDefinitionInModules(word, text)
-    if (moduleDefinition) 
-        return moduleDefinition
-    
-    
+    if (location)
+        return location
+        
     return null
 })
-function findDefinitionOrDeclaration (lines: string[], word: string, currentLine: number): { range: Range } | null {
-    const functionRegex = new RegExp(`def\\s+${word}\\s*\\(`)
-    const declarationRegex = new RegExp(`\\b${word}\\b\\s*=`)
-    
-    // First, look for function definition
-    for (let i = 0;  i < lines.length;  i++) 
-        if (functionRegex.test(lines[i])) 
-            return {
-                range: {
-                    start: Position.create(i, 0),
-                    end: Position.create(i, lines[i].length)
-                }
-            }
-        
-    
-    
-    // Then, look for variable declaration (from the current line upwards)
-    for (let i = currentLine;  i >= 0;  i--) {
-        if (declarationRegex.test(lines[i])) {
-            const startIdx = lines[i].indexOf(word)
-            const endIdx = startIdx + word.length
-            return {
-                range: {
-                    start: Position.create(i, startIdx),
-                    end: Position.create(i, endIdx)
-                }
-            }
-        }
-    
-        // Check if the line contains a function definition
-        const match = functionRegex.exec(lines[i])
-        if (match) {
-            const params = match[1].split(',').map(param => param.trim())
-            if (params.includes(word)) {
-                const startIdx = lines[i].indexOf(word)
-                const endIdx = startIdx + word.length
-                return {
-                    range: {
-                        start: Position.create(i, startIdx),
-                        end: Position.create(i, endIdx)
-                    }
-                }
-            }
-        }
-        
-    }
-    
-    return null
-}
 
-async function findDefinitionInModules (word: string, code: string): Promise<Location | null> {
-    const lines = code.split('\n')
-    const moduleImported: string[] = [ ]
-    for (const ln of lines) {
-        const moduleName = extractModuleName(ln)
-        if (moduleName) 
-            moduleImported.push(moduleName)
+function getWordAtPosition (text: string, position: Position): string | null {
+    const lines = text.split('\n')
+    if (position.line >= lines.length)
+        return null
         
-    }
-    // 只检查导入的模块
-    const modules = ddbModules.getModules().filter(e => moduleImported.includes(e.moduleName))
-    for (const module of modules) {
-        const modulePath = module.path
-        try {
-            const moduleContent = await fsp.readFile(modulePath, 'utf-8')
-            const lines = moduleContent.split('\n')
-            const definition = await findDefinitionOrDeclaration(lines, word, 0)
-            if (definition) 
-                return {
-                    uri: `file:///${modulePath}`,
-                    range: definition.range
-                }
+    const line = lines[position.line]
+    if (position.character >= line.length)
+        return null
+        
+    // 使用正则表达式匹配单词
+    const wordRegex = /[a-zA-Z_]\w*/g
+    let match: RegExpExecArray | null
+    while ((match = wordRegex.exec(line)) !== null) {
+        const start = match.index
+        const end = match.index + match[0].length
+        if (position.character >= start && position.character <= end)
+            return match[0]
             
-        } catch (error) {
-            console.error(`Error reading module file ${module.path}:`, error)
-        }
     }
+    
     return null
 }

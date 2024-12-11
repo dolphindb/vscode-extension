@@ -7,6 +7,7 @@ import {
 } from 'vscode-languageserver-textdocument'
 
 import { connection } from './connection'
+import { symbolService } from './symbols/symbols'
 
 /** 现在也没有什么监听文档状态需要用到的东西 */
 
@@ -15,6 +16,7 @@ export const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocu
 
 documents.onDidOpen(e => {
     // handle document open
+    symbolService.buildSymbolByDocument(e.document)
 })
 
 // Only keep settings for open documents
