@@ -22,12 +22,14 @@ documents.onDidOpen(e => {
 // Only keep settings for open documents
 documents.onDidClose(e => {
     // handle document close
+    symbolService.onCloseDocument(e.document)
 })
 
 // The content of a text document has changed. This event is emitted
 // when the text document first opened or when its content has changed.
 documents.onDidChangeContent(change => {
     // validateTextDocument(change.document);
+    symbolService.buildSymbolByDocument(change.document)
 })
 
 // Make the text document manager listen on the connection

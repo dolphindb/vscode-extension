@@ -6,10 +6,17 @@ export enum SymbolType {
     Table,
     FieldName,
     Database,
+    Variable,
+    Param
 }
 
 export interface IFunctionMetadata {
     argnames: string[]
+    scope: [Position, Position]
+    comments: string
+}
+
+export interface IVariableMetadata {
     scope: [Position, Position]
     comments: string
 }
@@ -20,5 +27,5 @@ export interface ISymbol {
     position: Position
     range?: Range
     filePath: string
-    metadata?: IFunctionMetadata
+    metadata?: IFunctionMetadata | IVariableMetadata
 }

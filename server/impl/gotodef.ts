@@ -10,6 +10,8 @@ import {
 import { connection } from './connection'
 import { documents } from './documents'
 import { symbolService } from './symbols/symbols'
+import { isPositionInScope } from './snippets'
+import { type IFunctionMetadata, SymbolType } from './symbols/types'
 
 connection.onDefinition(async (params: DefinitionParams) => {
 
@@ -26,7 +28,32 @@ connection.onDefinition(async (params: DefinitionParams) => {
         
     const symbols = symbolService.getSymbols(document.uri)
     
-    const symbol = symbols.find(s => s.name === word)
+    
+    
+    const symbolsInScope = symbols.filter(s => {
+        if (!s.metadata || !('scope' in s.metadata))
+            return false
+        return isPositionInScope(position, s.metadata!.scope as [Position, Position])
+    })
+    // 按作用域起始位置降序排序，起始位置越靠近当前位置的作用域越靠前
+    symbolsInScope.sort((a, b) => {
+        const aStart = a.metadata!.scope[0]
+        const bStart = b.metadata!.scope[0]
+        if (aStart.line !== bStart.line)
+            return bStart.line - aStart.line
+            
+        return bStart.character - aStart.character
+    })
+    
+    const symbol = symbolsInScope.find(s => {
+        if (s.name === word)
+            return true
+        if (s.type === SymbolType.Function) {
+            const metadata = s.metadata as IFunctionMetadata
+            return metadata.argnames.includes(word) || s.name === word
+        }
+    })
+    
     if (!symbol)
         return null
         
@@ -51,16 +78,20 @@ function getWordAtPosition (text: string, position: Position): string | null {
     if (position.line >= lines.length)
         return null
         
+        
     const line = lines[position.line]
     if (position.character >= line.length)
         return null
         
-    // 使用正则表达式匹配单词
-    const wordRegex = /[a-zA-Z_]\w*/g
+        
+    const wordRegex = /[a-zA-Z_][a-zA-Z0-9_]*/g // 或者 /[a-zA-Z_]+/g  取决于你的变量名规则
+    
     let match: RegExpExecArray | null
     while ((match = wordRegex.exec(line)) !== null) {
         const start = match.index
         const end = match.index + match[0].length
+        
+        //  关键修改在这里：
         if (position.character >= start && position.character <= end)
             return match[0]
             

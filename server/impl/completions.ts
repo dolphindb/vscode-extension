@@ -21,13 +21,23 @@ connection.onCompletion(
         // The pass parameter contains the position of the text document in
         // which code complete got requested. For the example we ignore this
         // info and always provide the same completion items.
+        const lineContent = getLineContent(
+            documents.get(_textDocumentPosition.textDocument.uri)!,
+            _textDocumentPosition.position.line
+        )
         
+        // 忽略注释的行，目前只能做到识别单行注释
+        if (lineContent.trim().startsWith('//'))
+            return [ ]
+            
         const items: CompletionItem[] = [ ]
-        const mc = getModuleCompletions(_textDocumentPosition)
-        if (mc.length > 0)  // 如果是模块提示，那么只给模块提示，因为不太可能用其他的提示
-            return mc
+        // 模块提示暂时不可用
+        // const mc = getModuleCompletions(_textDocumentPosition)
+        // if (mc.length > 0)  // 如果是模块提示，那么只给模块提示，因为不太可能用其他的提示
+        //     return mc
         
         items.push(...snippetService.complete(_textDocumentPosition))
+        
         return items
     }
 )
@@ -47,25 +57,25 @@ connection.onCompletionResolve(
     }
 )
 
-function getModuleCompletions (pos: TextDocumentPositionParams): CompletionItem[] {
-    const doc = documents.get(pos.textDocument.uri)
-    if (doc) {
-        const lineContent = getLineContent(doc, pos.position.line)
-        if (lineContent.trim().startsWith('use')) {
-            const modules = ddbModules.getModules()
-            return modules.map(m => {
-                return {
-                    label: m.moduleName,
-                    kind: CompletionItemKind.Module,
-                    documentation: `Dolphin DB Module\n${m.moduleName}\n${m.path}`,
-                    insertText: m.moduleName,
-                }
-            })
-        }
-    }
-    
-    return [ ]
-}
+// function getModuleCompletions (pos: TextDocumentPositionParams): CompletionItem[] {
+//     const doc = documents.get(pos.textDocument.uri)
+//     if (doc) {
+//         const lineContent = getLineContent(doc, pos.position.line)
+//         if (lineContent.trim().startsWith('use')) {
+//             const modules = ddbModules.getModules()
+//             return modules.map(m => {
+//                 return {
+//                     label: m.moduleName,
+//                     kind: CompletionItemKind.Module,
+//                     documentation: `Dolphin DB Module\n${m.moduleName}\n${m.path}`,
+//                     insertText: m.moduleName,
+//                 }
+//             })
+//         }
+//     }
+
+//     return [ ]
+// }
 
 function getLineContent (document: TextDocument, line: number): string {
     const lineStart = Position.create(line, 0)
@@ -79,10 +89,10 @@ function getLineContent (document: TextDocument, line: number): string {
     const text = document.getText(range)
     
     // 如果行不存在，返回 ''
-    if (!text) 
+    if (!text)
         return ''
-    
-    
+        
+        
     // 去掉行尾的换行符
     return text.trimEnd()
 }
