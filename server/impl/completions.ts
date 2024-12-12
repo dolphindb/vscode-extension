@@ -11,9 +11,9 @@ import {
 } from 'vscode-languageserver-textdocument'
 
 import { connection } from './connection'
-import { snippets } from './data/completionitems'
 import { documents } from './documents'
 import { ddbModules } from './modules'
+import { snippetService } from './snippets'
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
@@ -27,7 +27,7 @@ connection.onCompletion(
         if (mc.length > 0)  // 如果是模块提示，那么只给模块提示，因为不太可能用其他的提示
             return mc
         
-        items.push(...snippets)
+        items.push(...snippetService.complete(_textDocumentPosition))
         return items
     }
 )
