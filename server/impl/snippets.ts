@@ -1,7 +1,7 @@
 import { InsertTextFormat, CompletionItemKind, type TextDocumentPositionParams, type CompletionItem, type Position } from 'vscode-languageserver/node'
 
 import { symbolService } from './symbols/symbols'
-import { type IFunctionMetadata, IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './symbols/types'
+import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './symbols/types'
 
 class SnippetService {
 
@@ -89,7 +89,7 @@ class SnippetService {
                 completionItems.push({
                     label: symbol.name,
                     kind: CompletionItemKind.Variable,
-                    detail: 'parameter',
+                    detail: `Parameter of ${(symbol.metadata as IParamMetadata).funcname}`,
                 })
             
         })

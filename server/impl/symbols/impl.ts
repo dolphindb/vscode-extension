@@ -342,6 +342,7 @@ export function getFunctionSymbols(text: string, filePath: string): ISymbol[] {
                 // 创建 Param 的元数据
                 const paramMetadata: IParamMetadata = {
                     scope: functionBodyScope,
+                    funcname: functionName,
                 }
 
                 // 创建 Param 的 ISymbol 对象

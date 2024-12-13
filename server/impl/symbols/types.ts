@@ -23,6 +23,7 @@ export interface IVariableMetadata {
 
 export interface IParamMetadata {
     scope: [Position, Position]
+    funcname: string
 }
 
 // 通过映射关系为每个 SymbolType 提供对应的元数据类型
