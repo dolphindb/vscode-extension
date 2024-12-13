@@ -1,6 +1,6 @@
 import { type Position, type Range } from 'vscode-languageserver/node'
 
-import { type IFunctionMetadata, SymbolType, type ISymbol, type IVariableMetadata } from './types'
+import { type IFunctionMetadata, SymbolType, type ISymbol, type IVariableMetadata, IParamMetadata } from './types'
 
 // Helper 类型定义，用于表示作用域
 type Scope = {
@@ -55,7 +55,7 @@ export function getFunctionSymbols(text: string, filePath: string): ISymbol[] {
         return true
     }
 
-    // Helper 函数：找到变量所在的最内层作用域
+    // Helper 函数：找到变量或函数所在的最内层作用域
     function findInnermostScope(line: number, char: number): Scope | null {
         let innermost: Scope | null = null
         for (const scope of scopes) {
@@ -191,19 +191,91 @@ export function getFunctionSymbols(text: string, filePath: string): ISymbol[] {
                 })
                 .filter(param => param.length > 0)
 
-            // 查找函数定义所在的最内层作用域
+            // 查找函数定义所在的最内层作用域（即函数的外部作用域）
             const functionScope = findInnermostScope(defLine, defColumn) || null
 
-            // 定义函数作用域为其所在的最内层作用域
-            let scopeRange: [Position, Position]
+            // 查找函数体的起始 '{'
+            let braceFound = false
+            let braceLine = defLine
+            let braceColumn = -1
+
+            // 首先检查函数定义行是否包含 '{'
+            const braceMatchInDef = /\{/.exec(line.slice(openParenIndex + 1))
+            if (braceMatchInDef) {
+                braceFound = true
+                braceLine = defLine
+                braceColumn = openParenIndex + 1 + braceMatchInDef.index
+            } else
+                // 如果函数定义行没有 '{'，继续查找后续行
+                for (let k = j; k < totalLines; k++) {
+                    const braceMatch = /\{/.exec(lines[k])
+                    if (braceMatch) {
+                        braceFound = true
+                        braceLine = k
+                        braceColumn = braceMatch.index
+                        break
+                    }
+                    // 如果遇到分号，可能是函数结束
+                    if (lines[k].includes(';'))
+                        break
+                }
+
+            if (!braceFound) {
+                // 未找到 '{'，跳过此函数
+                i = j + 1
+                continue
+            }
+
+            // 寻找对应的 '}' 以确定函数体的范围
+            let braceBalanceScope = 1
+            let endBraceLine = braceLine
+            let endBraceColumn = braceColumn
+            let foundClosing = false
+
+            for (let k = braceLine; k < totalLines; k++) {
+                const currentLine = lines[k]
+                // 开始从第一个 '{' 之后的位置开始查找
+                const startChar = k === braceLine ? braceColumn + 1 : 0
+                for (let c = startChar; c < currentLine.length; c++) {
+                    const char = currentLine[c]
+                    if (char === '{')
+                        braceBalanceScope++
+                    else if (char === '}') {
+                        braceBalanceScope--
+                        if (braceBalanceScope === 0) {
+                            endBraceLine = k
+                            endBraceColumn = c
+                            foundClosing = true
+                            break
+                        }
+                    }
+                }
+                if (foundClosing)
+                    break
+            }
+
+            if (!foundClosing) {
+                // 未找到闭合的 '}'，跳过此函数
+                i = braceLine + 1
+                continue
+            }
+
+            // 定义函数体的范围
+            const functionBodyScope: [Position, Position] = [
+                { line: braceLine, character: braceColumn },
+                { line: endBraceLine, character: endBraceColumn },
+            ]
+
+            // 定义函数的作用域范围为其外部作用域
+            let functionScopeRange: [Position, Position]
             if (functionScope) {
-                scopeRange = [
+                functionScopeRange = [
                     { line: functionScope.startLine, character: functionScope.startChar },
                     { line: functionScope.endLine, character: functionScope.endChar },
                 ]
             } else {
                 // 全局作用域，从文件开始到文件结束
-                scopeRange = [
+                functionScopeRange = [
                     { line: 0, character: 0 },
                     { line: totalLines - 1, character: lines[totalLines - 1].length },
                 ]
@@ -220,10 +292,10 @@ export function getFunctionSymbols(text: string, filePath: string): ISymbol[] {
             // 定义函数名的 Position
             const position: Position = { line: defLine, character: nameStartColumn }
 
-            // 创建元数据
+            // 创建函数的元数据
             const metadata: IFunctionMetadata = {
                 argnames: argnames,
-                scope: scopeRange,
+                scope: functionScopeRange,
                 comments: comments,
             }
 
@@ -237,37 +309,59 @@ export function getFunctionSymbols(text: string, filePath: string): ISymbol[] {
                 metadata: metadata,
             })
 
-            // 为每个参数创建 Param 符号
+            // 为每个参数创建 Param 符号，并设置其作用域为函数体内部
             argnames.forEach(arg => {
-                // 查找参数名在函数定义行的位置
-                const argIndex = line.indexOf(arg, openParenIndex)
-                const argColumn = argIndex !== -1 ? argIndex : 0 // 如果参数在当前行未找到，则设为0
+                // 在参数列表中查找参数的位置
+                const paramRegex = new RegExp(`\\b${arg}\\b`)
+                const paramMatch = paramRegex.exec(paramsText)
+                let argLine = defLine
+                let argColumn = 0
 
-                const paramRange: Range = {
-                    start: { line: defLine, character: argColumn },
-                    end: { line: defLine, character: argColumn + arg.length },
+                if (paramMatch) {
+                    // 计算参数在函数定义行的位置
+                    argColumn = openParenIndex + 1 + paramMatch.index
+                } else {
+                    // 如果参数在当前行未找到，尝试在后续行查找
+                    for (let searchLine = i + 1; searchLine <= j; searchLine++) {
+                        const searchMatch = new RegExp(`\\b${arg}\\b`).exec(lines[searchLine])
+                        if (searchMatch) {
+                            argLine = searchLine
+                            argColumn = searchMatch.index
+                            break
+                        }
+                    }
                 }
 
-                const paramPosition: Position = { line: defLine, character: argColumn }
+                const paramRange: Range = {
+                    start: { line: argLine, character: argColumn },
+                    end: { line: argLine, character: argColumn + arg.length },
+                }
 
+                const paramPosition: Position = { line: argLine, character: argColumn }
+
+                // 创建 Param 的元数据
+                const paramMetadata: IParamMetadata = {
+                    scope: functionBodyScope,
+                }
+
+                // 创建 Param 的 ISymbol 对象
                 symbols.push({
                     name: arg,
                     type: SymbolType.Param,
                     position: paramPosition,
                     range: paramRange,
                     filePath,
-                    // Param 没有 metadata
+                    metadata: paramMetadata,
                 })
             })
 
             // 跳过函数体，继续解析下一个
-            i = j + 1
+            i = endBraceLine + 1
         } else
             i++
 
     }
 
-    console.log(JSON.stringify(symbols, null, 2))
     return symbols
 }
 

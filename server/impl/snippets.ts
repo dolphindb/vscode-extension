@@ -1,7 +1,7 @@
 import { InsertTextFormat, CompletionItemKind, type TextDocumentPositionParams, type CompletionItem, type Position } from 'vscode-languageserver/node'
 
 import { symbolService } from './symbols/symbols'
-import { type IFunctionMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './symbols/types'
+import { type IFunctionMetadata, IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './symbols/types'
 
 class SnippetService {
 
@@ -85,16 +85,13 @@ class SnippetService {
                     kind: CompletionItemKind.Variable,
                     detail: varMeta.comments || '',
                 })
-            } else if (symbol.type === SymbolType.Function && symbol.metadata) {
-                const funcMeta = symbol.metadata as IFunctionMetadata
-                funcMeta.argnames.forEach(arg => {
-                    completionItems.push({
-                        label: arg,
-                        kind: CompletionItemKind.Variable,
-                        detail: `Parameter of function ${symbol.name}`,
-                    })
+            } else if (symbol.type === SymbolType.Param && symbol.metadata) 
+                completionItems.push({
+                    label: symbol.name,
+                    kind: CompletionItemKind.Variable,
+                    detail: 'parameter',
                 })
-            }
+            
         })
         
         return completionItems
