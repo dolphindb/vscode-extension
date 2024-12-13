@@ -21,11 +21,22 @@ export interface IVariableMetadata {
     comments: string
 }
 
-export interface ISymbol {
+export interface IParamMetadata {
+    scope: [Position, Position]
+}
+
+// 通过映射关系为每个 SymbolType 提供对应的元数据类型
+export type SymbolMetadataMap = {
+    [SymbolType.Function]: IFunctionMetadata,
+    [SymbolType.Variable]: IVariableMetadata,
+    [SymbolType.Param]: IParamMetadata
+}
+
+export interface ISymbol<T extends SymbolType = SymbolType> {
     name: string
-    type: SymbolType
+    type: T
     position: Position
     range?: Range
     filePath: string
-    metadata?: IFunctionMetadata | IVariableMetadata
+    metadata?: T extends keyof SymbolMetadataMap ? SymbolMetadataMap[T] : never
 }

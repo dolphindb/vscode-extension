@@ -45,14 +45,10 @@ connection.onDefinition(async (params: DefinitionParams) => {
         return bStart.character - aStart.character
     })
     
-    const symbol = symbolsInScope.find(s => {
-        if (s.name === word)
-            return true
-        if (s.type === SymbolType.Function) {
-            const metadata = s.metadata as IFunctionMetadata
-            return metadata.argnames.includes(word) || s.name === word
-        }
-    })
+    let symbol = symbolsInScope.find(s => s.name === word)
+    const funcDef = symbols.find(s => s.name === word && s.type === SymbolType.Function)
+    if (funcDef) 
+        symbol = funcDef
     
     if (!symbol)
         return null

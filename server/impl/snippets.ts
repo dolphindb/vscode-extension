@@ -7,7 +7,7 @@ class SnippetService {
 
     getFunctionSnippets (position: TextDocumentPositionParams): CompletionItem[] {
         const symbols = symbolService.getSymbols(position.textDocument.uri)
-        const functionSymbols = symbols.filter(s => s.type === SymbolType.Function)
+        const functionSymbols: ISymbol<SymbolType.Function>[] = symbols.filter(s => s.type === SymbolType.Function) as ISymbol<SymbolType.Function>[]
         const functionCompletions: CompletionItem[] = functionSymbols.map(s => {
             const metadata = s.metadata as IFunctionMetadata
             const argumentCompletions = metadata.argnames.map((arg, i) => {
