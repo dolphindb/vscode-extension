@@ -32,7 +32,7 @@ export default {
       compilerOptions: {
         sourceMap: !isProd,
         "target": "es2020",
-        "lib": ["es2020"],
+        "lib": ["es2021"],
         module: 'ESNext',
         "moduleResolution": "node",
         allowImportingTsExtensions: false,

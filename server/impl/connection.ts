@@ -49,6 +49,7 @@ connection.onInitialize((params: InitializeParams) => {
         capabilities: {
             textDocumentSync: TextDocumentSyncKind.Incremental,
             definitionProvider: true,
+            hoverProvider: true,
             // Tell the client that this server supports code completion.
             completionProvider: {
                 resolveProvider: true,

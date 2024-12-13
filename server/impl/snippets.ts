@@ -83,7 +83,7 @@ class SnippetService {
                 completionItems.push({
                     label: symbol.name,
                     kind: CompletionItemKind.Variable,
-                    detail: varMeta.comments || '',
+                    documentation: varMeta.comments || '',
                 })
             } else if (symbol.type === SymbolType.Param && symbol.metadata) 
                 completionItems.push({
