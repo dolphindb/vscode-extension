@@ -25,6 +25,8 @@
     "dependencies": {
         "@ant-design/icons": "^5.5.2",
         "@ant-design/plots": "1.2.5",
+        "@sqltools/base-driver": "^0.1.11",
+        "@sqltools/types": "^0.1.7",
         "@vscode/debugadapter": "^1.68.0",
         "@vscode/debugprotocol": "^1.68.0",
         "antd": "^5.22.6",
@@ -35,6 +37,7 @@
         "react-dom": "^19.0.0",
         "react-object-model": "^1.2.21",
         "tslib": "^2.8.1",
+        "uuid": "^11.0.3",
         "ws": "^8.18.0",
         "xshell": "^1.1.15"
     },

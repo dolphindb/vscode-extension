@@ -1,0 +1,22 @@
+// 这个文件会被单独打包，被 sqltools language server 独立进程加载，所以不能 import ... from 'vscode' 导入 vscode 依赖，所以不能 import ./index.ts
+
+import { ILanguageServerPlugin, type IDriverAlias } from '@sqltools/types'
+
+import { YourDriver } from './driver.ts'
+
+export const driver_aliases: IDriverAlias[] = [
+    { displayName: 'DolphinDB', value: 'dolphindb' },
+    { displayName: 'dolphindb', value: 'dolphindb' },
+]
+
+
+const YourDriverPlugin: ILanguageServerPlugin = {
+    register (server) {
+        driver_aliases.forEach(({ value }) => {
+            server.getContext().drivers.set(value, YourDriver as any)
+        })
+    }
+}
+
+// YourDriverPlugin 必须作为 default 导出
+export { YourDriverPlugin, YourDriverPlugin as default }

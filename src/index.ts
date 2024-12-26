@@ -37,6 +37,9 @@ import { register_variables } from './variables.ts'
 import { register_databases } from './databases.ts'
 import { register_settings } from './settings.ts'
 
+// sqltools: 子插件入口
+import { activate as activate_sqltools } from './sqltools/index.ts'
+
 
 export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }
 
@@ -145,6 +148,8 @@ export async function activate (ctx: ExtensionContext) {
     await register_settings()
     
     console.log(t('DolphinDB 插件初始化成功'))
+    
+    return activate_sqltools(ctx)
 }
 
 

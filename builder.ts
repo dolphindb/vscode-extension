@@ -1,4 +1,4 @@
-import { fdelete, fmkdir, fwrite, ramdisk, set_inspect_options } from 'xshell'
+import { fcopy, fdelete, fexists, fmkdir, fwrite, noprint, ramdisk, set_inspect_options } from 'xshell'
 import { Git } from 'xshell/git.js'
 import { Bundler } from 'xshell/builder.js'
 import type { Item } from 'xshell/i18n/index.js'
@@ -30,6 +30,12 @@ export let builder = {
     async build (production: boolean) {
         console.log('项目根目录:', fpd_root)
         console.log(`开始构建${production ? '生产' : '开发'}模式的插件`)
+        
+        if (!ramdisk) {
+            const fp_settings = `${fpd_root}.vscode/settings.json`
+            if (!fexists(fp_settings, noprint))
+                await fcopy(`${fp_settings.strip_end('json')}template.json`, fp_settings)
+        }
         
         await fdelete(fpd_out)
         
@@ -100,6 +106,9 @@ export let builder = {
                 {
                     'index.cjs': './src/index.ts',
                     'debugger.cjs': './src/debugger/index.ts',
+                    
+                    // sqltools: 打包 sqltools 独立的 language client 被 sqltools language server 加载
+                    'sqltools/plugin.cjs': './src/sqltools/plugin.ts',
                 },
                 {
                     production,
@@ -110,9 +119,15 @@ export let builder = {
                         FPD_ROOT: fpd_root.quote(),
                         EXTENSION_VERSION: `${info.version} (${info.time} ${info.hash})`.quote(),
                     },
+                    resolve_alias: {
+                        '@i18n': `${fpd_root}i18n`,
+                    },
                     assets: {
                         productions: [
                             'README.md', 'README.zh.md', 'icons/', 'LICENSE.txt',
+                            
+                            // sqltools: 复制所需的资源
+                            'sqltools/',
                             
                             ... ['zh', 'en'].map(language => 
                                 ({ src: `node_modules/dolphindb/docs.${language}.json`, out: `docs.${language}.json` })),
