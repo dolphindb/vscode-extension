@@ -127,8 +127,7 @@ export let dataview = {
                         '        </script>\n' +
                         
                         [
-                            `react/umd/react.${ dev ? 'development' : 'production.min' }.js`,
-                            `react-dom/umd/react-dom.${ dev ? 'development' : 'production.min' }.js`,
+                            `react/react.${ dev ? 'development' : 'production.min' }.js`,
                             'dayjs/dayjs.min.js',
                             `antd/dist/antd${ dev ? '' : '.min' }.js`,
                             `@ant-design/icons/dist/index.umd${ dev ? '' : '.min' }.js`,

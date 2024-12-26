@@ -16,7 +16,7 @@ export const fpd_root = import.meta.dirname.fpd
 
 const fpd_ramdisk_root = 'T:/2/ddb/ext/' as const
 
-const fpd_out = `${ ramdisk ? fpd_ramdisk_root : fpd_root }out/`
+export const fpd_out = `${ ramdisk ? fpd_ramdisk_root : fpd_root }out/`
 
 const fpd_out_dataview = `${fpd_out}dataview/`
 

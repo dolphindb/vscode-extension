@@ -502,5 +502,8 @@
     },
     "错误行:": {
         "en": "Error Line:"
+    },
+    "dolphindb 插件运行在{{mode}}模式下，版本为 {{version}}": {
+        "en": "The dolphindb plugin is running in {{mode}} mode and the version is {{version}}"
     }
 }

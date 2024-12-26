@@ -1,47 +1,39 @@
-import { ramdisk, Remote } from 'xshell'
-import { builder, fpd_root } from './builder.ts'
+import os from 'os'
+
+import { fexists, noprint, ramdisk, Remote, start } from 'xshell'
+import { process_stdin } from 'xshell/stdin.js'
+
+import { builder, fpd_out, fpd_root } from './builder.ts'
 
 await builder.build(false)
 
 
+async function stop () {
+    await builder.close()
+    remote?.disconnect()
+}
+
+
+process_stdin(
+    async (key) => {
+        switch (key) {
+            case 'r':
+                builder.run()
+                break
+                
+            case 'x':
+                await stop()
+                process.exit()
+                
+            case 'i':
+                console.log(info)
+                break
+        }
+    },
+    stop
+)
+
 let remote: Remote
-
-
-// 监听终端快捷键
-// https://stackoverflow.com/a/12506613/7609214
-
-let { stdin } = process
-
-stdin.setRawMode(true)
-
-stdin.resume()
-
-stdin.setEncoding('utf-8')
-
-// on any data into stdin
-stdin.on('data', function (key: any) {
-    // ctrl-c ( end of text )
-    if (key === '\u0003')
-        process.exit()
-    
-    // write the key to stdout all normal like
-    console.log(key)
-    
-    switch (key) {
-        case 'r':
-            builder.run()
-            break
-            
-        case 'x':
-            remote?.disconnect()
-            process.exit()
-            
-        case 'i':
-            console.log(info)
-            break
-    }
-})
-
 
 if (ramdisk) {
     remote = new Remote({
@@ -59,8 +51,7 @@ if (ramdisk) {
             },
             
             async exit () {
-                await builder.close()
-                remote.disconnect()
+                await stop()
                 process.exit()
             }
         }
@@ -70,9 +61,15 @@ if (ramdisk) {
 }
 
 
+const args = [
+    '--extensionDevelopmentPath', fpd_out,
+    `${fpd_root}workspace/`
+]
+
+
 const info = 
     '可以使用下面的命令调试:\n' +
-    `code.exe --extensionDevelopmentPath=${fpd_root}out/ ${fpd_root}workspace/\n`
+    `code.exe ${args.map(arg => arg.quote_if_space()).join(' ')}\n`.blue
 
 
 console.log(
@@ -84,4 +81,20 @@ console.log(
     'i: 打印调试命令\n' +
     'x: 退出开发服务器\n'
 )
+
+
+if (!ramdisk) {
+    const fp_machine = 'C:/Program Files/Microsoft VS Code/Code.exe' as const
+    const fp_user = `C:/Users/${os.userInfo().username}/AppData/Local/Programs/Microsoft VS Code/Code.exe`
+    
+    const fp_vscode = fexists(fp_user, noprint)
+        ? fp_user
+        : fexists(fp_machine, noprint)
+            ? fp_machine
+            : ''
+    
+    if (fp_vscode)
+        // todo: 后面改成 launch
+        start(fp_vscode, args, { cwd: fpd_root })
+}
 
