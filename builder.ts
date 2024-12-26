@@ -68,7 +68,7 @@ export let builder = {
                     license: {
                         ignores: ['dolphindb-vscode']
                     },
-                    dependencies: ['antd-icons', 'antd-plots', 'lodash'],
+                    dependencies: ['antd-icons', 'antd-plots'],
                     htmls: {
                         'index.html': {
                             title: 'DolphinDB',

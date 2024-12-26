@@ -130,7 +130,6 @@ export let dataview = {
                             `react/umd/react.${ dev ? 'development' : 'production.min' }.js`,
                             `react-dom/umd/react-dom.${ dev ? 'development' : 'production.min' }.js`,
                             'dayjs/dayjs.min.js',
-                            `lodash/lodash${ dev ? '' : '.min' }.js`,
                             `antd/dist/antd${ dev ? '' : '.min' }.js`,
                             `@ant-design/icons/dist/index.umd${ dev ? '' : '.min' }.js`,
                             '@ant-design/plots/dist/plots.min.js',
