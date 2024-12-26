@@ -1,6 +1,6 @@
 import './obj.sass'
 
-import { useEffect, useRef, useState, type default as React, type FC, type MutableRefObject, useCallback } from 'react'
+import { useEffect, useRef, useState, type default as React, type FC, type RefObject, useCallback } from 'react'
 
 import {
     Pagination,
@@ -901,9 +901,9 @@ export function StreamingTable ({
     options?: InspectOptions
     on_error? (error: Error): void
 }) {
-    let rsddb = useRef<DDB>()
+    let rsddb = useRef<DDB>(undefined)
     
-    let rddbapi = useRef<DDB>()
+    let rddbapi = useRef<DDB>(undefined)
     
     let rauto_append = useRef<boolean>(false)
     
@@ -1339,7 +1339,7 @@ class StreamingTableColumn implements TableColumnType <number> {
     
     key: number
     
-    rmessage: MutableRefObject<StreamingMessage>
+    rmessage: RefObject<StreamingMessage>
     
     col: DdbVectorObj
     
@@ -1751,8 +1751,7 @@ function Chart ({
             
             const { multi_y_axes = false } = extras || { }
             
-            let col_labels = (cols_?.value || [ ]) as any[]
-            let col_lables_ = new Array(col_labels.length)
+            const col_labels_ = ((cols_?.value || seq(cols)) as any[]).map(col_label => col_label?.value?.name || col_label)
             
             const row_labels = (() => {
                 // 没有设置 label 的话直接以序号赋值并返回
@@ -1775,28 +1774,22 @@ function Chart ({
                             let dataobj: any = { }
                             dataobj.row = row_labels[j]
                             for (let i = 0;  i < cols;  i++) {
-                                const col = col_labels[i]?.value?.name || col_labels[i]
-                                col_lables_[i] = col
-                                
                                 let idata = i * rows + j
-                                dataobj[col] = to_chart_data(data[idata], datatype)
+                                dataobj[col_labels_[i]] = to_chart_data(data[idata], datatype)
                             }
                             data_[j] = dataobj
                         }
                      else
-                        for (let i = 0;  i < cols;  i++) {
-                            const col = col_labels[i]?.value?.name || col_labels[i]
-                            col_lables_[i] = col
-                            
+                        for (let i = 0;  i < cols;  i++) 
                             for (let j = 0;  j < rows;  j++) {
                                 const idata = i * rows + j
                                 data_[idata] = {
                                     row: row_labels[j],
-                                    col,
+                                    col: col_labels_[i],
                                     value: to_chart_data(data[idata], datatype)
                                 }
                             }
-                        }
+                        
                     break
                     
                 case DdbChartType.kline:
@@ -1820,19 +1813,16 @@ function Chart ({
                     break
                     
                 default:
-                    for (let i = 0;  i < cols;  i++) {
-                        const col = col_labels[i]?.value?.name || col_labels[i]
-                        col_lables_[i] = col
-                        
+                    for (let i = 0;  i < cols;  i++) 
                         for (let j = 0;  j < rows;  j++) {
                             const idata = i * rows + j
                             data_[idata] = {
                                 row: row_labels[j],
-                                col,
+                                col: col_labels_[i],
                                 value: to_chart_data(data[idata], datatype)
                             }
                         }
-                    }
+                    
                     
                     if (charttype === DdbChartType.histogram && bin_start && bin_end)
                         data_ = data_.filter(data => 
@@ -1850,7 +1840,7 @@ function Chart ({
                 titles,
                 stacking,
                 multi_y_axes,
-                col_labels: col_lables_,
+                col_labels: col_labels_,
                 bin_count,
                 bin_start,
                 bin_end,
@@ -1874,17 +1864,16 @@ function Chart ({
                             xField='row'
                             yField='value'
                             seriesField='col'
-                            axis={{
-                                x: {
-                                    title: {
-                                        text: titles.x_axis
-                                    }
-                                },
-                                y: {
-                                    title: {
-                                        text: titles.y_axis
-                                    }
+                            xAxis={{
+                                title: {
+                                    text: titles.x_axis
                                 }
+                            }}
+                            yAxis={{
+                                title: {
+                                    text: titles.y_axis
+                                },
+                                min: Math.floor(Math.min(...data.map(item => item.value))),
                             }}
                             isStack={stacking}
                             padding='auto'
@@ -1896,17 +1885,15 @@ function Chart ({
                             data={[data, data]}
                             xField='row'
                             yField={col_labels as any}
-                            axis={{
-                                x: {
+                            xAxis={{
+                                title: {
+                                    text: titles.x_axis
+                                }
+                            }}
+                            yAxis={{
+                                [col_labels[0]]: {
                                     title: {
-                                        text: titles.x_axis
-                                    }
-                                },
-                                y: {
-                                    [col_labels[0]]: {
-                                        title: {
-                                            text: titles.y_axis
-                                        }
+                                        text: titles.y_axis
                                     }
                                 }
                             }}
@@ -2009,19 +1996,20 @@ function Chart ({
                         xField='row'
                         yField='value'
                         seriesField='col'
-                        axis={{
-                            x: {
-                                title: {
-                                    text: titles.x_axis
-                                }
-                            },
-                            y: {
-                                title: {
-                                    text: titles.y_axis
-                                }
+                        // @ts-ignore
+                        xAxis={{
+                            title: {
+                                text: titles.x_axis
                             }
                         }}
+                        yAxis={{
+                            title: {
+                                text: titles.y_axis
+                            }
+                        }}
+                        // @ts-ignore
                         stack={stacking}
+                        isStack={stacking}
                         padding='auto'
                         animation={false}
                     />
@@ -2060,16 +2048,14 @@ function Chart ({
                         // 修复类型错误
                         binNumber={undefined}
                         { ... bin_count ? { binNumber: Number(bin_count.value) } : { } }
-                        axis={{
-                            x: {
-                                title: {
-                                    text: titles.x_axis
-                                }
-                            },
-                            y: {
-                                title: {
-                                    text: titles.y_axis
-                                }
+                        xAxis={{
+                            title: {
+                                text: titles.x_axis
+                            }
+                        }}
+                        yAxis={{
+                            title: {
+                                text: titles.y_axis
                             }
                         }}
                         // 修复类型错误

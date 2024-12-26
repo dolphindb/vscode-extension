@@ -37,7 +37,7 @@ class DdbServer extends Server {
         if (request.path === '/window')
             request.path = '/window.html'
         
-        return this.try_send(ctx, `${fpd_ext}dataview/`, request.path, true)
+        return this.try_send(ctx, request.path, { fpd_root: `${fpd_ext}dataview/` })
     }
     
     
