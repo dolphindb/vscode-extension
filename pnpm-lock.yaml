@@ -37,9 +37,6 @@ importers:
       koa:
         specifier: ^2.15.3
         version: 2.15.3(patch_hash=5a1a2b4970aea22cb8bd45de734e2f92439f45ce11294fd50aba4c573fa788f4)
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       react:
         specifier: ^19.0.0
         version: 19.0.0
