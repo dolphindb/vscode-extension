@@ -67,6 +67,15 @@ pnpm install
 
 pnpm run dev
 
+# 格式化代码并自动修复代码错误
+pnpm run fix
+
+# 扫描词条
+pnpm run scan
+# 手动补全未翻译词条
+# 再次运行扫描以更新词典文件 dict.json
+pnpm run scan
+
 # 构建
 # pnpm run build
 ```
