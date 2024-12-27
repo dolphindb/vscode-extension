@@ -66,6 +66,15 @@ pnpm install
 
 pnpm run dev
 
+# Format code and automatically fix code errors
+pnpm run fix
+
+# Scan entries
+pnpm run scan
+# Manually complete untranslated entries
+# Run scan again to update the dictionary file dict.json
+pnpm run scan
+
 # Build
 # pnpm run build
 ```
