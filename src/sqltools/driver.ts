@@ -3,6 +3,8 @@ import AbstractDriver from '@sqltools/base-driver'
 import { IConnectionDriver, MConnectionExplorer, NSDatabase, ContextValue, Arg0 } from '@sqltools/types'
 import { v4 as generateId } from 'uuid'
 
+import { } from 'dolphindb'
+
 import { queries } from './queries.ts'
 
 /** set Driver lib to the type of your connection.
@@ -43,13 +45,7 @@ const fakeDbLib = {
 export class YourDriver extends AbstractDriver<DriverLib, DriverOptions> implements IConnectionDriver {
     /** If you driver depends on node packages, list it below on `deps` prop.
         It will be installed automatically on first use of your driver. */
-    public readonly deps: (typeof AbstractDriver.prototype)['deps'] = [
-        {
-            type: AbstractDriver.CONSTANTS.DEPENDENCY_PACKAGE,
-            name: 'lodash'
-            // version: 'x.x.x',
-        }
-    ]
+    public readonly deps: (typeof AbstractDriver.prototype)['deps'] = [ ]
     
     queries = queries
     
