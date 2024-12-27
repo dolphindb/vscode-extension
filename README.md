@@ -39,29 +39,33 @@ Install the DolphinDB Extension for VS Code to add the DolphinDB scripting langu
 
 For information on how to use this extension, see [official documentation](https://docs.dolphindb.cn/en/Tutorials/vscode_extension.html) at the DolphinDB website.
 
-## Development
-```shell
-# Install the latest version of nodejs
-# https://nodejs.org/en/download/current/
+## Development Instructions
 
-# Install the pnpm package manager
-corepack enable
-corepack prepare pnpm@latest --activate
+Open the link below and install the latest version of node.js and browser on your machine.
+- windows: https://nodejs.org/en/download/prebuilt-installer/current
+- linux: https://github.com/nodesource/distributions?tab=readme-ov-file#debian-and-ubuntu-based-distributions
+
+```shell
+# Install pnpm package manager
+npm install -g pnpm
 
 git clone https://github.com/dolphindb/vscode-extension.git
 
 cd vscode-extension
 
+# Recommended registry configuration for domestic networks
+pnpm config set registry https://registry.npmmirror.com
+
 # Install project dependencies
 pnpm install
 
-# copy .vscode/settings.template.json to .vscode/settings.json
-cp .vscode/settings.template.json .vscode/settings.json
-
 # Refer to scripts in package.json
 
-# Build the development version
+# Start development
+# You need to uninstall the installed dolphindb plugin first
+
 pnpm run dev
 
-# Switch to the debug panel in VSCode and start the ddb.ext debugging task (you need to disable or uninstall the installed dolphindb plugin first)
+# Build
+# pnpm run build
 ```

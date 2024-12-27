@@ -41,28 +41,32 @@ DolphinDB 公司开发了这个针对 DolphinDB 数据库的 VS Code 插件，�
 具体使用说明请参考 DolphinDB 官网 [VS Code 插件](https://docs.dolphindb.cn/zh/db_distr_comp/vscode.html)。
 
 ## 开发说明
-```shell
-# 安装最新版的 nodejs
-# https://nodejs.org/en/download/current/
 
+打开下面的链接，在机器上安装最新版的 node.js 及浏览器。  
+- windows: https://nodejs.org/en/download/prebuilt-installer/current
+- linux: https://github.com/nodesource/distributions?tab=readme-ov-file#debian-and-ubuntu-based-distributions  
+
+```shell
 # 安装 pnpm 包管理器
-corepack enable
-corepack prepare pnpm@latest --activate
+npm install -g pnpm
 
 git clone https://github.com/dolphindb/vscode-extension.git
 
 cd vscode-extension
 
+# 国内网络推荐配置 registry 
+pnpm config set registry https://registry.npmmirror.com
+
 # 安装项目依赖
 pnpm install
 
-# 将 .vscode/settings.template.json 复制为 .vscode/settings.json
-cp .vscode/settings.template.json .vscode/settings.json
-
 # 参考 package.json 中的 scripts
 
-# 构建开发版本
+# 启动开发
+# 需要先卸载已安装的 dolphindb 插件
+
 pnpm run dev
 
-# 在 VS Code 中切换到调试面板，启动 ddb.ext 调试任务（需要先禁用或卸载已安装的 dolphindb 插件）
+# 构建
+# pnpm run build
 ```
