@@ -29,6 +29,7 @@ export let builder = {
     
     async build (production: boolean) {
         console.log('项目根目录:', fpd_root)
+        
         console.log(`开始构建${production ? '生产' : '开发'}模式的插件`)
         
         await fdelete(fpd_out)
@@ -109,6 +110,9 @@ export let builder = {
                     globals: {
                         FPD_ROOT: fpd_root.quote(),
                         EXTENSION_VERSION: `${info.version} (${info.time} ${info.hash})`.quote(),
+                    },
+                    resolve_alias: {
+                        '@i18n': `${fpd_root}i18n`,
                     },
                     assets: {
                         productions: [

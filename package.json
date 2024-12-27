@@ -27,7 +27,7 @@
         "@ant-design/plots": "1.2.5",
         "@vscode/debugadapter": "^1.68.0",
         "@vscode/debugprotocol": "^1.68.0",
-        "antd": "^5.22.6",
+        "antd": "^5.22.7",
         "dayjs": "^1.11.13",
         "dolphindb": "^3.0.211",
         "koa": "^2.15.3",
@@ -36,7 +36,7 @@
         "react-object-model": "^1.2.21",
         "tslib": "^2.8.1",
         "ws": "^8.18.0",
-        "xshell": "^1.1.15"
+        "xshell": "^1.1.20"
     },
     "pnpm": {
         "patchedDependencies": {
