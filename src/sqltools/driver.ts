@@ -3,7 +3,7 @@ import AbstractDriver from '@sqltools/base-driver'
 import { IConnectionDriver, MConnectionExplorer, NSDatabase, ContextValue, Arg0 } from '@sqltools/types'
 import { v4 as generateId } from 'uuid'
 
-import { } from 'dolphindb'
+import { DDB } from 'dolphindb'
 
 import { queries } from './queries.ts'
 
@@ -15,15 +15,31 @@ import { queries } from './queries.ts'
     type DriverOptions = PoolConfig;
     
     This will give you completions iside of the library */
-type DriverLib = typeof fakeDbLib
+type DriverLib = typeof dblib
 type DriverOptions = any
 
 /** MOCKED DB DRIVER
     THIS IS JUST AN EXAMPLE AND THE LINES BELOW SHOUDL BE REMOVED! */
 // import fakeDbLib from './mylib'; // this is what you should do
-const fakeDbLib = {
-    open: async () => Promise.resolve(fakeDbLib),
+const dblib = {
+    ddb: null as DDB,
+    
+    open: async () => {
+        dblib.ddb = new DDB('ws://127.0.0.1:8848/')
+        return Promise.resolve(dblib)
+    },
     query: async (..._args: any[]) => {
+        const script = _args[0]
+        
+        console.log('sqltools 通过 ddb 执行的脚本:')
+        console.log(script)
+        
+        console.log(
+            'sqltools 通过 ddb 执行成功:',
+            await dblib.ddb.execute(script)
+        )
+        
+        
         const nResults = parseInt((Math.random() * 1000).toFixed(0))
         const nCols = parseInt((Math.random() * 100).toFixed(0))
         const colNames = [...new Array(nCols)].map((_, index) => `col${index}`)
@@ -65,7 +81,7 @@ export class YourDriver extends AbstractDriver<DriverLib, DriverOptions> impleme
         await this.needToInstallDependencies?.()
         /** open your connection here!!! */
         
-        this.connection = fakeDbLib.open()
+        this.connection = dblib.open()
         return this.connection
     }
     
@@ -73,7 +89,7 @@ export class YourDriver extends AbstractDriver<DriverLib, DriverOptions> impleme
         if (!this.connection)
             return Promise.resolve()
         /** cose you connection here!! */
-        await fakeDbLib.close()
+        await dblib.close()
         this.connection = null
     }
     

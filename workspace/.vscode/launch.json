@@ -11,7 +11,7 @@
             "program": "${file}"
         },
         {
-            "name": "调试当前 DolphinDB 脚本文件 (独立 debugger server)",
+            "name": "调试当前 DolphinDB 脚本文件 (独立 debugger)",
             "type": "dolphindb",
             "request": "launch",
             "program": "${file}",
