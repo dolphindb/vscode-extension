@@ -19,7 +19,10 @@ async function stop () {
 
 async function recompile () {
     await builder.run()
-    console.log('vscode 需要手动重新加载窗口，ctrl + shift + p 选 reload window')
+    
+    // 自动重新加载 vscode
+    if (fp_vscode)
+        await reload_vscode(fp_vscode)
 }
 
 
@@ -79,7 +82,7 @@ if (ramdisk) {
 
 const args = [
     '--extensionDevelopmentPath', fpd_out,
-    `${fpd_root}workspace/`
+    `${fpd_root}${ramdisk ? 'test' : 'workspace'}/`
 ]
 
 
@@ -93,11 +96,13 @@ console.log(
     'extension 开发服务器启动成功\n'.green +
     '尝试自动启动 vscode 调试插件，也' + info +
     '终端快捷键:\n' +
-    'r: 重新编译，编译之后 vscode 需要手动重新加载窗口，ctrl + shift + p 选 reload window\n' +
+    'r: 重新编译，编译后会自动重新加载窗口，手动重新加载可用 ctrl + shift + p 选 reload window\n' +
     'i: 打印调试命令\n' +
     'x: 退出开发服务器\n'
 )
 
+/** 启动成功的 vscode 路径 */
+let fp_vscode: string
 
 // --- 尝试启动 vscode / cursor
 for (const fp of [
@@ -107,22 +112,29 @@ for (const fp of [
 ]) {
     if (fexists(fp, noprint)) {
         try {
-            // 使用 launch 也无法控制 vscode 的子进程，算了
-            await call(fp, args, {
-                cwd: fpd_root,
-                stdio: 'ignore',
-                print: {
-                    command: true,
-                    stdout: false,
-                    stderr: false,
-                    code: false
-                }
-            })
             console.log('启动 vscode 成功'.green)
+            await reload_vscode(fp)
+            fp_vscode = fp
         } catch (error) {
             console.log('启动 vscode 失败，请手动启动:', error)
         }
         
         break
     }
+}
+
+
+async function reload_vscode (fp: string) {
+    // 使用 launch 也无法控制 vscode 的子进程，算了
+    // 如果已有启动的进程，会自动 reload
+    await call(fp, args, {
+        cwd: fpd_root,
+        stdio: 'ignore',
+        print: {
+            command: true,
+            stdout: false,
+            stderr: false,
+            code: false
+        }
+    })
 }
