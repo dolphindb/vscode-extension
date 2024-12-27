@@ -1,4 +1,4 @@
-import { fcopy, fdelete, fexists, fmkdir, fwrite, noprint, ramdisk, set_inspect_options } from 'xshell'
+import { fdelete, fmkdir, fwrite, ramdisk, set_inspect_options } from 'xshell'
 import { Git } from 'xshell/git.js'
 import { Bundler } from 'xshell/builder.js'
 import type { Item } from 'xshell/i18n/index.js'
@@ -29,13 +29,8 @@ export let builder = {
     
     async build (production: boolean) {
         console.log('项目根目录:', fpd_root)
-        console.log(`开始构建${production ? '生产' : '开发'}模式的插件`)
         
-        if (!ramdisk) {
-            const fp_settings = `${fpd_root}.vscode/settings.json`
-            if (!fexists(fp_settings, noprint))
-                await fcopy(`${fp_settings.strip_end('json')}template.json`, fp_settings)
-        }
+        console.log(`开始构建${production ? '生产' : '开发'}模式的插件`)
         
         await fdelete(fpd_out)
         
