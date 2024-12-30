@@ -36,7 +36,7 @@
         "react-object-model": "^1.2.21",
         "tslib": "^2.8.1",
         "ws": "^8.18.0",
-        "xshell": "^1.1.21"
+        "xshell": "^1.1.22"
     },
     "pnpm": {
         "patchedDependencies": {
