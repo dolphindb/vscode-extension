@@ -1,6 +1,6 @@
 import AbstractDriver from '@sqltools/base-driver'
 
-import { IConnectionDriver, MConnectionExplorer, NSDatabase, ContextValue, Arg0 } from '@sqltools/types'
+import { type IConnectionDriver, type MConnectionExplorer, type NSDatabase, ContextValue, type Arg0 } from '@sqltools/types'
 import { v4 as generateId } from 'uuid'
 
 import { DDB } from 'dolphindb'

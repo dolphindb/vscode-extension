@@ -27,7 +27,7 @@ async function recompile () {
 
 
 process_stdin(
-    async (key) => {
+    async key => {
         switch (key) {
             case 'r':
                 try {
@@ -109,7 +109,7 @@ for (const fp of [
     `C:/Users/${os.userInfo().username}/AppData/Local/Programs/cursor/Cursor.exe`,
     'C:/Program Files/Microsoft VS Code/Code.exe' as const,
     `C:/Users/${os.userInfo().username}/AppData/Local/Programs/Microsoft VS Code/Code.exe`,
-]) {
+]) 
     if (fexists(fp, noprint)) {
         try {
             console.log('启动 vscode 成功'.green)
@@ -121,7 +121,7 @@ for (const fp of [
         
         break
     }
-}
+
 
 
 async function reload_vscode (fp: string) {

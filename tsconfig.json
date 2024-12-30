@@ -4,11 +4,15 @@
         
         "./build.ts",
         
+        "./dev.ts",
+        
         "./src/index.ts",
         
         "./src/debugger/",
         
-        "./src/dataview/"
+        "./src/dataview/",
+        
+        "./src/sqltools/"
     ],
     
     "compilerOptions": {

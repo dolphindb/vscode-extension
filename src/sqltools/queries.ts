@@ -1,4 +1,4 @@
-import { IBaseQueries, ContextValue } from '@sqltools/types'
+import { type IBaseQueries, ContextValue } from '@sqltools/types'
 import queryFactory from '@sqltools/base-driver/dist/lib/factory.js'
 
 /** write your queries here go fetch desired data. This queries are just examples copied from SQLite driver */

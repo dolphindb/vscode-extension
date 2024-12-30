@@ -326,9 +326,7 @@ function Tensor ({
     const currentDimSize: number = _obj.value.shape[currentDim]
     // 搞这么多元素来
     const elems = [ ]
-    const offset = currentDir.reduce((prev, curr, index) => {
-        return prev + strides[index] * curr * dataByte
-    }, 0)
+    const offset = currentDir.reduce((prev, curr, index) => prev + strides[index] * curr * dataByte, 0)
     
     let arrstrall = ''
     for (let j = 0;  j < _obj.value.dimensions;  j++) 
@@ -382,9 +380,7 @@ function Tensor ({
         }
     
     
-    const navItems = currentDir.map((e, i) => {
-        return <div className='tensor-nav-elem' key={`tensor-index-${i}`} onClick={() => { popDimIndexTo(i + 1) }}>[{e}] <RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></div>
-    })
+    const navItems = currentDir.map((e, i) => <div className='tensor-nav-elem' key={`tensor-index-${i}`} onClick={() => { popDimIndexTo(i + 1) }}>[{e}] <RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></div>)
     
     
     return <div className='tensor'>
