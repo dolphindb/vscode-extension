@@ -33,8 +33,8 @@ process_stdin(
                 try {
                     await recompile()
                 } catch (error) {
-                    console.log('重新编译失败，请尝试按 x 退出后再启动:')
                     console.log(error)
+                    console.log('重新编译失败，请尝试按 x 退出后再启动')
                 }
                 
                 break
@@ -129,11 +129,10 @@ async function reload_vscode (fp: string) {
     // 如果已有启动的进程，会自动 reload
     await call(fp, args, {
         cwd: fpd_root,
-        stdio: 'ignore',
+        stdout: 'ignore',
+        stderr: 'ignore',
         print: {
             command: true,
-            stdout: false,
-            stderr: false,
             code: false
         }
     })
