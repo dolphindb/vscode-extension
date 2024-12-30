@@ -1,15 +1,20 @@
 {
     "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.preferences.preferTypeOnlyAutoImports": true,
+    "typescript.preferences.importModuleSpecifierEnding": "js",
     "files.trimTrailingWhitespace": false,
+    "files.eol": "\n",
     "editor.trimAutoWhitespace": false,
     "editor.formatOnSave": false,
     "editor.formatOnPaste": false,
-    "prettier.tabWidth": 4,
     "editor.tabSize": 4,
+    "editor.comments.ignoreEmptyLines": false,
     "editor.codeActionsOnSave": {
         "source.fixAll": true,
         "source.organizeImports": false
     },
+    "gitlens.integrations.enabled": true,
+    "gitlens.remotes": [{ "domain": "dolphindb.net", "type": "GitLab" }],
     "git.pruneOnFetch": true,
     "git-graph.dialog.fetchRemote.prune": true
 }

@@ -27,14 +27,14 @@ async function recompile () {
 
 
 process_stdin(
-    async (key) => {
+    async key => {
         switch (key) {
             case 'r':
                 try {
                     await recompile()
                 } catch (error) {
-                    console.log('重新编译失败，请尝试按 x 退出后再启动:')
                     console.log(error)
+                    console.log('重新编译失败，请尝试按 x 退出后再启动')
                 }
                 
                 break
@@ -109,7 +109,7 @@ for (const fp of [
     `C:/Users/${os.userInfo().username}/AppData/Local/Programs/cursor/Cursor.exe`,
     'C:/Program Files/Microsoft VS Code/Code.exe' as const,
     `C:/Users/${os.userInfo().username}/AppData/Local/Programs/Microsoft VS Code/Code.exe`,
-]) {
+]) 
     if (fexists(fp, noprint)) {
         try {
             console.log('启动 vscode 成功'.green)
@@ -121,7 +121,7 @@ for (const fp of [
         
         break
     }
-}
+
 
 
 async function reload_vscode (fp: string) {
@@ -129,11 +129,10 @@ async function reload_vscode (fp: string) {
     // 如果已有启动的进程，会自动 reload
     await call(fp, args, {
         cwd: fpd_root,
-        stdio: 'ignore',
+        stdout: 'ignore',
+        stderr: 'ignore',
         print: {
             command: true,
-            stdout: false,
-            stderr: false,
             code: false
         }
     })
