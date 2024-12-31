@@ -129,8 +129,7 @@ async function reload_vscode (fp: string) {
     // 如果已有启动的进程，会自动 reload
     await call(fp, args, {
         cwd: fpd_root,
-        stdout: 'ignore',
-        stderr: 'ignore',
+        stdout: false,
         print: {
             command: true,
             code: false
