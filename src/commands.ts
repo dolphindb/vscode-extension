@@ -9,7 +9,7 @@ import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions,
 
 import type { Variable } from '@vscode/debugadapter'
 
-import { i18n, language, t } from '../i18n/index.ts'
+import { i18n, t } from '../i18n/index.ts'
 
 import { server } from './server.ts'
 import { statbar } from './statbar.ts'
@@ -156,7 +156,7 @@ async function execute (text: string, iline: number, testing = false) {
     try {
         refresh_database = await connection.connect()
         
-        if (!connection.logined && connection.client_auth) {
+        if (connection.client_auth && !connection.logined) {
             const message = t('数据库已启用客户端安全认证，请在连接配置中启用自动登录 (autologin: true)，并填写用户名密码')
             
             if (
