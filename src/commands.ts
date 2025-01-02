@@ -120,6 +120,8 @@ function resolve_remote_path (fp_local: string, mappings: Record<string, string>
 }
 
 
+let timer = new Timer()
+
 async function execute (text: string, iline: number, testing = false) {
     let { connection } = connector
     
@@ -135,7 +137,7 @@ async function execute (text: string, iline: number, testing = false) {
     let { ddb } = connection
     let { printer } = terminal
     
-    let timer = new Timer()
+    timer.reset()
     const lines = text.split_lines()
     
     printer.fire(
@@ -153,6 +155,20 @@ async function execute (text: string, iline: number, testing = false) {
     
     try {
         refresh_database = await connection.connect()
+        
+        if (!connection.logined && connection.client_auth) {
+            const message = t('数据库已启用客户端安全认证，请在连接配置中启用自动登录 (autologin: true)，并填写用户名密码')
+            
+            if (
+                await window.showInformationMessage(
+                    message,
+                    { modal: true },
+                    { title: t('打开连接配置') })
+            )
+                await open_connection_settings()
+            
+            throw new Error(message)
+        }
         
         // TEST: 测试 RefId 错误链接
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
@@ -483,16 +499,10 @@ export const ddb_commands = [
         const connectionsInspection = workspace.getConfiguration('dolphindb').inspect(setting)
         
         let target = ConfigurationTarget.Global
-        switch (true) {
-            case !!connectionsInspection.workspaceValue:
-                target = ConfigurationTarget.Workspace
-                break
-            case !!connectionsInspection.workspaceFolderValue:
-                target = ConfigurationTarget.WorkspaceFolder
-                break
-            default:
-                break
-        }
+        if (connectionsInspection.workspaceFolderValue !== undefined)
+            target = ConfigurationTarget.WorkspaceFolder
+        else if (connectionsInspection.workspaceValue !== undefined)
+            target = ConfigurationTarget.Workspace
         
         await open_workbench_settings_ui(target, { query: `@ext:dolphindb.dolphindb-vscode${setting ? ` ${setting}` : ''}` })
     },
