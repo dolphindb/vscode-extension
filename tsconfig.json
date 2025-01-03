@@ -4,6 +4,8 @@
         
         "./build.ts",
         
+        "./dev.ts",
+        
         "./src/index.ts",
         
         "./src/debugger/",

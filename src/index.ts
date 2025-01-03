@@ -35,6 +35,7 @@ import { register_terminal_link_provider } from './terminal.ts'
 import { connector, register_connector } from './connector.ts'
 import { register_variables } from './variables.ts'
 import { register_databases } from './databases.ts'
+import { register_settings } from './settings.ts'
 
 
 export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }
@@ -140,6 +141,8 @@ export async function activate (ctx: ExtensionContext) {
             return config
         }
     }))
+    
+    await register_settings()
     
     console.log(t('DolphinDB 插件初始化成功'))
 }

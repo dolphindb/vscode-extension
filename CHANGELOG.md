@@ -2,7 +2,7 @@
 
 ## [3.0.200]
 #### 新功能 / New Features
--   支持展示分布式表的 iotany 类型的列。 
+-   支持展示分布式表的 iotany 类型的列。  
     Display of IOTANY columns in DFS tables.
 
 -   新增 `dolphindb.show_connection_url` 配置项，支持设置是否在侧连接面板中显示连接的 url 地址。   
@@ -16,7 +16,7 @@
 -   报错中的行号显示为代码块内的行号。   
     Aligned error line numbers in terminal with Code Editor line numbers.
 
--   支持高亮 @state, @jit, @transform 等宏
+-   支持高亮 @state, @jit, @transform 等宏  
     Support highlighting of @state, @jit, @transform and other macros
 
 

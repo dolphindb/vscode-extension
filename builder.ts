@@ -16,7 +16,7 @@ export const fpd_root = import.meta.dirname.fpd
 
 const fpd_ramdisk_root = 'T:/2/ddb/ext/' as const
 
-const fpd_out = `${ ramdisk ? fpd_ramdisk_root : fpd_root }out/`
+export const fpd_out = `${ ramdisk ? fpd_ramdisk_root : fpd_root }out/`
 
 const fpd_out_dataview = `${fpd_out}dataview/`
 
@@ -29,6 +29,8 @@ export let builder = {
     
     async build (production: boolean) {
         console.log('项目根目录:', fpd_root)
+        
+        console.log(`开始构建${production ? '生产' : '开发'}模式的插件`)
         
         await fdelete(fpd_out)
         
@@ -57,18 +59,13 @@ export let builder = {
                     'webview.js': './src/dataview/webview.tsx',
                 },
                 {
-                    globals: {
-                        PRODUCTION: (production ? 'true' : 'false').quote(),
-                    },
                     resolve_alias: {
                         '@i18n': `${fpd_root}i18n`,
                     },
                     external_dayjs: true,
                     production,
-                    license: {
-                        ignores: ['dolphindb-vscode']
-                    },
-                    dependencies: ['antd-icons', 'antd-plots', 'lodash'],
+                    license: production,
+                    dependencies: ['antd-icons', 'antd-plots'],
                     htmls: {
                         'index.html': {
                             title: 'DolphinDB',
@@ -107,14 +104,15 @@ export let builder = {
                 },
                 {
                     production,
-                    license: {
-                        ignores: ['dolphindb-vscode']
-                    },
+                    license: production,
                     commonjs2: true,
                     single_chunk: false,
                     globals: {
                         FPD_ROOT: fpd_root.quote(),
                         EXTENSION_VERSION: `${info.version} (${info.time} ${info.hash})`.quote(),
+                    },
+                    resolve_alias: {
+                        '@i18n': `${fpd_root}i18n`,
                     },
                     assets: {
                         productions: [
