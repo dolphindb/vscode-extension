@@ -40,7 +40,7 @@ export default {
         "outDir": "out",
       },
       include: ['server'],
-      exclude: ["node_modules", "src", "./build.ts"]
+      exclude: ["node_modules", "src", "./build.ts", "./builder.ts", "./dev.ts"]
     }
   }),],
   external: ['react']
