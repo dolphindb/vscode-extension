@@ -27,11 +27,11 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
         const line = lines[i]
         for (let j = 0;  j < line.length;  j++) {
             const char = line[j]
-            if (char === '{') 
+            if (char === '{')
                 // 遇到 '{'，推入栈
                 scopeStack.push({ startLine: i, startChar: j })
-             else if (char === '}')
-                 if (scopeStack.length > 0) {
+            else if (char === '}')
+                if (scopeStack.length > 0) {
                     const scope = scopeStack.pop()!
                     scopes.push({
                         startLine: scope.startLine,
@@ -40,7 +40,7 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
                         endChar: j,
                     })
                 }
-            
+                
         }
     }
     
@@ -58,21 +58,21 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
     // Helper 函数：找到变量或函数所在的最内层作用域
     function findInnermostScope (line: number, char: number): Scope | null {
         let innermost: Scope | null = null
-        for (const scope of scopes) 
-            if (isPositionInScope(line, char, scope)) 
-                if (!innermost) 
+        for (const scope of scopes)
+            if (isPositionInScope(line, char, scope))
+                if (!innermost)
                     innermost = scope
-                 else 
+                else
                     // 选择更内层的作用域
                     if (
                         scope.startLine > innermost.startLine ||
                         (scope.startLine === innermost.startLine && scope.startChar > innermost.startChar)
-                    ) 
+                    )
                         innermost = scope
-                    
-                
-            
-        
+                        
+                        
+                        
+                        
         return innermost
     }
     
@@ -265,21 +265,22 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
                 { line: braceLine, character: braceColumn },
                 { line: endBraceLine, character: endBraceColumn },
             ]
-            
+            let top_level = false
             // 定义函数的作用域范围为其外部作用域
             let functionScopeRange: [Position, Position]
-            if (functionScope) 
+            if (functionScope)
                 functionScopeRange = [
                     { line: functionScope.startLine, character: functionScope.startChar },
                     { line: functionScope.endLine, character: functionScope.endChar },
                 ]
-             else 
+            else {
                 // 全局作用域，从文件开始到文件结束
                 functionScopeRange = [
                     { line: 0, character: 0 },
                     { line: totalLines - 1, character: lines[totalLines - 1].length },
                 ]
-            
+                top_level = true
+            }
             
             // 定义函数名的 Range
             const nameStartColumn = defColumn
@@ -296,6 +297,7 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
             const metadata: IFunctionMetadata = {
                 argnames: argnames,
                 scope: functionScopeRange,
+                top_level,
                 comments: comments,
             }
             
@@ -317,10 +319,10 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
                 let argLine = defLine
                 let argColumn = 0
                 
-                if (paramMatch) 
+                if (paramMatch)
                     // 计算参数在函数定义行的位置
                     argColumn = openParenIndex + 1 + paramMatch.index
-                 else 
+                else
                     // 如果参数在当前行未找到，尝试在后续行查找
                     for (let searchLine = i + 1;  searchLine <= j;  searchLine++) {
                         const searchMatch = new RegExp(`\\b${arg}\\b`).exec(lines[searchLine])
@@ -330,8 +332,8 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
                             break
                         }
                     }
-                
-                
+                    
+                    
                 const paramRange: Range = {
                     start: { line: argLine, character: argColumn },
                     end: { line: argLine, character: argColumn + arg.length },
@@ -550,4 +552,15 @@ export function getVariableSymbols (text: string, filePath: string): ISymbol[] {
     }
     
     return symbols
+}
+
+export function getFileModule (text: string): string | undefined {
+    // 模块文件的第一行必须是模块声明语句。例如在 fileLog.dos 中声明模块：
+    // module fileLog
+    
+    const lines = text.split('\n')
+    const firstLine = lines[0].trim()
+    const match = /^module\s+([a-zA-Z_]\w*)/.exec(firstLine)
+    const moduleName = match ? match[1] : undefined
+    return moduleName
 }

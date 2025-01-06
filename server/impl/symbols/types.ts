@@ -14,6 +14,7 @@ export interface IFunctionMetadata {
     argnames: string[]
     scope: [Position, Position]
     comments: string
+    top_level?: boolean
 }
 
 export interface IVariableMetadata {

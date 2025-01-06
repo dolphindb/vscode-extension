@@ -1,16 +1,20 @@
 import { type TextDocument } from 'vscode-languageserver-textdocument'
 
 import { type ISymbol, SymbolType } from './types'
-import { getFunctionSymbols, getVariableSymbols } from './impl'
+import { getFileModule, getFunctionSymbols, getVariableSymbols } from './impl'
 
 
-
+interface IFileSymbols {
+    module?: string
+    use: string[]
+    symbols: ISymbol[]
+}
 
 export class SymbolService {
-    symbols = new Map<string, ISymbol[]>()
+    symbols = new Map<string, IFileSymbols>()
     
     getSymbols (filePath: string): ISymbol[] {
-        return this.symbols.get(filePath) || [ ]
+        return this.symbols.get(filePath)?.symbols || [ ]
     }
     
     buildSymbolByDocument (document: TextDocument) {
@@ -21,7 +25,11 @@ export class SymbolService {
             ...getVariableSymbols(text, filePath),
         ]
         
-        this.symbols.set(filePath, symbols)
+        this.symbols.set(filePath, {
+            symbols,
+            use: [ ],
+            module: getFileModule(text)
+        })
     }
     
     onCloseDocument (document: TextDocument) {
