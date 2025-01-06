@@ -28,8 +28,8 @@ export interface IParamMetadata {
 
 // 通过映射关系为每个 SymbolType 提供对应的元数据类型
 export type SymbolMetadataMap = {
-    [SymbolType.Function]: IFunctionMetadata,
-    [SymbolType.Variable]: IVariableMetadata,
+    [SymbolType.Function]: IFunctionMetadata
+    [SymbolType.Variable]: IVariableMetadata
     [SymbolType.Param]: IParamMetadata
 }
 
