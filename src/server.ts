@@ -37,12 +37,7 @@ class DdbServer extends Server {
         if (request.path === '/window')
             request.path = '/window.html'
         
-        return this.try_send(ctx, `${fpd_ext}dataview/`, request.path, true)
-    }
-    
-    
-    override async logger (ctx: Context) {
-        // 不需要打印文件请求日志
+        return this.try_send(ctx, request.path, { fpd_root: `${fpd_ext}dataview/` })
     }
 }
 
@@ -135,6 +130,12 @@ export async function start_server () {
                 return [ ]
             }
         },
+        
+        print: {
+            info: true,
+            errors: true,
+            logs: false
+        }
     })
     
     server.web_url = `http://localhost:${http_port}/`

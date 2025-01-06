@@ -27,7 +27,6 @@ import {
     type DdbOptions,
     type DdbTableObj,
     type DdbVectorStringObj,
-    DdbFunctionType,
 } from 'dolphindb'
 
 
@@ -100,7 +99,8 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
             try {
                 await connection.connect()
                 await connection.check_license_expiration()
-                await connection.update(true)
+                if (!connection.client_auth)
+                    await connection.update(true)
             } finally {
                 // 先在这里更新 done, 等后面 catch 了错误处理之后，可能会重试连接，会包含下一个连接进度
                 done = true
@@ -138,6 +138,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
             const answer = await window.showErrorMessage<DdbMessageItem>(
                 error.message,
                 {
+                    modal: true,
                     detail: 
                         ((connection.connected ?
                             t('数据库连接被断开，请检查网络是否稳定、网络转发节点是否会自动关闭 websocket 长连接、server 日志\n')
@@ -160,8 +161,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
                             t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
                             t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n')) +
                         t('调用栈:\n') +
-                        error.stack).slice(0, 600),
-                    modal: true
+                        error.stack).truncate(600),
                 },
                 {
                     title: t('确认'),
@@ -352,6 +352,8 @@ export class DdbConnection extends TreeItem {
     
     mappings: Record<string, string>
     
+    client_auth = false
+    
     load_table_variable_schema_defined = false
     
     get_csv_content_defined = false
@@ -437,7 +439,8 @@ export class DdbConnection extends TreeItem {
             this.get_node_type(),
             this.get_node_alias(),
             this.get_controller_alias(),
-            this.get_formatted_version()
+            this.get_formatted_version(),
+            this.check_client_auth()
         ])
         await this.get_cluster_perf()
         
@@ -902,6 +905,17 @@ export class DdbConnection extends TreeItem {
                 (node.mode === NodeType.data || node.mode === NodeType.computing) && 
                 node.state === DdbNodeState.online)
         )
+    }
+    
+    
+    async check_client_auth () {
+        try {
+            const client_auth = await this.ddb.invoke<boolean>('isClientAuth', undefined, { urgent: true })
+            console.log(t('安全认证:'), client_auth)
+            return this.client_auth = client_auth
+        } catch {
+            return false
+        }
     }
 }
 

@@ -10,7 +10,7 @@ import {
     FileType
 } from 'vscode'
 
-import { path, assert } from 'xshell'
+import { path, assert, decode } from 'xshell'
 
 
 import { t } from '../i18n/index.ts'
@@ -170,7 +170,7 @@ export async function fmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
     // 返回值为上传结果对象
     try {
         const { value } = await ddb.call<DdbStringObj>('uploadModule', [
-            new TextDecoder('utf-8').decode(buffer),
+            decode(buffer),
             true,
             encrypt
         ])
