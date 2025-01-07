@@ -38,6 +38,7 @@ class DdbModules {
     }
     
     private handleModuleFileChange (module: DdbModule) {
+        console.log('module file change', module)
         symbolService.buildSymbolByModule(module)
     }
     
@@ -52,7 +53,7 @@ class DdbModules {
     private removeModule (module: DdbModule) {
         const index = this.modules.findIndex(e => e.path === module.path)
         console.log('to delete', module)
-        if (index >= 0) 
+        if (index >= 0)
             this.modules.splice(index, 1)
         const watcher = this.moduleWatchers.get(module.path)
         if (watcher)
@@ -114,11 +115,11 @@ class DdbModules {
             return
         const watcher = fs.watch(path)
         // 监听变化
-        watcher.on('change', (event, filename) => {
-            console.log(event, filename)
-            const dirs = fs.readdirSync(path)
-            // 重新注册模块
-            this.registerDirModules(path, dirs)
+        watcher.on('rename', (event, filename) => {
+            const itemPaths = fs.readdirSync(path)
+            // 删除这个目录关联的模块，重建
+            this.modules = this.modules.filter(e => e.moduleParentPath !== path)
+            this.registerDirModules(path, itemPaths)
         })
         this.dirWatchers.set(path, { path, watcher })
     }

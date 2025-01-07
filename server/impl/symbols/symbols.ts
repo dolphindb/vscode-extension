@@ -48,7 +48,6 @@ export class SymbolService {
         const data = await fsp.readFile(module.path, 'utf-8')
         const text = data.toString()
         const symbols = this.buildSymbolsByFile(text, uri)
-        console.log(module.moduleName)
         this.symbols.set(uri, {
             symbols,
             use: [ ],

@@ -54,7 +54,6 @@ function validateUseModule (line: string, lnindex: number): Diagnostic[] {
     if (ln.startsWith('use')) {
         const moduleName = extractModuleName(ln)
         const modules = ddbModules.getModules()
-        console.log(`find ${moduleName} in ${JSON.stringify(modules.map(e => e.moduleName))}`)
         const module = modules.find(e => e.moduleName === moduleName)
         if (moduleName && !module) 
             return [{
