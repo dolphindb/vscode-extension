@@ -31,7 +31,7 @@ class DdbModules {
     // 设置初始化或者更新的时候调用
     public setModuleRoot (root: string) {
         this.moduleRoot = root
-        // this.buildModuleIndex()
+        this.buildModuleIndex()
     }
     
     private buildModuleIndex () {

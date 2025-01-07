@@ -3,7 +3,8 @@ import {
     ProposedFeatures, type InitializeParams,
     DidChangeConfigurationNotification,
     TextDocumentSyncKind,
-    type InitializeResult
+    type InitializeResult,
+    WorkspaceFoldersRequest
 } from 'vscode-languageserver/node'
 
 import { ddbModules } from './modules'
@@ -71,35 +72,31 @@ connection.onInitialize((params: InitializeParams) => {
     return result
 })
 connection.onInitialized(() => {
-    if (hasConfigurationCapability) {
-        // Register for all configuration changes.
-        connection.client.register(DidChangeConfigurationNotification.type, undefined)
-        connection.workspace.getConfiguration('dolphindb').then((settings: LanguageServerSettings) => {
-            globalSettings = settings
-            ddbModules.setModuleRoot(settings.moduleRoot)
-            // 刷新一下诊断
-            connection.languages.diagnostics.refresh()
-        })
-    }
+    connection.sendRequest(WorkspaceFoldersRequest.type).then(folders => {
+        if (folders) 
+            for (const folder of folders) 
+                ddbModules.setModuleRoot(folder.uri)
+    })
     if (hasWorkspaceFolderCapability) 
         connection.workspace.onDidChangeWorkspaceFolders(_event => {
             connection.console.log('Workspace folder change event received.')
         })
 })
 
-connection.onDidChangeConfiguration(change => { // 这个参数也用不着，我们直接用 workspace getConfiguration 全量重设
+// connection.onDidChangeConfiguration(change => { // 这个参数也用不着，我们直接用 workspace getConfiguration 全量重设
 
-    if (hasConfigurationCapability) 
-        connection.workspace.getConfiguration('dolphindb').then((settings: LanguageServerSettings) => {
-            globalSettings = settings
-            ddbModules.setModuleRoot(settings.moduleRoot)
-        })
+//     if (hasConfigurationCapability) 
+//         connection.workspace.getConfiguration('dolphindb').then((settings: LanguageServerSettings) => {
+//             globalSettings = settings
+//             ddbModules.setModuleRoot(settings.moduleRoot)
+//         })
     
-    // Refresh the diagnostics since the `maxNumberOfProblems` could have changed.
-    // We could optimize things here and re-fetch the setting first can compare it
-    // to the existing setting, but this is out of scope for this example.
-    connection.languages.diagnostics.refresh()
-})
+//     // Refresh the diagnostics since the `maxNumberOfProblems` could have changed.
+//     // We could optimize things here and re-fetch the setting first can compare it
+//     // to the existing setting, but this is out of scope for this example.
+//     connection.languages.diagnostics.refresh()
+// })
+
 connection.onDidChangeWatchedFiles(_change => {
     // Monitored files have change in VSCode
     connection.console.log('We received a file change event')
