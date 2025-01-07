@@ -248,12 +248,20 @@ async function execute (text: string, iline: number, testing = false) {
     if (connection.disconnected)
         return
     
-    await connection.update(refresh_database)
-    connector.refresh(refresh_database)
-    
-    connection.running = false
-    statbar.update()
-    
+    // 客户端认证打开时，执行了 logout 后下面的调用可能会报错
+    try {
+        await connection.update(refresh_database)
+        connector.refresh(refresh_database)
+    } catch (error) {
+        if (error.message.includes('S04009')) {
+            terminal.printer.fire(t('数据库启用了客户端认证，用户注销时连接同时关闭') + '\r\n')
+            connector.disconnect(connection)
+        } else
+            throw error
+    } finally {
+        connection.running = false
+        statbar.update()
+    }
     
     function get_execution_end () {
         return timer.getstr(true) + (connection === connector.connection ? '' : ` (${connection.name})`) + '\r\n'
