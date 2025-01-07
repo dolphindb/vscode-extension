@@ -455,7 +455,7 @@ export class DdbConnection extends TreeItem {
     
     async disconnect () {
         this.ddb.disconnect()
-        await this.update_logined()
+        this.logined = false
     }
     
     
@@ -911,7 +911,7 @@ export class DdbConnection extends TreeItem {
     async check_client_auth () {
         try {
             const client_auth = await this.ddb.invoke<boolean>('isClientAuth', undefined, { urgent: true })
-            console.log(t('安全认证:'), client_auth)
+            console.log(t('客户端认证:'), client_auth)
             return this.client_auth = client_auth
         } catch {
             return false
