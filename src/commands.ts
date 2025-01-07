@@ -581,7 +581,6 @@ export const ddb_commands = [
     async function reload_variables () {
         const { connection } = connector
         
-        await connection.update_logined()
         await connection.update_vars()
         
         variables.refresher.fire()
