@@ -560,7 +560,7 @@ export function getFileModule (text: string): string | undefined {
     
     const lines = text.split('\n')
     const firstLine = lines[0].trim()
-    const match = /^module\s+([a-zA-Z_]\w*)/.exec(firstLine)
+    const match = /^module\s+([a-zA-Z_:]*)/.exec(firstLine)
     const moduleName = match ? match[1] : undefined
     return moduleName
 }

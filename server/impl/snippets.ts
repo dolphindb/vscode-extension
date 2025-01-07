@@ -2,6 +2,7 @@ import { InsertTextFormat, CompletionItemKind, type TextDocumentPositionParams, 
 
 import { symbolService } from './symbols/symbols'
 import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './symbols/types'
+import { ddbModules } from './modules'
 
 class SnippetService {
 
@@ -97,6 +98,22 @@ class SnippetService {
         return completionItems
     }
     
+    getModuleUseSnippets (position: TextDocumentPositionParams): CompletionItem[] {
+        const items: CompletionItem[] = [ ]
+        const allModules = ddbModules.getModules().filter(module => module.moduleName)
+        for (const module of allModules) {
+            const moduleName = module.moduleName
+            items.push({
+                    label: `use ${moduleName}`,
+                    kind: CompletionItemKind.Module,
+                    documentation: `Use module ${moduleName}`,
+                    insertText: `use ${moduleName}`
+                })
+        }
+        
+        return items
+    }
+    
     complete (position: TextDocumentPositionParams): CompletionItem[] {
         return [
             {
@@ -112,6 +129,7 @@ class SnippetService {
             },
             ...this.getFunctionSnippets(position),
             ...this.getVariableSnippets(position),
+            ...this.getModuleUseSnippets(position)
         ]
     }
     

@@ -62,22 +62,25 @@ connection.onInitialize((params: InitializeParams) => {
             }
         }
     }
-    if (hasWorkspaceFolderCapability) 
+    if (hasWorkspaceFolderCapability)
         result.capabilities.workspace = {
             workspaceFolders: {
                 supported: true
             }
         }
-    
+        
     return result
 })
 connection.onInitialized(() => {
     connection.sendRequest(WorkspaceFoldersRequest.type).then(folders => {
-        if (folders) 
-            for (const folder of folders) 
-                ddbModules.setModuleRoot(folder.uri)
+        if (folders)
+            for (const folder of folders) {
+                const path = decodeURIComponent(folder.uri).replace('file:///', '')
+                ddbModules.setModuleRoot(path)
+            }
+            
     })
-    if (hasWorkspaceFolderCapability) 
+    if (hasWorkspaceFolderCapability)
         connection.workspace.onDidChangeWorkspaceFolders(_event => {
             connection.console.log('Workspace folder change event received.')
         })
@@ -90,7 +93,7 @@ connection.onInitialized(() => {
 //             globalSettings = settings
 //             ddbModules.setModuleRoot(settings.moduleRoot)
 //         })
-    
+
 //     // Refresh the diagnostics since the `maxNumberOfProblems` could have changed.
 //     // We could optimize things here and re-fetch the setting first can compare it
 //     // to the existing setting, but this is out of scope for this example.

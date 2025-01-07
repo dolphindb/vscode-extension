@@ -1,4 +1,9 @@
+import * as fsp from 'fs/promises'
+
 import { type TextDocument } from 'vscode-languageserver-textdocument'
+
+
+import { type DdbModule } from '../modules'
 
 import { type ISymbol, SymbolType } from './types'
 import { getFileModule, getFunctionSymbols, getVariableSymbols } from './impl'
@@ -17,18 +22,37 @@ export class SymbolService {
         return this.symbols.get(filePath)?.symbols || [ ]
     }
     
-    buildSymbolByDocument (document: TextDocument) {
-        const filePath = document.uri
-        const text = document.getText()
-        const symbols: ISymbol[] = [
+    buildSymbolsByFile (text: string, filePath: string): ISymbol[] {
+        return [
             ...getFunctionSymbols(text, filePath),
             ...getVariableSymbols(text, filePath),
         ]
+    }
+    
+    buildSymbolByDocument (document: TextDocument) {
+        const filePath = document.uri
+        const text = document.getText()
+        const symbols = this.buildSymbolsByFile(text, filePath)
         
         this.symbols.set(filePath, {
             symbols,
             use: [ ],
             module: getFileModule(text)
+        })
+    }
+    
+    async buildSymbolByModule (module: DdbModule) {
+        if (!module.moduleName)
+            return
+        const uri = `file:///${module.path}`
+        const data = await fsp.readFile(module.path, 'utf-8')
+        const text = data.toString()
+        const symbols = this.buildSymbolsByFile(text, uri)
+        console.log(module.moduleName)
+        this.symbols.set(uri, {
+            symbols,
+            use: [ ],
+            module: module.moduleName
         })
     }
     
