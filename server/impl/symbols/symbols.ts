@@ -3,7 +3,7 @@ import * as fsp from 'fs/promises'
 import { type TextDocument } from 'vscode-languageserver-textdocument'
 
 
-import { type DdbModule } from '../modules'
+import { readFileByPath, type DdbModule } from '../modules'
 
 import { type ISymbol, SymbolType } from './types'
 import { getFileModule, getFunctionSymbols, getVariableSymbols } from './impl'
@@ -16,6 +16,7 @@ interface IFileSymbols {
 }
 
 export class SymbolService {
+    // 标识符可以是 uri 或 filePath，textDocument 的时候用 uri，没有办法获取 uri 的时候用 filePath
     symbols = new Map<string, IFileSymbols>()
     
     getSymbols (filePath: string): ISymbol[] {
@@ -44,15 +45,17 @@ export class SymbolService {
     async buildSymbolByModule (module: DdbModule) {
         if (!module.moduleName)
             return
-        const uri = `file:///${module.path}`
-        const data = await fsp.readFile(module.path, 'utf-8')
-        const text = data.toString()
-        const symbols = this.buildSymbolsByFile(text, uri)
-        this.symbols.set(uri, {
+        const text = await readFileByPath(module.filePath)
+        const symbols = this.buildSymbolsByFile(text, module.filePath)
+        this.symbols.set(module.filePath, {
             symbols,
             use: [ ],
             module: module.moduleName
         })
+    }
+    
+    public deleteSymbolByUri (uri: string) {
+        this.symbols.delete(uri)
     }
     
     onCloseDocument (document: TextDocument) {

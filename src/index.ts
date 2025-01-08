@@ -18,7 +18,8 @@ import {
     
     debug, type DebugConfiguration,
     
-    type MessageItem
+    type MessageItem,
+    type Uri
 } from 'vscode'
 
 import 'xshell/polyfill.browser.js'
@@ -196,7 +197,21 @@ export async function activate (ctx: ExtensionContext) {
     )
     
     // Start the client. This will also launch the server
-    client.start()
+    await client.start()
+    client.onRequest('ddb/getFiles', async () => {
+        const files = await workspace.findFiles('**/*.dos', null)
+        return files
+    })
+    const watcher = workspace.createFileSystemWatcher('**/*.dos')
+    watcher.onDidCreate(uri => {
+        client.sendRequest('ddb/handleFileCreate', uri)
+    })
+    watcher.onDidChange(uri => {
+        client.sendRequest('ddb/handleFileCreate', uri)
+    })
+    watcher.onDidDelete(uri => {
+        client.sendRequest('ddb/handleFileDelete', uri)
+    })
     
     console.log(t('DolphinDB 插件初始化成功'))
 }

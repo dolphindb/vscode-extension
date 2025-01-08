@@ -7,7 +7,7 @@ import {
     WorkspaceFoldersRequest
 } from 'vscode-languageserver/node'
 
-import { ddbModules } from './modules'
+import { ddbModules, type DdbUri } from './modules'
 
 
 // Create a connection for the server, using Node's IPC as a transport.
@@ -59,6 +59,12 @@ connection.onInitialize((params: InitializeParams) => {
             diagnosticProvider: {
                 interFileDependencies: false,
                 workspaceDiagnostics: false
+            },
+            workspace: {
+                workspaceFolders: {
+                    supported: true,
+                    changeNotifications: true
+                }
             }
         }
     }
@@ -72,20 +78,18 @@ connection.onInitialize((params: InitializeParams) => {
     return result
 })
 connection.onInitialized(() => {
-    connection.sendRequest(WorkspaceFoldersRequest.type).then(folders => {
-        if (folders)
-            for (const folder of folders) {
-                const path = decodeURIComponent(folder.uri).replace('file:///', '')
-                ddbModules.setModuleRoot(path)
-            }
-            
-    })
+    ddbModules.init()
     if (hasWorkspaceFolderCapability)
         connection.workspace.onDidChangeWorkspaceFolders(_event => {
             connection.console.log('Workspace folder change event received.')
         })
 })
-
+connection.onRequest('ddb/handleFileCreate', async (uri: DdbUri) => {
+    await ddbModules.handleFileUpdate(uri)
+})
+connection.onRequest('ddb/handleFileDelete', async (uri: DdbUri) => {
+    await ddbModules.handleFileDelete(uri)
+})
 // connection.onDidChangeConfiguration(change => { // 这个参数也用不着，我们直接用 workspace getConfiguration 全量重设
 
 //     if (hasConfigurationCapability) 
