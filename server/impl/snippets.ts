@@ -1,8 +1,9 @@
-import { InsertTextFormat, CompletionItemKind, type TextDocumentPositionParams, type CompletionItem, type Position } from 'vscode-languageserver/node'
+import { InsertTextFormat, CompletionItemKind, type TextDocumentPositionParams, type CompletionItem, type Position, InsertTextMode, MarkupKind, TextEdit } from 'vscode-languageserver/node'
 
 import { symbolService } from './symbols/symbols'
 import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './symbols/types'
 import { ddbModules } from './modules'
+import { documents } from './documents'
 
 class SnippetService {
 
@@ -86,13 +87,13 @@ class SnippetService {
                     kind: CompletionItemKind.Variable,
                     documentation: varMeta.comments || '',
                 })
-            } else if (symbol.type === SymbolType.Param && symbol.metadata) 
+            } else if (symbol.type === SymbolType.Param && symbol.metadata)
                 completionItems.push({
                     label: symbol.name,
                     kind: CompletionItemKind.Variable,
                     detail: `Parameter of ${(symbol.metadata as IParamMetadata).funcname}`,
                 })
-            
+                
         })
         
         return completionItems
@@ -103,14 +104,54 @@ class SnippetService {
         const allModules = ddbModules.getModules().filter(module => module.moduleName)
         for (const module of allModules) {
             const moduleName = module.moduleName
+            const textDocument = documents.get(position.textDocument.uri)
+            const line = textDocument.getText({
+                start: { line: position.position.line, character: 0 },
+                end: { line: position.position.line + 1, character: 0 }
+            })
+            const insertText = line.trim().startsWith('use') ? `${moduleName}` : `use ${moduleName}`
             items.push({
-                    label: `use ${moduleName}`,
-                    kind: CompletionItemKind.Module,
-                    documentation: `Use module ${moduleName}`,
-                    insertText: `use ${moduleName}`
-                })
+                label: `use ${moduleName}`,
+                kind: CompletionItemKind.Module,
+                documentation: `Use module ${moduleName}`,
+                insertText: insertText,
+            })
         }
         
+        return items
+    }
+    
+    getModuleTopLevelFunctions (position: TextDocumentPositionParams): CompletionItem[] {
+        const items: CompletionItem[] = [ ]
+        const allModules = ddbModules.getModules().filter(module => module.moduleName)
+        for (const module of allModules) {
+            const modulePath = module.filePath
+            const symbolsInPath = symbolService.getSymbols(modulePath).filter(s => s.type === SymbolType.Function) as Array<ISymbol<SymbolType.Function>>
+            for (const s of symbolsInPath) {
+                console.log(s)
+                const top_level = s.metadata.top_level
+                if (top_level) {
+                    const argumentCompletions = s.metadata.argnames.map((arg, i) => {
+                        return `\$\{${i + 1}:${arg}\}`
+                    })
+                    items.push(
+                        {
+                            label: s.name,
+                            kind: CompletionItemKind.Function,
+                            documentation: {
+                                kind: MarkupKind.Markdown,
+                                value: `Function from module \`${module.moduleName}\`
+${s.metadata?.comments ?? ''}`
+                            },
+                            insertText:
+                                `${module.moduleName}::${s.name}(${argumentCompletions.join(', ')})`,
+                            insertTextFormat: InsertTextFormat.Snippet
+                        }
+                    )
+                }
+                
+            }
+        }
         return items
     }
     
@@ -129,7 +170,8 @@ class SnippetService {
             },
             ...this.getFunctionSnippets(position),
             ...this.getVariableSnippets(position),
-            ...this.getModuleUseSnippets(position)
+            ...this.getModuleUseSnippets(position),
+            ...this.getModuleTopLevelFunctions(position),
         ]
     }
     
