@@ -1,30 +1,14 @@
-import * as fsp from 'fs/promises'
+
 
 import { connection } from './connection'
 import { getFileModule } from './symbols/impl'
 import { symbolService } from './symbols/symbols'
+import { type DdbModule, type DdbUri } from './types'
+import { readFileByPath } from './utils/files'
 
-export interface DdbModule {
-    filePath: string
-    moduleName: string
-}
 
-export interface DdbUri {
-    external: string
-    path: string
-    scheme: 'file'
-}
 
-export async function readFileByPath (path: string) {
-    const isWindows = process.platform === 'win32'
-    let truePath = path
-    if (isWindows && path.startsWith('/'))
-        truePath = path.substring(1)
-        
-    const data = await fsp.readFile(truePath)
-    const text = data.toString()
-    return text
-}
+
 class DdbModules {
 
     private modules: DdbModule[] = [ ]
@@ -96,3 +80,13 @@ class DdbModules {
 }
 
 export const ddbModules = new DdbModules()
+
+connection.onInitialized(() => {
+    ddbModules.init()
+})
+connection.onRequest('ddb/handleFileCreate', async (uri: DdbUri) => {
+    await ddbModules.handleFileUpdate(uri)
+})
+connection.onRequest('ddb/handleFileDelete', async (uri: DdbUri) => {
+    await ddbModules.handleFileDelete(uri)
+})
