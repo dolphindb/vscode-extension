@@ -162,7 +162,7 @@ async function getSymbolAtPosition (documentUri: string, position: Position): Pr
             for (const moduleName of usedModules) {
                 const modulePath = ddbModules.getModules().find(m => m.moduleName === moduleName)?.filePath ?? ''
                 const moduleSymbols = symbolService.getSymbols(modulePath)
-                symbol = moduleSymbols.find(s => s.type === SymbolType.Function && s.name === word)
+                symbol = moduleSymbols.find(s => s.type === SymbolType.Function && s.name === word) ?? symbol
             }
         
     }
