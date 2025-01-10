@@ -37,7 +37,6 @@ class DdbModules {
     }
     
     public async handleFileUpdate (file: DdbUri) {
-        console.log('handle update file', file)
         const text = await readFileByPath(file.path)
         const module = {
             uri: file.external,
@@ -48,7 +47,6 @@ class DdbModules {
     }
     
     public async handleFileDelete (file: DdbUri) {
-        console.log('handle delete file', file)
         this.removeModule(file.path)
     }
     
@@ -61,7 +59,6 @@ class DdbModules {
     
     private removeModule (filePath: string) {
         const index = this.modules.findIndex(e => e.filePath === filePath)
-        console.log(index)
         if (index >= 0) {
             this.modules.splice(index, 1)
             symbolService.deleteSymbolByUri(filePath)

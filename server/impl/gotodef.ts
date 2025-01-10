@@ -15,6 +15,7 @@ import { documents } from './documents'
 import { symbolService } from './symbols/symbols'
 import { isPositionInScope } from './snippets'
 import { type IFunctionMetadata, SymbolType, type ISymbol, type IParamMetadata, type IVariableMetadata } from './symbols/types'
+import { ddbModules } from './modules'
 
 // 通用函数：获取光标所在的单词
 function getWordAtPosition (text: string, position: Position): string | null {
@@ -28,7 +29,7 @@ function getWordAtPosition (text: string, position: Position): string | null {
         return null
     
     
-    const wordRegex = /[a-zA-Z_][a-zA-Z0-9_]*/g // 或者 /[a-zA-Z_]+/g 取决于您的变量名规则
+    const wordRegex = /[a-zA-Z_][a-zA-Z0-9::_]*/g // 或者 /[a-zA-Z_]+/g 取决于您的变量名规则
     
     let match: RegExpExecArray | null
     while ((match = wordRegex.exec(line)) !== null) {
@@ -140,9 +141,49 @@ async function getSymbolAtPosition (documentUri: string, position: Position): Pr
     
     const symbols = symbolService.getSymbols(document.uri)
     const symbolsInScope = getSymbolsInScope(symbols, position)
-    const symbol = findSymbol(symbolsInScope, symbols, word)
+    let symbol = findSymbol(symbolsInScope, symbols, word)
+    // 在本文件内找不到，考虑引入的模块
+    if (!symbol) {
+        const usedModules = symbolService.getUsedModules(document.uri)
+        if (word.includes('::')) {
+            const moduleName = splitByLastDoubleColon(word).prefix
+            if (usedModules.includes(moduleName)) {
+                const modulePath = ddbModules.getModules().find(m => m.moduleName === moduleName)?.filePath ?? ''
+                const moduleSymbols = symbolService.getSymbols(modulePath)
+                // 只找函数，并且必须 top_level
+                symbol = moduleSymbols.find(
+                    s => s.type === SymbolType.Function 
+                    && s.name === splitByLastDoubleColon(word).suffix
+                    && (s as ISymbol<SymbolType.Function>).metadata.top_level
+                )
+            }
+        } else 
+            // 在所有已经利用的模块中查找
+            for (const moduleName of usedModules) {
+                const modulePath = ddbModules.getModules().find(m => m.moduleName === moduleName)?.filePath ?? ''
+                const moduleSymbols = symbolService.getSymbols(modulePath)
+                symbol = moduleSymbols.find(s => s.type === SymbolType.Function && s.name === word)
+            }
+        
+    }
     
     return symbol
+}
+
+function splitByLastDoubleColon (input: string): { prefix: string, suffix: string } {
+    const delimiter = '::'
+    const lastIndex = input.lastIndexOf(delimiter)
+    
+    if (lastIndex === -1) 
+        // 如果找不到 "::"，返回原始字符串作为前缀，后缀为空字符串
+        return { prefix: input, suffix: '' }
+    
+    
+    // 提取前缀和后缀
+    const prefix = input.substring(0, lastIndex)
+    const suffix = input.substring(lastIndex + delimiter.length)
+    
+    return { prefix, suffix }
 }
 
 // 已有的定义查找处理器

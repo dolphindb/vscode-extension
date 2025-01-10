@@ -7,7 +7,7 @@ import { readFileByPath } from '../utils/files'
 import { type DdbModule } from '../types'
  
 import { type ISymbol, SymbolType } from './types'
-import { getFileModule, getFunctionSymbols, getVariableSymbols } from './impl'
+import { getFileModule, getFileUsedModule, getFunctionSymbols, getVariableSymbols } from './impl'
 
 
 interface IFileSymbols {
@@ -24,6 +24,10 @@ export class SymbolService {
         return this.symbols.get(filePath)?.symbols || [ ]
     }
     
+    getUsedModules (filePath: string): string[] {
+        return this.symbols.get(filePath)?.use || [ ]
+    }
+    
     buildSymbolsByFile (text: string, filePath: string): ISymbol[] {
         return [
             ...getFunctionSymbols(text, filePath),
@@ -35,10 +39,11 @@ export class SymbolService {
         const filePath = document.uri
         const text = document.getText()
         const symbols = this.buildSymbolsByFile(text, filePath)
+        const use = getFileUsedModule(text)
         
         this.symbols.set(filePath, {
             symbols,
-            use: [ ],
+            use,
             module: getFileModule(text)
         })
     }

@@ -564,3 +564,29 @@ export function getFileModule (text: string): string | undefined {
     const moduleName = match ? match[1] : undefined
     return moduleName
 }
+
+export function getFileUsedModule (text: string): string[] {
+    // 正则表达式匹配 `use` 语句，捕获模块名部分
+    const useRegex = /^use\s+([^;\/\/\s]+(?:\s*::\s*[^;\/\/\s]+)*);?/
+    
+    return text
+        // 按照换行符分割文本，兼容不同的换行符
+        .split(/\r?\n/)
+        // 逐行处理
+        .map(line => {
+            // 去除行首尾空白字符
+            const trimmedLine = line.trim()
+            // 去除 `//` 后的注释部分
+            const noComment = trimmedLine.split('//')[0].trim()
+            return noComment
+        })
+        // 过滤出以 `use` 开头的行
+        .filter(line => line.startsWith('use'))
+        // 使用正则表达式提取模块名
+        .map(line => {
+            const match = line.match(useRegex)
+            return match ? match[1].replace(/\s*::\s*/g, '::') : null
+        })
+        // 过滤掉未匹配成功的行
+        .filter((moduleName): moduleName is string => moduleName !== null)
+}

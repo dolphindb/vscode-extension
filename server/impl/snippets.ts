@@ -122,18 +122,41 @@ class SnippetService {
     }
     
     getModuleTopLevelFunctions (position: TextDocumentPositionParams): CompletionItem[] {
+        const documentUri = position.textDocument.uri
+        const uses: string[] = symbolService.symbols.get(documentUri)?.use ?? [ ]
+        const currentPisitionModuleName = symbolService.symbols.get(documentUri)?.module
         const items: CompletionItem[] = [ ]
         const allModules = ddbModules.getModules().filter(module => module.moduleName)
         for (const module of allModules) {
             const modulePath = module.filePath
             const symbolsInPath = symbolService.getSymbols(modulePath).filter(s => s.type === SymbolType.Function) as Array<ISymbol<SymbolType.Function>>
             for (const s of symbolsInPath) {
-                console.log(s)
                 const top_level = s.metadata.top_level
                 if (top_level) {
                     const argumentCompletions = s.metadata.argnames.map((arg, i) => {
                         return `\$\{${i + 1}:${arg}\}`
                     })
+                    const additionalTextEdits = [ ]
+                    console.log(uses)
+                    if (!uses.includes(module.moduleName))
+                        if (currentPisitionModuleName)
+                            // 如果存在 moduleName，则在第二行添加 `use ${moduleName}`
+                            additionalTextEdits.push({
+                                range: {
+                                    start: { line: 1, character: 0 }, // 第二行（行索引从0开始）
+                                    end: { line: 1, character: 0 }
+                                },
+                                newText: `use ${module.moduleName}\n`
+                            })
+                        else
+                            // 如果不存在 moduleName，则在第一行插入 `use ${moduleName}`
+                            additionalTextEdits.push({
+                                range: {
+                                    start: { line: 0, character: 0 },
+                                    end: { line: 0, character: 0 }
+                                },
+                                newText: `use ${module.moduleName}\n`
+                            })
                     items.push(
                         {
                             label: s.name,
@@ -145,7 +168,8 @@ ${s.metadata?.comments ?? ''}`
                             },
                             insertText:
                                 `${module.moduleName}::${s.name}(${argumentCompletions.join(', ')})`,
-                            insertTextFormat: InsertTextFormat.Snippet
+                            insertTextFormat: InsertTextFormat.Snippet,
+                            additionalTextEdits
                         }
                     )
                 }
