@@ -30,12 +30,23 @@
                 "!**/node_modules/**"
 			],
 		},
+        {
+            "type": "node",
+            "request": "attach",
+            "name": "ddb.ls",
+            "port": 6009,
+            "restart": true,
+        }
     ],
     "compounds": [
 		{
 			"name": "ddb.ext & ddb.ext.debugger",
 			"configurations": ["ddb.ext", "ddb.ext.debugger"],
             "preLaunchTask": "npm: dev"
+		},
+        {
+			"name": "ddb.ext & ddb.ls",
+			"configurations": ["ddb.ext", "ddb.ls"],
 		}
 	]
 }

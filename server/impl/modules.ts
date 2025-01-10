@@ -25,7 +25,6 @@ class DdbModules {
     
     private async handleInitFiles (files: DdbUri[]) {
         for (const file of files) {
-            console.log('handle init file', file)
             const text = await readFileByPath(file.path)
             const module = {
                 uri: file.external,
