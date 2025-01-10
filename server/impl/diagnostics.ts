@@ -57,12 +57,12 @@ function validateUseModule (line: string, lnindex: number): Diagnostic[] {
         const module = modules.find(e => e.moduleName === moduleName)
         if (moduleName && !module) 
             return [{
-                severity: DiagnosticSeverity.Error,
+                severity: DiagnosticSeverity.Warning,
                 range: {
                     start: Position.create(lnindex, 0),
                     end: Position.create(lnindex, line.length)
                 },
-                message: `Cannot find module ${moduleName}`,
+                message: `Cannot find module ${moduleName} in current workspace`,
                 source: 'dolphindb'
             }]
         
