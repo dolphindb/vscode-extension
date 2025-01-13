@@ -137,7 +137,6 @@ class SnippetService {
                         return `\$\{${i + 1}:${arg}\}`
                     })
                     const additionalTextEdits = [ ]
-                    console.log(uses)
                     if (!uses.includes(module.moduleName))
                         if (currentPisitionModuleName)
                             // 如果存在 moduleName，则在第二行添加 `use ${moduleName}`

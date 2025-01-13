@@ -126,11 +126,12 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
                     const endBlockMatch = /\*\/$/.exec(currentLine)
                     if (endBlockMatch) {
                         // 去除结束符号 */ 及其前的内容
-                        const content = currentLine.replace(/\*\/$/, '').trim()
+                        const content = currentLine.replace(/\*\/$/, '').replace(/^\/\*/, '').trim()
                         if (content)
                             commentLines.unshift(content)
-                            
-                        inBlockComment = true
+                        // 必须不同时是起始行，才能设为进入 blockComment
+                        if (!/^\/\*/.exec(currentLine))
+                            inBlockComment = true
                         commentLine--
                         continue
                     }
