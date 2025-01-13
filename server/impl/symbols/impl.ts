@@ -186,10 +186,7 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
             // 支持参数是否被逗号分割
             const argnames = paramsText
                 .split(',') // 首先按逗号分割
-                .map(param => {
-                    const tokens = param.trim().split(/\s+/)
-                    return tokens.length > 0 ? tokens[tokens.length - 1] : ''
-                })
+                .map(param => param.trim().split('=')[0].trim())
                 .filter(param => param.length > 0)
                 
             // 查找函数定义所在的最内层作用域（即函数的外部作用域）
