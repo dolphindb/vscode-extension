@@ -10,13 +10,16 @@ type Scope = {
     endChar: number
 }
 
+// 正则表达式
+// 正则表达式匹配变量定义，避免匹配 '==' 和 '==='
+const variableRegex = /^(.*?)??([a-zA-Z0-9_]\w*)\s*=\s*(?![=])(.*)$/
+// 正则表达式匹配函数定义的开始
+const funcStartRegex = /^\s*def\s+([a-zA-Z0-9_]\w*)\s*\(/
+
 export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
     const symbols: ISymbol[] = [ ]
     const lines = text.split('\n')
     const totalLines = lines.length
-    
-    // 正则表达式匹配函数定义的开始
-    const funcStartRegex = /^\s*def\s+([a-zA-Z_]\w*)\s*\(/
     
     // 作用域跟踪
     const scopeStack: Array<{ startLine: number, startChar: number }> = [ ]
@@ -371,9 +374,6 @@ export function getVariableSymbols (text: string, filePath: string): ISymbol[] {
     const lines = text.split('\n')
     const totalLines = lines.length
     
-    // 正则表达式匹配变量定义，避免匹配 '==' 和 '==='
-    const variableRegex = /^(.*?)??([a-zA-Z_]\w*)\s*=\s*(?![=])(.*)$/
-    
     // 栈用于跟踪当前的作用域
     const scopeStack: Array<{ startLine: number, startChar: number }> = [ ]
     // 列表用于存储所有的作用域
@@ -434,7 +434,7 @@ export function getVariableSymbols (text: string, filePath: string): ISymbol[] {
     while (i < totalLines) {
         const line = lines[i]
         const match = variableRegex.exec(line)
-        if (match) {
+        if (match && !funcStartRegex.exec(line)) {
             const variableName = match[2] // 现在变量名在第二个捕获组
             // const assignedValue = match[3] // 变量值在第三个捕获组
             const defLine = i
