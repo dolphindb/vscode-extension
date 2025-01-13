@@ -292,6 +292,14 @@ export let builder = {
                 icon: '$(refresh)',
             },
             {
+                command: 'reload_variables',
+                title: {
+                    zh: 'DolphinDB: 重新加载变量',
+                    en: 'DolphinDB: Reload Variables'
+                },
+                icon: '$(refresh)',
+            },
+            {
                 command: 'reload_dataview',
                 title: {
                     zh: 'DolphinDB: 重新加载数据视图',
@@ -782,6 +790,10 @@ export let builder = {
                             command: 'dolphindb.reload_dataview',
                             when: 'false',
                         },
+                        {
+                            command: 'dolphindb.reload_variables',
+                            when: 'false',
+                        },
                     ],
                     
                     'view/item/context': [
@@ -824,6 +836,11 @@ export let builder = {
                             command: 'dolphindb.reload_databases',
                             group: 'navigation',
                             when: 'view == dolphindb.databases',
+                        },
+                        {
+                            command: 'dolphindb.reload_variables',
+                            group: 'navigation',
+                            when: 'view == dolphindb.variables',
                         },
                         {
                             command: 'dolphindb.reload_dataview',

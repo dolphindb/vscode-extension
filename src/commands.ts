@@ -18,7 +18,7 @@ import { dataview } from './dataview/dataview.ts'
 import { formatter } from './formatter.ts'
 import { create_terminal, terminal } from './terminal.ts'
 import { type DdbConnection, connector } from './connector.ts'
-import { DdbVar } from './variables.ts'
+import { DdbVar, variables } from './variables.ts'
 import { type DdbDatabase, databases, type DdbTable } from './databases.ts'
 
 import type { DdbMessageItem } from './index.ts'
@@ -248,12 +248,20 @@ async function execute (text: string, iline: number, testing = false) {
     if (connection.disconnected)
         return
     
-    await connection.update(refresh_database)
-    connector.refresh(refresh_database)
-    
-    connection.running = false
-    statbar.update()
-    
+    // 客户端认证打开时，执行了 logout 后下面的调用可能会报错
+    try {
+        await connection.update(refresh_database)
+        connector.refresh(refresh_database)
+    } catch (error) {
+        if (error.message.includes('S04009')) {
+            terminal.printer.fire(t('数据库启用了客户端认证，用户注销时连接同时关闭') + '\r\n')
+            connector.disconnect(connection)
+        } else
+            throw error
+    } finally {
+        connection.running = false
+        statbar.update()
+    }
     
     function get_execution_end () {
         return timer.getstr(true) + (connection === connector.connection ? '' : ` (${connection.name})`) + '\r\n'
@@ -569,6 +577,14 @@ export const ddb_commands = [
         databases.refresher.fire()
     },
     
+    
+    async function reload_variables () {
+        const { connection } = connector
+        
+        await connection.update_vars()
+        
+        variables.refresher.fire()
+    },
     
     /** 批量上传文件  
         uri 为右键选中的文件，uris 为所有选中的文件列表  */

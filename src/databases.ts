@@ -89,7 +89,7 @@ export class DdbDatabase extends TreeItem {
     
     async get_schema () {
         await connector.connection.define_load_database_schema()
-            
+        
         return connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
             // 这个函数在 define_load_database_schema 中已定义
             'load_database_schema',

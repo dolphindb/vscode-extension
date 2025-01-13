@@ -442,6 +442,7 @@ export class DdbConnection extends TreeItem {
             this.get_formatted_version(),
             this.check_client_auth()
         ])
+        
         await this.get_cluster_perf()
         
         console.log(`${t('连接成功:')} ${this.name}`)
@@ -455,7 +456,7 @@ export class DdbConnection extends TreeItem {
     
     async disconnect () {
         this.ddb.disconnect()
-        await this.update_logined()
+        this.logined = false
     }
     
     
@@ -851,7 +852,7 @@ export class DdbConnection extends TreeItem {
     }
         
     
-    /** 获取 nodes 和 node 信息
+    /** 获取 nodes 和 node 信息，依赖 check_client_auth 决定是否要 rpc 到控制节点，以兼容旧 server  
     https://www.dolphindb.cn/cn/help/FunctionsandCommands/FunctionReferences/g/getClusterPerf.html  
     Only master or single mode supports function getClusterPerf. */
     async get_cluster_perf () {
@@ -859,7 +860,7 @@ export class DdbConnection extends TreeItem {
             await this.ddb.call<DdbObj<DdbObj[]>>('getClusterPerf', [true], {
                 urgent: true,
                 
-                ... this.node_type === NodeType.controller || this.node_type === NodeType.single
+                ... !this.client_auth && (this.node_type === NodeType.controller || this.node_type === NodeType.single)
                     ? { }
                     : { node: this.controller_alias },
             })
@@ -911,7 +912,7 @@ export class DdbConnection extends TreeItem {
     async check_client_auth () {
         try {
             const client_auth = await this.ddb.invoke<boolean>('isClientAuth', undefined, { urgent: true })
-            console.log(t('安全认证:'), client_auth)
+            console.log(t('客户端认证:'), client_auth)
             return this.client_auth = client_auth
         } catch {
             return false

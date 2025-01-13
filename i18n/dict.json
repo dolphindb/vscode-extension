@@ -505,5 +505,17 @@
     },
     "dolphindb 插件运行在{{mode}}模式下，版本为 {{version}}": {
         "en": "The dolphindb plugin is running in {{mode}} mode and the version is {{version}}"
+    },
+    "数据库已启用客户端安全认证，请在连接配置中启用自动登录 (autologin: true)，并填写用户名密码": {
+        "en": "The database has enabled client security authentication. Please enable automatic login (autologin: true) in the connection configuration and fill in the username and password."
+    },
+    "打开连接配置": {
+        "en": "Open Connection Configuration"
+    },
+    "数据库启用了客户端认证，用户注销时连接同时关闭": {
+        "en": "The database has client authentication enabled, and the connection is closed when the user logs out"
+    },
+    "客户端认证:": {
+        "en": "client authentication"
     }
 }

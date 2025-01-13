@@ -106,7 +106,7 @@ let fp_vscode: string
 
 // --- 尝试启动 vscode / cursor
 for (const fp of [
-    `C:/Users/${os.userInfo().username}/AppData/Local/Programs/cursor/Cursor.exe`,
+    // `C:/Users/${os.userInfo().username}/AppData/Local/Programs/cursor/Cursor.exe`,
     'C:/Program Files/Microsoft VS Code/Code.exe' as const,
     `C:/Users/${os.userInfo().username}/AppData/Local/Programs/Microsoft VS Code/Code.exe`,
 ]) 
@@ -130,6 +130,7 @@ async function reload_vscode (fp: string) {
     await call(fp, args, {
         cwd: fpd_root,
         stdout: false,
+        window: true,
         print: {
             command: true,
             code: false
