@@ -28,7 +28,9 @@ export class SymbolService {
         return this.symbols.get(filePath)?.use || [ ]
     }
     
-    buildSymbolsByFile (text: string, filePath: string): ISymbol[] {
+    buildSymbolsByFile (raw_text: string, filePath: string): ISymbol[] {
+        // 转换 CRLF 到 LF
+        const text = raw_text.replaceAll('\r\n', '\n')
         return [
             ...getFunctionSymbols(text, filePath),
             ...getVariableSymbols(text, filePath),
