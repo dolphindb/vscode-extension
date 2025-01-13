@@ -860,7 +860,7 @@ export class DdbConnection extends TreeItem {
             await this.ddb.call<DdbObj<DdbObj[]>>('getClusterPerf', [true], {
                 urgent: true,
                 
-                ... !this.client_auth && (this.node_type === NodeType.controller || this.node_type === NodeType.single)
+                ... this.client_auth && (this.node_type === NodeType.controller || this.node_type === NodeType.single)
                     ? { }
                     : { node: this.controller_alias },
             })
