@@ -375,7 +375,7 @@ export function getVariableSymbols (text: string, filePath: string): ISymbol[] {
     const totalLines = lines.length
     
     // 正则表达式匹配变量定义，避免匹配 '==' 和 '==='
-    const variableRegex = /^\s*([a-zA-Z_]\w*)\s*=\s*(?![=])/
+    const variableRegex = /^(.*?)??([a-zA-Z_]\w*)\s*=\s*(?![=])(.*)$/
     
     // 栈用于跟踪当前的作用域
     const scopeStack: Array<{ startLine: number, startChar: number }> = [ ]
@@ -438,10 +438,10 @@ export function getVariableSymbols (text: string, filePath: string): ISymbol[] {
         const line = lines[i]
         const match = variableRegex.exec(line)
         if (match) {
-            const variableName = match[1]
+            const variableName = match[2] // 现在变量名在第二个捕获组
+            // const assignedValue = match[3] // 变量值在第三个捕获组
             const defLine = i
-            const equalIndex = line.indexOf('=', match.index)
-            const defColumn = line.indexOf(variableName, match.index)
+            const defColumn = line.indexOf(variableName) // 变量名开始的位置
             
             // 收集变量上方的注释（支持单行和多行注释）
             let comments = ''
@@ -543,13 +543,9 @@ export function getVariableSymbols (text: string, filePath: string): ISymbol[] {
                 filePath,
                 metadata: metadata,
             })
-            
-            // 继续解析下一行
-            i++
-        } else
-            // 非变量定义行，继续
-            i++
-            
+        }
+        // 继续解析下一行, 不管匹不匹配都要加一
+        i++
     }
     
     return symbols
