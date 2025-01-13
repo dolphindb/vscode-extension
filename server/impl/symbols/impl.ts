@@ -548,10 +548,11 @@ export function getVariableSymbols (text: string, filePath: string): ISymbol[] {
     return symbols
 }
 
-export function getFileModule (text: string): string | undefined {
+export function getFileModule (raw_text: string): string | undefined {
     // 模块文件的第一行必须是模块声明语句。例如在 fileLog.dos 中声明模块：
     // module fileLog
     
+    const text = raw_text.replaceAll('\r\n', '\n')
     const lines = text.split('\n')
     const firstLine = lines[0].trim()
     const match = /^module\s+([a-zA-Z0-9_:]*)/.exec(firstLine)
