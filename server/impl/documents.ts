@@ -8,6 +8,7 @@ import {
 
 import { connection } from './connection'
 import { symbolService } from './symbols/symbols'
+import { dbService } from './database'
 
 /** 现在也没有什么监听文档状态需要用到的东西 */
 
@@ -17,6 +18,7 @@ export const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocu
 documents.onDidOpen(e => {
     // handle document open
     symbolService.buildSymbolByDocument(e.document)
+    dbService.update()
 })
 
 // Only keep settings for open documents
@@ -30,6 +32,7 @@ documents.onDidClose(e => {
 documents.onDidChangeContent(change => {
     // validateTextDocument(change.document);
     symbolService.buildSymbolByDocument(change.document)
+    dbService.update()
 })
 
 // Make the text document manager listen on the connection

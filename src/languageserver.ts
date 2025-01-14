@@ -73,14 +73,36 @@ export async function activate_ls (ctx: ExtensionContext) {
     })
     
     /** 处理数据库查询 */
-    client.onRequest('ddb/getAllCatalogs', () => {
-        return getConnection()?.ddb?.invoke?.('getAllCatalogs') ?? [ ]
+    client.onRequest('ddb/getAllCatalogs', async () => {
+        const result = await getConnection()?.ddb?.invoke?.('getAllCatalogs')
+        return result ?? [ ]
+    })
+    client.onRequest('ddb/getClusterDFSDatabases', async () => {
+        const result = await getConnection()?.ddb?.invoke?.('getClusterDFSDatabases')
+        return result ?? [ ]
+    })
+    client.onRequest('ddb/getStreamTables', async () => {
+        try {
+            const result = await getConnection()?.ddb?.invoke?.('getStreamTables')
+            return result.data.map(e => e.name)
+        } catch (error) {
+            return [ ]
+        }
+        
+    })
+    client.onRequest('ddb/listTables', async (dburl: string) => {
+        try {
+            const result = await getConnection()?.ddb?.invoke?.('listTables', [dburl])
+            return result.data.map(e => e.tableName)
+        } catch (error) {
+            return [ ]
+        }
+        
     })
 }
 
 function getConnection (): DdbConnection | undefined {
     const connection = connector.connection
-    if (connection && connection.connected && !connection.disconnect && connection.logined) 
+    if (connection && connection.connected && !connection.disconnected && connection.logined)
         return connection
-    
 }
