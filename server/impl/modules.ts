@@ -18,7 +18,7 @@ class DdbModules {
     
     // 设置初始化或者更新的时候调用
     public async init () {
-        const files = await connection.sendRequest('ddb/getFiles')
+        const files = await connection.sendRequest('lsp/getFiles')
         await this.handleInitFiles(files as DdbUri[])
         this.isModuleIndexInit = true
     }
@@ -80,9 +80,9 @@ export const ddbModules = new DdbModules()
 connection.onInitialized(() => {
     ddbModules.init()
 })
-connection.onRequest('ddb/handleFileCreate', async (uri: DdbUri) => {
+connection.onRequest('lsp/handleFileCreate', async (uri: DdbUri) => {
     await ddbModules.handleFileUpdate(uri)
 })
-connection.onRequest('ddb/handleFileDelete', async (uri: DdbUri) => {
+connection.onRequest('lsp/handleFileDelete', async (uri: DdbUri) => {
     await ddbModules.handleFileDelete(uri)
 })

@@ -1,7 +1,5 @@
 import util from 'util'
 
-import * as path from 'path'
-
 import {
     window,
     workspace,
@@ -18,23 +16,16 @@ import {
     
     debug, type DebugConfiguration,
     
-    type MessageItem,
-    type Uri
+    type MessageItem
 } from 'vscode'
 
 import 'xshell/polyfill.browser.js'
 import { set_inspect_options } from 'xshell'
 
 
-import {
-    LanguageClient,
-    type LanguageClientOptions,
-    type ServerOptions,
-    TransportKind
-} from 'vscode-languageclient/node.js'
-
 import { t } from '../i18n/index.ts'
 
+import { ls_client, activate_ls } from './languageserver.ts'
 import { load_docs, register_docs } from './docs.ts'
 import { server } from './server.ts'
 import { dataview } from './dataview/dataview.ts'
@@ -46,8 +37,6 @@ import { connector, register_connector } from './connector.ts'
 import { register_variables } from './variables.ts'
 import { register_databases } from './databases.ts'
 import { register_settings } from './settings.ts'
-
-let client: LanguageClient
 
 
 export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }
@@ -155,74 +144,17 @@ export async function activate (ctx: ExtensionContext) {
     }))
     
     await register_settings()
-    
-    
-    /** 初始化 Language Server */
-    // The server is implemented in node
-    let serverModule = ctx.asAbsolutePath(path.join('server', 'server.js'))
-    // The debug options for the server
-    // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
-    let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] }
-    
-    // If the extension is launched in debug mode then the debug server options are used
-    // Otherwise the run options are used
-    let serverOptions: ServerOptions = {
-        run: { module: serverModule, transport: TransportKind.ipc },
-        debug: {
-            module: serverModule,
-            transport: TransportKind.ipc,
-            options: debugOptions
-        }
-    }
-    
-    // Options to control the language client
-    let clientOptions: LanguageClientOptions = {
-        // Register the server for plain text documents
-        documentSelector: [{ scheme: 'file', language: 'dolphindb' }],
-        synchronize: {
-            // Notify the server about file changes to '.clientrc files contained in the workspace
-            fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-        },
-        initializationOptions: {
-            configuration: workspace.getConfiguration('dolphindb')
-        }
-    }
-    
-    // Create the language client and start the client.
-    client = new LanguageClient(
-        'ddbls',
-        'Dolphin DB Language Server',
-        serverOptions,
-        clientOptions
-    )
-    
-    // Start the client. This will also launch the server
-    await client.start()
-    client.onRequest('ddb/getFiles', async () => {
-        const files = await workspace.findFiles('**/*.dos', null)
-        return files
-    })
-    const watcher = workspace.createFileSystemWatcher('**/*.dos')
-    watcher.onDidCreate(uri => {
-        client.sendRequest('ddb/handleFileCreate', uri)
-    })
-    watcher.onDidChange(uri => {
-        client.sendRequest('ddb/handleFileCreate', uri)
-    })
-    watcher.onDidDelete(uri => {
-        client.sendRequest('ddb/handleFileDelete', uri)
-    })
+      
+    await activate_ls(ctx)
     
     console.log(t('DolphinDB 插件初始化成功'))
 }
 
 
-export async function deactivate (ctx: ExtensionContext) {
+export function deactivate (ctx: ExtensionContext) {
     server?.stop()
     
     /** 停止 Language Server 连接 */
-    if (!client) 
-        return undefined
-    
-    return client.stop()
+    if (ls_client.current) 
+        ls_client.current.stop()
 }

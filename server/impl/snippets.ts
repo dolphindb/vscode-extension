@@ -126,7 +126,10 @@ class SnippetService {
         const uses: string[] = symbolService.symbols.get(documentUri)?.use ?? [ ]
         const currentPisitionModuleName = symbolService.symbols.get(documentUri)?.module
         const items: CompletionItem[] = [ ]
-        const allModules = ddbModules.getModules().filter(module => module.moduleName)
+        const allModules = ddbModules.getModules()
+            .filter(module => module.moduleName)
+            // 不要导入当前文件的模块
+            .filter(module => module.moduleName !== currentPisitionModuleName)
         for (const module of allModules) {
             const modulePath = module.filePath
             const symbolsInPath = symbolService.getSymbols(modulePath).filter(s => s.type === SymbolType.Function) as Array<ISymbol<SymbolType.Function>>
@@ -176,6 +179,10 @@ ${s.metadata?.comments ?? ''}`
             }
         }
         return items
+    }
+    
+    getDatabsaseSnippets (position: Position): CompletionItem[] {
+        return [ ]
     }
     
     complete (position: TextDocumentPositionParams): CompletionItem[] {
