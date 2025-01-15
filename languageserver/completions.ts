@@ -343,22 +343,18 @@ ${s.metadata?.comments ?? ''}`
     filterHighestOrderCompletions (items: DdbCompletionItem[]): DdbCompletionItem[] {
         if (!items.some(item => item.order !== undefined))
             return items
-        
-      
+            
+            
         const highestOrder = items.reduce(
-          (max, item) => (item.order !== undefined && item.order > max ? item.order : max),
-          -Infinity
+            (max, item) => (item.order !== undefined && item.order > max ? item.order : max),
+            -Infinity
         )
-      
-        return items.filter(item => item.order === highestOrder)
-      }
-    
-    complete (position: TextDocumentPositionParams): CompletionItem[] {
         
-        const items: DdbCompletionItem[] = [
-            ...this.getTableSnippets(position),
-            ...this.getDatabsaseSnippets(position),
-            ...this.getCatalogSnippets(position),
+        return items.filter(item => item.order === highestOrder)
+    }
+    
+    getCommonSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
+        return [
             {
                 label: 'def',
                 kind: CompletionItemKind.Snippet,
@@ -369,7 +365,17 @@ ${s.metadata?.comments ?? ''}`
                     '}'
                 ].join('\n'),
                 insertTextFormat: InsertTextFormat.Snippet
-            },
+            }
+        ]
+    }
+    
+    complete (position: TextDocumentPositionParams): CompletionItem[] {
+    
+        const items: DdbCompletionItem[] = [
+            ...this.getTableSnippets(position),
+            ...this.getDatabsaseSnippets(position),
+            ...this.getCatalogSnippets(position),
+            ...this.getCommonSnippets(position),
             ...this.getFunctionSnippets(position),
             ...this.getVariableSnippets(position),
             ...this.getModuleUseSnippets(position),
