@@ -186,7 +186,7 @@ function splitByLastDoubleColon (input: string): { prefix: string, suffix: strin
     return { prefix, suffix }
 }
 
-// 已有的定义查找处理器
+// 定义查找处理器
 connection.onDefinition(async (params: DefinitionParams) => {
     const symbol = await getSymbolAtPosition(params.textDocument.uri, params.position)
     if (!symbol) 
@@ -205,7 +205,7 @@ connection.onDefinition(async (params: DefinitionParams) => {
     return location
 })
 
-// 新增的 Hover 处理器
+// Hover 处理器
 connection.onHover(async params => {
     const symbol = await getSymbolAtPosition(params.textDocument.uri, params.position)
     if (!symbol) 

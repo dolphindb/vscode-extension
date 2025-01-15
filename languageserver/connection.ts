@@ -54,7 +54,8 @@ connection.onInitialize((params: InitializeParams) => {
             // Tell the client that this server supports code completion.
             completionProvider: {
                 resolveProvider: true,
-                triggerCharacters: ['.', ' ', '(', ')']
+                // 使其支持字符串内的自动补全
+                triggerCharacters: ['.', ' ', '(', ')', '"', "\'", '\`', ',']
             },
             diagnosticProvider: {
                 interFileDependencies: false,

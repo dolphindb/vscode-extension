@@ -19,6 +19,12 @@ import { ddbModules } from './modules'
 
 import { symbolService } from './symbols'
 import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types'
+import { createRegexForFunctionNames, extractFirstloadTableArgument, getLineContentsBeforePosition, isParenthesisBalanced } from './utils'
+import { dbService } from './database'
+
+type DdbCompletionItem = CompletionItem & {
+    order?: number
+}
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
@@ -104,7 +110,7 @@ function getLineContent (document: TextDocument, line: number): string {
 
 class CompletionsService {
 
-    getFunctionSnippets (position: TextDocumentPositionParams): CompletionItem[] {
+    getFunctionSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
         const symbols = symbolService.getSymbols(position.textDocument.uri)
         const functionSymbols: ISymbol<SymbolType.Function>[] = symbols.filter(s => s.type === SymbolType.Function) as ISymbol<SymbolType.Function>[]
         const functionCompletions: CompletionItem[] = functionSymbols.map(s => {
@@ -122,7 +128,7 @@ class CompletionsService {
         return [...functionCompletions]
     }
     
-    getVariableSnippets (position: TextDocumentPositionParams): CompletionItem[] {
+    getVariableSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
         const completionItems: CompletionItem[] = [ ]
         const uri = position.textDocument.uri
         const currentPos = position.position
@@ -194,7 +200,7 @@ class CompletionsService {
         return completionItems
     }
     
-    getModuleUseSnippets (position: TextDocumentPositionParams): CompletionItem[] {
+    getModuleUseSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
         const items: CompletionItem[] = [ ]
         const allModules = ddbModules.getModules().filter(module => module.moduleName)
         for (const module of allModules) {
@@ -216,7 +222,7 @@ class CompletionsService {
         return items
     }
     
-    getModuleTopLevelFunctions (position: TextDocumentPositionParams): CompletionItem[] {
+    getModuleTopLevelFunctions (position: TextDocumentPositionParams): DdbCompletionItem[] {
         const documentUri = position.textDocument.uri
         const uses: string[] = symbolService.symbols.get(documentUri)?.use ?? [ ]
         const currentPisitionModuleName = symbolService.symbols.get(documentUri)?.module
@@ -274,12 +280,85 @@ ${s.metadata?.comments ?? ''}`
         return items
     }
     
-    getDatabsaseSnippets (position: Position): CompletionItem[] {
-        return [ ]
+    getDatabsaseSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
+        const lineBefore = getLineContentsBeforePosition(documents.get(position.textDocument.uri).getText(), position.position)
+        const dburls = dbService.dfsDatabases
+        const items: CompletionItem[] = [ ]
+        const isBalanced = isParenthesisBalanced(lineBefore)
+        const funcs = ['loadTable', 'database', 'dropDatabase']
+        if (createRegexForFunctionNames(funcs).exec(lineBefore)) {
+            const isHaveQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
+            items.push(...dburls.map(url => ({
+                label: isHaveQuota ? `${url}` : `"${url}"`,
+                kind: CompletionItemKind.Value,
+                insertText: isHaveQuota ? `${url}` : `"${url}"`,
+                insertTextFormat: InsertTextFormat.Snippet,
+                order: isBalanced ? undefined : 1
+            })))
+        }
+        return items
     }
     
+    getCatalogSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
+        const items: CompletionItem[] = [ ]
+        const catalogs = dbService.catalogs
+        const lineBefore = getLineContentsBeforePosition(documents.get(position.textDocument.uri).getText(), position.position)
+        const isBalanced = isParenthesisBalanced(lineBefore)
+        const funcs = ['dropCatalog']
+        if (createRegexForFunctionNames(funcs).exec(lineBefore)) {
+            const isHaveQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
+            items.push(...catalogs.map(url => ({
+                label: isHaveQuota ? `${url}` : `"${url}"`,
+                kind: CompletionItemKind.Value,
+                insertText: isHaveQuota ? `${url}` : `"${url}"`,
+                insertTextFormat: InsertTextFormat.Snippet,
+                order: isBalanced ? undefined : 1
+            })))
+        }
+        return items
+    }
+    
+    getTableSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
+        const items: CompletionItem[] = [ ]
+        const lineBefore = getLineContentsBeforePosition(documents.get(position.textDocument.uri).getText(), position.position)
+        const dburl = extractFirstloadTableArgument(lineBefore)
+        const isBalanced = isParenthesisBalanced(lineBefore)
+        if (dburl)
+            if (dburl.startsWith("'") || dburl.startsWith('"')) {
+                let db = dburl.replaceAll("'", '').replaceAll('"', '')
+                const tables = dbService.dbTables.get(db)
+                const isHaveQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
+                if (tables)
+                    items.push(...tables.map(tableName => ({
+                        label: isHaveQuota ? `${tableName}` : `"${tableName}"`,
+                        kind: CompletionItemKind.Value,
+                        insertText: isHaveQuota ? `${tableName}` : `"${tableName}"`,
+                        insertTextFormat: InsertTextFormat.Snippet,
+                        order: isBalanced ? undefined : 2
+                    })))
+            }
+        return items
+    }
+    
+    filterHighestOrderCompletions (items: DdbCompletionItem[]): DdbCompletionItem[] {
+        if (!items.some(item => item.order !== undefined))
+            return items
+        
+      
+        const highestOrder = items.reduce(
+          (max, item) => (item.order !== undefined && item.order > max ? item.order : max),
+          -Infinity
+        )
+      
+        return items.filter(item => item.order === highestOrder)
+      }
+    
     complete (position: TextDocumentPositionParams): CompletionItem[] {
-        return [
+        
+        const items: DdbCompletionItem[] = [
+            ...this.getTableSnippets(position),
+            ...this.getDatabsaseSnippets(position),
+            ...this.getCatalogSnippets(position),
             {
                 label: 'def',
                 kind: CompletionItemKind.Snippet,
@@ -296,6 +375,7 @@ ${s.metadata?.comments ?? ''}`
             ...this.getModuleUseSnippets(position),
             ...this.getModuleTopLevelFunctions(position),
         ]
+        return this.filterHighestOrderCompletions(items)
     }
     
     
