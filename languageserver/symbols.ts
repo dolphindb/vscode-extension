@@ -2,12 +2,11 @@ import * as fsp from 'fs/promises'
 
 import { type TextDocument } from 'vscode-languageserver-textdocument'
 
-import { readFileByPath } from '../utils/files'
+import { readFileByPath } from './utils'
 
-import { type DdbModule } from '../types'
- 
-import { type ISymbol, SymbolType } from './types'
-import { getFileModule, getFileUsedModule, getFunctionSymbols, getVariableSymbols } from './impl'
+import { type DdbModule, type ISymbol, SymbolType } from './types'
+
+import { getFileModule, getFileUsedModule, getFunctionSymbols, getVariableSymbols } from './symbols_impl'
 
 
 interface IFileSymbols {

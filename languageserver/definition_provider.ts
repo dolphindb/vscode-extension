@@ -12,9 +12,9 @@ import {
 
 import { connection } from './connection'
 import { documents } from './documents'
-import { symbolService } from './symbols/symbols'
+import { symbolService } from './symbols'
 import { isPositionInScope } from './completions'
-import { type IFunctionMetadata, SymbolType, type ISymbol, type IParamMetadata, type IVariableMetadata } from './symbols/types'
+import { type IFunctionMetadata, SymbolType, type ISymbol, type IParamMetadata, type IVariableMetadata } from './types'
 import { ddbModules } from './modules'
 
 // 通用函数：获取光标所在的单词

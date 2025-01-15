@@ -42,3 +42,14 @@ export interface ISymbol<T extends SymbolType = SymbolType> {
     filePath: string
     metadata?: T extends keyof SymbolMetadataMap ? SymbolMetadataMap[T] : never
 }
+
+export interface DdbModule {
+    filePath: string
+    moduleName: string
+}
+
+export interface DdbUri {
+    external: string
+    path: string
+    scheme: 'file'
+} 

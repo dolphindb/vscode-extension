@@ -8,8 +8,8 @@
     "scripts": {
         "dev": "node --experimental-transform-types ./dev.ts",
         "build": "node --experimental-transform-types ./build.ts",
-        "dev-server": "rimraf ./out/server && rollup --config --watch",
-        "build-server": "rimraf ./out/server && rollup --config",
+        "dev-languageserver": "rollup --config --watch",
+        "build-languageserver": "rollup --config",
         "scan": "i18n-scan --input \"**/*.{ts,tsx}\"",
         "lint": "eslint \"**/*.{ts,tsx}\"",
         "fix": "eslint --fix \"**/*.{ts,tsx}\""

@@ -17,8 +17,8 @@ import { connection } from './connection'
 import { documents } from './documents'
 import { ddbModules } from './modules'
 
-import { symbolService } from './symbols/symbols'
-import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './symbols/types'
+import { symbolService } from './symbols'
+import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types'
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(

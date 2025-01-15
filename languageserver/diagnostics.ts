@@ -13,7 +13,7 @@ import {
 import { connection } from './connection'
 import { documents } from './documents'
 import { ddbModules } from './modules'
-import { extractModuleName } from './utils/texts'
+import { extractModuleName } from './utils'
 
 connection.languages.diagnostics.on(async params => {
     const document = documents.get(params.textDocument.uri)

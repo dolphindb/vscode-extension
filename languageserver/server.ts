@@ -1,0 +1,5 @@
+import './completions'
+import './diagnostics'
+import './connection'
+import './documents'
+import './definition_provider'

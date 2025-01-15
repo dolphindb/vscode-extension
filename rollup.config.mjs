@@ -6,7 +6,7 @@ const mode = process.env.MODE;
 const isProd = mode === 'prod';
 
 export default {
-  input: `./server/server.ts`,
+  input: `./languageserver/server.ts`,
   output: [
     // {
     //   file: './build/cjs/server.js',
@@ -15,7 +15,7 @@ export default {
     //   sourcemap: !isProd
     // },
     {
-      file: './out/server/server.js',
+      file: './out/languageserver.js',
       format: 'es',
       sourcemap: !isProd
     },
@@ -39,7 +39,7 @@ export default {
         "sourceMap": true,
         "outDir": "out",
       },
-      include: ['server'],
+      include: ['languageserver'],
       exclude: ["node_modules", "src", "./build.ts", "./builder.ts", "./dev.ts"]
     }
   }),],

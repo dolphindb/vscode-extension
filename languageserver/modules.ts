@@ -1,10 +1,10 @@
 
 
 import { connection } from './connection'
-import { getFileModule } from './symbols/impl'
-import { symbolService } from './symbols/symbols'
+import { getFileModule } from './symbols_impl'
+import { symbolService } from './symbols'
 import { type DdbModule, type DdbUri } from './types'
-import { readFileByPath } from './utils/files'
+import { readFileByPath } from './utils'
 
 
 
