@@ -13,7 +13,7 @@ import {
 import { connection } from './connection'
 import { documents } from './documents'
 import { symbolService } from './symbols/symbols'
-import { isPositionInScope } from './snippets'
+import { isPositionInScope } from './completions'
 import { type IFunctionMetadata, SymbolType, type ISymbol, type IParamMetadata, type IVariableMetadata } from './symbols/types'
 import { ddbModules } from './modules'
 
