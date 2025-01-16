@@ -99,6 +99,36 @@ export async function activate_ls (ctx: ExtensionContext) {
         }
         
     })
+    client.onRequest('ddb/schema', async (dbHandle: string) => {
+        try {
+            const result = await getConnection()?.ddb?.execute(`schema(${dbHandle})`)
+            return result
+        } catch (error) {
+            return { }
+        }
+    })
+    client.onRequest('ddb/getSchemaByCatalog', async (catalog: string) => {
+        try {
+            const result = await getConnection()?.ddb?.invoke('getSchemaByCatalog', [catalog])
+            const schemas = result.data.map(e => e.schema)
+            return schemas
+        } catch (error) {
+            return [ ]
+        }
+    })
+    client.onRequest('ddb/getSchemaTables', async (catalogAndSchema: [string, string]) => { 
+        try {
+            const [catalog, schema] = catalogAndSchema
+            const result = await getConnection()?.ddb?.invoke('getSchemaByCatalog', [catalog])
+            const targetSchema = result.data.find(e => e.schema === schema)
+            const dbUrl = targetSchema?.dbUrl
+            const tbResult = await getConnection()?.ddb?.invoke?.('listTables', [dbUrl])
+            return tbResult.data.map(e => e.tableName)
+        }  catch (error) {
+            return [ ]
+        }
+    })
+    
 }
 
 function getConnection (): DdbConnection | undefined {

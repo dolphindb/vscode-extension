@@ -26,6 +26,33 @@ class DatabaseService {
             console.log(`Failed to update: ${error}`)
         }
     }
+    
+    async getColnames (dbHandle: string): Promise<string[]> {
+        try {
+            const result: { colDefs: { columns: string[] } } = await connection.sendRequest('ddb/schema', dbHandle)
+            const colnames = result.colDefs.columns as string[]
+            return colnames
+        } catch (error) {
+            return [ ]
+        }
+    }
+    
+    async getSchemasByCatalog (catalog: string): Promise<string[]> {
+        try {
+            return await connection.sendRequest('ddb/getSchemaByCatalog', catalog)
+        } catch (error) {
+            return [ ]
+        }
+    }
+    
+    async getTablesByCatalogAndSchema (catalog: string, schema: string): Promise<string[]> {
+        try {
+            return await connection.sendRequest('ddb/getSchemaTables', [catalog, schema])
+        } catch (error) {
+            return [ ]
+        }
+    }
+    
 }
 
 export const dbService = new DatabaseService()

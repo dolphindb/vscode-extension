@@ -285,33 +285,43 @@ ${s.metadata?.comments ?? ''}`
         return items
     }
     
-    buildDatabaseCompletionItem (url: string, isHaveQuota: boolean, isBalanced: boolean) {
+    buildDatabaseCompletionItem (url: string, skipQuota: boolean, commonOrder: boolean) {
         return {
-            label: isHaveQuota ? `${url}` : `"${url}"`,
+            label: skipQuota ? `${url}` : `"${url}"`,
             kind: CompletionItemKind.Value,
-            insertText: isHaveQuota ? `${url}` : `"${url}"`,
+            insertText: skipQuota ? `${url}` : `"${url}"`,
             insertTextFormat: InsertTextFormat.Snippet,
-            order: isBalanced ? undefined : 1
+            order: commonOrder ? undefined : 1
         }
     }
     
-    buildCatalogCompletionItem (url: string, isHaveQuota: boolean, isBalanced: boolean) {
+    buildColNameCompletionItem (colName: string, skipQuota: boolean, commonOrder: boolean) {
         return {
-            label: isHaveQuota ? `${url}` : `"${url}"`,
+            label: skipQuota ? `${colName}` : `"${colName}"`,
             kind: CompletionItemKind.Value,
-            insertText: isHaveQuota ? `${url}` : `"${url}"`,
+            insertText: skipQuota ? `${colName}` : `"${colName}"`,
             insertTextFormat: InsertTextFormat.Snippet,
-            order: isBalanced ? undefined : 1
+            order: commonOrder ? undefined : 2
         }
     }
     
-    buildTableCompletionItem (tableName: string, isHaveQuota: boolean, isBalanced: boolean) {
+    buildCatalogCompletionItem (url: string, skipQuota: boolean, commonOrder: boolean) {
         return {
-            label: isHaveQuota ? `${tableName}` : `"${tableName}"`,
+            label: skipQuota ? `${url}` : `"${url}"`,
             kind: CompletionItemKind.Value,
-            insertText: isHaveQuota ? `${tableName}` : `"${tableName}"`,
+            insertText: skipQuota ? `${url}` : `"${url}"`,
             insertTextFormat: InsertTextFormat.Snippet,
-            order: isBalanced ? undefined : 2
+            order: commonOrder ? undefined : 1
+        }
+    }
+    
+    buildTableCompletionItem (tableName: string, skipQuota: boolean, commonOrder: boolean) {
+        return {
+            label: skipQuota ? `${tableName}` : `"${tableName}"`,
+            kind: CompletionItemKind.Value,
+            insertText: skipQuota ? `${tableName}` : `"${tableName}"`,
+            insertTextFormat: InsertTextFormat.Snippet,
+            order: commonOrder ? undefined : 2
         }
     }
     
@@ -322,8 +332,8 @@ ${s.metadata?.comments ?? ''}`
         const isBalanced = isParenthesisBalanced(lineBefore)
         const funcs = ['loadTable', 'database', 'dropDatabase']
         if (createRegexForFunctionNames(funcs).exec(lineBefore)) {
-            const isHaveQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
-            items.push(...dburls.map(url => this.buildDatabaseCompletionItem(url, isHaveQuota, isBalanced)))
+            const skipQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
+            items.push(...dburls.map(url => this.buildDatabaseCompletionItem(url, skipQuota, isBalanced)))
         }
         return items
     }
@@ -335,8 +345,8 @@ ${s.metadata?.comments ?? ''}`
         const isBalanced = isParenthesisBalanced(lineBefore)
         const funcs = ['dropCatalog']
         if (createRegexForFunctionNames(funcs).exec(lineBefore)) {
-            const isHaveQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
-            items.push(...catalogs.map(url => this.buildCatalogCompletionItem(url, isHaveQuota, isBalanced)))
+            const skipQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
+            items.push(...catalogs.map(url => this.buildCatalogCompletionItem(url, skipQuota, isBalanced)))
         }
         return items
     }
@@ -350,9 +360,9 @@ ${s.metadata?.comments ?? ''}`
             if (dburl.startsWith("'") || dburl.startsWith('"')) {
                 let db = dburl.replaceAll("'", '').replaceAll('"', '')
                 const tables = dbService.dbTables.get(db)
-                const isHaveQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
+                const skipQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
                 if (tables)
-                    items.push(...tables.map(tableName => (this.buildTableCompletionItem(tableName, isHaveQuota, isBalanced))))
+                    items.push(...tables.map(tableName => (this.buildTableCompletionItem(tableName, skipQuota, isBalanced))))
             }
         return items
     }
