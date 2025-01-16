@@ -29,8 +29,8 @@ class DatabaseService {
     
     async getColnames (dbHandle: string): Promise<string[]> {
         try {
-            const result: { colDefs: { columns: string[] } } = await connection.sendRequest('ddb/schema', dbHandle)
-            const colnames = result.colDefs.columns as string[]
+            const result: { colDefs: { data: { name: string }[] } } = await connection.sendRequest('ddb/schema', dbHandle)
+            const colnames = result.colDefs.data.map(({ name }) => name) as string[]
             return colnames
         } catch (error) {
             return [ ]
