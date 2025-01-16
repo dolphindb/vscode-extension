@@ -21,14 +21,15 @@ import { symbolService } from './symbols'
 import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types'
 import { createRegexForFunctionNames, extractFirstloadTableArgument, getLineContentsBeforePosition, isParenthesisBalanced } from './utils'
 import { dbService } from './database'
+import { getSelectCompletions } from './sql_completions'
 
-type DdbCompletionItem = CompletionItem & {
+export type DdbCompletionItem = CompletionItem & {
     order?: number
 }
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-    (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+    async (_textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[]> => {
         // The pass parameter contains the position of the text document in
         // which code complete got requested. For the example we ignore this
         // info and always provide the same completion items.
@@ -46,8 +47,8 @@ connection.onCompletion(
         // const mc = getModuleCompletions(_textDocumentPosition)
         // if (mc.length > 0)  // 如果是模块提示，那么只给模块提示，因为不太可能用其他的提示
         //     return mc
-        
-        items.push(...completionsService.complete(_textDocumentPosition))
+        const result = await completionsService.complete(_textDocumentPosition)
+        items.push(...result)
         
         return items
     }
@@ -108,8 +109,12 @@ function getLineContent (document: TextDocument, line: number): string {
     return text.trimEnd()
 }
 
-class CompletionsService {
-
+export class CompletionsService {
+    
+    symbolService = symbolService
+    dbService = dbService
+    getSelectCompletions: typeof getSelectCompletions = getSelectCompletions.bind(this)
+    
     getFunctionSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
         const symbols = symbolService.getSymbols(position.textDocument.uri)
         const functionSymbols: ISymbol<SymbolType.Function>[] = symbols.filter(s => s.type === SymbolType.Function) as ISymbol<SymbolType.Function>[]
@@ -280,6 +285,36 @@ ${s.metadata?.comments ?? ''}`
         return items
     }
     
+    buildDatabaseCompletionItem (url: string, isHaveQuota: boolean, isBalanced: boolean) {
+        return {
+            label: isHaveQuota ? `${url}` : `"${url}"`,
+            kind: CompletionItemKind.Value,
+            insertText: isHaveQuota ? `${url}` : `"${url}"`,
+            insertTextFormat: InsertTextFormat.Snippet,
+            order: isBalanced ? undefined : 1
+        }
+    }
+    
+    buildCatalogCompletionItem (url: string, isHaveQuota: boolean, isBalanced: boolean) {
+        return {
+            label: isHaveQuota ? `${url}` : `"${url}"`,
+            kind: CompletionItemKind.Value,
+            insertText: isHaveQuota ? `${url}` : `"${url}"`,
+            insertTextFormat: InsertTextFormat.Snippet,
+            order: isBalanced ? undefined : 1
+        }
+    }
+    
+    buildTableCompletionItem (tableName: string, isHaveQuota: boolean, isBalanced: boolean) {
+        return {
+            label: isHaveQuota ? `${tableName}` : `"${tableName}"`,
+            kind: CompletionItemKind.Value,
+            insertText: isHaveQuota ? `${tableName}` : `"${tableName}"`,
+            insertTextFormat: InsertTextFormat.Snippet,
+            order: isBalanced ? undefined : 2
+        }
+    }
+    
     getDatabsaseSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
         const lineBefore = getLineContentsBeforePosition(documents.get(position.textDocument.uri).getText(), position.position)
         const dburls = dbService.dfsDatabases
@@ -288,13 +323,7 @@ ${s.metadata?.comments ?? ''}`
         const funcs = ['loadTable', 'database', 'dropDatabase']
         if (createRegexForFunctionNames(funcs).exec(lineBefore)) {
             const isHaveQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
-            items.push(...dburls.map(url => ({
-                label: isHaveQuota ? `${url}` : `"${url}"`,
-                kind: CompletionItemKind.Value,
-                insertText: isHaveQuota ? `${url}` : `"${url}"`,
-                insertTextFormat: InsertTextFormat.Snippet,
-                order: isBalanced ? undefined : 1
-            })))
+            items.push(...dburls.map(url => this.buildDatabaseCompletionItem(url, isHaveQuota, isBalanced)))
         }
         return items
     }
@@ -307,13 +336,7 @@ ${s.metadata?.comments ?? ''}`
         const funcs = ['dropCatalog']
         if (createRegexForFunctionNames(funcs).exec(lineBefore)) {
             const isHaveQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
-            items.push(...catalogs.map(url => ({
-                label: isHaveQuota ? `${url}` : `"${url}"`,
-                kind: CompletionItemKind.Value,
-                insertText: isHaveQuota ? `${url}` : `"${url}"`,
-                insertTextFormat: InsertTextFormat.Snippet,
-                order: isBalanced ? undefined : 1
-            })))
+            items.push(...catalogs.map(url => this.buildCatalogCompletionItem(url, isHaveQuota, isBalanced)))
         }
         return items
     }
@@ -329,13 +352,7 @@ ${s.metadata?.comments ?? ''}`
                 const tables = dbService.dbTables.get(db)
                 const isHaveQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
                 if (tables)
-                    items.push(...tables.map(tableName => ({
-                        label: isHaveQuota ? `${tableName}` : `"${tableName}"`,
-                        kind: CompletionItemKind.Value,
-                        insertText: isHaveQuota ? `${tableName}` : `"${tableName}"`,
-                        insertTextFormat: InsertTextFormat.Snippet,
-                        order: isBalanced ? undefined : 2
-                    })))
+                    items.push(...tables.map(tableName => (this.buildTableCompletionItem(tableName, isHaveQuota, isBalanced))))
             }
         return items
     }
@@ -369,9 +386,10 @@ ${s.metadata?.comments ?? ''}`
         ]
     }
     
-    complete (position: TextDocumentPositionParams): CompletionItem[] {
-    
+    async complete (position: TextDocumentPositionParams): Promise<CompletionItem[]> {
+        const selectCompletions = await this.getSelectCompletions(position)
         const items: DdbCompletionItem[] = [
+            ...selectCompletions,
             ...this.getTableSnippets(position),
             ...this.getDatabsaseSnippets(position),
             ...this.getCatalogSnippets(position),
