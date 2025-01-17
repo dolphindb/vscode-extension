@@ -29,7 +29,6 @@ class DatabaseService {
     
     async getColnames (dbHandle: string): Promise<string[]> {
         try {
-            console.log(`getColnames: ${dbHandle}`)
             let db = dbHandle
             if (/['"\`]/.exec(dbHandle)) {
                 const strArr = dbHandle.replaceAll("'", '').replaceAll('"', '').replaceAll('`', '').split('.')
