@@ -21,7 +21,7 @@ import { symbolService } from './symbols'
 import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types'
 import { createRegexForFunctionNames, extractFirstloadTableArgument, getLineContentsBeforePosition, isParenthesisBalanced } from './utils'
 import { dbService } from './database'
-import { getSelectCompletions } from './sql_completions'
+import { getSqlCompletions } from './sql_completions'
 
 export type DdbCompletionItem = CompletionItem & {
     order?: number
@@ -113,7 +113,7 @@ export class CompletionsService {
     
     symbolService = symbolService
     dbService = dbService
-    getSelectCompletions: typeof getSelectCompletions = getSelectCompletions.bind(this)
+    getSelectCompletions: typeof getSqlCompletions = getSqlCompletions.bind(this)
     
     getFunctionSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
         const symbols = symbolService.getSymbols(position.textDocument.uri)

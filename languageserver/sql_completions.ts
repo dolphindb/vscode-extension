@@ -6,10 +6,10 @@ import { documents } from './documents'
 import { dbService } from './database'
 
 
-export async function getSelectCompletions (this: CompletionsService, position: TextDocumentPositionParams): Promise<DdbCompletionItem[]> {
+export async function getSqlCompletions (this: CompletionsService, position: TextDocumentPositionParams): Promise<DdbCompletionItem[]> {
     const items: DdbCompletionItem[] = [ ]
     const lineBefore = getLineContentsBeforePosition(documents.get(position.textDocument.uri).getText(), position.position)
-    const extact = extractFromOrColnames(lineBefore)
+    const extact = extractComplitionRequest(lineBefore)
     if (extact) {
         const { type, data, fromForm } = extact
         if (type === 'from') {
@@ -27,13 +27,33 @@ export async function getSelectCompletions (this: CompletionsService, position: 
             items.push(...colnames.map(colname => this.buildColNameCompletionItem(colname, true, false)))
         }
         
+    } else {
+        /** 处理 create, drop database */
+        const sql = lineBefore
+        const dropDbMatch = /drop database\s*(.+)/i.exec(sql)
+        if (dropDbMatch) {
+            const formMatch = dropDbMatch?.[1]?.trim() ?? ''
+            if (formMatch) {
+                const form = extractTableCompletionsForm(formMatch)
+                if (['catalog', 'schema'].includes(form)) { 
+                    const result = await getFormCompletions.call(this, form, formMatch)
+                    items.push(...result)
+                }
+            } else {
+                const result = await getFormCompletions.call(this, 'catalog', '')
+                const dbResult = await dbService.dfsDatabases
+                const isHaveQuota = /["'\`]/.test(sql)
+                items.push(...dbResult.map(url => this.buildDatabaseCompletionItem(url, isHaveQuota, false)))
+                items.push(...result)
+            }
+        }
     }
     return items
 }
 
 type FromDataType = 'catalog' | 'schema' | 'tablename'
 
-interface Result {
+interface ISelectComplitionRequest {
     type: 'from' | 'colnames' | 'order by'
     fromForm?: FromDataType
     data: string
@@ -42,7 +62,7 @@ interface Result {
 /** 根据 from 子句中的点号数量返回相应的数据
     @param fromClause from 子句，例如 "myTable", "mySchema.myTable", "catalog.mySchema.myTable"
     @returns catalog, schema 或 tablename */
-function extractDataFromFromClause (fromClause: string): FromDataType {
+function extractTableCompletionsForm (fromClause: string): FromDataType {
     const parts = fromClause.split('.')
     switch (parts.length) {
         case 1:
@@ -56,13 +76,13 @@ function extractDataFromFromClause (fromClause: string): FromDataType {
     }
 }
 
-function extractFromOrColnames (sql: string): Result | null {
+function extractComplitionRequest (sql: string): ISelectComplitionRequest | null {
     // 匹配 select ... from 模式，支持 from 后跟函数调用或表名
-    const fromMatch = /select\s+(.+?)\s+from\s+(.*)/i.exec(sql)
+    const selectFromMatch = /select\s+(.+?)\s+from\s+(.*)/i.exec(sql)
     
-    if (fromMatch) {
+    if (selectFromMatch) {
         // 从 from 子句中提取数据
-        let fromClause = fromMatch[2]?.trim() ?? ''
+        let fromClause = selectFromMatch?.[2]?.trim() ?? ''
         
         const match = /^(.*?)\s+(where|group by|context by|pivot by|order by)/i.exec(fromClause)
         if (match)
@@ -78,8 +98,18 @@ function extractFromOrColnames (sql: string): Result | null {
             
         // 处理 from 子句
         else
-            return { type: 'from', fromForm: extractDataFromFromClause(fromClause), data: fromClause }
+            return { type: 'from', fromForm: extractTableCompletionsForm(fromClause), data: fromClause }
             
+    }
+    
+    const updateMatch = /(alter\s+table|drop\s+table|insert\s+into|update|delete)\s*(.+?)(\s+where.*)?$/i.exec(sql)
+    if (updateMatch) {
+        let tableClause = updateMatch?.[2]?.trim() ?? ''
+        let whereClause = updateMatch?.[3]?.trim() ?? ''
+        if (whereClause)
+            return { type: 'colnames', data: tableClause }
+            
+        return { type: 'from', fromForm: extractTableCompletionsForm(tableClause), data: tableClause }
     }
     
     return null
@@ -99,8 +129,8 @@ async function getFormCompletions (this: CompletionsService, form: FromDataType,
         items.push(...schemas.map(schema => this.buildCatalogCompletionItem(schema, true, false)))
     }
     if (form === 'tablename') {
-        const catalog = wordsBeforeLastDot.split('.')[0] ?? ''
-        const schema = wordsBeforeLastDot.split('.')[1] ?? ''
+        const catalog = wordsBeforeLastDot.split('.')?.[0] ?? ''
+        const schema = wordsBeforeLastDot.split('.')?.[1] ?? ''
         const tables = await dbService.getTablesByCatalogAndSchema(catalog, schema)
         items.push(...tables.map(tableName => this.buildTableCompletionItem(tableName, true, false)))
     }
