@@ -47,6 +47,10 @@ export async function getSqlCompletions (this: CompletionsService, position: Tex
                 items.push(...result)
             }
         }
+        const createDbMatch = /create database/i.exec(sql)
+        if (createDbMatch) 
+            items.push(...dbService.catalogs.map(catalog => this.buildCatalogCompletionItem(catalog, true, false)))
+        
     }
     return items
 }
@@ -112,15 +116,30 @@ function extractComplitionRequest (sql: string): ISelectComplitionRequest | null
         return { type: 'from', fromForm: extractTableCompletionsForm(tableClause), data: tableClause }
     }
     
+    const createTableMatch = /create table\s*(.+)/i.exec(sql)
+    if (createTableMatch) {
+        const formMatch = createTableMatch?.[1]?.trim() ?? ''
+        if (formMatch) {
+            const fromForm = extractTableCompletionsForm(formMatch)
+            if (fromForm === 'tablename')
+                return null
+            return { type: 'from', fromForm, data: formMatch }
+        }
+    }
+    
     return null
 }
 
-async function getFormCompletions (this: CompletionsService, form: FromDataType, data: string): Promise<DdbCompletionItem[]> {
+async function getFormCompletions (this: CompletionsService, form: FromDataType, data: string, withDbUrl = false): Promise<DdbCompletionItem[]> {
     let symbolToFind = data
     const items: DdbCompletionItem[] = [ ]
     if (form === 'catalog') {
         const catalogs = dbService.catalogs
         items.push(...catalogs.map(url => this.buildCatalogCompletionItem(url, true, false)))
+        if (withDbUrl) {
+            const isHaveQuota = /["'\`]/.test(data)
+            items.push(...dbService.dfsDatabases.map(url => this.buildDatabaseCompletionItem(url, isHaveQuota, false)))
+        }
     }
     const lastDotIndex = symbolToFind.lastIndexOf('.')
     const wordsBeforeLastDot = symbolToFind.substring(0, lastDotIndex)
