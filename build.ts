@@ -5,7 +5,7 @@ import { builder } from './builder.ts'
 
 await builder.build(true)
 await new Promise(resolve => {
-    cp.exec('pnpm run build-languageserver', (error, stdout, stderr) => {
+    cp.exec('npm run build-languageserver', (error, stdout, stderr) => {
         if (error) {
             console.error(error)
             resolve(false)
