@@ -30,7 +30,7 @@ class DatabaseService {
     async getColnames (dbHandle: string): Promise<string[]> {
         try {
             let db = dbHandle
-            if (/['"\`]/.exec(dbHandle)) {
+            if (/['"\`]/.exec(dbHandle) && !(/(loadTable)/.exec(dbHandle))) {
                 const strArr = dbHandle.replaceAll("'", '').replaceAll('"', '').replaceAll('`', '').split('.')
                 const dbName = strArr?.[0] ?? ''
                 const tbName = strArr?.[1] ?? ''
