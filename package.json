@@ -7,7 +7,7 @@
     },
     "scripts": {
         "dev": "node --experimental-transform-types ./dev.ts",
-        "build": "node --experimental-transform-types ./build.ts && rollup --config",
+        "build": "node --experimental-transform-types ./build.ts",
         "dev-languageserver": "rollup --config --watch",
         "build-languageserver": "rollup --config",
         "scan": "i18n-scan --input \"**/*.{ts,tsx}\"",
