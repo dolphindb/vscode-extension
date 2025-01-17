@@ -12,7 +12,6 @@ export async function getSelectCompletions (this: CompletionsService, position: 
     const extact = extractFromOrColnames(lineBefore)
     if (extact) {
         const { type, data, fromForm } = extact
-        console.log(extact)
         if (type === 'from') {
             const result = await getFormCompletions.call(this, fromForm, data)
             items.push(...result)
@@ -21,10 +20,10 @@ export async function getSelectCompletions (this: CompletionsService, position: 
         if (type === 'colnames' || type === 'order by') {
             const tbHandle = data
             const colnames = [ ]
-            if (type === 'order by')
-                colnames.push(...['asc', 'desc', 'nulls first', 'nulls last'])
             const colsFromSchema = await dbService.getColnames(tbHandle)
             colnames.push(...colsFromSchema)
+            if (type === 'order by')
+                colnames.push(...['asc', 'desc', 'nulls first', 'nulls last'])
             items.push(...colnames.map(colname => this.buildColNameCompletionItem(colname, true, false)))
         }
         
