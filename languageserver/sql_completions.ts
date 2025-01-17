@@ -35,7 +35,7 @@ export async function getSqlCompletions (this: CompletionsService, position: Tex
             const formMatch = dropDbMatch?.[1]?.trim() ?? ''
             if (formMatch) {
                 const form = extractTableCompletionsForm(formMatch)
-                if (['catalog', 'schema'].includes(form)) { 
+                if (['catalog', 'schema'].includes(form)) {
                     const result = await getFormCompletions.call(this, form, formMatch)
                     items.push(...result)
                 }
@@ -48,9 +48,9 @@ export async function getSqlCompletions (this: CompletionsService, position: Tex
             }
         }
         const createDbMatch = /create database/i.exec(sql)
-        if (createDbMatch) 
+        if (createDbMatch)
             items.push(...dbService.catalogs.map(catalog => this.buildCatalogCompletionItem(catalog, true, false)))
-        
+            
     }
     return items
 }
@@ -125,6 +125,7 @@ function extractComplitionRequest (sql: string): ISelectComplitionRequest | null
                 return null
             return { type: 'from', fromForm, data: formMatch }
         }
+        return { type: 'from', fromForm: 'catalog', data: formMatch }
     }
     
     return null
