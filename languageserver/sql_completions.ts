@@ -150,6 +150,18 @@ async function getFormCompletions (this: CompletionsService, form: FromDataType,
     const lastDotIndex = symbolToFind.lastIndexOf('.')
     const wordsBeforeLastDot = symbolToFind.substring(0, lastDotIndex)
     if (form === 'schema') {
+        if (withDbUrl) {
+            const isHaveQuota = /["'\`]/.test(data)
+            if (isHaveQuota) {
+                const dburls = dbService.dbTables.get(wordsBeforeLastDot
+                    .replaceAll("'", '')
+                    .replaceAll('"', '')
+                    .replaceAll('`', '')
+                )
+                if (dburls)
+                    items.push(...dburls.map(url => this.buildDatabaseCompletionItem(url, true, false)))
+            }
+        }
         const schemas = await dbService.getSchemasByCatalog(wordsBeforeLastDot)
         items.push(...schemas.map(schema => this.buildCatalogCompletionItem(schema, true, false)))
     }
