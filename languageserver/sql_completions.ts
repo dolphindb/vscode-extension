@@ -17,6 +17,11 @@ export async function getSqlCompletions (this: CompletionsService, position: Tex
             items.push(...result)
         }
         
+        if (type === 'update') {
+            const result = await getFormCompletions.call(this, fromForm, data, true)
+            items.push(...result)
+        }
+        
         if (type === 'colnames' || type === 'order by') {
             const tbHandle = data
             const colnames = [ ]
@@ -32,11 +37,11 @@ export async function getSqlCompletions (this: CompletionsService, position: Tex
         const sql = lineBefore
         const dropDbMatch = /drop database\s*(.+)/i.exec(sql)
         if (dropDbMatch) {
-            const formMatch = dropDbMatch?.[1]?.trim() ?? ''
-            if (formMatch) {
-                const form = extractTableCompletionsForm(formMatch)
+            const dropMatch = dropDbMatch?.[1]?.trim() ?? ''
+            if (dropMatch) {
+                const form = extractTableCompletionsForm(dropMatch)
                 if (['catalog', 'schema'].includes(form)) {
-                    const result = await getFormCompletions.call(this, form, formMatch)
+                    const result = await getFormCompletions.call(this, form, dropMatch)
                     items.push(...result)
                 }
             } else {
@@ -58,7 +63,7 @@ export async function getSqlCompletions (this: CompletionsService, position: Tex
 type FromDataType = 'catalog' | 'schema' | 'tablename'
 
 interface ISelectComplitionRequest {
-    type: 'from' | 'colnames' | 'order by'
+    type: 'from' | 'colnames' | 'order by' | 'update'
     fromForm?: FromDataType
     data: string
 }
@@ -113,7 +118,7 @@ function extractComplitionRequest (sql: string): ISelectComplitionRequest | null
         if (whereClause)
             return { type: 'colnames', data: tableClause }
             
-        return { type: 'from', fromForm: extractTableCompletionsForm(tableClause), data: tableClause }
+        return { type: 'update', fromForm: extractTableCompletionsForm(tableClause), data: tableClause }
     }
     
     const createTableMatch = /create table\s*(.+)/i.exec(sql)
@@ -125,7 +130,7 @@ function extractComplitionRequest (sql: string): ISelectComplitionRequest | null
                 return null
             return { type: 'from', fromForm, data: formMatch }
         }
-        return { type: 'from', fromForm: 'catalog', data: formMatch }
+        return { type: 'update', fromForm: 'catalog', data: formMatch }
     }
     
     return null
