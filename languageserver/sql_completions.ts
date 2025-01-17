@@ -111,7 +111,7 @@ function extractComplitionRequest (sql: string): ISelectComplitionRequest | null
             
     }
     
-    const updateMatch = /(alter\s+table|drop\s+table|insert\s+into|update|delete)\s*(.+?)(\s+where.*)?$/i.exec(sql)
+    const updateMatch = /(alter\s+table|drop\s+table|insert\s+into|update|delete\s+from)\s*(.+?)(\s+where.*)?$/i.exec(sql)
     if (updateMatch) {
         let tableClause = updateMatch?.[2]?.trim() ?? ''
         let whereClause = updateMatch?.[3]?.trim() ?? ''
