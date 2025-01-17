@@ -29,7 +29,15 @@ class DatabaseService {
     
     async getColnames (dbHandle: string): Promise<string[]> {
         try {
-            const result: { colDefs: { data: { name: string }[] } } = await connection.sendRequest('ddb/schema', dbHandle)
+            console.log(`getColnames: ${dbHandle}`)
+            let db = dbHandle
+            if (/['"\`]/.exec(dbHandle)) {
+                const strArr = dbHandle.replaceAll("'", '').replaceAll('"', '').replaceAll('`', '').split('.')
+                const dbName = strArr?.[0] ?? ''
+                const tbName = strArr?.[1] ?? ''
+                db = `loadTable("${dbName}", "${tbName}")`
+            }
+            const result: { colDefs: { data: { name: string }[] } } = await connection.sendRequest('ddb/schema', db)
             const colnames = result.colDefs.data.map(({ name }) => name) as string[]
             return colnames
         } catch (error) {
