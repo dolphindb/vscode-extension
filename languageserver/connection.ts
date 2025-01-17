@@ -7,8 +7,6 @@ import {
     WorkspaceFoldersRequest
 } from 'vscode-languageserver/node'
 
-import { type DdbUri } from './types'
-
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.

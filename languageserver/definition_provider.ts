@@ -10,12 +10,12 @@ import {
     MarkupKind
 } from 'vscode-languageserver/node'
 
-import { connection } from './connection'
-import { documents } from './documents'
-import { symbolService } from './symbols'
-import { isPositionInScope } from './completions'
-import { type IFunctionMetadata, SymbolType, type ISymbol, type IParamMetadata, type IVariableMetadata } from './types'
-import { ddbModules } from './modules'
+import { connection } from './connection.ts'
+import { documents } from './documents.ts'
+import { symbolService } from './symbols.ts'
+import { isPositionInScope } from './completions.ts'
+import { type IFunctionMetadata, SymbolType, type ISymbol, type IParamMetadata, type IVariableMetadata } from './types.ts'
+import { ddbModules } from './modules.ts'
 
 // 通用函数：获取光标所在的单词
 function getWordAtPosition (text: string, position: Position): string | null {

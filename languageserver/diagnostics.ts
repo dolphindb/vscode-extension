@@ -10,10 +10,10 @@ import {
     type TextDocument
 } from 'vscode-languageserver-textdocument'
 
-import { connection } from './connection'
-import { documents } from './documents'
-import { ddbModules } from './modules'
-import { extractModuleName } from './utils'
+import { connection } from './connection.ts'
+import { documents } from './documents.ts'
+import { ddbModules } from './modules.ts'
+import { extractModuleName } from './utils.ts'
 
 connection.languages.diagnostics.on(async params => {
     const document = documents.get(params.textDocument.uri)

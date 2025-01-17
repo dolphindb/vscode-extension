@@ -8,8 +8,6 @@
     "scripts": {
         "dev": "node --experimental-transform-types ./dev.ts",
         "build": "node --experimental-transform-types ./build.ts",
-        "dev-languageserver": "rollup --config --watch",
-        "build-languageserver": "rollup --config",
         "scan": "i18n-scan --input \"**/*.{ts,tsx}\"",
         "lint": "eslint \"**/*.{ts,tsx}\"",
         "fix": "eslint --fix \"**/*.{ts,tsx}\""
@@ -43,15 +41,7 @@
         "tslib": "^2.8.1",
         "vscode-languageclient": "^9.0.1",
         "ws": "^8.18.0",
-        "xshell": "^1.1.22",
-        "@rollup/plugin-commonjs": "^23.0.2",
-        "@rollup/plugin-json": "^5.0.1",
-        "@rollup/plugin-node-resolve": "^15.0.1",
-        "@rollup/plugin-typescript": "^9.0.2",
-        "rimraf": "^4.1.2",
-        "rollup": "^3.3.0",
-        "rollup-plugin-dts": "^5.0.0",
-        "rollup-plugin-typescript2": "^0.34.1"
+        "xshell": "^1.1.22"
     },
     "pnpm": {
         "patchedDependencies": {

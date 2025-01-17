@@ -1,9 +1,9 @@
 import { type TextDocumentPositionParams } from 'vscode-languageserver/node'
 
-import { type DdbCompletionItem, type CompletionsService } from './completions'
-import { getLineContentsBeforePosition } from './utils'
-import { documents } from './documents'
-import { dbService } from './database'
+import { type DdbCompletionItem, type CompletionsService } from './completions.ts'
+import { getLineContentsBeforePosition } from './utils.ts'
+import { documents } from './documents.ts'
+import { dbService } from './database.ts'
 
 
 export async function getSqlCompletions (this: CompletionsService, position: TextDocumentPositionParams): Promise<DdbCompletionItem[]> {

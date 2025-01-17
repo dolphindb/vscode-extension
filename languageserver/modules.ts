@@ -1,10 +1,8 @@
-
-
-import { connection } from './connection'
-import { getFileModule } from './symbols_impl'
-import { symbolService } from './symbols'
-import { type DdbModule, type DdbUri } from './types'
-import { readFileByPath } from './utils'
+import { connection } from './connection.ts'
+import { getFileModule } from './symbols_impl.ts'
+import { symbolService } from './symbols.ts'
+import { type DdbModule, type DdbUri } from './types.ts'
+import { readFileByPath } from './utils.ts'
 
 
 

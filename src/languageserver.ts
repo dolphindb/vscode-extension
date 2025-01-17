@@ -17,7 +17,7 @@ export const ls_client: { current: LanguageClient | undefined } = { current: und
 export async function activate_ls (ctx: ExtensionContext) {
     /** 初始化 Language Server */
     // The server is implemented in node
-    let serverModule = ctx.asAbsolutePath(path.join( 'languageserver.js'))
+    let serverModule = ctx.asAbsolutePath(path.join( 'languageserver.cjs'))
     // The debug options for the server
     // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
     let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] }

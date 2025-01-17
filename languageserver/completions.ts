@@ -13,15 +13,15 @@ import {
     type TextDocument
 } from 'vscode-languageserver-textdocument'
 
-import { connection } from './connection'
-import { documents } from './documents'
-import { ddbModules } from './modules'
+import { connection } from './connection.ts'
+import { documents } from './documents.ts'
+import { ddbModules } from './modules.ts'
 
-import { symbolService } from './symbols'
-import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types'
-import { createRegexForFunctionNames, extractFirstloadTableArgument, getLineContentsBeforePosition, isParenthesisBalanced } from './utils'
-import { dbService } from './database'
-import { getSqlCompletions } from './sql_completions'
+import { symbolService } from './symbols.ts'
+import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types.ts'
+import { createRegexForFunctionNames, extractFirstloadTableArgument, getLineContentsBeforePosition, isParenthesisBalanced } from './utils.ts'
+import { dbService } from './database.ts'
+import { getSqlCompletions } from './sql_completions.ts'
 
 export type DdbCompletionItem = CompletionItem & {
     order?: number

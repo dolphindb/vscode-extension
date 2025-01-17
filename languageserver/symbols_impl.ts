@@ -1,6 +1,6 @@
 import { type Position, type Range } from 'vscode-languageserver/node'
 
-import { type IFunctionMetadata, SymbolType, type ISymbol, type IVariableMetadata, type IParamMetadata } from './types'
+import { type IFunctionMetadata, SymbolType, type ISymbol, type IVariableMetadata, type IParamMetadata } from './types.ts'
 
 // Helper 类型定义，用于表示作用域
 type Scope = {
@@ -579,7 +579,7 @@ export function getFileUsedModule (text: string): string[] {
         .filter(line => line.startsWith('use'))
         // 使用正则表达式提取模块名
         .map(line => {
-            const match = line.match(useRegex)
+            const match = useRegex.exec(line)
             return match ? match[1].replace(/\s*::\s*/g, '::') : null
         })
         // 过滤掉未匹配成功的行

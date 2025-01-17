@@ -1,6 +1,6 @@
 import throttle from 'lodash/throttle'
 
-import { connection } from './connection'
+import { connection } from './connection.ts'
 
 class DatabaseService {
     dfsDatabases: string[] = [ ]

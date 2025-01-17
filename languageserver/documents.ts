@@ -6,9 +6,9 @@ import {
     TextDocument
 } from 'vscode-languageserver-textdocument'
 
-import { connection } from './connection'
-import { symbolService } from './symbols'
-import { dbService } from './database'
+import { connection } from './connection.ts'
+import { symbolService } from './symbols.ts'
+import { dbService } from './database.ts'
 
 /** 现在也没有什么监听文档状态需要用到的东西 */
 
