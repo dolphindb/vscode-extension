@@ -16,6 +16,7 @@ import { symbolService } from './symbols.ts'
 import { isPositionInScope } from './completions.ts'
 import { type IFunctionMetadata, SymbolType, type ISymbol, type IParamMetadata, type IVariableMetadata } from './types.ts'
 import { ddbModules } from './modules.ts'
+import { buildFunctionCommentDocs } from './utils.ts'
 
 // 通用函数：获取光标所在的单词
 function getWordAtPosition (text: string, position: Position): string | null {
@@ -88,7 +89,7 @@ function generateHoverContent (symbol: ISymbol): MarkupContent | null {
                 const params = funcMeta.argnames.join(', ')
                 contents.push(`**Function** \`${symbol.name}(${params})\``)
                 if (funcMeta.comments) 
-                    contents.push(`${funcMeta.comments.replaceAll('\n', '\\\n')}`)
+                    contents.push(`${buildFunctionCommentDocs(funcMeta.comments).value}`)
                 
             }
             break

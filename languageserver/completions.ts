@@ -19,7 +19,7 @@ import { ddbModules } from './modules.ts'
 
 import { symbolService } from './symbols.ts'
 import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types.ts'
-import { createRegexForFunctionNames, extractFirstloadTableArgument, getLineContentsBeforePosition, isParenthesisBalanced } from './utils.ts'
+import { buildFunctionCommentDocs, createRegexForFunctionNames, extractFirstloadTableArgument, getLineContentsBeforePosition, isParenthesisBalanced } from './utils.ts'
 import { dbService } from './database.ts'
 import { getSqlCompletions } from './sql_completions.ts'
 
@@ -124,7 +124,7 @@ export class CompletionsService {
             return {
                 label: s.name,
                 kind: CompletionItemKind.Function,
-                documentation: s.metadata?.comments ?? '',
+                documentation: s.metadata?.comments ? buildFunctionCommentDocs(s.metadata.comments) : '',
                 insertText:
                     `${s.name}(${argumentCompletions.join(', ')})`,
                 insertTextFormat: InsertTextFormat.Snippet
@@ -270,7 +270,7 @@ export class CompletionsService {
                             documentation: {
                                 kind: MarkupKind.Markdown,
                                 value: `Function from module \`${module.moduleName}\`
-${s.metadata?.comments ?? ''}`
+${s.metadata?.comments ? buildFunctionCommentDocs(s.metadata.comments).value : ''}`
                             },
                             insertText:
                                 `${module.moduleName}::${s.name}(${argumentCompletions.join(', ')})`,

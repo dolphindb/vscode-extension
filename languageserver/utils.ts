@@ -1,6 +1,6 @@
 import * as fsp from 'fs/promises'
 
-import { type Position } from 'vscode-languageserver/node'
+import { MarkupKind, type MarkupContent, type Position } from 'vscode-languageserver/node'
 
 export async function readFileByPath (path: string) {
     const isWindows = process.platform === 'win32'
@@ -92,4 +92,50 @@ export function createRegexForFunctionNames (functionNames) {
 }
 function escapeRegExp (string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+export function buildFunctionCommentDocs (comment: string): MarkupContent {
+    const lines = comment.split('\n')
+    let functionName = ''
+    let brief = ''
+    const params: { name: string, description: string }[] = [ ]
+    let returnDesc = ''
+    let sampleUsage = ''
+    let additionalInfo = ''
+    
+    for (const line of lines) 
+        if (line.startsWith('@FunctionName:')) 
+            functionName = line.substring('@FunctionName:'.length).trim()
+         else if (line.startsWith('@Brief:'))
+             brief = line.substring('@Brief:'.length).trim()
+         else if (line.startsWith('@Param:')) {
+            const paramLine = line.substring('@Param:'.length).trim()
+            const paramParts = /^(\w+)(=\w+)?\s*:\s*(.*)$/.exec(paramLine)
+            if (paramParts) {
+                const paramName = paramParts[1]
+                const paramDesc = paramParts[3]
+                params.push({ name: paramName, description: paramDesc })
+            }
+        } else if (line.startsWith('@Return:')) 
+            returnDesc = line.substring('@Return:'.length).trim()
+         else if (line.startsWith('@SampleUsage:'))
+             sampleUsage = line.substring('@SampleUsage:'.length).trim()
+         else if (!line.trim().startsWith('@'))
+             additionalInfo += line.trim() + ' ' 
+        
+    
+    
+    const documentation: MarkupContent = {
+        kind: MarkupKind.Markdown,
+        value: [
+            brief ? `**Brief:** ${brief}` : '',
+            params.length > 0 ? '**Parameters:**' : '',
+            ...params.map(p => `* \`${p.name}\`: ${p.description}`),
+            returnDesc ? `**Return:** ${returnDesc}` : '',
+            sampleUsage ? `**Sample Usage:**\n\n\`\`\`\n${sampleUsage}\n\`\`\`` : '',
+            additionalInfo ? `\n\n${additionalInfo.trim()}` : '', // Add additional info with separator
+        ].filter(s => s).join('\n\n'),
+    }
+    
+    return documentation
 }
