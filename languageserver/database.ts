@@ -6,7 +6,7 @@ class DatabaseService {
     dfsDatabases: string[] = [ ]
     catalogs: string[] = [ ]
     dbTables: Map<string, string[]> = new Map()
-    streamTables: string[] = [ ]
+    sharedTables: string[] = [ ]
     
     update = throttle(this.update_impl, 1000)
     
@@ -14,7 +14,7 @@ class DatabaseService {
         try {
             this.catalogs = await connection.sendRequest('ddb/getAllCatalogs')
             this.dfsDatabases = await connection.sendRequest('ddb/getClusterDFSDatabases')
-            this.streamTables = await connection.sendRequest('ddb/getStreamTables')
+            this.sharedTables = await connection.sendRequest('ddb/getSharedTables')
             
             // Use Promise.all to ensure all requests complete before proceeding
             await Promise.all(this.dfsDatabases.map(async (db: string) => {

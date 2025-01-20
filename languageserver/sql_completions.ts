@@ -141,6 +141,9 @@ async function getFormCompletions (this: CompletionsService, form: FromDataType,
     const items: DdbCompletionItem[] = [ ]
     if (form === 'catalog') {
         const catalogs = dbService.catalogs
+        // 也可以是 shared table
+        const sharedTables = dbService.sharedTables
+        items.push(...sharedTables.map(tableName => this.buildSharedTableCompletionItem(tableName, true, false)))
         items.push(...catalogs.map(url => this.buildCatalogCompletionItem(url, true, false)))
         if (withDbUrl) {
             const isHaveQuota = /["'\`]/.test(data)

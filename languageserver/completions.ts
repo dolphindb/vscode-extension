@@ -325,6 +325,16 @@ ${s.metadata?.comments ?? ''}`
         }
     }
     
+    buildSharedTableCompletionItem (tableName: string, skipQuota: boolean, commonOrder: boolean) {
+        return {
+            label: skipQuota ? `${tableName}` : `"${tableName}"`,
+            kind: CompletionItemKind.Value,
+            insertText: skipQuota ? `${tableName}` : `"${tableName}"`,
+            insertTextFormat: InsertTextFormat.Snippet,
+            order: commonOrder ? undefined : 1
+        }
+    }
+    
     getDatabsaseSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
         const lineBefore = getLineContentsBeforePosition(documents.get(position.textDocument.uri).getText(), position.position)
         const dburls = dbService.dfsDatabases

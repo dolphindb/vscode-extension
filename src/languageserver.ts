@@ -81,10 +81,10 @@ export async function activate_ls (ctx: ExtensionContext) {
         const result = await getConnection()?.ddb?.invoke?.('getClusterDFSDatabases')
         return result ?? [ ]
     })
-    client.onRequest('ddb/getStreamTables', async () => {
+    client.onRequest('ddb/getSharedTables', async () => {
         try {
-            const result = await getConnection()?.ddb?.invoke?.('getStreamTables')
-            return result.data.map(e => e.name)
+            const result = await getConnection()?.ddb?.invoke?.('objs', [true])
+            return result.data.filter(e => e.form === 'TABLE').map(e => e.name)
         } catch (error) {
             return [ ]
         }
