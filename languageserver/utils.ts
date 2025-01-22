@@ -121,7 +121,7 @@ export function buildFunctionCommentDocs (comment: string): MarkupContent {
          else if (line.startsWith('@SampleUsage:'))
              sampleUsage = line.substring('@SampleUsage:'.length).trim()
          else if (!line.trim().startsWith('@'))
-             additionalInfo += line.trim() + ' ' 
+             additionalInfo += line.trim() + '  \n' 
         
     
     
