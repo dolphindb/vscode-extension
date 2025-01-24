@@ -1,11 +1,11 @@
 import { window, type WebviewView, Uri } from 'vscode'
 
-import { type Message, Remote, genid, assert, defer } from 'xshell'
+import { type Message, genid, assert, defer, pack, parse, message_symbol, check } from 'xshell'
 
 import type { DDB, DdbMessage, InspectOptions } from 'dolphindb'
 
 
-import { language, t } from '../../i18n/index.ts'
+import { language, t } from '@i18n/index.ts'
 
 import { dev, fpd_ext } from '../index.ts'
 import { type DdbVar } from '../variables.ts'
@@ -22,7 +22,7 @@ export let dataview = {
     /** map<id, message handler>: 通过 rpc message.id 找到对应的 handler, unary rpc 接收方不需要设置 handlers, 发送方需要 */
     handlers: new Map<number, ViewMessageHandler>(),
     
-    print: false,
+    verbose: false,
     
     
     subscribers_repl: [ ] as ((message: DdbMessage, ddb: DDB, options?: InspectOptions) => void)[],
@@ -127,8 +127,8 @@ export let dataview = {
                         '        </script>\n' +
                         
                         [
-                            `react/react.${ dev ? 'development' : 'production.min' }.js`,
                             'dayjs/dayjs.min.js',
+                            `react/react.${ dev ? 'development' : 'production' }.js`,
                             `antd/dist/antd${ dev ? '' : '.min' }.js`,
                             `@ant-design/icons/dist/index.umd${ dev ? '' : '.min' }.js`,
                             '@ant-design/plots/dist/plots.min.js',
@@ -150,13 +150,17 @@ export let dataview = {
     
     /** 发送或连接出错时自动清理 message.id 对应的 handler */
     async send (message: Message) {
-        if (!message.id)
-            message.id = genid()
+        message[message_symbol] = true
         
         try {
-            assert(await this.view.webview.postMessage(Remote.pack(message).buffer))
+            assert(
+                await this.view.webview.postMessage(
+                    pack(message)
+                        .slice()
+                        .buffer))
         } catch (error) {
-            this.handlers.delete(message.id)
+            if (message.id)
+                this.handlers.delete(message.id)
             throw error
         }
     },
@@ -167,39 +171,49 @@ export let dataview = {
         如果 handler 返回了值，则包装为 message 发送  
         使用 Uint8Array 作为参数更灵活 https://stackoverflow.com/a/74505197/7609214  */
     async handle (data: Uint8Array) {
-        const message = Remote.parse(data)
+        let message: Message
+        try {
+            check(data[0] === 0xcc, 'message 格式错误')
+            message = parse<Message>(data)
+        } catch (error) {
+            console.log(error)
+            return
+        }
         
         const { id, func, done } = message
         
-        if (this.print)
+        if (this.verbose)
             console.log(message)
         
         let handler: ViewMessageHandler
         
-        if (func)
+        if (func) {
             handler = this.funcs[func]
-        else {
+            
+            // 传了 func 调用函数的情况下，如果 message.data 为 undefined, 默认为 [ ]
+            if (message.data === undefined)
+                message.data = [ ]
+        } else {
             handler = this.handlers.get(id)
-            if (done)
+            if (done && handler)
                 this.handlers.delete(id)
         }
         
         try {
             if (handler) {
                 const data = await handler(message, this.view)
-                if (data)
+                if (func || data !== undefined)
                     await this.send({ id, data })
-            } else if (message.error)
-                throw message.error
-            else
-                throw new Error(`${t('找不到 rpc handler')}: ${func ? `func: ${func.quote()}` : `id: ${id}`}`)
+            } else
+                throw message.error || new Error(`找不到 rpc handler: ${func ? `func: ${func.quote()}` : `id: ${id}`}`)
         } catch (error) {
             // handle 出错并不意味着 rpc 一定会结束，可能 error 是运行中的正常数据，所以不能清理 handler
             
             if (!message.error)  // 防止无限循环往对方发送 error, 只有在对方无错误时才可以发送
                 await this.send({ id, error, /* 不能设置 done 清理对面 handler, 理由同上 */ })
             
-            throw error
+            // 这里继续往上层抛没有太大意义，上面一般都是 websocket on_message 这些，交给自定义或默认的 on_error 处理
+            console.log(error)
         }
     },
     

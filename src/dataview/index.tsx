@@ -21,7 +21,8 @@ import type { NotificationInstance } from 'antd/es/notification/interface.js'
 import { Model } from 'react-object-model'
 
 import { genid } from 'xshell/utils.browser.js'
-import { Remote, type Message } from 'xshell/net.browser.js'
+import { Remote } from 'xshell/net.browser.js'
+import type { Message } from 'xshell/io.browser.js'
 import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
 
 import { language } from '@i18n/index.ts'
