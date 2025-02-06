@@ -269,7 +269,7 @@ export class CompletionsService {
                             kind: CompletionItemKind.Function,
                             documentation: {
                                 kind: MarkupKind.Markdown,
-                                value: `Function from module \`${module.moduleName}\`
+                                value: `Function from module \`${module.moduleName}\`\n
 ${s.metadata?.comments ? buildFunctionCommentDocs(s.metadata.comments).value : ''}`
                             },
                             insertText:
