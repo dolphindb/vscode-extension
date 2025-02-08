@@ -12,7 +12,7 @@
         
         "./src/dataview/",
         
-        "languageserver",
+        "./src/languageserver",
     ],
     
     "compilerOptions": {

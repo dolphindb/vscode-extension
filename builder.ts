@@ -101,7 +101,7 @@ export let builder = {
                 {
                     'index.cjs': './src/index.ts',
                     'debugger.cjs': './src/debugger/index.ts',
-                    'languageserver.cjs': './languageserver/server.ts',
+                    'languageserver.cjs': './src/languageserver/server.ts',
                 },
                 {
                     production,
