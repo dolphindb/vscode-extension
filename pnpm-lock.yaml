@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   koa@2.15.3:
-    hash: p7ybv54qzz4vmboaajk6ep5psi
+    hash: 5a1a2b4970aea22cb8bd45de734e2f92439f45ce11294fd50aba4c573fa788f4
     path: patches/koa@2.15.3.patch
 
 importers:
@@ -36,7 +36,7 @@ importers:
         version: 3.0.213(react-dom@19.0.0(react@19.0.0))
       koa:
         specifier: ^2.15.3
-        version: 2.15.3(patch_hash=p7ybv54qzz4vmboaajk6ep5psi)
+        version: 2.15.3(patch_hash=5a1a2b4970aea22cb8bd45de734e2f92439f45ce11294fd50aba4c573fa788f4)
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -7475,7 +7475,7 @@ snapshots:
 
   koa-is-json@1.0.0: {}
 
-  koa@2.15.3(patch_hash=p7ybv54qzz4vmboaajk6ep5psi):
+  koa@2.15.3(patch_hash=5a1a2b4970aea22cb8bd45de734e2f92439f45ce11294fd50aba4c573fa788f4):
     dependencies:
       accepts: 1.3.8
       cache-content-type: 1.0.1
@@ -9126,7 +9126,7 @@ snapshots:
       https-proxy-agent: 7.0.6
       i18next: 24.2.1(typescript@5.7.3)
       i18next-scanner: 4.6.0(typescript@5.7.3)
-      koa: 2.15.3(patch_hash=p7ybv54qzz4vmboaajk6ep5psi)
+      koa: 2.15.3(patch_hash=5a1a2b4970aea22cb8bd45de734e2f92439f45ce11294fd50aba4c573fa788f4)
       koa-compress: 5.1.1
       license-webpack-plugin: 4.0.2(webpack@5.97.1)
       lodash: 4.17.21
