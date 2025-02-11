@@ -7,7 +7,8 @@ export enum SymbolType {
     FieldName,
     Database,
     Variable,
-    Param
+    Param,
+    File
 }
 
 export interface IFunctionMetadata {
