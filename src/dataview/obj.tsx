@@ -194,12 +194,19 @@ function Dict ({
     ctx?: Context
     options?: InspectOptions
 }) {
-    const render = useState({ })[1]
+    const [page_size, set_page_size] = useState(100)
+    const [page_index, set_page_index] = useState(0)
+    
+    const render = use_rerender()
     
     const _obj = obj || objref.obj
     
     useEffect(() => {
         (async () => {
+            // 重置分页
+            set_page_index(0)
+            set_page_size(100)
+            
             if (_obj)
                 return
             
@@ -212,7 +219,7 @@ function Dict ({
             :
                 DdbObj.parse(... await remote.call<[Uint8Array, boolean]>('eval', [node, name])) as DdbDictObj
             
-            render({ })
+            render()
         })()
     }, [obj, objref])
     
@@ -223,7 +230,16 @@ function Dict ({
     return <div className='dict'>
         <Tree
             key={genid()}
-            treeData={build_tree_data(_obj, { remote, ddb, ctx, options })}
+            treeData={(() => {
+                if (!_obj)
+                    return [ ]
+                
+                const start = page_index * page_size
+                const end = Math.min(start + page_size, _obj.rows)
+                const data = build_tree_data_with_slice(_obj, start, end, { remote, ddb, ctx, options })
+                
+                return data
+            })()}
             defaultExpandAll
             focusable={false}
             blockNode
@@ -237,7 +253,23 @@ function Dict ({
             <div className='info'>
                 <span className='desc'>{_obj.rows} {t('个键')}{ objref ? ` (${Number(objref.bytes).to_fsize_str()}) ` : '' }</span>
                 <span className='type'>{t('的词典')}</span>
-            </div> 
+            </div>
+            
+            <Pagination
+                className='pagination'
+                total={_obj.rows}
+                current={page_index + 1}
+                pageSize={page_size}
+                pageSizeOptions={page_sizes}
+                size='small'
+                showSizeChanger
+                showQuickJumper
+                hideOnSinglePage={page_size <= 50}
+                onChange={(page, size) => {
+                    set_page_size(size)
+                    set_page_index(page - 1)
+                }}
+            />
         </div>
     </div>
 }
@@ -443,18 +475,17 @@ function get_value_from_uint8_array (dataType: DdbType, data: Uint8Array, le: bo
     }
 }
 
-
-function build_tree_data (
+function build_tree_data_with_slice (
     obj: DdbDictObj,
+    start: number,
+    end: number,
     { remote, ctx, ddb, options }: { remote?: Remote, ctx?: Context, ddb?: DDB, options?: InspectOptions }
 ) {
-    const dict_key = obj.value[0]
-    const dict_value = obj.value[1]
-    
-    return seq(dict_key.rows, i => {
-        let key = formati(dict_key, i, options)
-        
-        let valueobj = dict_value.value[i]
+    const [dict_key, dict_value] = obj.value
+    return seq(Math.min(Math.max(end - start, 0), dict_key.rows), i => {
+        const ireal = start + i
+        const key = formati(dict_key, ireal, options)
+        const valueobj = dict_value.value[ireal]
         
         // if (valueobj instanceof DdbObj)
         // valueobj 可能来自不同 window
@@ -463,7 +494,8 @@ function build_tree_data (
                 return {
                     title: `${key}: `,
                     key: genid(),
-                    children: build_tree_data(valueobj, { remote, ctx, ddb })
+                    // 对嵌套的字典不继续分页
+                    children: build_tree_data_with_slice(valueobj, 0, valueobj.rows, { remote, ctx, ddb })
                 }
             else if (valueobj.form === DdbForm.scalar)
                 return {
@@ -486,12 +518,11 @@ function build_tree_data (
             }
         else
             return {
-                title: `${key}: ${truncate(formati(dict_value, i, options))}`,
+                title: `${key}: ${truncate(formati(dict_value, ireal, options))}`,
                 key: genid()
             }
     })
 }
-
 
 function Vector ({
     obj,
