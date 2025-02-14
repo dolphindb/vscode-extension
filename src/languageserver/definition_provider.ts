@@ -210,24 +210,20 @@ function splitByLastDoubleColon (input: string): { prefix: string, suffix: strin
 }
 
 // 定义查找处理器
-connection.onDefinition(async (params: DefinitionParams) => {
-    let symbol = await getSymbolAtPosition(params.textDocument.uri, params.position)
+connection.onDefinition(async ({ textDocument, position }: DefinitionParams) => {
+    const symbol = await getSymbolAtPosition(textDocument.uri, position) 
+        || getModuleImportAtPosition(textDocument.uri, position)
+    
     if (!symbol)
-        // 检查是否是一个 `use` 导入，如果不是那就没有了
-        symbol = getModuleImportAtPosition(params.textDocument.uri, params.position)
-    if (!symbol)
-        return null
-        
-    // 创建 Location 对象
-    const location: Location = {
-        uri: symbol.filePath, // 确保使用符号所在文件的路径
+        return null 
+    
+    return {
+        uri: symbol.filePath,
         range: {
             start: symbol.position,
-            end: symbol.range ? symbol.range.end : symbol.position,
-        },
+            end: symbol.range?.end || symbol.position
+        }
     }
-    
-    return location
 })
 
 // Hover 处理器
