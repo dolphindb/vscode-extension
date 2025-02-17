@@ -14,8 +14,9 @@ import { connector, type DdbConnection } from './connector.ts'
 
 export const ls_client: { current: LanguageClient | undefined } = { current: undefined }
 
+
+/** 初始化 Language Server */
 export async function activate_ls (ctx: ExtensionContext) {
-    /** 初始化 Language Server */
     // The server is implemented in node
     let serverModule = ctx.asAbsolutePath(path.join( 'languageserver.cjs'))
     // The debug options for the server

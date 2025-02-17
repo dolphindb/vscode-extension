@@ -144,7 +144,7 @@ export async function activate (ctx: ExtensionContext) {
     }))
     
     await register_settings()
-      
+    
     await activate_ls(ctx)
     
     console.log(t('DolphinDB 插件初始化成功'))
@@ -154,7 +154,6 @@ export async function activate (ctx: ExtensionContext) {
 export function deactivate (ctx: ExtensionContext) {
     server?.stop()
     
-    /** 停止 Language Server 连接 */
-    if (ls_client.current) 
-        ls_client.current.stop()
+    // 停止 Language Server 连接
+    ls_client.current?.stop()
 }
