@@ -4,14 +4,10 @@ import {
     InsertTextFormat,
     Position,
     type TextDocumentPositionParams,
-    InsertTextMode,
     MarkupKind,
-    TextEdit
 } from 'vscode-languageserver/node'
 
-import {
-    type TextDocument
-} from 'vscode-languageserver-textdocument'
+import type { TextDocument } from 'vscode-languageserver-textdocument'
 
 import { connection } from './connection.ts'
 import { documents } from './documents.ts'
