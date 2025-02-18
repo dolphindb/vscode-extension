@@ -15,8 +15,8 @@
     "devDependencies": {
         "@types/koa": "^2.15.0",
         "@types/node": "^22.13.4",
-        "@types/react": "^19.0.9",
-        "@types/react-dom": "^19.0.3",
+        "@types/react": "^19.0.10",
+        "@types/react-dom": "^19.0.4",
         "@types/vscode": "^1.97.0",
         "@types/ws": "^8.5.14",
         "eslint": "^9.20.1",
@@ -27,7 +27,7 @@
         "@ant-design/plots": "1.2.5",
         "@vscode/debugadapter": "^1.68.0",
         "@vscode/debugprotocol": "^1.68.0",
-        "antd": "^5.24.0",
+        "antd": "^5.24.1",
         "dayjs": "^1.11.13",
         "dolphindb": "^3.0.217",
         "koa": "^2.15.4",
@@ -39,7 +39,7 @@
         "vscode-languageserver": "^9.0.1",
         "vscode-languageserver-textdocument": "^1.0.12",
         "ws": "^8.18.0",
-        "xshell": "^1.2.14"
+        "xshell": "^1.2.15"
     },
     "pnpm": {
         "patchedDependencies": {
