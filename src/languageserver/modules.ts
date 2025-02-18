@@ -70,8 +70,8 @@ class DdbModules {
 
 export const ddbModules = new DdbModules()
 
-connection.onInitialized(async () => {
-    await ddbModules.init()
+connection.onInitialized(() => {
+    ddbModules.init()
 })
 
 connection.onRequest('lsp/handleFileCreate', async (uri: DdbUri) => {
