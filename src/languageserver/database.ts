@@ -1,5 +1,3 @@
-import throttle from 'lodash/throttle'
-
 import { connection } from './connection.ts'
 
 class DatabaseService {
@@ -7,8 +5,17 @@ class DatabaseService {
     catalogs: string[] = [ ]
     dbTables: Map<string, string[]> = new Map()
     sharedTables: string[] = [ ]
+    // 初始化的时候 -2000 ms 避免第一次 update 的时候不生效
+    lastUpdateTime = new Date().getTime() - 2000
     
-    update = throttle(this.update_impl, 1000)
+    update () {
+        // 2000 ms 内只能触发一次
+        const now = new Date().getTime()
+        if (now - this.lastUpdateTime < 2000)
+            return
+        this.lastUpdateTime = now
+        this.update_impl()
+    }
     
     async update_impl () {
         try {
