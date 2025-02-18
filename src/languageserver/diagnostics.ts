@@ -6,9 +6,7 @@ import {
     type DocumentDiagnosticReport
 } from 'vscode-languageserver/node'
 
-import {
-    type TextDocument
-} from 'vscode-languageserver-textdocument'
+import type { TextDocument } from 'vscode-languageserver-textdocument'
 
 import { connection } from './connection.ts'
 import { documents } from './documents.ts'
@@ -41,7 +39,6 @@ async function validateTextDocument (textDocument: TextDocument): Promise<Diagno
     lines.forEach((line, index) => {
         diagnostics.push(...validateUseModule(line, index))
     })
-    
     
     return diagnostics
 }
