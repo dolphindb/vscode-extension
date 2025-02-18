@@ -17,7 +17,7 @@ import { symbolService } from './symbols.ts'
 import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types.ts'
 import { buildFunctionCommentDocs, createRegexForFunctionNames, extractFirstloadTableArgument, getLineContentsBeforePosition, isParenthesisBalanced } from './utils.ts'
 import { dbService } from './database.ts'
-import { getSqlCompletions } from './sql_completions.ts'
+import { getSqlCompletions } from './sql-completions.ts'
 
 export type DdbCompletionItem = CompletionItem & {
     order?: number
