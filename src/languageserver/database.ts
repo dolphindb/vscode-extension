@@ -1,3 +1,5 @@
+import { throttle } from 'xshell/utils.js'
+
 import { connection } from './connection.ts'
 
 class DatabaseService {
@@ -5,19 +7,9 @@ class DatabaseService {
     catalogs: string[] = [ ]
     dbTables: Map<string, string[]> = new Map()
     sharedTables: string[] = [ ]
-    // 初始化的时候 -2000 ms 避免第一次 update 的时候不生效
-    lastUpdateTime = new Date().getTime() - 2000
     
-    update () {
-        // 2000 ms 内只能触发一次
-        const now = new Date().getTime()
-        if (now - this.lastUpdateTime < 2000)
-            return
-        this.lastUpdateTime = now
-        this.update_impl()
-    }
     
-    async update_impl () {
+    update = throttle(2000, async () => {
         try {
             this.catalogs = await connection.sendRequest('ddb/getAllCatalogs')
             this.dfsDatabases = await connection.sendRequest('ddb/getClusterDFSDatabases')
@@ -26,7 +18,7 @@ class DatabaseService {
         } catch (error) {
             console.log(`Failed to update: ${error}`)
         }
-    }
+    })
     
     async update_table_of_db (db: string) {
         if (this.dbTables.has(db)) {

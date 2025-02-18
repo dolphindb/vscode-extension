@@ -1,10 +1,6 @@
-import * as fsp from 'fs/promises'
-
 import {
     type DefinitionParams,
-    type Location,
     type Position,
-    type Range,
     type Hover,
     type MarkupContent,
     MarkupKind
