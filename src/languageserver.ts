@@ -71,61 +71,100 @@ export async function activate_ls (ctx: ExtensionContext) {
     
     // 处理数据库查询
     client.onRequest('ddb/getAllCatalogs', async () => {
-        const result = await get_connection()?.ddb?.invoke?.('getAllCatalogs')
-        return result ?? [ ]
+        try {
+            const connection = get_connection()
+            if (!connection) 
+                return [ ]
+            
+            const result = await connection.ddb.invoke('getAllCatalogs')
+            return result ?? [ ]
+        } catch {
+            return [ ]
+        }
     })
     
     client.onRequest('ddb/getClusterDFSDatabases', async () => {
-        const result = await get_connection()?.ddb?.invoke?.('getClusterDFSDatabases')
-        return result ?? [ ]
+        try {
+            const connection = get_connection()
+            if (!connection) 
+                return [ ]
+            
+            const result = await connection.ddb.invoke('getClusterDFSDatabases')
+            return result ?? [ ]
+        } catch {
+            return [ ]
+        }
     })
     
     client.onRequest('ddb/getSharedTables', async () => {
         try {
-            const result = await get_connection()?.ddb?.invoke?.('objs', [true])
-            return result.data.filter(e => e.form === 'TABLE').map(e => e.name)
-        } catch (error) {
+            const connection = get_connection()
+            if (!connection) 
+                return [ ]
+            
+            const result = await connection.ddb.invoke('objs', [true])
+            return result?.data.filter((e: any) => e.form === 'TABLE').map(e => e.name) ?? [ ]
+        } catch {
             return [ ]
         }
     })
     
     client.onRequest('ddb/listTables', async (dburl: string) => {
         try {
-            const result = await get_connection()?.ddb?.invoke?.('listTables', [dburl])
-            return result.data.map(e => e.tableName)
-        } catch (error) {
+            const connection = get_connection()
+            if (!connection) 
+                return [ ]
+            
+            const result = await connection.ddb.invoke('listTables', [dburl])
+            return result?.data.map((e: any) => e.tableName) ?? [ ]
+        } catch {
             return [ ]
         }
     })
     
     client.onRequest('ddb/schema', async (dbHandle: string) => {
         try {
-            const result = await get_connection()?.ddb?.execute(`schema(${dbHandle})`)
-            return result
-        } catch (error) {
+            const connection = get_connection()
+            if (!connection) 
+                return { }
+            
+            const result = await connection.ddb.execute(`schema(${dbHandle})`)
+            return result ?? { }
+        } catch {
             return { }
         }
     })
     
     client.onRequest('ddb/getSchemaByCatalog', async (catalog: string) => {
         try {
-            const result = await get_connection()?.ddb?.invoke('getSchemaByCatalog', [catalog])
-            const schemas = result.data.map(e => e.schema)
-            return schemas
-        } catch (error) {
+            const connection = get_connection()
+            if (!connection) 
+                return [ ]
+            
+            const result = await connection.ddb.invoke('getSchemaByCatalog', [catalog])
+            return result?.data.map(e => e.schema) ?? [ ]
+        } catch {
             return [ ]
         }
     })
     
-    client.onRequest('ddb/getSchemaTables', async (catalogAndSchema: [string, string]) => { 
+    client.onRequest('ddb/getSchemaTables', async (catalogAndSchema: [string, string]) => {
         try {
+            const connection = get_connection()
+            if (!connection) 
+                return [ ]
+            
             const [catalog, schema] = catalogAndSchema
-            const result = await get_connection()?.ddb?.invoke('getSchemaByCatalog', [catalog])
-            const targetSchema = result.data.find(e => e.schema === schema)
+            const result = await connection.ddb.invoke('getSchemaByCatalog', [catalog])
+            const targetSchema = result?.data.find((e: any) => e.schema === schema)
             const dbUrl = targetSchema?.dbUrl
-            const tbResult = await get_connection()?.ddb?.invoke?.('listTables', [dbUrl])
-            return tbResult.data.map(e => e.tableName)
-        }  catch (error) {
+            if (!dbUrl) 
+                return [ ]
+            
+            const tbResult = await connection.ddb.invoke('listTables', [dbUrl])
+            return tbResult?.data.map((e: any) => e.tableName) ?? [ ]
+    
+        } catch {
             return [ ]
         }
     })
