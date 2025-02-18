@@ -7,7 +7,7 @@ import { LanguageClient, TransportKind } from 'vscode-languageclient/node.js'
 import { connector, type DdbConnection } from './connector.ts'
 
 
-export let ls_client: { current: LanguageClient | undefined } = { current: undefined }
+export let ls_client: LanguageClient | undefined = undefined
 
 
 /** 初始化 Language Server */
@@ -49,7 +49,7 @@ export async function activate_ls (ctx: ExtensionContext) {
         }
     )
     
-    ls_client.current = client
+    ls_client = client
     
     // Start the client. This will also launch the server
     await client.start()

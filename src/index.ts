@@ -155,5 +155,5 @@ export function deactivate (ctx: ExtensionContext) {
     server?.stop()
     
     // 停止 Language Server 连接
-    ls_client.current?.stop()
+    ls_client?.stop()
 }
