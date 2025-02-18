@@ -1,10 +1,8 @@
 import {
     createConnection,
     ProposedFeatures, type InitializeParams,
-    DidChangeConfigurationNotification,
     TextDocumentSyncKind,
     type InitializeResult,
-    WorkspaceFoldersRequest
 } from 'vscode-languageserver/node'
 
 
