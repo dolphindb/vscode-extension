@@ -23,15 +23,20 @@ class DatabaseService {
             this.dfsDatabases = await connection.sendRequest('ddb/getClusterDFSDatabases')
             this.sharedTables = await connection.sendRequest('ddb/getSharedTables')
             
-            // Use Promise.all to ensure all requests complete before proceeding
-            await Promise.all(this.dfsDatabases.map(async (db: string) => {
-                const tables: string[] = await connection.sendRequest('ddb/listTables', db)
-                this.dbTables.set(db, tables)
-            }))
-            
         } catch (error) {
             console.log(`Failed to update: ${error}`)
         }
+    }
+    
+    async update_table_of_db (db: string) {
+        if (this.dbTables.has(db)) {
+            // 如果有了，不阻塞，只更新
+            connection.sendRequest('ddb/listTables', db).then((tables: string[]) => this.dbTables.set(db, tables)) 
+            return
+        }
+        // 没用，阻塞并等待结果
+        const tables: string[] = await connection.sendRequest('ddb/listTables', db)
+        this.dbTables.set(db, tables)
     }
     
     async getColnames (dbHandle: string): Promise<string[]> {

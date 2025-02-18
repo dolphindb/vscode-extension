@@ -356,7 +356,7 @@ export class CompletionsService {
         return items
     }
     
-    getTableSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
+    async getTableSnippets (position: TextDocumentPositionParams): Promise<DdbCompletionItem[]> {
         const items: CompletionItem[] = [ ]
         const lineBefore = getLineContentsBeforePosition(documents.get(position.textDocument.uri).getText(), position.position)
         const dburl = extractFirstloadTableArgument(lineBefore)
@@ -364,6 +364,7 @@ export class CompletionsService {
         if (dburl)
             if (dburl.startsWith("'") || dburl.startsWith('"')) {
                 let db = dburl.replaceAll("'", '').replaceAll('"', '')
+                await dbService.update_table_of_db(db)
                 const tables = dbService.dbTables.get(db)
                 const skipQuota = /["'\`]/.test(lineBefore[lineBefore.length - 1])
                 if (tables)
@@ -402,9 +403,10 @@ export class CompletionsService {
     
     async complete (position: TextDocumentPositionParams): Promise<CompletionItem[]> {
         const selectCompletions = await this.getSelectCompletions(position)
+        const tableCompletions = await this.getTableSnippets(position)
         const items: DdbCompletionItem[] = [
             ...selectCompletions,
-            ...this.getTableSnippets(position),
+            ...tableCompletions,
             ...this.getDatabsaseSnippets(position),
             ...this.getCatalogSnippets(position),
             ...this.getCommonSnippets(position),

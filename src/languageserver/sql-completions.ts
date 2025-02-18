@@ -155,12 +155,13 @@ async function getFormCompletions (this: CompletionsService, form: FromDataType,
     if (form === 'schema') {
         if (withDbUrl) {
             const isHaveQuota = /["'\`]/.test(data)
+            const dbname = wordsBeforeLastDot
+            .replaceAll("'", '')
+            .replaceAll('"', '')
+            .replaceAll('`', '') 
             if (isHaveQuota) {
-                const dburls = dbService.dbTables.get(wordsBeforeLastDot
-                    .replaceAll("'", '')
-                    .replaceAll('"', '')
-                    .replaceAll('`', '')
-                )
+                await dbService.update_table_of_db(dbname)
+                const dburls = dbService.dbTables.get(dbname)
                 if (dburls)
                     items.push(...dburls.map(url => this.buildDatabaseCompletionItem(url, true, false)))
             }
