@@ -22,7 +22,7 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
     const totalLines = lines.length
     
     // 作用域跟踪
-    const scopeStack: Array<{ startLine: number, startChar: number }> = [ ]
+    const scopeStack: { startLine: number, startChar: number }[] = [ ]
     const scopes: Scope[] = [ ]
     
     // 首先遍历所有行，记录所有的作用域
@@ -35,7 +35,7 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
                 scopeStack.push({ startLine: i, startChar: j })
             else if (char === '}')
                 if (scopeStack.length > 0) {
-                    const scope = scopeStack.pop()!
+                    const scope = scopeStack.pop()
                     scopes.push({
                         startLine: scope.startLine,
                         startChar: scope.startChar,
@@ -72,9 +72,6 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
                         (scope.startLine === innermost.startLine && scope.startChar > innermost.startChar)
                     )
                         innermost = scope
-                        
-                        
-                        
                         
         return innermost
     }
@@ -363,7 +360,6 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
             i = endBraceLine + 1
         } else
             i++
-            
     }
     
     return symbols

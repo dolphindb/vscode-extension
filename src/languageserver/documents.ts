@@ -1,10 +1,6 @@
-import {
-    TextDocuments
-} from 'vscode-languageserver/node'
+import { TextDocuments } from 'vscode-languageserver/node'
 
-import {
-    TextDocument
-} from 'vscode-languageserver-textdocument'
+import { TextDocument } from 'vscode-languageserver-textdocument'
 
 import { connection } from './connection.ts'
 import { symbolService } from './symbols.ts'

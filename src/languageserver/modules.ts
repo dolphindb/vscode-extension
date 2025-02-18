@@ -71,12 +71,14 @@ class DdbModules {
 
 export const ddbModules = new DdbModules()
 
-connection.onInitialized(() => {
-    ddbModules.init()
+connection.onInitialized(async () => {
+    await ddbModules.init()
 })
+
 connection.onRequest('lsp/handleFileCreate', async (uri: DdbUri) => {
     await ddbModules.handleFileUpdate(uri)
 })
+
 connection.onRequest('lsp/handleFileDelete', async (uri: DdbUri) => {
     await ddbModules.handleFileDelete(uri)
 })

@@ -7,10 +7,8 @@ export async function readFileByPath (path: string) {
     let truePath = path
     if (isWindows && path.startsWith('/'))
         truePath = path.substring(1)
-        
-    const data = await fsp.readFile(truePath)
-    const text = data.toString()
-    return text
+    
+    return fsp.readFile(truePath, { encoding: 'utf-8' })
 }
 
 export function getWordAtPosition (line: string, character: number): string | null {

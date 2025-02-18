@@ -52,18 +52,18 @@ connection.onCompletion(
 
 // This handler resolves additional information for the item selected in
 // the completion list.
-connection.onCompletionResolve(
-    // 一般来说用来根据item获取额外信息
-    // 其实就是一个管道，进来的是原来的 item，出去的是补充了额外信息的 item
-    // 留着参考
-    (item: CompletionItem): CompletionItem => {
-        if (item.data === 1) {
-            item.detail = 'TypeScript details'
-            item.documentation = 'TypeScript documentation'
-        }
-        return item
-    }
-)
+// connection.onCompletionResolve(
+//     // 一般来说用来根据item获取额外信息
+//     // 其实就是一个管道，进来的是原来的 item，出去的是补充了额外信息的 item
+//     // 留着参考
+//     (item: CompletionItem): CompletionItem => {
+//         if (item.data === 1) {
+//             item.detail = 'TypeScript details'
+//             item.documentation = 'TypeScript documentation'
+//         }
+//         return item
+//     }
+// )
 
 // function getModuleCompletions (pos: TextDocumentPositionParams): CompletionItem[] {
 //     const doc = documents.get(pos.textDocument.uri)
@@ -232,15 +232,15 @@ export class CompletionsService {
             .filter(module => module.moduleName)
             // 不要导入当前文件的模块
             .filter(module => module.moduleName !== currentPisitionModuleName)
-        for (const module of allModules) {
-            const modulePath = module.filePath
-            const symbolsInPath = symbolService.getSymbols(modulePath).filter(s => s.type === SymbolType.Function) as Array<ISymbol<SymbolType.Function>>
+        for (const mod of allModules) {
+            const modulePath = mod.filePath
+            const symbolsInPath = symbolService.getSymbols(modulePath).filter(s => s.type === SymbolType.Function) as ISymbol<SymbolType.Function>[]
             for (const s of symbolsInPath) {
                 const top_level = s.metadata.top_level
                 if (top_level) {
                     const argumentCompletions = s.metadata.argnames.map((arg, i) => `\$\{${i + 1}:${arg}\}`)
                     const additionalTextEdits = [ ]
-                    if (!uses.includes(module.moduleName))
+                    if (!uses.includes(mod.moduleName))
                         if (currentPisitionModuleName)
                             // 如果存在 moduleName，则在第二行添加 `use ${moduleName}`
                             additionalTextEdits.push({
@@ -248,7 +248,7 @@ export class CompletionsService {
                                     start: { line: 1, character: 0 }, // 第二行（行索引从0开始）
                                     end: { line: 1, character: 0 }
                                 },
-                                newText: `use ${module.moduleName}\n`
+                                newText: `use ${mod.moduleName}\n`
                             })
                         else
                             // 如果不存在 moduleName，则在第一行插入 `use ${moduleName}`
@@ -257,7 +257,7 @@ export class CompletionsService {
                                     start: { line: 0, character: 0 },
                                     end: { line: 0, character: 0 }
                                 },
-                                newText: `use ${module.moduleName}\n`
+                                newText: `use ${mod.moduleName}\n`
                             })
                     items.push(
                         {
@@ -265,11 +265,10 @@ export class CompletionsService {
                             kind: CompletionItemKind.Function,
                             documentation: {
                                 kind: MarkupKind.Markdown,
-                                value: `Function from module \`${module.moduleName}\`\n
-${s.metadata?.comments ? buildFunctionCommentDocs(s.metadata.comments).value : ''}`
+                                value: `Function from module \`${mod.moduleName}\`\n` +
+                                    (s.metadata?.comments ? buildFunctionCommentDocs(s.metadata.comments).value : '')
                             },
-                            insertText:
-                                `${module.moduleName}::${s.name}(${argumentCompletions.join(', ')})`,
+                            insertText: `${mod.moduleName}::${s.name}(${argumentCompletions.join(', ')})`,
                             insertTextFormat: InsertTextFormat.Snippet,
                             additionalTextEdits
                         }
@@ -377,7 +376,6 @@ ${s.metadata?.comments ? buildFunctionCommentDocs(s.metadata.comments).value : '
         if (!items.some(item => item.order !== undefined))
             return items
             
-            
         const highestOrder = items.reduce(
             (max, item) => (item.order !== undefined && item.order > max ? item.order : max),
             -Infinity
@@ -417,8 +415,6 @@ ${s.metadata?.comments ? buildFunctionCommentDocs(s.metadata.comments).value : '
         ]
         return this.filterHighestOrderCompletions(items)
     }
-    
-    
 }
 
 // 辅助函数：判断当前位置是否在作用域内
@@ -445,4 +441,4 @@ function hasDuplicatesByKey (arr, key) {
     return false
 }
 
-export const completionsService = new CompletionsService
+export const completionsService = new CompletionsService()

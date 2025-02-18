@@ -22,6 +22,7 @@ interface LanguageServerSettings {
 const defaultSettings: LanguageServerSettings = {
     moduleRoot: ''
 }
+
 let globalSettings: LanguageServerSettings = defaultSettings
 
 export function getGlobalSettings () {
@@ -88,10 +89,10 @@ connection.onInitialize((params: InitializeParams) => {
 //     connection.languages.diagnostics.refresh()
 // })
 
-connection.onDidChangeWatchedFiles(_change => {
-    // Monitored files have change in VSCode
-    connection.console.log('We received a file change event')
-})
+// connection.onDidChangeWatchedFiles(_change => {
+//     // Monitored files have change in VSCode
+//     connection.console.log('We received a file change event')
+// })
 
 // Listen on the connection
 connection.listen()

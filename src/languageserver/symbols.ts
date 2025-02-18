@@ -3,7 +3,7 @@ import { type TextDocument } from 'vscode-languageserver-textdocument'
 
 import { readFileByPath } from './utils.ts'
 
-import { type DdbModule, type ISymbol, SymbolType } from './types.ts'
+import type { DdbModule, ISymbol } from './types.ts'
 
 import { getFileModule, getFileUsedModule, getFunctionSymbols, getVariableSymbols } from './symbols_impl.ts'
 
@@ -67,7 +67,6 @@ export class SymbolService {
     onCloseDocument (document: TextDocument) {
         this.symbols.delete(document.uri)
     }
-    
 }
 
 export const symbolService = new SymbolService()

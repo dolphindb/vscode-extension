@@ -1,4 +1,4 @@
-import { type Position, type Range } from 'vscode-languageserver/node'
+import type { Position, Range } from 'vscode-languageserver/node'
 
 // symbols
 export enum SymbolType {

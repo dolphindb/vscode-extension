@@ -180,12 +180,12 @@ function getModuleImportAtPosition (documentUri: string, position: Position): IS
     const text = document.getText()
     const line = text.split('\n')[position.line]
     const moduleName = line.replace('use', '').replace(/\/\/.*$/, '').trim()
-    const module = ddbModules.getModules().find(m => m.moduleName === moduleName)
-    if (module) {
+    const mod = ddbModules.getModules().find(m => m.moduleName === moduleName)
+    if (mod) {
         const moduleSymbol: ISymbol = {
             name: moduleName,
             type: SymbolType.File,
-            filePath: module.filePath,
+            filePath: mod.filePath,
             position: { line: position.line, character: 0 },
         }
         return moduleSymbol
