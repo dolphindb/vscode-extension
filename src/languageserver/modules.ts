@@ -4,14 +4,10 @@ import { type DdbModule, type DdbUri } from './types.ts'
 import { readFileByPath } from './utils.ts'
 
 
-
-
 class DdbModules {
-
     private modules: DdbModule[] = [ ]
     private isModuleIndexInit = false
     
-    constructor () { }
     
     // 设置初始化或者更新的时候调用
     public async init () {
