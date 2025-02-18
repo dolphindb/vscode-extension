@@ -86,65 +86,102 @@ const variableRegex = /^(.*?)??([a-zA-Z0-9_]\w*)\s*=\s*(?![=])(.*)$/
 // 正则表达式匹配函数定义的开始
 const funcStartRegex = /^\s*def\s+([a-zA-Z0-9_]\w*)\s*\(/
 
-export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
-    const symbols: ISymbol[] = [ ]
-    const lines = text.split('\n')
-    const totalLines = lines.length
-    
-    // 作用域跟踪
+function findScopes (lines: string[]): Scope[] {
     const scopeStack: { startLine: number, startChar: number }[] = [ ]
     const scopes: Scope[] = [ ]
     
-    // 首先遍历所有行，记录所有的作用域
-    for (let i = 0;  i < totalLines;  i++) {
+    for (let i = 0;  i < lines.length;  i++) {
         const line = lines[i]
         for (let j = 0;  j < line.length;  j++) {
             const char = line[j]
             if (char === '{')
-                // 遇到 '{'，推入栈
                 scopeStack.push({ startLine: i, startChar: j })
-            else if (char === '}')
-                if (scopeStack.length > 0) {
-                    const scope = scopeStack.pop()
-                    scopes.push({
-                        startLine: scope.startLine,
-                        startChar: scope.startChar,
-                        endLine: i,
-                        endChar: j,
-                    })
-                }
-                
+            else if (char === '}' && scopeStack.length > 0) {
+                const scope = scopeStack.pop()!
+                scopes.push({
+                    startLine: scope.startLine,
+                    startChar: scope.startChar,
+                    endLine: i,
+                    endChar: j,
+                })
+            }
         }
     }
+    return scopes
+}
+
+function isPositionInScope (line: number, char: number, scope: Scope): boolean {
+    if (line < scope.startLine || line > scope.endLine)
+        return false
+    if (line === scope.startLine && char < scope.startChar)
+        return false
+    if (line === scope.endLine && char > scope.endChar)
+        return false
+    return true
+}
+
+function findInnermostScope (line: number, char: number, scopes: Scope[]): Scope | null {
+    let innermost: Scope | null = null
+    for (const scope of scopes)
+        if (isPositionInScope(line, char, scope))
+            if (!innermost || (
+                scope.startLine > innermost.startLine ||
+                (scope.startLine === innermost.startLine && scope.startChar > innermost.startChar)
+            ))
+                innermost = scope
+                
+                
+                
+    return innermost
+}
+
+function collectComments (lines: string[], defLine: number): string {
+    let commentLine = defLine - 1
+    let inBlockComment = false
+    const commentLines: string[] = [ ]
     
-    // Helper 函数：判断某行某列是否在某个作用域内
-    function isPositionInScope (line: number, char: number, scope: Scope): boolean {
-        if (line < scope.startLine || line > scope.endLine)
-            return false
-        if (line === scope.startLine && char < scope.startChar)
-            return false
-        if (line === scope.endLine && char > scope.endChar)
-            return false
-        return true
+    while (commentLine >= 0) {
+        const currentLine = lines[commentLine].trim()
+        
+        if (inBlockComment) {
+            const startBlockMatch = /^\/\*/.exec(currentLine)
+            if (startBlockMatch) {
+                const content = currentLine.replace(/^\/\*/, '').trim()
+                if (content)
+                    commentLines.unshift(content)
+                inBlockComment = false
+            } else {
+                const lineContent = currentLine.replace(/^\*/, '').trim()
+                commentLines.unshift(lineContent)
+            }
+        } else {
+            const singleLineMatch = /^\/\/(.*)/.exec(currentLine)
+            if (singleLineMatch)
+                commentLines.unshift(singleLineMatch[1].trim())
+            else {
+                const endBlockMatch = /\*\/$/.exec(currentLine)
+                if (endBlockMatch) {
+                    const content = currentLine.replace(/\*\/$/, '').replace(/^\/\*/, '').trim()
+                    if (content)
+                        commentLines.unshift(content)
+                    if (!/^\/\*/.exec(currentLine))
+                        inBlockComment = true
+                } else
+                    break
+                    
+            }
+        }
+        commentLine--
     }
     
-    // Helper 函数：找到变量或函数所在的最内层作用域
-    function findInnermostScope (line: number, char: number): Scope | null {
-        let innermost: Scope | null = null
-        for (const scope of scopes)
-            if (isPositionInScope(line, char, scope))
-                if (!innermost)
-                    innermost = scope
-                else
-                    // 选择更内层的作用域
-                    if (
-                        scope.startLine > innermost.startLine ||
-                        (scope.startLine === innermost.startLine && scope.startChar > innermost.startChar)
-                    )
-                        innermost = scope
-                        
-        return innermost
-    }
+    return commentLines.join('\n')
+}
+
+export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
+    const symbols: ISymbol[] = [ ]
+    const lines = text.split('\n')
+    const totalLines = lines.length
+    const scopes = findScopes(lines)
     
     let i = 0
     while (i < totalLines) {
@@ -155,64 +192,7 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
             const defLine = i
             const defColumn = line.indexOf(functionName, line.indexOf('def'))
             
-            // 收集函数上方的注释（支持单行和多行注释）
-            let comments = ''
-            let commentLine = defLine - 1
-            let inBlockComment = false
-            const commentLines: string[] = [ ]
-            
-            while (commentLine >= 0) {
-                const currentLine = lines[commentLine].trim()
-                
-                if (inBlockComment) {
-                    // 检查是否为多行注释的起始行
-                    const startBlockMatch = /^\/\*/.exec(currentLine)
-                    if (startBlockMatch) {
-                        // 去除起始符号 /* 及其后的内容
-                        const content = currentLine.replace(/^\/\*/, '').trim()
-                        if (content)
-                            commentLines.unshift(content)
-                            
-                        inBlockComment = false
-                        commentLine--
-                        continue
-                    } else {
-                        // 去除可能的 * 符号
-                        const lineContent = currentLine.replace(/^\*/, '').trim()
-                        commentLines.unshift(lineContent)
-                        commentLine--
-                        continue
-                    }
-                } else {
-                    // 检查是否为单行注释
-                    const singleLineMatch = /^\/\/(.*)/.exec(currentLine)
-                    if (singleLineMatch) {
-                        commentLines.unshift(singleLineMatch[1].trim())
-                        commentLine--
-                        continue
-                    }
-                    
-                    // 检查是否为多行注释的结束行
-                    const endBlockMatch = /\*\/$/.exec(currentLine)
-                    if (endBlockMatch) {
-                        // 去除结束符号 */ 及其前的内容
-                        const content = currentLine.replace(/\*\/$/, '').replace(/^\/\*/, '').trim()
-                        if (content)
-                            commentLines.unshift(content)
-                        // 必须不同时是起始行，才能设为进入 blockComment
-                        if (!/^\/\*/.exec(currentLine))
-                            inBlockComment = true
-                        commentLine--
-                        continue
-                    }
-                    
-                    // 如果不是注释行，则停止收集
-                    break
-                }
-            }
-            
-            // 将收集到的注释行拼接为一个字符串
-            comments = commentLines.join('\n')
+            const comments = collectComments(lines, defLine)
             
             // 提取参数列表
             let paramsText = ''
@@ -260,7 +240,7 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
                 .filter(param => param.length > 0)
                 
             // 查找函数定义所在的最内层作用域（即函数的外部作用域）
-            const functionScope = findInnermostScope(defLine, defColumn) || null
+            const functionScope = findInnermostScope(defLine, defColumn, scopes)
             
             // 查找函数体的起始 '{'
             let braceFound = false
@@ -333,50 +313,37 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
                 { line: braceLine, character: braceColumn },
                 { line: endBraceLine, character: endBraceColumn },
             ]
-            let top_level = false
-            // 定义函数的作用域范围为其外部作用域
-            let functionScopeRange: [Position, Position]
-            if (functionScope)
-                functionScopeRange = [
+            
+            const top_level = !functionScope
+            const functionScopeRange: [Position, Position] = functionScope
+                ? [
                     { line: functionScope.startLine, character: functionScope.startChar },
                     { line: functionScope.endLine, character: functionScope.endChar },
                 ]
-            else {
-                // 全局作用域，从文件开始到文件结束
-                functionScopeRange = [
+                : [
                     { line: 0, character: 0 },
                     { line: totalLines - 1, character: lines[totalLines - 1].length },
                 ]
-                top_level = true
-            }
-            
-            // 定义函数名的 Range
-            const nameStartColumn = defColumn
-            const nameEndColumn = nameStartColumn + functionName.length
+                
             const nameRange: Range = {
-                start: { line: defLine, character: nameStartColumn },
-                end: { line: defLine, character: nameEndColumn },
+                start: { line: defLine, character: defColumn },
+                end: { line: defLine, character: defColumn + functionName.length },
             }
             
-            // 定义函数名的 Position
-            const position: Position = { line: defLine, character: nameStartColumn }
+            const position: Position = { line: defLine, character: defColumn }
             
-            // 创建函数的元数据
-            const metadata: IFunctionMetadata = {
-                argnames: argnames,
-                scope: functionScopeRange,
-                top_level,
-                comments: comments,
-            }
-            
-            // 创建函数 ISymbol 对象
             symbols.push({
                 name: functionName,
                 type: SymbolType.Function,
                 position: position,
                 range: nameRange,
                 filePath,
-                metadata: metadata,
+                metadata: {
+                    argnames,
+                    scope: functionScopeRange,
+                    top_level,
+                    comments,
+                },
             })
             
             // 为每个参数创建 Param 符号，并设置其作用域为函数体内部
@@ -407,22 +374,16 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
                     end: { line: argLine, character: argColumn + arg.length },
                 }
                 
-                const paramPosition: Position = { line: argLine, character: argColumn }
-                
-                // 创建 Param 的元数据
-                const paramMetadata: IParamMetadata = {
-                    scope: functionBodyScope,
-                    funcname: functionName,
-                }
-                
-                // 创建 Param 的 ISymbol 对象
                 symbols.push({
                     name: arg,
                     type: SymbolType.Param,
-                    position: paramPosition,
+                    position: { line: argLine, character: argColumn },
                     range: paramRange,
                     filePath,
-                    metadata: paramMetadata,
+                    metadata: {
+                        scope: functionBodyScope,
+                        funcname: functionName,
+                    },
                 })
             })
             
@@ -440,172 +401,45 @@ export function getVariableSymbols (text: string, filePath: string): ISymbol[] {
     const symbols: ISymbol[] = [ ]
     const lines = text.split('\n')
     const totalLines = lines.length
+    const scopes = findScopes(lines)
     
-    // 栈用于跟踪当前的作用域
-    const scopeStack: Array<{ startLine: number, startChar: number }> = [ ]
-    // 列表用于存储所有的作用域
-    const scopes: Array<{ startLine: number, startChar: number, endLine: number, endChar: number }> = [ ]
-    
-    // 遍历所有行，记录所有的作用域
-    for (let i = 0;  i < totalLines;  i++) {
-        const line = lines[i]
-        for (let j = 0;  j < line.length;  j++) {
-            const char = line[j]
-            if (char === '{')
-                // 遇到 '{'，推入栈
-                scopeStack.push({ startLine: i, startChar: j })
-            else if (char === '}')
-                if (scopeStack.length > 0) {
-                    const scope = scopeStack.pop()!
-                    scopes.push({
-                        startLine: scope.startLine,
-                        startChar: scope.startChar,
-                        endLine: i,
-                        endChar: j,
-                    })
-                }
-        }
-    }
-    
-    // Helper 函数：判断某行某列是否在某个作用域内
-    function isPositionInScope (line: number, char: number, scope: { startLine: number, startChar: number, endLine: number, endChar: number }): boolean {
-        if (line < scope.startLine || line > scope.endLine)
-            return false
-        if (line === scope.startLine && char < scope.startChar)
-            return false
-        if (line === scope.endLine && char > scope.endChar)
-            return false
-        return true
-    }
-    
-    // Helper 函数：找到变量所在的最内层作用域
-    function findInnermostScope (line: number, char: number): { startLine: number, startChar: number, endLine: number, endChar: number } | null {
-        let innermost: { startLine: number, startChar: number, endLine: number, endChar: number } | null = null
-        for (const scope of scopes)
-            if (isPositionInScope(line, char, scope))
-                if (!innermost)
-                    innermost = scope
-                else
-                    // 选择更内层的作用域
-                    if (
-                        scope.startLine > innermost.startLine ||
-                        (scope.startLine === innermost.startLine && scope.startChar > innermost.startChar)
-                    )
-                        innermost = scope
-                        
-        return innermost
-    }
-    
-    // 遍历所有行，查找变量定义
     let i = 0
     while (i < totalLines) {
         const line = lines[i]
         const match = variableRegex.exec(line)
         if (match && !funcStartRegex.exec(line)) {
-            const variableName = match[2] // 现在变量名在第二个捕获组
-            // const assignedValue = match[3] // 变量值在第三个捕获组
+            const variableName = match[2]
             const defLine = i
-            const defColumn = line.indexOf(variableName) // 变量名开始的位置
+            const defColumn = line.indexOf(variableName)
             
-            // 收集变量上方的注释（支持单行和多行注释）
-            let comments = ''
-            let commentLine = defLine - 1
-            let inBlockComment = false
-            const commentLines: string[] = [ ]
+            const comments = collectComments(lines, defLine)
             
-            while (commentLine >= 0) {
-                const currentLine = lines[commentLine].trim()
-                
-                if (inBlockComment) {
-                    // 检查是否为多行注释的起始行
-                    const startBlockMatch = /^\/\*/.exec(currentLine)
-                    if (startBlockMatch) {
-                        // 去除起始符号 /* 及其后的内容
-                        const content = currentLine.replace(/^\/\*/, '').trim()
-                        if (content)
-                            commentLines.unshift(content)
-                            
-                        inBlockComment = false
-                        commentLine--
-                        continue
-                    } else {
-                        // 去除可能的 * 符号
-                        const lineContent = currentLine.replace(/^\*/, '').trim()
-                        commentLines.unshift(lineContent)
-                        commentLine--
-                        continue
-                    }
-                } else {
-                    // 检查是否为单行注释
-                    const singleLineMatch = /^\/\/(.*)/.exec(currentLine)
-                    if (singleLineMatch) {
-                        commentLines.unshift(singleLineMatch[1].trim())
-                        commentLine--
-                        continue
-                    }
-                    
-                    // 检查是否为多行注释的结束行
-                    const endBlockMatch = /\*\/$/.exec(currentLine)
-                    if (endBlockMatch) {
-                        // 去除结束符号 */ 及其前的内容
-                        const content = currentLine.replace(/\*\/$/, '').trim()
-                        if (content)
-                            commentLines.unshift(content)
-                            
-                        inBlockComment = true
-                        commentLine--
-                        continue
-                    }
-                    
-                    // 如果不是注释行，则停止收集
-                    break
-                }
-            }
-            
-            // 将收集到的注释行拼接为一个字符串
-            comments = commentLines.join('\n')
-            
-            // 确定变量的作用域
-            const innermostScope = findInnermostScope(defLine, defColumn)
-            let scopeRange: [Position, Position]
-            
-            if (innermostScope)
-                scopeRange = [
+            const innermostScope = findInnermostScope(defLine, defColumn, scopes)
+            const scopeRange: [Position, Position] = innermostScope
+                ? [
                     { line: defLine, character: defColumn },
                     { line: innermostScope.endLine, character: innermostScope.endChar },
                 ]
-            else
-                // 全局作用域，从变量定义位置开始到文件末尾
-                scopeRange = [
+                : [
                     { line: defLine, character: defColumn },
                     { line: totalLines - 1, character: lines[totalLines - 1].length },
                 ]
                 
-            // 定义变量名的 Range
-            const nameStartColumn = defColumn
-            const nameEndColumn = nameStartColumn + variableName.length
             const nameRange: Range = {
-                start: { line: defLine, character: nameStartColumn },
-                end: { line: defLine, character: nameEndColumn },
+                start: { line: defLine, character: defColumn },
+                end: { line: defLine, character: defColumn + variableName.length },
             }
             
-            // 定义变量名的 Position
-            const position: Position = { line: defLine, character: nameStartColumn }
-            
-            // 创建元数据
-            const metadata: IVariableMetadata = {
-                scope: scopeRange,
-                comments: comments,
-            }
-            
-            // 创建 ISymbol 对象
             symbols.push({
                 name: variableName,
                 type: SymbolType.Variable,
-                position: position,
+                position: { line: defLine, character: defColumn },
                 range: nameRange,
                 filePath,
-                metadata: metadata,
+                metadata: {
+                    scope: scopeRange,
+                    comments,
+                },
             })
         }
         // 继续解析下一行, 不管匹不匹配都要加一

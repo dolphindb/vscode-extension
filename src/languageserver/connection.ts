@@ -50,7 +50,7 @@ connection.onInitialize((params: InitializeParams) => {
             hoverProvider: true,
             // Tell the client that this server supports code completion.
             completionProvider: {
-                resolveProvider: true,
+                // resolveProvider: true,
                 // 使其支持字符串内的自动补全
                 triggerCharacters: ['.', ' ', '(', ')', '"', "\'", '\`', ',']
             },
