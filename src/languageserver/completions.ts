@@ -114,18 +114,14 @@ export class CompletionsService {
     getFunctionSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
         const symbols = symbolService.getSymbols(position.textDocument.uri)
         const functionSymbols: ISymbol<SymbolType.Function>[] = symbols.filter(s => s.type === SymbolType.Function) as ISymbol<SymbolType.Function>[]
-        const functionCompletions: CompletionItem[] = functionSymbols.map(s => {
-            const metadata = s.metadata as IFunctionMetadata
-            const argumentCompletions = metadata.argnames.map((arg, i) => `\$\{${i + 1}:${arg}\}`)
-            return {
+        const functionCompletions: CompletionItem[] = functionSymbols.map(s => ({
                 label: s.name,
                 kind: CompletionItemKind.Function,
                 documentation: s.metadata?.comments ? buildFunctionCommentDocs(s.metadata.comments) : '',
                 insertText:
-                    `${s.name}(${argumentCompletions.join(', ')})`,
+                    `${s.name}(\${0})`,
                 insertTextFormat: InsertTextFormat.Snippet
-            }
-        })
+            }))
         return [...functionCompletions]
     }
     

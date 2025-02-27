@@ -450,15 +450,23 @@ export function getVariableSymbols (text: string, filePath: string): ISymbol[] {
 }
 
 export function getFileModule (raw_text: string): string | undefined {
-    // 模块文件的第一行必须是模块声明语句。例如在 fileLog.dos 中声明模块：
+    // 查找第一个 module 声明语句。例如：
     // module fileLog
     
     const text = raw_text.replaceAll('\r\n', '\n')
     const lines = text.split('\n')
-    const firstLine = lines[0].trim()
-    const match = /^module\s+([a-zA-Z0-9_:]*)/.exec(firstLine)
-    const moduleName = match ? match[1] : undefined
-    return moduleName
+    
+    for (const line of lines) {
+        const trimmed = line.trim()
+        if (trimmed.startsWith('module')) {
+            const match = /^module\s+([a-zA-Z0-9_:]*)/.exec(trimmed)
+            if (match) 
+                return match[1]
+            
+        }
+    }
+    
+    return undefined
 }
 
 export function getFileUsedModule (text: string): string[] {
