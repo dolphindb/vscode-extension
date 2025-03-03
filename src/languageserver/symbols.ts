@@ -84,7 +84,7 @@ type Scope = {
 // 正则表达式匹配变量定义，避免匹配 '==' 和 '==='
 const variableRegex = /^(.*?)??([a-zA-Z0-9_]\w*)\s*=\s*(?![=])(.*)$/
 // 正则表达式匹配函数定义的开始
-const funcStartRegex = /^\s*def\s+([a-zA-Z0-9_]\w*)\s*\(/
+const funcStartRegex = /^\s*(def|defg)\s+([a-zA-Z0-9_]\w*)\s*\(/
 
 function findScopes (lines: string[]): Scope[] {
     const scopeStack: { startLine: number, startChar: number }[] = [ ]
@@ -188,7 +188,7 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
         const line = lines[i]
         const match = funcStartRegex.exec(line)
         if (match) {
-            const functionName = match[1]
+            const functionName = match[2]
             const defLine = i
             const defColumn = line.indexOf(functionName, line.indexOf('def'))
             
