@@ -18,7 +18,7 @@ export async function getSqlCompletions (this: CompletionsService, position: Tex
         }
         
         if (type === 'update') {
-            const result = await getFormCompletions.call(this, fromForm, data, true)
+            const result = await getFormCompletions.call(this, fromForm, data)
             items.push(...result)
         }
         
@@ -111,7 +111,7 @@ function extractComplitionRequest (sql: string): ISelectComplitionRequest | null
             
     }
     
-    const updateMatch = /(alter\s+table|drop\s+table|insert\s+into|update|delete\s+from)\s*(.+?)(\s+where.*|\s+set.*)?$/i.exec(sql)
+    const updateMatch = /(alter\s+table|drop\s+table|update|delete\s+from)\s*(.+?)(\s+where.*|\s+set.*)?$/i.exec(sql)
     if (updateMatch) {
         let tableClause = updateMatch?.[2]?.trim() ?? ''
         let whereClause = updateMatch?.[3]?.trim() ?? ''
