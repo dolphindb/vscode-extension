@@ -15,15 +15,15 @@ import { ddbModules } from './modules.ts'
 import { buildFunctionCommentDocs } from './utils.ts'
 
 // 通用函数：获取光标所在的单词
-function getWordAtPosition (text: string, position: Position): string | null {
+function getWordAtPosition (text: string, position: Position): { word: string | null, isFunction: boolean } {
     const lines = text.split('\n')
     if (position.line >= lines.length)
-        return null
+        return { word: null, isFunction: false }
         
         
     const line = lines[position.line]
     if (position.character >= line.length)
-        return null
+        return { word: null, isFunction: false }
         
         
     const wordRegex = /[a-zA-Z_][a-zA-Z0-9::_]*/g // 或者 /[a-zA-Z_]+/g 取决于您的变量名规则
@@ -33,12 +33,15 @@ function getWordAtPosition (text: string, position: Position): string | null {
         const start = match.index
         const end = match.index + match[0].length
         
-        if (position.character >= start && position.character <= end)
-            return match[0]
-            
+        if (position.character >= start && position.character <= end) {
+            // 检查word后面是否有(，判断是否为函数
+            const restOfLine = line.substring(end).trimStart()
+            const isFunction = restOfLine.startsWith('(')
+            return { word: match[0], isFunction }
+        }
     }
     
-    return null
+    return { word: null, isFunction: false }
 }
 
 // 通用函数：获取当前作用域内的符号
@@ -68,7 +71,7 @@ function findSymbols (symbolsInScope: ISymbol[], symbols: ISymbol[], word: strin
     let foundSymbols = symbolsInScope.filter(s => s.name === word)
     const funcDefs = symbols.filter(s => s.name === word && s.type === SymbolType.Function)
     if (funcDefs.length > 0)
-        foundSymbols = funcDefs
+        foundSymbols.push(...funcDefs)
         
         
     return foundSymbols
@@ -131,7 +134,7 @@ async function getSymbolsAtPosition (documentUri: string, position: Position): P
         
         
     const text = document.getText()
-    const word = getWordAtPosition(text, position)
+    const { word, isFunction } = getWordAtPosition(text, position)
     if (!word)
         return [ ]
         
@@ -164,6 +167,10 @@ async function getSymbolsAtPosition (documentUri: string, position: Position): P
             
     }
     
+    if (isFunction) 
+        foundSymbols = foundSymbols.filter(s => s.type === SymbolType.Function)
+    else 
+        foundSymbols = foundSymbols.filter(s => s.type !== SymbolType.Function)
     return foundSymbols
 }
 
