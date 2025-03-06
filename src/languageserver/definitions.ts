@@ -64,14 +64,14 @@ function getSymbolsInScope (symbols: ISymbol[], position: Position): ISymbol[] {
 }
 
 // 通用函数：查找符号
-function findSymbol (symbolsInScope: ISymbol[], symbols: ISymbol[], word: string): ISymbol | null {
-    let symbol = symbolsInScope.find(s => s.name === word)
-    const funcDef = symbols.find(s => s.name === word && s.type === SymbolType.Function)
-    if (funcDef)
-        symbol = funcDef
+function findSymbols (symbolsInScope: ISymbol[], symbols: ISymbol[], word: string): ISymbol[] {
+    let foundSymbols = symbolsInScope.filter(s => s.name === word)
+    const funcDefs = symbols.filter(s => s.name === word && s.type === SymbolType.Function)
+    if (funcDefs.length > 0)
+        foundSymbols = funcDefs
         
         
-    return symbol || null
+    return foundSymbols
 }
 
 // 通用函数：生成 Hover 内容
@@ -124,47 +124,47 @@ function generateHoverContent (symbol: ISymbol): MarkupContent | null {
 }
 
 // 通用函数：获取符号
-async function getSymbolAtPosition (documentUri: string, position: Position): Promise<ISymbol | null> {
+async function getSymbolsAtPosition (documentUri: string, position: Position): Promise<ISymbol[]> {
     const document = documents.get(documentUri)
     if (!document)
-        return null
+        return [ ]
         
         
     const text = document.getText()
     const word = getWordAtPosition(text, position)
     if (!word)
-        return null
+        return [ ]
         
         
     const symbols = symbolService.getSymbols(document.uri)
     const symbolsInScope = getSymbolsInScope(symbols, position)
-    let symbol = findSymbol(symbolsInScope, symbols, word)
+    let foundSymbols = findSymbols(symbolsInScope, symbols, word)
     // 在本文件内找不到，考虑引入的模块
-    if (!symbol) {
+    if (foundSymbols.length < 1) {
         const usedModules = symbolService.getUsedModules(document.uri)
-        if (word.includes('::')) {
+        if (word.includes('::')) { // 完全路径的其他模块函数引用
             const moduleName = splitByLastDoubleColon(word).prefix
             if (usedModules.includes(moduleName)) {
                 const modulePath = ddbModules.getModules().find(m => m.moduleName === moduleName)?.filePath ?? ''
                 const moduleSymbols = symbolService.getSymbols(modulePath)
                 // 只找函数，并且必须 top_level
-                symbol = moduleSymbols.find(
+                foundSymbols = moduleSymbols.filter(
                     s => s.type === SymbolType.Function
                         && s.name === splitByLastDoubleColon(word).suffix
                         && (s as ISymbol<SymbolType.Function>).metadata.top_level
                 )
             }
         } else
-            // 在所有已经利用的模块中查找
+            // 非完全路径的函数引用，在所有已经利用的模块中查找
             for (const moduleName of usedModules) {
                 const modulePath = ddbModules.getModules().find(m => m.moduleName === moduleName)?.filePath ?? ''
                 const moduleSymbols = symbolService.getSymbols(modulePath)
-                symbol = moduleSymbols.find(s => s.type === SymbolType.Function && s.name === word) ?? symbol
+                foundSymbols = foundSymbols.concat(moduleSymbols.filter(s => s.type === SymbolType.Function && s.name === word))
             }
             
     }
     
-    return symbol
+    return foundSymbols
 }
 
 function getModuleImportAtPosition (documentUri: string, position: Position): ISymbol | null {
@@ -207,28 +207,28 @@ function splitByLastDoubleColon (input: string): { prefix: string, suffix: strin
 
 // 定义查找处理器
 connection.onDefinition(async ({ textDocument, position }: DefinitionParams) => {
-    const symbol = await getSymbolAtPosition(textDocument.uri, position) 
-        || getModuleImportAtPosition(textDocument.uri, position)
+    const symbols = await getSymbolsAtPosition(textDocument.uri, position) 
+        || [getModuleImportAtPosition(textDocument.uri, position)]
     
-    if (!symbol)
+    if (symbols.length < 1)
         return null 
     
-    return {
-        uri: symbol.filePath,
+    return symbols.map(s => ({
+        uri: s.filePath,
         range: {
-            start: symbol.position,
-            end: symbol.range?.end || symbol.position
+            start: s.position,
+            end: s.range?.end || s.position
         }
-    }
+    }))
 })
 
 // Hover 处理器
 connection.onHover(async params => {
-    const symbol = await getSymbolAtPosition(params.textDocument.uri, params.position)
-    if (!symbol)
+    const symbols = await getSymbolsAtPosition(params.textDocument.uri, params.position)
+    if (symbols.length < 1)
         return null
         
-        
+    const symbol = symbols[0]
     // 生成 Hover 内容
     const hoverContent = generateHoverContent(symbol)
     
