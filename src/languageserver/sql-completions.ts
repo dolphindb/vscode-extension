@@ -22,6 +22,11 @@ export async function getSqlCompletions (this: CompletionsService, position: Tex
             items.push(...result)
         }
         
+        if (type === 'insert') {
+            const result = await getFormCompletions.call(this, 'only-memtable', data)
+            items.push(...result)
+        }
+        
         if (type === 'colnames' || type === 'order by') {
             const tbHandle = data
             const colnames = [ ]
@@ -60,10 +65,10 @@ export async function getSqlCompletions (this: CompletionsService, position: Tex
     return items
 }
 
-type FromDataType = 'catalog' | 'schema' | 'tablename'
+type FromDataType = 'catalog' | 'schema' | 'tablename' | 'only-memtable'
 
 interface ISelectComplitionRequest {
-    type: 'from' | 'colnames' | 'order by' | 'update'
+    type: 'from' | 'colnames' | 'order by' | 'update' | 'insert'
     fromForm?: FromDataType
     data: string
 }
@@ -111,13 +116,15 @@ function extractComplitionRequest (sql: string): ISelectComplitionRequest | null
             
     }
     
-    const updateMatch = /(alter\s+table|drop\s+table|update|delete\s+from)\s*(.+?)(\s+where.*|\s+set.*)?$/i.exec(sql)
+    const updateMatch = /(alter\s+table|drop\s+table|insert\s+into|update|delete\s+from)\s*(.+?)(\s+where.*|\s+set.*)?$/i.exec(sql)
     if (updateMatch) {
         let tableClause = updateMatch?.[2]?.trim() ?? ''
         let whereClause = updateMatch?.[3]?.trim() ?? ''
         if (whereClause)
             return { type: 'colnames', data: tableClause }
-            
+        if (/insert\s+into/.test(sql)) 
+            return { type: 'insert', fromForm: extractTableCompletionsForm(tableClause), data: tableClause }
+        
         return { type: 'update', fromForm: extractTableCompletionsForm(tableClause), data: tableClause }
     }
     
@@ -174,6 +181,10 @@ async function getFormCompletions (this: CompletionsService, form: FromDataType,
         const schema = wordsBeforeLastDot.split('.')?.[1] ?? ''
         const tables = await dbService.getTablesByCatalogAndSchema(catalog, schema)
         items.push(...tables.map(tableName => this.buildTableCompletionItem(tableName, true, false)))
+    }
+    if (form === 'only-memtable') {
+        const sharedTables = dbService.sharedTables
+        items.push(...sharedTables.map(tableName => this.buildSharedTableCompletionItem(tableName, true, false)))
     }
     return items
 }
