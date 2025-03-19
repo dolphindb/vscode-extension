@@ -106,10 +106,10 @@ export async function activate (ctx: ExtensionContext) {
     ctx.subscriptions.push(debug.registerDebugConfigurationProvider('dolphindb', {
         resolveDebugConfiguration (folder, config, token): ProviderResult<DebugConfiguration> {
             // 默认使用当前插件连接的 server 作为 debugger
-            const { connection: { url, options: { python, password, username, autologin } } } = connector
+            const { connection: { url, options: { python, kdb, password, username, autologin } } } = connector
             
-            if (python) {
-                window.showWarningMessage(t('python parser 暂不支持调试功能'))
+            if (python || kdb) {
+                window.showWarningMessage(t('{{parser}} parser 暂不支持调试功能', { parser: python ? 'python' : 'kdb' }))
                 return
             }
             

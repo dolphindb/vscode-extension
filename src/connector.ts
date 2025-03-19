@@ -151,7 +151,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
                                     autologin,
                                     username,
                                     password,
-                                    python, 
+                                    python,
                                     sql
                                 },
                                 { colors: false, compact: true }
@@ -317,6 +317,8 @@ export class DdbConnection extends TreeItem {
         password: '123456',
         
         python: false,
+        
+        kdb: false,
         
         sql: SqlStandard.DolphinDB,
         
