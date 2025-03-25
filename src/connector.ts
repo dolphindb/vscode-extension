@@ -27,6 +27,7 @@ import {
     type DdbOptions,
     type DdbTableObj,
     type DdbVectorStringObj,
+    type DdbTableData,
 } from 'dolphindb'
 
 
@@ -859,14 +860,14 @@ export class DdbConnection extends TreeItem {
     Only master or single mode supports function getClusterPerf. */
     async get_cluster_perf () {
         const nodes = (
-            await this.ddb.invoke<DdbNode[]>('getClusterPerf', [true], {
+            await this.ddb.invoke<DdbTableData<DdbNode>>('getClusterPerf', [true], {
                 urgent: true,
                 
                 ... this.client_auth || (this.node_type === NodeType.controller || this.node_type === NodeType.single)
                     ? { }
                     : { node: this.controller_alias },
             })
-        ).sort((a, b) => strcmp(a.name, b.name))
+        ).data.sort((a, b) => strcmp(a.name, b.name))
         
         let node: DdbNode, controller: DdbNode, datanode: DdbNode
         
