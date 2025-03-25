@@ -547,6 +547,15 @@ export let builder = {
                                             },
                                         },
                                         {
+                                            name: 'kdb',
+                                            type: 'boolean',
+                                            default: false,
+                                            description: {
+                                                zh: '(需要 v3.00.4 以上的 DolphinDB Server) 使用 kdb parser 来解释执行脚本, 默认 false',
+                                                en: '(DolphinDB Server version must be above v3.00.4) Use kdb parser to interpret and execute scripts, the default is false'
+                                            },
+                                        },
+                                        {
                                             name: 'sql',
                                             enum: ['DolphinDB', 'Oracle', 'MySQL'],
                                             default: 'DolphinDB',
