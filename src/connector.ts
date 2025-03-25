@@ -859,15 +859,14 @@ export class DdbConnection extends TreeItem {
     Only master or single mode supports function getClusterPerf. */
     async get_cluster_perf () {
         const nodes = (
-            await this.ddb.call<DdbObj<DdbObj[]>>('getClusterPerf', [true], {
+            await this.ddb.invoke<DdbNode[]>('getClusterPerf', [true], {
                 urgent: true,
                 
-                ... this.client_auth && (this.node_type === NodeType.controller || this.node_type === NodeType.single)
+                ... this.client_auth || (this.node_type === NodeType.controller || this.node_type === NodeType.single)
                     ? { }
                     : { node: this.controller_alias },
             })
-        ).to_rows<DdbNode>()
-        .sort((a, b) => strcmp(a.name, b.name))
+        ).sort((a, b) => strcmp(a.name, b.name))
         
         let node: DdbNode, controller: DdbNode, datanode: DdbNode
         
