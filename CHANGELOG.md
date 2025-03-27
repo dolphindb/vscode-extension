@@ -1,5 +1,27 @@
 # Change Log (更新日志)
 
+## [3.0.210]
+#### 新功能 / New Features
+-   为 DolphinDB 脚本编辑提供代码辅助功能：转到定义、自定义函数名和变量名自动补全、模块自动导入等。
+    Added code assistance for DolphinScript editing, supporting jumping to definition, autocompletion for user-defined functions and variable names, automatic module import, and more.
+
+-   变量栏新增刷新按钮，支持刷新变量。
+    Added a refresh button to the VARIABLES view.
+
+-   支持增强安全认证机制，并优化登录功能，以支持更安全的身份验证方式 。
+    Added support for enhanced security authentication and optimized the login feature for a more secure authentication process.
+
+#### 功能优化 / Enhancement
+-   完善部分函数的文档提示。
+    Improved documentation hints for some functions.
+
+-   提升包含大量键值对的字典在显示时的性能。
+    Improved the performance of displaying dictionaries containing large amounts of key-value pairs.
+
+#### 功能优化 / Enhancement
+-   解决模块上传后导致的变量显示异常的问题。
+    Fixed the issue of variable display anomalies caused by module uploads.
+
 ## [3.0.200]
 #### 新功能 / New Features
 -   支持展示分布式表的 iotany 类型的列。  
