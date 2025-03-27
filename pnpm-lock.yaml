@@ -4,11 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  koa:
-    hash: 5a1a2b4970aea22cb8bd45de734e2f92439f45ce11294fd50aba4c573fa788f4
-    path: patches/koa.patch
-
 importers:
 
   .:
@@ -34,9 +29,6 @@ importers:
       dolphindb:
         specifier: ^3.0.219
         version: 3.0.219(react-dom@19.0.0(react@19.0.0))
-      koa:
-        specifier: ^2.16.0
-        version: 2.16.0(patch_hash=5a1a2b4970aea22cb8bd45de734e2f92439f45ce11294fd50aba4c573fa788f4)
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -7626,7 +7618,7 @@ snapshots:
 
   koa-is-json@1.0.0: {}
 
-  koa@2.16.0(patch_hash=5a1a2b4970aea22cb8bd45de734e2f92439f45ce11294fd50aba4c573fa788f4):
+  koa@2.16.0:
     dependencies:
       accepts: 1.3.8
       cache-content-type: 1.0.1
@@ -9298,7 +9290,7 @@ snapshots:
       https-proxy-agent: 7.0.6
       i18next: 24.2.2(typescript@5.8.2)
       i18next-scanner: 4.6.0(typescript@5.8.2)
-      koa: 2.16.0(patch_hash=5a1a2b4970aea22cb8bd45de734e2f92439f45ce11294fd50aba4c573fa788f4)
+      koa: 2.16.0
       koa-compress: 5.1.1
       license-webpack-plugin: 4.0.2(webpack@5.98.0)
       map-stream: 0.0.7
