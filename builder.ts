@@ -129,6 +129,7 @@ export let builder = {
                     externals: {
                         vscode: 'commonjs2 vscode'
                     },
+                    polyfill_node_sea: true
                 }
             )).build_all()
         ])

@@ -39,7 +39,7 @@
         "vscode-languageserver": "^9.0.1",
         "vscode-languageserver-textdocument": "^1.0.12",
         "ws": "^8.18.1",
-        "xshell": "^1.2.21"
+        "xshell": "^1.2.25"
     },
     "pnpm": {
         "patchedDependencies": {

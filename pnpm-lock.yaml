@@ -62,8 +62,8 @@ importers:
         specifier: ^8.18.1
         version: 8.18.1
       xshell:
-        specifier: ^1.2.21
-        version: 1.2.21(react-dom@19.0.0(react@19.0.0))
+        specifier: ^1.2.25
+        version: 1.2.25(react-dom@19.0.0(react@19.0.0))
     devDependencies:
       '@types/koa':
         specifier: ^2.15.0
@@ -4206,8 +4206,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  xshell@1.2.21:
-    resolution: {integrity: sha512-MdXqhlb/106FjtzRsxqSMVwO9B0Ax/gBsycbjPjZoGVNVWbYqRjtdV5ln614h5trOhZBmeh1RV7fS5+ERE2VDw==}
+  xshell@1.2.25:
+    resolution: {integrity: sha512-L49KdTpYjJB99WmZa0xWlVr7i0vTeRT1EabwVulzlUG8sXIEqvrAz2J9wLKT2Hastm+J9ThWD807vA/erRQbmw==}
     hasBin: true
 
   xtend@4.0.2:
@@ -6563,7 +6563,7 @@ snapshots:
       dayjs: 1.11.13
       ipaddr.js: 2.2.0
       tslib: 2.8.1
-      xshell: 1.2.21(react-dom@19.0.0(react@19.0.0))
+      xshell: 1.2.25(react-dom@19.0.0(react@19.0.0))
     transitivePeerDependencies:
       - '@rspack/core'
       - '@swc/core'
@@ -9243,7 +9243,7 @@ snapshots:
 
   ws@8.18.1: {}
 
-  xshell@1.2.21(react-dom@19.0.0(react@19.0.0)):
+  xshell@1.2.25(react-dom@19.0.0(react@19.0.0)):
     dependencies:
       '@babel/core': 7.26.9
       '@babel/parser': 7.26.9
