@@ -27,8 +27,8 @@ importers:
         specifier: ^1.11.13
         version: 1.11.13
       dolphindb:
-        specifier: ^3.0.219
-        version: 3.0.219(react-dom@19.0.0(react@19.0.0))
+        specifier: ^3.0.220
+        version: 3.0.220(react-dom@19.0.0(react@19.0.0))
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1966,8 +1966,8 @@ packages:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
     engines: {node: '>=0.10.0'}
 
-  dolphindb@3.0.219:
-    resolution: {integrity: sha512-RHBcPG+Lz9ysxMu7krYxw2Aq8evTebLH/+iyg8V9Aa8+hsAae8bo3LjswP0XZwqm3mkwk9k+VCE+Nvwxt121kA==}
+  dolphindb@3.0.220:
+    resolution: {integrity: sha512-nDXFs+USwRIsghtZsbfIYpBqntJSriwxuQAfnAMfDrpA75UYQRJUL3zyqlo6T+iIdONSY7Rq1MCOkkMOIrdABg==}
 
   dom-serializer@2.0.0:
     resolution: {integrity: sha512-wIkAryiqt/nV5EQKqQpo3SToSOV9J0DnbJqwK7Wv/Trc92zIAYZ4FlMu+JPFW1DfGFt81ZTCGgDEabffXeLyJg==}
@@ -6585,7 +6585,7 @@ snapshots:
     dependencies:
       esutils: 2.0.3
 
-  dolphindb@3.0.219(react-dom@19.0.0(react@19.0.0)):
+  dolphindb@3.0.220(react-dom@19.0.0(react@19.0.0)):
     dependencies:
       dayjs: 1.11.13
       ipaddr.js: 2.2.0
