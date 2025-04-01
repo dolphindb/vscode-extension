@@ -22,7 +22,7 @@ function getWordAtPosition (text: string, position: Position): { word: string | 
         
         
     const line = lines[position.line]
-    if (position.character >= line.length)
+    if (position.character > line.length)
         return { word: null, isFunction: false }
         
         
