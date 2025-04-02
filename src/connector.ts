@@ -267,10 +267,10 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
         }
         
         this.connection = this.connections[0]
-        if (this.connection)
+        if (this.connection) {
             this.connection.iconPath = icon_checked
-        
-        this.change_language_mode()
+            this.change_language_mode()
+        }
     }
     
     
