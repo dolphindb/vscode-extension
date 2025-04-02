@@ -254,14 +254,23 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
                 new DdbConnection(url, name, {
                     ...options,
                     sql: SqlStandard[options.sql] as SqlStandard,
-                })
-            )
+                }))
+        
+        if (
+            new Set(
+                this.connections.map(({ name }) => name)
+            ).size !== this.connections.length
+        ) {
+            const message = t('dolphindb.connections 配置中不能存在相同名字的连接')
+            window.showErrorMessage(message, { modal: true })
+            this.connections = [ ]
+        }
         
         this.connection = this.connections[0]
-        if (this.connection)
+        if (this.connection) {
             this.connection.iconPath = icon_checked
-        
-        this.change_language_mode()
+            this.change_language_mode()
+        }
     }
     
     
