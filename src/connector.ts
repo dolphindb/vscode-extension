@@ -260,8 +260,11 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
             new Set(
                 this.connections.map(({ name }) => name)
             ).size !== this.connections.length
-        )
-            throw new Error(t('dolphindb.connections 配置中不能存在相同名字的连接'))
+        ) {
+            const message = t('dolphindb.connections 配置中不能存在相同名字的连接')
+            window.showErrorMessage(message, { modal: true })
+            throw new Error(message)
+        }
         
         this.connection = this.connections[0]
         if (this.connection)
