@@ -164,35 +164,40 @@ let remote = {
     ) {
         const id = genid()
         
-        let psubscribed = defer<{ id: number, data: TSubscribed }>()
-        
-        let first = true
-        
-        this.handlers.set(
-            id,
-            ({ error, data }: Message<TData | TSubscribed>) => {
-                if (error) {
+        let psubscribed = new Promise<{ id: number, data: TSubscribed }>((resolve, reject) => {
+            let first = true
+            
+            this.handlers.set(
+                id,
+                ({ error, data }: Message<TData | TSubscribed>) => {
+                    if (error) {
+                        if (first) {
+                            first = false
+                            this.handlers.delete(id)
+                            reject(error)
+                        } else
+                            on_error(error)
+                        
+                        return
+                    }
+                    
                     if (first) {
                         first = false
-                        this.handlers.delete(id)
-                        psubscribed.reject(error)
-                    } else
-                        on_error(error)
+                        resolve({ id, data: data as TSubscribed })
+                        return
+                    }
                     
-                    return
+                    on_data(data as TData)
                 }
-                
-                if (first) {
-                    first = false
-                    psubscribed.resolve({ id, data: data as TSubscribed })
-                    return
-                }
-                
-                on_data(data as TData)
-            }
-        )
+            )
+        })
         
-        this.send({ id, func })
+        try {
+            this.send({ id, func })
+        } catch (error) {
+            this.handlers.delete(id)
+            throw error
+        }
         
         return psubscribed
     }
