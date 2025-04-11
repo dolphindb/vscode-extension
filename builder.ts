@@ -60,12 +60,12 @@ export let builder = {
                 },
                 {
                     resolve_alias: {
-                        '@i18n': `${fpd_root}i18n`,
+                        '@i18n': `${fpd_root}i18n/index.ts`,
                     },
                     external_dayjs: true,
                     production,
                     license: production,
-                    dependencies: ['antd-icons', 'antd-plots'],
+                    dependencies: ['antd-icons', 'echarts'],
                     htmls: {
                         'index.html': {
                             title: 'DolphinDB',
@@ -113,7 +113,7 @@ export let builder = {
                         EXTENSION_VERSION: `${info.version} (${info.time} ${info.hash})`.quote(),
                     },
                     resolve_alias: {
-                        '@i18n': `${fpd_root}i18n`,
+                        '@i18n': `${fpd_root}i18n/index.ts`,
                     },
                     assets: {
                         productions: [

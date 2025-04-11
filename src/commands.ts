@@ -504,12 +504,12 @@ export const ddb_commands = [
     
     
     async function open_settings (setting?: string) {
-        const connectionsInspection = workspace.getConfiguration('dolphindb').inspect(setting)
+        const config = workspace.getConfiguration('dolphindb').inspect(setting)
         
         let target = ConfigurationTarget.Global
-        if (connectionsInspection.workspaceFolderValue !== undefined)
+        if (config.workspaceFolderValue !== undefined)
             target = ConfigurationTarget.WorkspaceFolder
-        else if (connectionsInspection.workspaceValue !== undefined)
+        else if (config.workspaceValue !== undefined)
             target = ConfigurationTarget.Workspace
         
         await open_workbench_settings_ui(target, { query: `@ext:dolphindb.dolphindb-vscode${setting ? ` ${setting}` : ''}` })

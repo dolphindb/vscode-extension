@@ -2,7 +2,7 @@ import './webview.sass'
 import './pagination.sass'
 
 import { useEffect } from 'react'
-import { createRoot as create_root } from 'react-dom/client'
+import { createRoot } from 'react-dom/client'
 
 import { ConfigProvider, App } from 'antd'
 import zh from 'antd/es/locale/zh_CN.js'
@@ -10,17 +10,18 @@ import en from 'antd/locale/en_US.js'
 import ja from 'antd/locale/ja_JP.js'
 import ko from 'antd/locale/ko_KR.js'
 
-import type { MessageInstance } from 'antd/es/message/interface.js'
-import type { ModalStaticFunctions } from 'antd/es/modal/confirm.js'
-import type { NotificationInstance } from 'antd/es/notification/interface.js'
+import type { MessageInstance } from 'antd/es/message/interface.d.ts'
+import type { HookAPI as ModalHookAPI } from 'antd/es/modal/useModal/index.d.ts'
+import type { NotificationInstance } from 'antd/es/notification/interface.d.ts'
 
 import { Model } from 'react-object-model'
 
-import { check, genid } from 'xshell/utils.browser.js'
+import { noop, rethrow } from 'xshell/prototype.browser.js'
+import { check, defer, genid, timeout } from 'xshell/utils.browser.js'
 import { message_symbol, pack, parse, type Message } from 'xshell/io.browser.js'
 import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
 
-import { language } from '@i18n/index.ts'
+import { language } from '@i18n'
 
 import { Obj, DdbObjRef } from './obj.tsx'
 
@@ -41,7 +42,7 @@ let vscode = acquireVsCodeApi()
     - 数组: 会自动被封装为 { id: 相同, data: 返回值, done: true } 这样的消息并调用 websocket.send 将其发送
     - void: 什么都不做
     - 以上的 promise */
-type MessageHandler <TData extends any[] = any[]> = (message: Message<TData>) => void | any[] | Promise<void | any[]>
+type MessageHandler <TData = any> = (message: Message<TData>) => void | any[] | Promise<void | any[]>
 
 
 let remote = {
@@ -56,7 +57,7 @@ let remote = {
     
     init () {
         window.addEventListener('message', ({ data }) => {
-            remote.handle(new Uint8Array(data))
+            this.handle(new Uint8Array(data))
         })
     },
     
@@ -147,7 +148,59 @@ let remote = {
                 reject(error)
             }
         })
+    },
+    
+    
+    /** 调用对端 remote 中的 func, 开始订阅并接收连续的消息 (订阅流) 
+        - func: 订阅处理函数
+        - on_data: 接收开始订阅后的数据
+        - options?:
+            - on_error?: 处理开始订阅后的错误
+            - websocket?: 作为 websocket 连接接收方，必传 websocket 参数 */
+    async subscribe <TData, TSubscribed = void> (
+        func: string,
+        on_data: (data: TData) => void,
+        { on_error = rethrow }: RemoteSubscribeOptions = { }
+    ) {
+        const id = genid()
+        
+        let psubscribed = defer<{ id: number, data: TSubscribed }>()
+        
+        let first = true
+        
+        this.handlers.set(
+            id,
+            ({ error, data }: Message<TData | TSubscribed>) => {
+                if (error) {
+                    if (first) {
+                        first = false
+                        this.handlers.delete(id)
+                        psubscribed.reject(error)
+                    } else
+                        on_error(error)
+                    
+                    return
+                }
+                
+                if (first) {
+                    first = false
+                    psubscribed.resolve({ id, data: data as TSubscribed })
+                    return
+                }
+                
+                on_data(data as TData)
+            }
+        )
+        
+        this.send({ id, func })
+        
+        return psubscribed
     }
+}
+
+
+interface RemoteSubscribeOptions {
+    on_error? (error: Error): void
 }
 
 
@@ -158,7 +211,7 @@ class DataViewModel extends Model<DataViewModel> {
     
     message: MessageInstance
     
-    modal: Omit<ModalStaticFunctions, 'warn'>
+    modal: ModalHookAPI
     
     notification: NotificationInstance
     
@@ -166,73 +219,75 @@ class DataViewModel extends Model<DataViewModel> {
     async init () {
         remote.init()
         
+        type ReplData = 
+            ['print', string] |
+            ['object', Uint8Array, boolean, InspectOptions?] |
+            ['error', any] |
+            undefined
         
-        // --- subscribe repl rpc (一个请求，无限个响应)
-        
-        const id_repl = genid()
-        
-        remote.handlers.set(
-            id_repl,
-            async ({ /* error 可能会有，但在 webview 里不关心 */ data: [type, data, le, options] }: Message<
-                ['print', string] |
-                ['object', Uint8Array, boolean, InspectOptions?] |
-                ['error', any]
-            >) => {
-                if (type !== 'object')
-                    return
+        await timeout(
+            2000,
+            Promise.all([
+                remote.subscribe<ReplData>(
+                    'subscribe_repl',
+                    ([type, data, le, options]) => {
+                        if (type !== 'object')
+                            return
+                        
+                        data = DdbObj.parse(data, le)
+                        
+                        switch ((data as DdbObj).form) {
+                            case DdbForm.scalar:
+                            case DdbForm.pair:
+                                break
+                            
+                            default:
+                                this.set({ result: { type, data }, options: options === null ? undefined : options })
+                        }
+                    },
+                    // error 可能会有，但在 webview 里不关心
+                    { on_error: noop }
+                ),
                 
-                data = DdbObj.parse(data, le)
-                
-                switch ((data as DdbObj).form) {
-                    case DdbForm.scalar:
-                    case DdbForm.pair:
-                        break
-                    
-                    default:
-                        this.set({ result: { type, data }, options: options === null ? undefined : options })
-                }
-            })
-        
-        remote.send({ id: id_repl, func: 'subscribe_repl' })
-        
-        // --- subscribe inspection rpc (一个请求，无限个响应)
-        
-        const id_inspection = genid()
-        
-        remote.handlers.set(
-            id_inspection,
-            async ({ data: [ddbvar, open, options, buffer, le] }: 
-                Message<[any, boolean, InspectOptions?, Uint8Array?, boolean?]>
-            ) => {
-                if (buffer)
-                    ddbvar.obj = DdbObj.parse(buffer, le)
-                
-                ddbvar.bytes = BigInt(ddbvar.bytes)
-                
-                if (options === null)
-                    options = undefined
-                
-                if (ddbvar.obj)
-                    if (open) { } 
-                    else
-                        this.set({ result: { type: 'object', data: ddbvar.obj }, options })
-                else {
-                    const objref = new DdbObjRef(ddbvar)
-                    if (open) { }
-                    else
-                        this.set({ result: { type: 'objref', data: objref }, options })
-                }
-            })
-        
-        remote.send({ id: id_inspection, func: 'subscribe_inspection' })
+                remote.subscribe<[any, boolean, InspectOptions?, Uint8Array?, boolean?]>(
+                    'subscribe_inspection', 
+                    async ([ddbvar, open, options, buffer, le]) => {
+                        if (buffer)
+                            ddbvar.obj = DdbObj.parse(buffer, le)
+                        
+                        ddbvar.bytes = BigInt(ddbvar.bytes)
+                        
+                        if (options === null)
+                            options = undefined
+                        
+                        if (ddbvar.obj)
+                            if (open)
+                                { } 
+                            else
+                                this.set({ result: { type: 'object', data: ddbvar.obj }, options })
+                        else {
+                            const objref = new DdbObjRef(ddbvar)
+                            if (open)
+                                { }
+                            else
+                                this.set({ result: { type: 'objref', data: objref }, options })
+                        }
+                    },
+                    // error 可能会有，但在 dataview 里不关心
+                    { on_error: noop }
+                )
+            ])
+        )
         
         await remote.call('ready')
     }
 }
 
+
 let model = window.model = new DataViewModel()
 
-create_root(
+
+createRoot(
     document.querySelector('.root')
 ).render(<Root />)
 
@@ -243,7 +298,7 @@ function Root () {
     return <ConfigProvider
         locale={locales[language] as any}
         button={{ autoInsertSpace: false }}
-        theme={{ hashed: false, token: { borderRadius: 0, motion: false } }}
+        theme={{ hashed: false, token: { borderRadius: 0, motion: false, controlOutlineWidth: 0 } }}
     >
         <App className='app'>
             <DataView />

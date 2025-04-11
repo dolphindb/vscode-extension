@@ -1,6 +1,6 @@
 import './obj.sass'
 
-import { useEffect, useRef, useState, type default as React, type FC, type RefObject, useCallback } from 'react'
+import { useEffect, useRef, useState, type default as React, type RefObject, useCallback } from 'react'
 
 import {
     Pagination,
@@ -9,7 +9,7 @@ import {
     Tree,
     Button,
     Switch,
-    Select, type SelectProps,
+    Select,
     type TableColumnType,
     Input,
     Form,
@@ -18,11 +18,11 @@ import {
 
 import { default as Icon, CaretRightOutlined, PauseOutlined, RightOutlined } from '@ant-design/icons'
 
-import { Line, Pie, Bar, Column, Scatter, Area, DualAxes, Histogram, Stock } from '@ant-design/plots'
+import * as echarts from 'echarts'
 
 import { use_rerender } from 'react-object-model/hooks.js'
 
-import { genid, seq, assert, delay } from 'xshell/utils.browser.js'
+import { genid, seq, assert, delay, debounce } from 'xshell/utils.browser.js'
 
 
 import {
@@ -49,7 +49,7 @@ import {
     type DdbTensorObj
 } from 'dolphindb/browser.js'
 
-import { t } from '@i18n/index.ts'
+import { t } from '@i18n'
 
 import SvgLink from './link.icon.svg'
 
@@ -69,11 +69,6 @@ const views = {
     [DdbForm.dict]: Dict,
     [DdbForm.tensor]: Tensor,
 }
-
-const UpSelect: FC<SelectProps> & { Option: typeof Select.Option } = Object.assign(
-    props => <Select {...props} size='small' placement='topLeft' listHeight={128} />,
-    { Option: Select.Option }
-)
 
 
 export type Context = 'page' | 'webview' | 'window' | 'embed' | 'dashboard'
@@ -274,6 +269,54 @@ function Dict ({
     </div>
 }
 
+function build_tree_data_with_slice (
+    obj: DdbDictObj,
+    start: number,
+    end: number,
+    { remote, ctx, ddb, options }: { remote?: Remote, ctx?: Context, ddb?: DDB, options?: InspectOptions }
+) {
+    const [dict_key, dict_value] = obj.value
+    return seq(Math.min(Math.max(end - start, 0), dict_key.rows), i => {
+        const ireal = start + i
+        const key = formati(dict_key, ireal, options)
+        const valueobj = dict_value.value[ireal]
+        
+        // if (valueobj instanceof DdbObj)
+        // valueobj 可能来自不同 window
+        if (valueobj && Object.getPrototypeOf(valueobj)?.constructor.name === 'DdbObj')
+            if (valueobj.form === DdbForm.dict)
+                return {
+                    title: `${key}: `,
+                    key: genid(),
+                    // 对嵌套的字典不继续分页
+                    children: build_tree_data_with_slice(valueobj, 0, valueobj.rows, { remote, ctx, ddb })
+                }
+            else if (valueobj.form === DdbForm.scalar)
+                return {
+                    title: `${key}: ${format(valueobj.type, valueobj.value, valueobj.le, { ...options, quote: true, nullstr: true })}`,
+                    key: genid()
+                }
+            else {
+                const View = views[valueobj.form] || Default
+                
+                return {
+                    title: `${key}:`,
+                    key: genid(),
+                    children: [
+                        {
+                            title: <View obj={valueobj} ctx={ctx} ddb={ddb} remote={remote} options={options} />,
+                            key: genid()
+                        }
+                    ]
+                }
+            }
+        else
+            return {
+                title: `${key}: ${truncate(formati(dict_value, ireal, options))}`,
+                key: genid()
+            }
+    })
+}
 
 function Tensor ({
     obj,
@@ -341,7 +384,7 @@ function Tensor ({
     const isLeaf = currentDim === _obj.value.dimensions - 1
     const thisDimSize = shape[currentDim]
     const totalPageCount = Math.ceil(thisDimSize / pageSize)
-    const data: Uint8Array = _obj.value.data
+    const data = _obj.value.data
     
     function pushDimIndex (index: number) {
         setCurrentDir([...currentDir, index])
@@ -358,7 +401,10 @@ function Tensor ({
     const currentDimSize: number = _obj.value.shape[currentDim]
     // 搞这么多元素来
     const elems = [ ]
-    const offset = currentDir.reduce((prev, curr, index) => prev + strides[index] * curr * dataByte, 0)
+    const offset = currentDir.reduce(
+        (prev, curr, index) =>
+            prev + strides[index] * curr * dataByte,
+        0)
     
     let arrstrall = ''
     for (let j = 0;  j < _obj.value.dimensions;  j++) 
@@ -412,7 +458,14 @@ function Tensor ({
         }
     
     
-    const navItems = currentDir.map((e, i) => <div className='tensor-nav-elem' key={`tensor-index-${i}`} onClick={() => { popDimIndexTo(i + 1) }}>[{e}] <RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></div>)
+    const navItems = currentDir.map((e, i) => 
+        <div
+            className='tensor-nav-elem'
+            key={`tensor-index-${i}`}
+            onClick={() => { popDimIndexTo(i + 1) }}
+        >
+            [{e}] <RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/>
+        </div>)
     
     
     return <div className='tensor'>
@@ -475,54 +528,6 @@ function get_value_from_uint8_array (dataType: DdbType, data: Uint8Array, le: bo
     }
 }
 
-function build_tree_data_with_slice (
-    obj: DdbDictObj,
-    start: number,
-    end: number,
-    { remote, ctx, ddb, options }: { remote?: Remote, ctx?: Context, ddb?: DDB, options?: InspectOptions }
-) {
-    const [dict_key, dict_value] = obj.value
-    return seq(Math.min(Math.max(end - start, 0), dict_key.rows), i => {
-        const ireal = start + i
-        const key = formati(dict_key, ireal, options)
-        const valueobj = dict_value.value[ireal]
-        
-        // if (valueobj instanceof DdbObj)
-        // valueobj 可能来自不同 window
-        if (valueobj && Object.getPrototypeOf(valueobj)?.constructor.name === 'DdbObj')
-            if (valueobj.form === DdbForm.dict)
-                return {
-                    title: `${key}: `,
-                    key: genid(),
-                    // 对嵌套的字典不继续分页
-                    children: build_tree_data_with_slice(valueobj, 0, valueobj.rows, { remote, ctx, ddb })
-                }
-            else if (valueobj.form === DdbForm.scalar)
-                return {
-                    title: `${key}: ${format(valueobj.type, valueobj.value, valueobj.le, { ...options, quote: true, nullstr: true })}`,
-                    key: genid()
-                }
-            else {
-                const View = views[valueobj.form] || Default
-                
-                return {
-                    title: `${key}:`,
-                    key: genid(),
-                    children: [
-                        {
-                            title: <View obj={valueobj} ctx={ctx} ddb={ddb} remote={remote} options={options} />,
-                            key: genid()
-                        }
-                    ]
-                }
-            }
-        else
-            return {
-                title: `${key}: ${truncate(formati(dict_value, ireal, options))}`,
-                key: genid()
-            }
-    })
-}
 
 function Vector ({
     obj,
@@ -636,7 +641,7 @@ function Vector ({
                         ncols,
                         page_index,
                         page_size,
-                        options,
+                        options
                     })
                 )
             ]}
@@ -665,8 +670,6 @@ function Vector ({
                 showSizeChanger
                 showQuickJumper
                 hideOnSinglePage={page_size <= 200}
-                selectComponentClass={UpSelect}
-                
                 onChange={(page_index, page_size) => {
                     set_page_size(page_size)
                     set_page_index(page_index - 1)
@@ -709,6 +712,9 @@ class VectorColumn implements TableColumnType <number> {
         Object.assign(this, data)
         this.title = String(this.index)
         this.key = this.index
+        
+        const { type } = this.obj || this.objref
+        this.options = { ...this.options, grouping: !(64 <= type && type < 128) }
     }
     
     render = (value: any, row: number, index: number) => {
@@ -885,8 +891,6 @@ export function Table ({
                 showSizeChanger
                 showQuickJumper
                 hideOnSinglePage={page_size <= 50}
-                selectComponentClass={UpSelect}
-                
                 onChange={(page_index, page_size) => {
                     set_page_size(page_size)
                     set_page_index(page_index - 1)
@@ -1308,8 +1312,6 @@ export function StreamingTable ({
                 showSizeChanger
                 showQuickJumper
                 hideOnSinglePage={page_size <= 50}
-                selectComponentClass={UpSelect}
-                
                 onChange={(page_index, page_size) => {
                     set_page_size(page_size)
                     set_page_index(page_index - 1)
@@ -1445,6 +1447,8 @@ class TableColumn implements TableColumnType <number> {
             return
         
         this.col = obj.value[this.index]
+    
+        this.options = { ...this.options, grouping: !(64 <= this.col.type && this.col.type < 128) }
         
         this.title = <Tooltip
             title={
@@ -1596,8 +1600,6 @@ function Matrix ({
                 showSizeChanger
                 showQuickJumper
                 hideOnSinglePage={page_size <= 50}
-                selectComponentClass={UpSelect}
-                
                 onChange={(page_index, page_size) => {
                     set_page_size(page_size)
                     set_page_index(page_index - 1)
@@ -1707,6 +1709,21 @@ function to_chart_data (data: DdbValue, datatype: DdbType) {
     }
 }
 
+
+interface ChartConfig {
+    inited: boolean
+    charttype: DdbChartType
+    data: any[]
+    titles: DdbChartValue['titles']
+    stacking: boolean
+    multi_y_axes: boolean
+    col_labels: string[]
+    bin_count: DdbChartValue['bin_count']
+    bin_start: DdbChartValue['bin_start']
+    bin_end: DdbChartValue['bin_end']
+}
+
+
 function Chart ({
     obj,
     objref,
@@ -1722,19 +1739,7 @@ function Chart ({
     ddb?: DDB
     options?: InspectOptions
 }) {
-    const [
-        {
-            inited,
-            charttype,
-            data,
-            titles,
-            stacking,
-            multi_y_axes,
-            col_labels,
-            bin_count,
-        },
-        set_config
-    ] = useState({
+    const [config, set_config] = useState<ChartConfig>({
         inited: false,
         charttype: DdbChartType.line,
         data: [ ],
@@ -1806,7 +1811,7 @@ function Chart ({
                             }
                             data_[j] = dataobj
                         }
-                     else
+                    else
                         for (let i = 0;  i < cols;  i++) 
                             for (let j = 0;  j < rows;  j++) {
                                 const idata = i * rows + j
@@ -1875,323 +1880,18 @@ function Chart ({
         })()
     }, [obj, objref])
     
-    if (!inited)
+    
+    if (!config.inited)
         return null
     
     return <div className='chart'>
-        <div className='chart-title'>{titles.chart}</div>
+        <div className='chart-title'>{config.titles.chart}</div>
         
-        {(() => {
-            switch (charttype) {
-                case DdbChartType.line:
-                    if (!multi_y_axes)
-                        return <Line
-                            className='chart-body'
-                            data={data}
-                            xField='row'
-                            yField='value'
-                            seriesField='col'
-                            xAxis={{
-                                title: {
-                                    text: titles.x_axis
-                                }
-                            }}
-                            yAxis={{
-                                title: {
-                                    text: titles.y_axis
-                                },
-                                min: Math.floor(Math.min(...data.map(item => item.value))),
-                            }}
-                            isStack={stacking}
-                            padding='auto'
-                            animation={false}
-                        />
-                    else
-                        return <DualAxes
-                            className='chart-body'
-                            data={[data, data]}
-                            xField='row'
-                            yField={col_labels as any}
-                            xAxis={{
-                                title: {
-                                    text: titles.x_axis
-                                }
-                            }}
-                            yAxis={{
-                                [col_labels[0]]: {
-                                    title: {
-                                        text: titles.y_axis
-                                    }
-                                }
-                            }}
-                            padding='auto'
-                            animation={false}
-                        />
-                        
-                case DdbChartType.column:
-                    return <Column
-                        className='chart-body'
-                        data={data}
-                        xField='row'
-                        yField='value'
-                        seriesField='col'
-                        xAxis={{
-                            title: {
-                                text: titles.x_axis
-                            }
-                        }}
-                        yAxis={{
-                            title: {
-                                text: titles.y_axis
-                            }
-                        }}
-                        isGroup
-                        label={{
-                            position: 'middle',
-                            layout: [
-                                {
-                                    type: 'interval-adjust-position',
-                                },
-                                {
-                                    type: 'interval-hide-overlap',
-                                },
-                                {
-                                    type: 'adjust-color',
-                                },
-                            ],
-                        }}
-                        padding='auto'
-                        animation={false}
-                    />
-                
-                case DdbChartType.bar:
-                    return <Bar
-                        className='chart-body'
-                        data={data}
-                        xField='value'
-                        yField='row'
-                        seriesField='col'
-                        xAxis={{
-                            title: {
-                                text: titles.y_axis
-                            }
-                        }}
-                        yAxis={{
-                            title: {
-                                text: titles.x_axis
-                            }
-                        }}
-                        isStack={stacking}
-                        isGroup={!stacking}
-                        label={{
-                            position: 'middle',
-                            layout: [
-                                {
-                                    type: 'interval-adjust-position',
-                                },
-                                {
-                                    type: 'interval-hide-overlap',
-                                },
-                                {
-                                    type: 'adjust-color',
-                                },
-                            ],
-                        }}
-                        padding='auto'
-                        animation={false}
-                    />
-                
-                case DdbChartType.pie:
-                    return <Pie
-                        className='chart-body'
-                        data={data}
-                        angleField='value'
-                        colorField='row'
-                        radius={0.9}
-                        label={{
-                            type: 'spider',
-                            content: '{name}: {percentage}',
-                        }}
-                        padding='auto'
-                        animation={false}
-                    />
-                
-                case DdbChartType.area:
-                    return <Area
-                        className='chart-body'
-                        data={data}
-                        xField='row'
-                        yField='value'
-                        seriesField='col'
-                        // @ts-ignore
-                        xAxis={{
-                            title: {
-                                text: titles.x_axis
-                            }
-                        }}
-                        yAxis={{
-                            title: {
-                                text: titles.y_axis
-                            }
-                        }}
-                        // @ts-ignore
-                        stack={stacking}
-                        isStack={stacking}
-                        padding='auto'
-                        animation={false}
-                    />
-                
-                case DdbChartType.scatter:
-                    return <Scatter
-                        className='chart-body'
-                        data={data}
-                        xField='row'
-                        yField='value'
-                        colorField='col'
-                        xAxis={
-                            {
-                                title: {
-                                    text: titles.x_axis
-                                }
-                            }
-                        }
-                        yAxis={
-                            {
-                                title: {
-                                    text: titles.y_axis
-                                }
-                            }
-                        }
-                        padding='auto'
-                        animation={false}
-                    />
-                
-                case DdbChartType.histogram:
-                    return <Histogram 
-                        className='chart-body'
-                        data={data}
-                        binField='value'
-                        stackField='col'
-                        // 修复类型错误
-                        binNumber={undefined}
-                        { ... bin_count ? { binNumber: Number(bin_count.value) } : { } }
-                        xAxis={{
-                            title: {
-                                text: titles.x_axis
-                            }
-                        }}
-                        yAxis={{
-                            title: {
-                                text: titles.y_axis
-                            }
-                        }}
-                        // 修复类型错误
-                        binWidth={undefined}
-                        padding='auto'
-                        animation={false}
-                    />
-                
-                case DdbChartType.kline:
-                    return <Stock
-                        className='chart-body'
-                        data={data}
-                        xField='row'
-                        yField={['open', 'close', 'high', 'low'] as any}
-                        xAxis={{
-                            title: {
-                                text: titles.x_axis
-                            }
-                        }}
-                        yAxis={{
-                            title: {
-                                text: titles.y_axis
-                            }
-                        }}
-                        meta={{
-                            row: {
-                                formatter: (value, index) => format(obj.value.data.value.rows.type, value, obj.le)
-                            },
-                            vol: {
-                                alias: t('成交量'),
-                            },
-                            open: {
-                                alias: t('开盘价'),
-                            },
-                            close: {
-                                alias: t('收盘价'),
-                            },
-                            high: {
-                                alias: t('最高价'),
-                            },
-                            low: {
-                                alias: t('最低价'),
-                            },
-                        }}
-                        padding='auto'
-                        tooltip={{
-                            // @ts-ignore
-                            crosshairs: {
-                                // 自定义 crosshairs line 样式
-                                line: {
-                                    style: {
-                                        lineWidth: 0.5,
-                                        stroke: 'rgba(0,0,0,0.25)'
-                                    }
-                                },
-                                text: (type, defaultContent, items) => {
-                                    let textContent
-                                    
-                                    if (type === 'x') {
-                                        const item = items[0]
-                                        textContent = item ? item.data.row_ : defaultContent
-                                    } else
-                                        textContent = defaultContent.toFixed(2)
-                                    
-                                    return {
-                                        position: type === 'y' ? 'start' : 'end',
-                                        content: textContent,
-                                        // 自定义 crosshairs text 样式
-                                        style: {
-                                            fill: '#dfdfdf'
-                                        }
-                                    }
-                                },
-                            },
-                            
-                            fields: ['open', 'close', 'high', 'low', 'vol'],
-                            
-                            title: 'row_',
-                        }}
-                        animation={false}
-                    />
-                
-                default:
-                    return <Line
-                        className='chart-body'
-                        data={data}
-                        xField='row'
-                        yField='value'
-                        seriesField='col'
-                        xAxis={{
-                            title: {
-                                text: titles.x_axis
-                            }
-                        }}
-                        yAxis={{
-                            title: {
-                                text: titles.y_axis
-                            }
-                        }}
-                        isStack={stacking}
-                        padding='auto'
-                        animation={false}
-                    />
-            }
-        })()}
+        <EChartsComponent option={get_chart_option(config)} />
         
-        { ctx !== 'window' && <div className='bottom-bar-placeholder' /> }
+        {ctx !== 'window' && <div className='bottom-bar-placeholder' />}
         
-        { ctx !== 'window' && <div className='bottom-bar'>
+        {ctx !== 'window' && <div className='bottom-bar'>
             <div className='actions'>
                 {(ctx === 'page' || ctx === 'embed') && <Icon
                     className='icon-link'
@@ -2202,6 +1902,385 @@ function Chart ({
                     }}
                 />}
             </div>
-        </div> }
+        </div>}
     </div>
+}
+
+
+function get_chart_option (config: ChartConfig): echarts.EChartsOption {
+    const { charttype, data, titles, stacking, multi_y_axes, col_labels, bin_count } = config
+    
+    const base: echarts.EChartsOption = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'cross'
+            }
+        },
+        legend: {
+            data: col_labels.map(String)
+        },
+        grid: {
+            top: '10%',
+            left: '3%',
+            right: '3%',
+            bottom: '10%',
+            containLabel: true
+        },
+        backgroundColor: '#fff',
+        animation: false
+    }
+    
+    // 通用的坐标轴样式
+    const axisStyle = {
+        axisLine: {
+            lineStyle: {
+                color: '#333'
+            }
+        },
+        splitLine: {
+            lineStyle: {
+                color: '#eee'
+            }
+        },
+        nameTextStyle: {
+            fontSize: 12,
+            padding: [0, 10, 0, 10]  
+        },
+        nameLocation: 'middle' as const,  
+        nameGap: 30,  
+        axisTick: {
+            show: true,
+            alignWithLabel: true
+        },
+        axisLabel: {
+            interval: 'auto',  
+            hideOverlap: true, 
+            formatter (value, index) {
+                if (typeof value === 'string' && value.length > 10)
+                    return value.truncate(10)
+                return value
+            }
+        }
+    }
+    
+    switch (charttype) {
+        case DdbChartType.line:
+            if (!multi_y_axes) 
+                return {
+                    ...base,
+                    xAxis: {
+                        type: 'category',
+                        name: titles.x_axis,
+                        data: [...new Set(data.map(item => item.row))],
+                        ...axisStyle
+                    } as echarts.EChartsOption['xAxis'],
+                    yAxis: {
+                        type: 'value',
+                        name: titles.y_axis,
+                        ...axisStyle
+                    },
+                    series: col_labels.map(label => ({
+                        name: String(label),
+                        type: 'line',
+                        stack: stacking ? 'total' : undefined,
+                        data: data.filter(d => d.col === label).map(d => d.value),
+                        symbol: 'none',
+                        smooth: false
+                    }))
+                }
+            else
+                
+                return {
+                    ...base,
+                    xAxis: {
+                        type: 'category',
+                        name: titles.x_axis,
+                        data: data.map(d => d.row),
+                        ...axisStyle
+                    },
+                    yAxis: col_labels.map((label, index) => {
+                        const isRight = index % 2 === 1 // 判断是否为右侧
+                        const sideOffset = Math.floor(index / 2) * 30 // 每个 Y 轴之间的间隔
+                        
+                        return {
+                            type: 'value',
+                            position: isRight ? 'right' : 'left',
+                            offset: sideOffset, // 设置偏移量以避免重叠
+                            name: label,
+                            nameLocation: 'end',
+                            alignTicks: true,
+                            axisLabel: {
+                                margin: 8, // 轴标签的边距
+                            },
+                            axisLine: {
+                                lineStyle: {
+                                    color: '#333',
+                                },
+                            },
+                            splitLine: {
+                                lineStyle: {
+                                    color: '#eee',
+                                },
+                            },
+                        } as any
+                    }),
+                    series: col_labels.map((label, index) => ({
+                        name: String(label),
+                        type: 'line',
+                        yAxisIndex: index,
+                        data: data.map(d => d[label]),
+                        symbol: 'none',
+                        smooth: false
+                    }))
+                }
+            
+            
+        case DdbChartType.column:
+            return {
+                ...base,
+                xAxis: {
+                    type: 'category',
+                    name: titles.x_axis,
+                    data: [...new Set(data.map(item => item.row))],
+                    ...axisStyle
+                } as echarts.EChartsOption['xAxis'],
+                yAxis: {
+                    type: 'value',
+                    name: titles.y_axis,
+                    ...axisStyle
+                },
+                series: col_labels.map(label => ({
+                    name: label,
+                    type: 'bar',
+                    stack: stacking ? 'total' : undefined,
+                    data: data.filter(d => d.col === label).map(d => d.value)
+                }))
+            }
+            
+        case DdbChartType.bar:
+            return {
+                ...base,
+                xAxis: {
+                    type: 'value',
+                    name: titles.y_axis,
+                    ...axisStyle
+                },
+                yAxis: {
+                    type: 'category',
+                    name: titles.x_axis,
+                    data: [...new Set(data.map(item => item.row))],
+                    ...axisStyle
+                } as echarts.EChartsOption['yAxis'],
+                series: col_labels.map(label => ({
+                    name: label,
+                    type: 'bar',
+                    stack: stacking ? 'total' : undefined,
+                    data: data.filter(d => d.col === label).map(d => d.value)
+                }))
+            }
+            
+        case DdbChartType.pie:
+            return {
+                ...base,
+                series: [{
+                    type: 'pie',
+                    radius: '90%',
+                    data: data.map(d => ({
+                        name: d.row,
+                        value: d.value
+                    })),
+                    label: {
+                        formatter: function (params) {
+                            return `${params.name}: ${params.percent.toFixed(2)}%`
+                        }
+                    }
+                }]
+            }
+            
+        case DdbChartType.area:
+            return {
+                ...base,
+                xAxis: {
+                    type: 'category',
+                    name: titles.x_axis,
+                    data: [...new Set(data.map(item => item.row))],
+                    ...axisStyle
+                } as echarts.EChartsOption['xAxis'],
+                yAxis: {
+                    type: 'value',
+                    name: titles.y_axis,
+                    ...axisStyle
+                },
+                series: col_labels.map(label => ({
+                    name: label,
+                    type: 'line',
+                    areaStyle: { },
+                    stack: stacking ? 'total' : undefined,
+                    data: data.filter(d => d.col === label).map(d => d.value),
+                    symbol: 'none',
+                    smooth: false
+                }))
+            }
+            
+        case DdbChartType.scatter:
+            return {
+                ...base,
+                legend: null,
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function (params) {
+                        return `X : ${params.data[0]}<br/>
+                                Y : ${params.data[1]}`
+                    }
+                },
+                xAxis: {
+                    type: 'value',
+                    name: titles.x_axis,
+                    ...axisStyle
+                },
+                yAxis: {
+                    type: 'value',
+                    name: titles.y_axis,
+                    ...axisStyle
+                },
+                series: col_labels.map(label => ({
+                    name: label,
+                    type: 'scatter',
+                    data: data.filter(d => d.col === label).map(d => [d.row, d.value])
+                }))
+            }
+            
+        case DdbChartType.histogram:
+            const values = data.map(d => d.value)
+            const minValue = config.bin_start ? Number(config.bin_start.value) : Math.min(...values)
+            const maxValue = config.bin_end ? Number(config.bin_end.value) : Math.max(...values)
+            const xMin = Math.floor(minValue)
+            const xMax = Math.ceil(maxValue)
+            const binCount = config.bin_count ? Number(config.bin_count.value) : 30
+            const binWidth = (maxValue - minValue) / binCount
+            
+            // 创建区间并统计每个区间的频次
+            const bins = new Array(binCount).fill(0)
+            values.forEach(value => {
+                if (value >= minValue && value <= maxValue) {
+                    const binIndex = Math.min(Math.floor((value - minValue) / binWidth), binCount - 1)
+                    bins[binIndex]++
+                }
+            })
+            
+            return {
+                ...base,
+                tooltip: {
+                    formatter: params => {
+                        const i = params.dataIndex
+                        const start = minValue + i * binWidth
+                        const end = minValue + (i + 1) * binWidth
+                        const count = bins[i]
+                        const percentage = ((count / values.length) * 100).toFixed(2)
+                        return `[${start.toFixed(2)}, ${end.toFixed(2)}]: ${percentage}% (${count})`
+                    }
+                },
+                xAxis: {
+                    type: 'value',
+                    name: !titles.x_axis || titles.x_axis === '' ? t('区间') : titles.x_axis,
+                    min: xMin,
+                    max: xMax,
+                    ...axisStyle
+                },
+                yAxis: {
+                    type: 'value',
+                    name: !titles.y_axis || titles.y_axis === '' ? t('频次') : titles.y_axis,
+                    ...axisStyle
+                },
+                series: [{
+                    type: 'custom',
+                    renderItem: (params, api) => ({
+                        type: 'rect',
+                        shape: {
+                            x: api.coord([minValue + params.dataIndex * binWidth, 0])[0],
+                            y: api.coord([0, api.value(0)])[1],
+                            width: api.size([binWidth, 0])[0],
+                            height: api.size([0, api.value(0)])[1]
+                        },
+                        style: api.style()
+                    }),
+                    data: bins,
+                }]
+            }
+            
+        case DdbChartType.kline:
+            return {
+                ...base,
+                xAxis: {
+                    type: 'category',
+                    name: titles.x_axis,
+                    data: data.map(d => d.row_),
+                    ...axisStyle
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: titles.y_axis,
+                        scale: true,
+                        ...axisStyle
+                    },
+                    {
+                        type: 'value',
+                        name: t('成交量'),
+                        scale: true,
+                        ...axisStyle
+                    }
+                ],
+                series: [
+                    {
+                        type: 'candlestick',
+                        data: data.map(d => [d.open, d.close, d.low, d.high])
+                    },
+                    ... data[0].vol ? [{
+                        name: t('成交量'),
+                        type: 'bar',
+                        yAxisIndex: 1,
+                        data: data.map(d => d.vol)
+                    } as echarts.BarSeriesOption] : [ ]
+                ]
+            }
+            
+        default:
+            return base
+    }
+}
+
+
+function EChartsComponent ({ option }: { option: echarts.EChartsOption }) {
+    let rchart = useRef<HTMLDivElement>(null)
+    let chart = useRef<echarts.ECharts | null>(null)
+    
+    useEffect(() => {
+        if (rchart.current) {
+            chart.current = echarts.init(rchart.current)
+            chart.current.setOption(option)
+        }
+        
+        let observer: ResizeObserver
+        
+        if (rchart.current) {
+            observer = new ResizeObserver(debounce(200, () => {
+                chart.current?.resize()
+            }))
+            
+            observer.observe(rchart.current)
+        }
+        
+        return () => {
+            chart.current?.dispose()
+            observer?.disconnect()
+        }
+    }, [option])
+    
+    useEffect(() => {
+        chart.current?.setOption(option)
+    }, [option])
+    
+    return <div ref={rchart} className='chart-body' style={{ width: '100%', height: '100%' }} />
 }

@@ -19,6 +19,8 @@
         
         .pagination
             margin: 2px 0px
+            display: flex
+            align-items: center
         
         table
             text-align: right
@@ -92,30 +94,34 @@
         
         .ant-tree-node-content-wrapper:hover, .ant-tree-checkbox+span:hover
             background-color: unset
-    
+        
     .tensor
         display: flex
         flex-flow: column
         height: 100%
         overflow: auto
-        
-        
+    
+    
         .tensor-nav
             display: flex
             align-items: center
             border-bottom: 1px solid variables.$dropdown-active-background-color
-        
+    
         .tensor-view
             flex:1
             overflow: auto
             height: 0
-        
+    
         .tensor-title
             padding: 4px 0 4px 8px
             cursor: pointer
             height: 100%
             &:hover
                 background: variables.$dropdown-active-background-color
+    
+        .tensor-elem-count
+            color: #000000
+    
         .type-name
             color: #2d6ebe
     
@@ -145,6 +151,7 @@
             margin: 0 8px
             font-weight: bold
             line-height: 32px    
+    
     
     .bottom-bar
         display: flex
@@ -329,4 +336,11 @@
             
             .ant-empty-description
                 color: variables.$font-color !important
+
+
+.ant-modal-body
+    .export-prompt
+        margin-left: 112px
+        color: red
         
+

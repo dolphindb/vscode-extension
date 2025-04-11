@@ -5,7 +5,7 @@ import { type Message, genid, assert, defer, pack, parse, message_symbol, check 
 import type { DDB, DdbMessage, InspectOptions } from 'dolphindb'
 
 
-import { language, t } from '@i18n/index.ts'
+import { language, t } from '@i18n'
 
 import { dev, fpd_ext } from '../index.ts'
 import { type DdbVar } from '../variables.ts'
@@ -131,7 +131,7 @@ export let dataview = {
                             `react/react.${ dev ? 'development' : 'production' }.js`,
                             `antd/dist/antd${ dev ? '' : '.min' }.js`,
                             `@ant-design/icons/dist/index.umd${ dev ? '' : '.min' }.js`,
-                            '@ant-design/plots/dist/plots.min.js',
+                            `echarts/dist/echarts${ dev ? '' : '.min' }.js`,
                         ].map(vendor => `        <script src='${webview.asWebviewUri(Uri.file(`${fpd_ext}dataview/vendors/${vendor}`))}' defer></script>\n`)
                             .join_lines() +
                         

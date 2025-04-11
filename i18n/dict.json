@@ -520,5 +520,14 @@
     },
     "dolphindb.connections 配置中不能存在相同名字的连接": {
         "en": "There cannot be a connection with the same name in the dolphindb.connections configuration"
+    },
+    "区间": {
+        "en": "interval"
+    },
+    "频次": {
+        "en": "frequency"
+    },
+    "{{parser}} parser 暂不支持调试功能": {
+        "en": "{{parser}} parser does not currently support debugging"
     }
 }

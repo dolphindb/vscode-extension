@@ -24,7 +24,7 @@ import {
 } from 'dolphindb/browser.js'
 import { delay } from 'xshell/utils.browser.js'
 
-import { language } from '@i18n/index.ts'
+import { language } from '@i18n'
 
 import {
     Obj,

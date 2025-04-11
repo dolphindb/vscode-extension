@@ -17,7 +17,7 @@
     
     "compilerOptions": {
         "paths": {
-            "@i18n/*": ["./i18n/*"],
+            "@i18n": ["./i18n/index.ts"],
         },
         
         
