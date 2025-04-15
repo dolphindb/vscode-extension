@@ -769,6 +769,8 @@ export class DdbConnection extends TreeItem {
                     ;(
                         await this.ddb.invoke('getSchemaByCatalog', [catalog])
                     ).data
+                        // 图的情况下 dbUrl 为空字符串，比如现在用 demo.orca_graph.tmp 作为一个图的标识了，demo.orca_graph 不是表的概念了
+                        .filter(({ dbUrl }) => dbUrl)
                         .sort((a, b) => strcmp(a.schema, b.schema))
                         .map(({ schema, dbUrl }) => {
                             const db_path = `${dbUrl}/`
