@@ -16,21 +16,12 @@ import ko from 'antd/locale/ko_KR.js'
 
 import { Model } from 'react-object-model'
 
-import {
-    DdbForm,
-    type DDB,
-    type DdbObj,
-    type InspectOptions,
-} from 'dolphindb/browser.js'
+import { DdbForm, type DDB, type DdbObj, type InspectOptions } from 'dolphindb/browser.js'
 import { delay } from 'xshell/utils.browser.js'
 
 import { language } from '@i18n'
 
-import {
-    Obj,
-    type DdbObjRef,
-    type Remote,
-} from './obj.tsx'
+import { Obj, type DdbObjRef, type Remote } from './obj.tsx'
 
 
 const locales = { zh, en, ja, ko }
@@ -104,9 +95,8 @@ function DdbObjWindow () {
                 return
             
             window.resizeTo(
-                Math.min($table.offsetWidth + 40, screen.width - 100),
-                Math.min($table.offsetHeight + 140,  screen.height - 100),
-            )
+                Math.min($table.offsetWidth + 80, screen.width - 100),
+                Math.min($table.offsetHeight + 140,  screen.height - 100))
         })()
     }, [obj, objref])
     

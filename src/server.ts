@@ -13,7 +13,7 @@ import { dataview } from './dataview/dataview.ts'
 import { type DdbVar } from './variables.ts'
 import { connector } from './connector.ts'
 
-import { dev, fpd_ext } from './index.ts'
+import { fpd_ext } from './index.ts'
 
 
 /** 懒初始化的，使用前先检查，未初始化需要调用 start_server 初始化 */
@@ -32,7 +32,7 @@ class DdbServer extends Server {
         let { request } = ctx
         
         if (request.path === '/')
-            request.path = dev ? '/index.dev.html' : '/index.html'
+            request.path = '/index.html'
         
         if (request.path === '/window')
             request.path = '/window.html'

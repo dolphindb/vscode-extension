@@ -156,6 +156,9 @@ export async function open_obj ({
 }) {
     let win = window.open('./window.html', new Date().toString(), 'left=100,top=100,width=1000,height=640,popup')
     
+    if (!win)
+        throw new Error(t('弹窗被浏览器拦截，请设置网页允许弹出式窗口和重定向'))
+    
     await new Promise<void>(resolve => {
         (win as any).resolve = resolve
     })

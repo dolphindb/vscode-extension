@@ -86,17 +86,35 @@ class DataViewModel extends Model<DataViewModel> {
                         if (options === null)
                             options = undefined
                         
-                        if (ddbvar.obj)
-                            if (open)
-                                await open_obj({ obj: ddbvar.obj, objref: null, remote, options })
-                            else
-                                this.set({ result: { type: 'object', data: ddbvar.obj }, options })
-                        else {
-                            const objref = new DdbObjRef(ddbvar)
-                            if (open)
-                                await open_obj({ obj: null, objref: objref, remote, options })
-                            else
-                                this.set({ result: { type: 'objref', data: objref }, options })
+                        try {
+                            if (ddbvar.obj)
+                                if (open)
+                                    await open_obj({
+                                        obj: ddbvar.obj,
+                                        objref: null, 
+                                        remote, 
+                                        options
+                                    })
+                                else
+                                    this.set({ result: { type: 'object', data: ddbvar.obj }, options })
+                            else {
+                                const objref = new DdbObjRef(ddbvar)
+                                if (open)
+                                    await open_obj({
+                                        obj: null,
+                                        objref: objref,
+                                        remote,
+                                        options
+                                    })
+                                else
+                                    this.set({ result: { type: 'objref', data: objref }, options })
+                            }
+                        } catch (error) {
+                            model.modal.error({
+                                className: 'modal-error',
+                                title: error.message,
+                                width: 1000
+                            })
                         }
                     },
                     // error 可能会有，但在 dataview 里不关心

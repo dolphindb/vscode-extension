@@ -65,14 +65,15 @@ export let builder = {
                     external_dayjs: true,
                     production,
                     license: production,
-                    dependencies: ['antd-icons', 'echarts'],
+                    dependencies,
                     htmls: {
                         'index.html': {
                             title: 'DolphinDB',
                             icon: {
                                 src: 'src/dataview/logo.png',
                                 out: 'logo.png'
-                            }
+                            },
+                            dependencies
                         },
                         
                         'window.html': {
@@ -82,6 +83,7 @@ export let builder = {
                                 out: 'logo.png'
                             },
                             entry: 'window.js',
+                            dependencies
                         }
                     },
                     
@@ -1019,6 +1021,9 @@ export let builder = {
         ])
     },
 }
+
+
+const dependencies: Bundler['dependencies'] = ['antd-icons', 'echarts']
 
 
 interface VSCodeConfiguration {
