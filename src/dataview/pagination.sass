@@ -1,8 +1,7 @@
 @use './variables'
 
 
-.root
-    // --- 下面的分页同 web/console/index.sass
+.root, .ant-modal-root
     .ant-pagination-item-active
         border-color: transparent !important
     
@@ -11,6 +10,9 @@
             margin-left: 10px
             
             flex-shrink: 0
+            
+            .ant-pagination-item
+                background-color: unset
             
             .ant-pagination-item a
                 color: variables.$color !important
@@ -71,10 +73,10 @@
                     
                     .ant-select-selection-item
                         color: variables.$font-color !important
-    
+                
                 .ant-select:not(.ant-select-disabled):hover .ant-select-selector
                     border-color: #707070
-    
+                
                 .ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector
                     box-shadow: unset
                     

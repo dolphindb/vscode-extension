@@ -89,12 +89,19 @@
             .ant-tree-switcher-noop
                 visibility: hidden
                 
+            .ant-tree-treenode:not(.ant-tree-treenode-disabled)
+                .ant-tree-node-content-wrapper:hover
+                    color: variables.$dropdown-selected-background-color
+                
+            .ant-tree-node-content-wrapper.ant-tree-node-selected
+                color: variables.$line-number-foreground-color
+                
         .ant-tree-node-content-wrapper.ant-tree-node-selected, .ant-tree-checkbox+span.ant-tree-node-selected
             background-color: unset
         
         .ant-tree-node-content-wrapper:hover, .ant-tree-checkbox+span:hover
             background-color: unset
-        
+            
     .tensor
         display: flex
         flex-flow: column
