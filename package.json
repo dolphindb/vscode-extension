@@ -3,7 +3,7 @@
     "type": "module",
     "version": "3.0.211",
     "engines": {
-        "vscode": ">=1.68.0"
+        "vscode": ">=1.82.0"
     },
     "scripts": {
         "dev": "node --experimental-transform-types ./dev.ts",
