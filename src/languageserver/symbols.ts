@@ -3,7 +3,7 @@ import { type TextDocument } from 'vscode-languageserver-textdocument'
 
 import { type Position, type Range } from 'vscode-languageserver/node'
 
-import { readFileByPath } from './utils.ts'
+import { escapeRegExp, readFileByPath } from './utils.ts'
 
 import { type DdbModule, type ISymbol, SymbolType, type IFunctionMetadata, type IVariableMetadata, type IParamMetadata } from './types.ts'
 
@@ -347,7 +347,8 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
             })
             
             // 为每个参数创建 Param 符号，并设置其作用域为函数体内部
-            argnames.forEach(arg => {
+            argnames.forEach(_arg => {
+                const arg = escapeRegExp(_arg)
                 // 在参数列表中查找参数的位置
                 const paramRegex = new RegExp(`\\b${arg}\\b`)
                 const paramMatch = paramRegex.exec(paramsText)

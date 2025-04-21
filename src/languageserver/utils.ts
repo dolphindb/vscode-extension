@@ -88,7 +88,7 @@ export function createRegexForFunctionNames (functionNames) {
     
     return new RegExp(pattern)
 }
-function escapeRegExp (string) {
+export function escapeRegExp (string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
