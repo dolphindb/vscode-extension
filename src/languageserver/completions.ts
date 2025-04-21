@@ -5,6 +5,7 @@ import {
     Position,
     type TextDocumentPositionParams,
     MarkupKind,
+    type CompletionParams,
 } from 'vscode-languageserver/node'
 
 import type { TextDocument } from 'vscode-languageserver-textdocument'
@@ -25,7 +26,7 @@ export type DdbCompletionItem = CompletionItem & {
 
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
-    async (_textDocumentPosition: TextDocumentPositionParams): Promise<CompletionItem[]> => {
+    async (_textDocumentPosition: CompletionParams): Promise<CompletionItem[]> => {
         // The pass parameter contains the position of the text document in
         // which code complete got requested. For the example we ignore this
         // info and always provide the same completion items.
@@ -33,6 +34,12 @@ connection.onCompletion(
             documents.get(_textDocumentPosition.textDocument.uri)!,
             _textDocumentPosition.position.line
         )
+        
+        const { context } = _textDocumentPosition
+        
+        const triggerChar = context?.triggerCharacter ?? ''
+        
+        const isBlankTrigger = triggerChar === ' '
         
         // 忽略注释的行，目前只能做到识别单行注释
         if (lineContent.trim().startsWith('//'))
@@ -43,7 +50,7 @@ connection.onCompletion(
         // const mc = getModuleCompletions(_textDocumentPosition)
         // if (mc.length > 0)  // 如果是模块提示，那么只给模块提示，因为不太可能用其他的提示
         //     return mc
-        const result = await completionsService.complete(_textDocumentPosition)
+        const result = await completionsService.complete(_textDocumentPosition, isBlankTrigger)
         items.push(...result)
         
         return items
@@ -397,12 +404,10 @@ export class CompletionsService {
         ]
     }
     
-    async complete (position: TextDocumentPositionParams): Promise<CompletionItem[]> {
+    async complete (position: TextDocumentPositionParams, isBlankTrigger = false): Promise<CompletionItem[]> {
         const selectCompletions = await this.getSelectCompletions(position)
         const tableCompletions = await this.getTableSnippets(position)
-        const items: DdbCompletionItem[] = [
-            ...selectCompletions,
-            ...tableCompletions,
+        const commonCompletions = [
             ...this.getDatabsaseSnippets(position),
             ...this.getCatalogSnippets(position),
             ...this.getCommonSnippets(position),
@@ -410,6 +415,11 @@ export class CompletionsService {
             ...this.getVariableSnippets(position),
             ...this.getModuleUseSnippets(position),
             ...this.getModuleTopLevelFunctions(position),
+        ]
+        const items: DdbCompletionItem[] = [
+            ...selectCompletions,
+            ...tableCompletions,
+            ...(isBlankTrigger ? [ ] : commonCompletions),
         ]
         return this.filterHighestOrderCompletions(items)
     }
