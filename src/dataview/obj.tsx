@@ -2088,8 +2088,10 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
                     })),
                     label: {
                         formatter (params) {
-                            return `${params.name}: ${params.percent.toFixed(2)}%`
-                        }
+                            return `${params.name}: ${params.percent.toFixed()}%`
+                        },
+                        backgroundColor: 'transparent',
+                        color: '#888888'
                     }
                 }]
             }

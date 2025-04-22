@@ -1,6 +1,11 @@
 import { workspace, ConfigurationTarget } from 'vscode'
 
+import { dev } from './index.ts'
+
 export async function register_settings () {
+    if (dev)
+        return
+    
     // --- 自动添加 decorator textmate rules 以支持 @jit @state 等高亮
     const config = workspace.getConfiguration('editor')
     
