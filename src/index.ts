@@ -143,7 +143,8 @@ export async function activate (ctx: ExtensionContext) {
         }
     }))
     
-    await register_settings()
+    if (!dev)
+        await register_settings()
     
     await activate_ls(ctx)
     
