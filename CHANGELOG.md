@@ -1,6 +1,6 @@
 # Change Log (更新日志)
 
-## [3.0.211]
+## v3.0.211
 #### 新功能 / New Features
 -   新增对 dolphindb.connections 配置项的重名校验，存在同名连接时将会报错。  
     Added check for duplicate connection names in the dolphindb.connections configuration. The system will thrown an exception if connections with the same name exist.  
