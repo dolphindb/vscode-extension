@@ -14,7 +14,7 @@
     },
     "devDependencies": {
         "@types/koa": "^2.15.0",
-        "@types/node": "^22.14.1",
+        "@types/node": "^22.15.2",
         "@types/react": "^19.1.2",
         "@types/react-dom": "^19.1.2",
         "@types/vscode": "^1.99.1",
@@ -28,7 +28,7 @@
         "@vscode/debugprotocol": "^1.68.0",
         "antd": "^5.24.8",
         "dayjs": "^1.11.13",
-        "dolphindb": "^3.0.221",
+        "dolphindb": "^3.0.223",
         "echarts": "^5.6.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",

@@ -1,5 +1,41 @@
 # Change Log (更新日志)
 
+## [3.0.211]
+#### 新功能 / New Features
+-   新增对 dolphindb.connections 配置项的重名校验，存在同名连接时将会报错。  
+    Added check for duplicate connection names in the dolphindb.connections configuration. The system will thrown an exception if connections with the same name exist.  
+
+#### 功能优化 / Enhancement
+-   新增 VS Code 版本限制，插件版本：  
+    3.0.210 以下​​：要求 ​​VS Code v1.68.0 及以上​；  
+    3.0.210​ 及以上​：要求 ​​VS Code v1.82.0​​ 及以上。  
+    
+    Added version requirements for VS Code:  
+    VS Code version v1.68.0 and higher for extension version ​​below 3.0.210​​;  
+    ​​VS Code version v1.82.0 and higher for extension version ​​3.0.210 and higher​​​​.  
+    
+-   优化使用 plot 函数作图时的多 Y 轴展示。  
+    Improved the display of multiple Y-axis when plotting line charts with the plot function.  
+    
+-   优化连接数据库失败的报错信息展示。  
+    Improved the display of error messages when failing to connect to databases.  
+
+#### 缺陷修复 / Bug Fixes
+-   修复了深色主题下:  
+    -  鼠标悬浮在数据预览页面字典数据上方时，字体颜色变黑的展示异常问题。  
+    -  使用 plot 函数作饼图时，数值出现异常白色描边的问题。  
+
+    Fixed the following issues in dark theme:  
+    -  Text color turned black when hovering over a dictionary in the DOLPHINDB view.  
+    -  Unexpected white borders of pie chart values when using the plot function.  
+
+-   修复了键入空格时意外弹出补全提示的问题。  
+    Fixed unexpected autocompletion triggered by pressing the spacebar.  
+
+-   修复了无法使用在新窗口查看变量功能的问题。  
+    Fixed an issue where the Inspect Variable in New Window feature was not available.  
+
+
 ## [3.0.210]
 #### 新功能 / New Features
 -   为 DolphinDB 脚本编辑提供代码辅助功能：转到定义、自定义函数名和变量名自动补全、模块自动导入等。  
