@@ -72,7 +72,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
     
     /** 执行连接操作后，如果超过 1s 还未完成，则显示进度 */
     async connect (connection: DdbConnection) {
-        if (debug.activeDebugSession) {
+        if (debug.activeDebugSession && debug.activeDebugSession.type === 'dolphindb') {
             window.showWarningMessage(t('当前有 debug 进程进行中，无法切换连接'))
             return
         }
