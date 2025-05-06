@@ -14,6 +14,7 @@ export enum SymbolType {
 export interface IFunctionMetadata {
     argnames: string[]
     scope: [Position, Position]
+    functionBodyScope: [Position, Position]
     comments: string
     top_level?: boolean
 }

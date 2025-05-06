@@ -1,11 +1,12 @@
 
 import { type TextDocument } from 'vscode-languageserver-textdocument'
 
-import { type Position, type Range } from 'vscode-languageserver/node'
+import { type Position, type Range, SymbolKind, type DocumentSymbol } from 'vscode-languageserver/node'
 
 import { escapeRegExp, readFileByPath } from './utils.ts'
 
-import { type DdbModule, type ISymbol, SymbolType, type IFunctionMetadata, type IVariableMetadata, type IParamMetadata } from './types.ts'
+import { type DdbModule, type ISymbol, SymbolType } from './types.ts'
+import { connection } from './connection.ts'
 
 interface IFileSymbols {
     module?: string
@@ -341,6 +342,7 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
                 metadata: {
                     argnames,
                     scope: functionScopeRange,
+                    functionBodyScope,
                     top_level,
                     comments,
                 },
@@ -495,3 +497,115 @@ export function getFileUsedModule (text: string): string[] {
         // 过滤掉未匹配成功的行
         .filter((moduleName): moduleName is string => moduleName !== null)
 }
+
+connection.onDocumentSymbol(params => {
+
+    const filePath = params.textDocument.uri
+    const symbols = symbolService.getSymbols(filePath)
+    const result: DocumentSymbol[] = [ ]
+    // 先处理函数，对于每个函数，找到其参数，并将其添加到字节点，然后从 symbols 中删除
+    const functionSymbols: ISymbol<SymbolType.Function>[] = symbols.filter(symbol => symbol.type === SymbolType.Function) as ISymbol<SymbolType.Function>[]
+    for (const funcSymbol of functionSymbols) {
+        // 查找相关的 Params
+        const relatedParams = symbols.filter(symbol =>
+            symbol.type === SymbolType.Param &&
+            (symbol as ISymbol<SymbolType.Param>).metadata?.funcname === funcSymbol.name)
+        const item: DocumentSymbol = {
+            name: funcSymbol.name,
+            kind: SymbolKind.Function,
+            range: funcSymbol.range || {
+                start: funcSymbol.position,
+                end: funcSymbol.position,
+            },
+            selectionRange: funcSymbol.range || {
+                start: funcSymbol.position,
+                end: funcSymbol.position,
+            },
+            children: [ ],
+        }
+        if (relatedParams.length > 0)
+            item.children = relatedParams.map(param => ({
+                name: param.name,
+                kind: SymbolKind.Variable,
+                range: param.range || {
+                    start: param.position,
+                    end: param.position,
+                },
+                selectionRange: param.range || {
+                    start: param.position,
+                    end: param.position,
+                },
+            }))
+            
+        // 还需要将函数作用域范围下的变量也加入
+        const functionScope = funcSymbol.metadata?.functionBodyScope
+        if (functionScope) {
+            const start = functionScope[0]
+            const end = functionScope[1]
+            const functionScopeSymbols = symbols.filter(symbol =>
+                symbol.type === SymbolType.Variable &&
+                symbol.position.line >= start.line &&
+                symbol.position.line <= end.line &&
+                (symbol.position.line > start.line || symbol.position.character >= start.character) &&
+                (symbol.position.line < end.line || symbol.position.character <= end.character))
+            functionScopeSymbols.forEach(variable => {
+                const variableItem: DocumentSymbol = {
+                    name: variable.name,
+                    kind: SymbolKind.Variable,
+                    range: variable.range || {
+                        start: variable.position,
+                        end: variable.position,
+                    },
+                    selectionRange: variable.range || {
+                        start: variable.position,
+                        end: variable.position,
+                    },
+                    children: [ ],
+                }
+                
+                item.children.push(variableItem)
+            })
+            
+            // 将相关的变量也删除
+            functionScopeSymbols.forEach(variable => {
+                const index = symbols.indexOf(variable)
+                if (index !== -1)
+                    symbols.splice(index, 1)
+            })
+        }
+        
+        // 将函数从 symbols 中删除
+        const index = symbols.indexOf(funcSymbol)
+        if (index !== -1)
+            symbols.splice(index, 1)
+            
+        // 将相关的 Params 也删除
+        relatedParams.forEach(param => {
+            const index = symbols.indexOf(param)
+            if (index !== -1)
+                symbols.splice(index, 1)
+        })
+        
+        result.push(item)
+    }
+    
+    // 处理剩余的变量
+    symbols.forEach(symbol => {
+        const item: DocumentSymbol = {
+            name: symbol.name,
+            kind: SymbolKind.Variable,
+            range: symbol.range || {
+                start: symbol.position,
+                end: symbol.position,
+            },
+            selectionRange: symbol.range || {
+                start: symbol.position,
+                end: symbol.position,
+            },
+            children: [ ],
+        }
+        result.push(item)
+    })
+    
+    return result
+})

@@ -47,6 +47,8 @@ connection.onInitialize((params: InitializeParams) => {
         capabilities: {
             textDocumentSync: TextDocumentSyncKind.Incremental,
             definitionProvider: true,
+            // 提供符号，用于展示大纲
+            documentSymbolProvider: true,
             hoverProvider: true,
             // Tell the client that this server supports code completion.
             completionProvider: {
