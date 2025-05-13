@@ -52,7 +52,7 @@ connection.onInitialize((params: InitializeParams) => {
             completionProvider: {
                 // resolveProvider: true,
                 // 使其支持字符串内的自动补全
-                triggerCharacters: ['.', ' ', '(', ')', '"', "\'", '\`', ',']
+                triggerCharacters: ['.', ' ', '"', "\'", '\`']
             },
             diagnosticProvider: {
                 interFileDependencies: false,
