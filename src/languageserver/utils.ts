@@ -43,6 +43,11 @@ export function getLineContentsBeforePosition (text: string, position: Position)
 }
 
 export function extractModuleName (line: string): string | null {
+    // 如果是 use catalog 语句，返回 null
+    if (/^use\s+catalog\s+/i.test(line.trim())) 
+        return null
+    
+    
     const regex = /use\s+([\w:]+)\s*[:;]?/
     const match = regex.exec(line)
     return match ? match[1] : null
