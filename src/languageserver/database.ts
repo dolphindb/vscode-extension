@@ -8,8 +8,8 @@ class DatabaseService {
     dbTables: Map<string, string[]> = new Map()
     sharedTables: string[] = [ ]
     
-    
-    update = throttle(2000, async () => {
+    // 半分钟触发一次
+    update = throttle(30000, async () => {
         try {
             this.catalogs = await connection.sendRequest('ddb/getAllCatalogs')
             this.dfsDatabases = await connection.sendRequest('ddb/getClusterDFSDatabases')
@@ -20,10 +20,15 @@ class DatabaseService {
         }
     })
     
+    // 连续触发，30s 才能执行一次。
+    throttle_update_table_of_db = throttle(30000, async (db: string) => {  
+        connection.sendRequest('ddb/listTables', db).then((tables: string[]) => this.dbTables.set(db, tables))  
+    })
+    
     async update_table_of_db (db: string) {
         if (this.dbTables.has(db)) {
-            // 如果有了，不阻塞，只更新
-            connection.sendRequest('ddb/listTables', db).then((tables: string[]) => this.dbTables.set(db, tables)) 
+            // 如果有了，不阻塞，只更新，并且不能很频繁
+            this.throttle_update_table_of_db(db) 
             return
         }
         // 没用，阻塞并等待结果

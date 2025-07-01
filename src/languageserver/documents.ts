@@ -26,7 +26,7 @@ documents.onDidClose(e => {
 documents.onDidChangeContent(change => {
     // validateTextDocument(change.document);
     symbolService.buildSymbolByDocument(change.document)
-    dbService.update()
+    // dbService.update()
 })
 
 // Make the text document manager listen on the connection
