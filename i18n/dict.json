@@ -529,5 +529,8 @@
     },
     "{{parser}} parser 暂不支持调试功能": {
         "en": "{{parser}} parser does not currently support debugging"
+    },
+    "弹窗被浏览器拦截，请设置网页允许弹出式窗口和重定向": {
+        "en": "Pop-up windows are blocked by the browser. Please set the webpage to allow pop-up windows and redirects"
     }
 }
