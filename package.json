@@ -17,9 +17,9 @@
         "@types/node": "^24.0.10",
         "@types/react": "^19.1.8",
         "@types/react-dom": "^19.1.6",
-        "@types/vscode": "^1.101.0",
+        "@types/vscode": "^1.102.0",
         "@types/ws": "^8.18.1",
-        "eslint": "^9.30.1",
+        "eslint": "^9.31.0",
         "typescript": "^5.8.3"
     },
     "dependencies": {
@@ -28,7 +28,7 @@
         "@vscode/debugprotocol": "^1.68.0",
         "antd": "^5.26.4",
         "dayjs": "^1.11.13",
-        "dolphindb": "^3.0.224",
+        "dolphindb": "^3.0.229",
         "echarts": "^5.6.0",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
@@ -38,6 +38,6 @@
         "vscode-languageserver": "^9.0.1",
         "vscode-languageserver-textdocument": "^1.0.12",
         "ws": "^8.18.3",
-        "xshell": "^1.2.59"
+        "xshell": "^1.2.60"
     }
 }
