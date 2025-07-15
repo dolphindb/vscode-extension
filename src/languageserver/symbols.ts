@@ -14,6 +14,54 @@ interface IFileSymbols {
     symbols: ISymbol[]
 }
 
+// Helper function to remove comments from text while preserving line structure
+function removeComments (text: string): string {
+    const lines = text.split('\n')
+    const result: string[] = [ ]
+    let inBlockComment = false
+    
+    for (let i = 0;  i < lines.length;  i++) {
+        const line = lines[i]
+        let cleanLine = ''
+        let j = 0
+        
+        while (j < line.length) 
+            if (inBlockComment) {
+                // Look for end of block comment
+                if (j < line.length - 1 && line[j] === '*' && line[j + 1] === '/') {
+                    inBlockComment = false
+                    j += 2
+                    continue
+                }
+                // Replace comment content with space to preserve character positions
+                cleanLine += ' '
+                j++
+            } else {
+                // Check for start of block comment
+                if (j < line.length - 1 && line[j] === '/' && line[j + 1] === '*') {
+                    inBlockComment = true
+                    cleanLine += '  ' // Replace with spaces
+                    j += 2
+                    continue
+                }
+                // Check for single line comment
+                if (j < line.length - 1 && line[j] === '/' && line[j + 1] === '/') {
+                    // Replace rest of line with spaces
+                    cleanLine += ' '.repeat(line.length - j)
+                    break
+                }
+                // Regular character
+                cleanLine += line[j]
+                j++
+            }
+        
+        
+        result.push(cleanLine)
+    }
+    
+    return result.join('\n')
+}
+
 export class SymbolService {
     // 标识符可以是 uri 或 filePath，textDocument 的时候用 uri，没有办法获取 uri 的时候用 filePath
     symbols = new Map<string, IFileSymbols>()
@@ -29,9 +77,11 @@ export class SymbolService {
     buildSymbolsByFile (raw_text: string, filePath: string): ISymbol[] {
         // 转换 CRLF 到 LF
         const text = raw_text.replaceAll('\r\n', '\n')
+        // 移除注释但保持行结构，避免扫描注释中的符号
+        const filteredText = removeComments(text)
         return [
-            ...getFunctionSymbols(text, filePath),
-            ...getVariableSymbols(text, filePath),
+            ...getFunctionSymbols(filteredText, filePath, text),
+            ...getVariableSymbols(filteredText, filePath, text),
         ]
     }
     
@@ -178,7 +228,7 @@ function collectComments (lines: string[], defLine: number): string {
     return commentLines.join('\n')
 }
 
-export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
+export function getFunctionSymbols (text: string, filePath: string, originalText?: string): ISymbol[] {
     const symbols: ISymbol[] = [ ]
     const lines = text.split('\n')
     const totalLines = lines.length
@@ -193,7 +243,7 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
             const defLine = i
             const defColumn = line.indexOf(functionName, line.indexOf('def'))
             
-            const comments = collectComments(lines, defLine)
+            const comments = originalText ? collectComments(originalText.split('\n'), defLine) : collectComments(lines, defLine)
             
             // 提取参数列表
             let paramsText = ''
@@ -400,7 +450,7 @@ export function getFunctionSymbols (text: string, filePath: string): ISymbol[] {
     return symbols
 }
 
-export function getVariableSymbols (text: string, filePath: string): ISymbol[] {
+export function getVariableSymbols (text: string, filePath: string, originalText?: string): ISymbol[] {
     const symbols: ISymbol[] = [ ]
     const lines = text.split('\n')
     const totalLines = lines.length
@@ -415,7 +465,7 @@ export function getVariableSymbols (text: string, filePath: string): ISymbol[] {
             const defLine = i
             const defColumn = line.indexOf(variableName)
             
-            const comments = collectComments(lines, defLine)
+            const comments = originalText ? collectComments(originalText.split('\n'), defLine) : collectComments(lines, defLine)
             
             const innermostScope = findInnermostScope(defLine, defColumn, scopes)
             const scopeRange: [Position, Position] = innermostScope
@@ -457,7 +507,8 @@ export function getFileModule (raw_text: string): string | undefined {
     // module fileLog
     
     const text = raw_text.replaceAll('\r\n', '\n')
-    const lines = text.split('\n')
+    const filteredText = removeComments(text)
+    const lines = filteredText.split('\n')
     
     for (const line of lines) {
         const trimmed = line.trim()
@@ -476,16 +527,16 @@ export function getFileUsedModule (text: string): string[] {
     // 正则表达式匹配 `use` 语句，捕获模块名部分
     const useRegex = /^use\s+([^;\/\/\s]+(?:\s*::\s*[^;\/\/\s]+)*);?/
     
-    return text
+    const filteredText = removeComments(text)
+    
+    return filteredText
         // 按照换行符分割文本，兼容不同的换行符
         .split(/\r?\n/)
         // 逐行处理
         .map(line => {
             // 去除行首尾空白字符
             const trimmedLine = line.trim()
-            // 去除 `//` 后的注释部分
-            const noComment = trimmedLine.split('//')[0].trim()
-            return noComment
+            return trimmedLine
         })
         // 过滤出以 `use` 开头的行
         .filter(line => line.startsWith('use'))
