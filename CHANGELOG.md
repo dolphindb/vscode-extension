@@ -1,5 +1,18 @@
 # Change Log (更新日志)
 
+## v3.0.300 - 2025.07.16
+#### 功能优化 / Enhancement
+-   优化代码提示逻辑，取消在输入逗号后自动补全函数的行为。  
+    Optimized code completion logic by disabling automatic function suggestions after typing a comma.  
+    
+-   优化文件编辑性能，避免自动触发不必要的操作。  
+    Optimized file editing performance by preventing automatic execution of unnecessary operations.  
+    
+#### 缺陷修复 / Bug Fixes
+-   修复在非 DolphinDB 调试场景下无法切换连接的问题。  
+    Fixed an issue where connection switching was blocked during non-DolphinDB debugging scenarios.
+
+
 ## v3.0.211 - 2025.04.27
 #### 新功能 / New Features
 -   新增对 dolphindb.connections 配置项的重名校验，存在同名连接时将会报错。  
