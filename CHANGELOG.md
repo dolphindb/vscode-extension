@@ -1,5 +1,11 @@
 # Change Log (更新日志)
 
+## v3.0.301 - 2025.07.17
+#### 缺陷修复 / Bug Fixes
+-   修复 VSCode 插件在 CentOS 7 上无法连接的问题，恢复对旧版 VSCode 和低版本 SSH 的兼容性支持。  
+    Fixed an issue where the VSCode plugin could not connect on CentOS 7. Restored compatibility with older versions of VSCode and SSH.  
+
+
 ## v3.0.300 - 2025.07.16
 #### 功能优化 / Enhancement
 -   优化代码提示逻辑，取消在输入逗号后自动补全函数的行为。  
