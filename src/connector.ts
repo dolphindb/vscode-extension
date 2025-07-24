@@ -768,7 +768,7 @@ export class DdbConnection extends TreeItem {
                     
                     ;(
                         await this.ddb.invoke('getSchemaByCatalog', [catalog])
-                    ).data
+                    )
                         // 图的情况下 dbUrl 为空字符串，比如现在用 demo.orca_graph.tmp 作为一个图的标识了，demo.orca_graph 不是表的概念了
                         .filter(({ dbUrl }) => dbUrl)
                         .sort((a, b) => strcmp(a.schema, b.schema))
@@ -871,14 +871,14 @@ export class DdbConnection extends TreeItem {
     Only master or single mode supports function getClusterPerf. */
     async get_cluster_perf () {
         const nodes = (
-            await this.ddb.invoke<DdbTableData<DdbNode>>('getClusterPerf', [true], {
+            await this.ddb.invoke<DdbNode[]>('getClusterPerf', [true], {
                 urgent: true,
                 
                 ... this.client_auth || (this.node_type === NodeType.controller || this.node_type === NodeType.single)
                     ? { }
                     : { node: this.controller_alias },
             })
-        ).data.sort((a, b) => strcmp(a.name, b.name))
+        ).sort((a, b) => strcmp(a.name, b.name))
         
         let node: DdbNode, controller: DdbNode, datanode: DdbNode
         

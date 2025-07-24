@@ -1,4 +1,4 @@
-Copyright 2016-2023 DolphinDB, Inc.
+Copyright 2016-2025 DolphinDB, Inc.
     
 
                                  Apache License
@@ -189,7 +189,7 @@ Copyright 2016-2023 DolphinDB, Inc.
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2016-2023 DolphinDB, Inc.
+   Copyright 2016-2025 DolphinDB, Inc.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

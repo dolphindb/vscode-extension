@@ -45,9 +45,8 @@ class DatabaseService {
                 const tbName = strArr?.[1] ?? ''
                 db = `loadTable("${dbName}", "${tbName}")`
             }
-            const result: { colDefs: { data: { name: string }[] } } = await connection.sendRequest('ddb/schema', db)
-            const colnames = result.colDefs.data.map(({ name }) => name) as string[]
-            return colnames
+            const result: { colDefs: { name: string }[] } = await connection.sendRequest('ddb/schema', db)
+            return result.colDefs.select('name')
         } catch (error) {
             return [ ]
         }

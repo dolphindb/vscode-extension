@@ -76,7 +76,7 @@ export async function activate_ls (ctx: ExtensionContext) {
             if (!connection) 
                 return [ ]
             
-            const result = await connection.ddb.invoke('getAllCatalogs')
+            const result = await connection.ddb.invoke<string[]>('getAllCatalogs')
             return result ?? [ ]
         } catch {
             return [ ]
@@ -89,7 +89,7 @@ export async function activate_ls (ctx: ExtensionContext) {
             if (!connection) 
                 return [ ]
             
-            const result = await connection.ddb.invoke('getClusterDFSDatabases')
+            const result = await connection.ddb.invoke<string[]>('getClusterDFSDatabases')
             return result ?? [ ]
         } catch {
             return [ ]
@@ -102,8 +102,8 @@ export async function activate_ls (ctx: ExtensionContext) {
             if (!connection) 
                 return [ ]
             
-            const result = await connection.ddb.invoke('objs', [true])
-            return result?.data.filter((e: any) => e.form === 'TABLE').map(e => e.name) ?? [ ]
+            return (await connection.ddb.invoke<any[]>('objs', [true]))
+                .filter(e => e.form === 'TABLE').select('name') ?? [ ]
         } catch {
             return [ ]
         }
@@ -115,8 +115,8 @@ export async function activate_ls (ctx: ExtensionContext) {
             if (!connection) 
                 return [ ]
             
-            const result = await connection.ddb.invoke('listTables', [dburl])
-            return result?.data.map((e: any) => e.tableName) ?? [ ]
+            return (await connection.ddb.invoke<any[]>('listTables', [dburl]))
+                .map((e: any) => e.tableName) ?? [ ]
         } catch {
             return [ ]
         }
@@ -141,8 +141,8 @@ export async function activate_ls (ctx: ExtensionContext) {
             if (!connection) 
                 return [ ]
             
-            const result = await connection.ddb.invoke('getSchemaByCatalog', [catalog])
-            return result?.data.map(e => e.schema) ?? [ ]
+            return (await connection.ddb.invoke('getSchemaByCatalog', [catalog]))
+                .map(e => e.schema)
         } catch {
             return [ ]
         }
@@ -155,15 +155,14 @@ export async function activate_ls (ctx: ExtensionContext) {
                 return [ ]
             
             const [catalog, schema] = catalogAndSchema
-            const result = await connection.ddb.invoke('getSchemaByCatalog', [catalog])
-            const targetSchema = result?.data.find((e: any) => e.schema === schema)
+            const targetSchema = (await connection.ddb.invoke('getSchemaByCatalog', [catalog]))
+                .find((e: any) => e.schema === schema)
             const dbUrl = targetSchema?.dbUrl
             if (!dbUrl) 
                 return [ ]
             
-            const tbResult = await connection.ddb.invoke('listTables', [dbUrl])
-            return tbResult?.data.map((e: any) => e.tableName) ?? [ ]
-    
+            return (await connection.ddb.invoke('listTables', [dbUrl]))
+                .select('tableName')
         } catch {
             return [ ]
         }
