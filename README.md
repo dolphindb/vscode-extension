@@ -42,8 +42,7 @@ For information on how to use this extension, see [official documentation](https
 ## Development Instructions
 
 Open the link below and install the latest version of node.js and browser on your machine.
-- windows: https://nodejs.org/en/download/prebuilt-installer/current
-- linux: https://github.com/nodesource/distributions?tab=readme-ov-file#debian-and-ubuntu-based-distributions
+https://nodejs.org/en/download/current
 
 ```shell
 # Install pnpm package manager
