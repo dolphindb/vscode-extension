@@ -366,16 +366,6 @@ export class DdbConnection extends TreeItem {
     
     client_auth = false
     
-    load_table_variable_schema_defined = false
-    
-    get_csv_content_defined = false
-    
-    load_table_schema_defined = false
-    
-    load_database_schema_defined = false
-    
-    peek_table_defined = false
-    
     // --- 通过 getClusterPerf 拿到的集群节点信息
     nodes: DdbNode[]
     
@@ -481,105 +471,6 @@ export class DdbConnection extends TreeItem {
     }
     
     
-    async define_load_table_variable_schema () {
-        if (!this.load_table_variable_schema_defined) {
-            await this.ddb.eval(
-                this.options.python ?
-                    ('def load_table_variable_schema (table_name):\n' +
-                    '    return schema(objByName(table_name))\n')
-                :
-                    ('def load_table_variable_schema (table_name) {\n' +
-                    '    return schema(objByName(table_name))\n' +
-                    '}\n')
-            )
-            
-            this.load_table_variable_schema_defined = true
-        }
-    }
-    
-    
-    async define_peek_table () {
-        if (!this.peek_table_defined) {
-            await this.ddb.eval(
-                this.options.python ?
-                    ('def peek_table (db_path, tb_name):\n' +
-                    '    return select top 100 * from loadTable(db_path, tb_name)\n')
-                :
-                    ('def peek_table (db_path, tb_name) {\n' +
-                    '    return select top 100 * from loadTable(db_path, tb_name)\n' +
-                    '}\n')
-            )
-            
-            this.peek_table_defined = true
-        }
-    }
-        
-    
-    async define_load_table_schema () {
-        if (!this.load_table_schema_defined) {
-            await this.ddb.eval(
-                this.options.python ?
-                    ('def load_table_schema (db_path, tb_name):\n' +
-                    '    return schema(loadTable(db_path, tb_name))\n')
-                :
-                    ('def load_table_schema (db_path, tb_name) {\n' +
-                    '    return schema(loadTable(db_path, tb_name))\n' +
-                    '}\n')
-            )
-            
-            this.load_table_schema_defined = true
-        }
-    }
-    
-    
-    async define_load_database_schema () {
-        if (!this.load_database_schema_defined) {
-            await this.ddb.eval(
-                this.options.python ?
-                    'def load_database_schema (db_path):\n' +
-                    '    return schema(database(db_path))\n'
-                :
-                    'def load_database_schema (db_path) {\n' +
-                    '    return schema(database(db_path))\n' +
-                    '}\n'
-            )
-            
-            this.load_database_schema_defined = true
-        }
-    }
-    
-    
-    async define_get_csv_content () { 
-        if (!this.get_csv_content_defined) {
-            await this.ddb.eval(
-                this.options.python ?
-                    'def get_csv_content (name_or_obj):\n' +
-                    '    type = typestr(name_or_obj)\n' +
-                    "    if type == 'CHAR' or type == 'STRING':\n" +
-                    '        obj = objByName(name_or_obj)\n' +
-                    '    else:\n' +
-                    '        obj = name_or_obj\n' +
-                    '        \n' +
-                    '    table_size = size(obj)\n' +
-                    "    return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, char(','), True)\n"
-                :
-                    'def get_csv_content (name_or_obj) {\n' +
-                    '    type = typestr name_or_obj\n' +
-                    "    if (type =='CHAR' || type =='STRING')\n" +
-                    '        obj = objByName(name_or_obj)\n' +
-                    '    else\n' +
-                    '        obj = name_or_obj\n' +
-                    '        \n' +
-                    '    table_size = size obj\n' +
-                    "    return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, ',', true)\n" +
-                    '}\n'
-                )
-            
-            this.get_csv_content_defined = true
-        }  
-    }
-    
-    
     async check_license_expiration () {
         const license = (
             await this.ddb.call<DdbTableObj>('license')
@@ -672,8 +563,7 @@ export class DdbConnection extends TreeItem {
         
         if (immutables.length) {
             const { value: values } = await this.ddb.eval<DdbObj<DdbObj[]>>(
-                `(${immutables.map(({ name }) => name).join(', ')}, 0)${ this.options.python ? '.toddb()' : '' }`
-            )
+                `(${immutables.map(({ name }) => name).join(this.options.kdb ? '; ' : ', ')}, 0)${ this.options.python ? '.toddb()' : '' }`)
             
             for (let i = 0, len = values.length - 1;  i < len;  i++) {
                 immutables[i].obj = values[i]
@@ -681,7 +571,6 @@ export class DdbConnection extends TreeItem {
                 // 此处需要用变量值的类型来替换 objs(true) 中获取的变量的类型，因为当变量类型为 string 且变量值很长时，server 返回的变量值的类型是 blob
                 immutables[i].type = values[i].type
             }
-                
         }
         
         this.vars = vars_data.map(data => new DdbVar(data))
@@ -942,3 +831,91 @@ export function register_connector () {
     connector.load_connections()
     connector.view = window.createTreeView('dolphindb.connector', { treeDataProvider: connector })
 }
+
+
+export const funcdefs = {
+    load_table_variable_schema: {
+        dolphindb: 
+            'def load_table_variable_schema (table_name) {\n' +
+            '    return schema(objByName(table_name))\n' +
+            '}\n',
+            
+        python: 
+            'def load_table_variable_schema (table_name):\n' +
+            '    return schema(objByName(table_name))\n',
+        
+        kdb: 'load_table_variable_schema: {[table_name] schema get table_name}\n'
+    },
+    
+    peek_table: {
+        dolphindb:
+            'def peek_table (db_path, tb_name) {\n' +
+            '    return select top 100 * from loadTable(db_path, tb_name)\n' +
+            '}\n',
+            
+        python:
+            'def peek_table (db_path, tb_name):\n' +
+            '    return select top 100 * from loadTable(db_path, tb_name)\n',
+            
+        kdb: 'peek_table: {[db_path; tb_name] select[100] from loadTable[db_path; tb_name]}'
+    },
+    
+    load_table_schema: {
+        dolphindb: 
+            'def load_table_schema (db_path, tb_name) {\n' +
+            '    return schema(loadTable(db_path, tb_name))\n' +
+            '}\n',
+            
+        python:
+            'def load_table_schema (db_path, tb_name):\n' +
+            '    return schema(loadTable(db_path, tb_name))\n',
+            
+        kdb: 'load_table_schema: {[db_path; tb_name] schema loadTable[db_path; tb_name]}'
+    },
+    
+    load_database_schema: {
+        dolphindb: 
+            'def load_database_schema (db_path) {\n' +
+            '    return schema(database(db_path))\n' +
+            '}\n',
+            
+        python:
+            'def load_database_schema (db_path):\n' +
+            '    return schema(database(db_path))\n',
+        
+        kdb: 'load_database_schema: {[db_path] schema database db_path}'
+    },
+    
+    get_csv_content: {
+        dolphindb:
+            'def get_csv_content (name_or_obj) {\n' +
+            '    type = typestr name_or_obj\n' +
+            "    if (type =='CHAR' || type =='STRING')\n" +
+            '        obj = objByName(name_or_obj)\n' +
+            '    else\n' +
+            '        obj = name_or_obj\n' +
+            '        \n' +
+            '    table_size = size obj\n' +
+            "    return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, ',', true)\n" +
+            '}\n',
+            
+        python:
+            'def get_csv_content (name_or_obj):\n' +
+            '    type = typestr(name_or_obj)\n' +
+            "    if type == 'CHAR' or type == 'STRING':\n" +
+            '        obj = objByName(name_or_obj)\n' +
+            '    else:\n' +
+            '        obj = name_or_obj\n' +
+            '        \n' +
+            '    table_size = size(obj)\n' +
+            "    return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, char(','), True)\n",
+            
+        kdb:
+            'get_csv_content: {[name_or_obj]\n' +
+            '    ty: typestr name_or_obj;\n' +
+            '    obj: $[(ty = `CHAR) or (ty = `STRING);get name_or_obj; name_or_obj];\n' +
+            '    table_size: count obj;\n' +
+            '    generateTextFromTable[(select[table_size] from obj); 0; table_size; 0; ",", 1b]\n' +
+            '}\n'
+    }
+} as const

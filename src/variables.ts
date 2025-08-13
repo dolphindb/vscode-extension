@@ -31,7 +31,7 @@ import { formatter } from './formatter.ts'
 import { server, start_server } from './server.ts'
 import { dataview } from './dataview/dataview.ts'
 
-import { type DdbConnection, connector } from './connector.ts'
+import { type DdbConnection, connector, funcdefs } from './connector.ts'
 
 import { fpd_ext } from './index.ts'
 
@@ -392,10 +392,9 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
     async get_schema () {
         if (this.schema)
             return this.schema
-        else {
-            await connector.connection.define_load_table_variable_schema()
-            return this.schema = await this.connection.ddb.call('load_table_variable_schema', [this.name])
-        }
+        
+        let { ddb } = this.connection
+        return this.schema = await ddb.call(funcdefs.load_table_variable_schema[ddb.language], [this.name])
     }
     
     

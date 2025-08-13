@@ -17,8 +17,8 @@ import type { NotificationInstance } from 'antd/es/notification/interface.d.ts'
 import { Model } from 'react-object-model'
 
 import { noop, rethrow } from 'xshell/prototype.browser.js'
-import { check, defer, genid, timeout } from 'xshell/utils.browser.js'
-import { message_symbol, pack, parse, type Message } from 'xshell/io.browser.js'
+import { check, genid, timeout } from 'xshell/utils.browser.js'
+import { message_symbol, pack, parse, type Message } from 'xshell/io.common.js'
 import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
 
 import { language } from '@i18n'

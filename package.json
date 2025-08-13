@@ -14,21 +14,21 @@
     },
     "devDependencies": {
         "@types/koa": "^3.0.0",
-        "@types/node": "^24.0.10",
-        "@types/react": "^19.1.9",
+        "@types/node": "^24.2.1",
+        "@types/react": "^19.1.10",
         "@types/react-dom": "^19.1.7",
         "@types/vscode": "^1.102.0",
         "@types/ws": "^8.18.1",
-        "eslint": "^9.32.0",
+        "eslint": "^9.33.0",
         "typescript": "^5.9.2"
     },
     "dependencies": {
         "@ant-design/icons": "^6.0.0",
         "@vscode/debugadapter": "^1.68.0",
         "@vscode/debugprotocol": "^1.68.0",
-        "antd": "^5.26.7",
+        "antd": "^5.27.0",
         "dayjs": "^1.11.13",
-        "dolphindb": "^3.1.5",
+        "dolphindb": "^3.1.11",
         "echarts": "^6.0.0",
         "react": "^19.1.1",
         "react-dom": "^19.1.1",
@@ -38,6 +38,6 @@
         "vscode-languageserver": "^9.0.1",
         "vscode-languageserver-textdocument": "^1.0.12",
         "ws": "^8.18.3",
-        "xshell": "^1.2.72"
+        "xshell": "^1.2.78"
     }
 }

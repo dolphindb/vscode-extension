@@ -17,7 +17,7 @@ import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmu
 import { dataview } from './dataview/dataview.ts'
 import { formatter } from './formatter.ts'
 import { create_terminal, terminal } from './terminal.ts'
-import { type DdbConnection, connector } from './connector.ts'
+import { type DdbConnection, connector, funcdefs } from './connector.ts'
 import { DdbVar, variables } from './variables.ts'
 import { type DdbDatabase, databases, type DdbTable } from './databases.ts'
 
@@ -709,12 +709,19 @@ export const ddb_commands = [
                         location: ProgressLocation.Notification,
                     },
                     async () => {
-                        await connector.connection.define_get_csv_content()
-                        const { value: content } = await ddb.call('get_csv_content', [lastvar.obj || lastvar.name])
-                        await workspace.fs.writeFile(uri, typeof content === 'string' ? encode(content) : content as Buffer)
+                        let { connection: { ddb } } = connector
+                        
+                        const content = await ddb.invoke<string | Uint8Array>(
+                            funcdefs.get_csv_content[ddb.language], 
+                            [lastvar.obj || lastvar.name], 
+                            { blob: 'binary' })
+                        
+                        await workspace.fs.writeFile(
+                            uri, 
+                            typeof content === 'string' ? encode(content) : content)
+                        
                         window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
-                    }
-                )
+                    })
         } catch (error) { 
             window.showErrorMessage(error.message)
             throw error
