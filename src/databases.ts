@@ -93,7 +93,7 @@ export class DdbDatabase extends TreeItem {
         let { ddb } = connection
         
         return ddb.call<DdbDictObj<DdbVectorStringObj>>(
-            funcdefs.load_database_schema[ddb.language],
+            await ddb.define(funcdefs.load_database_schema[ddb.language]),
             // 调用该函数时，数据库路径不能以 / 结尾
             [this.path.slice(0, -1)],
             connection.node_type === NodeType.controller ? { node: connection.datanode.name } : { })
@@ -125,7 +125,7 @@ export class DdbTable extends TreeItem {
         let { connection } = connector
         let { ddb } = connection
         let obj = await ddb.call(
-            funcdefs.peek_table[ddb.language],
+            await ddb.define(funcdefs.peek_table[ddb.language]),
             [this.database.path.slice(0, -1), this.name],
             connection.node_type === NodeType.controller ? { node: connection.datanode.name } : undefined)
         obj.name = `${this.name} (${t('前 100 行')})`
@@ -138,7 +138,7 @@ export class DdbTable extends TreeItem {
         let { ddb } = connection
         
         return ddb.call<DdbDictObj<DdbVectorStringObj>>(
-            funcdefs.load_table_schema[ddb.language],
+            await ddb.define(funcdefs.load_table_schema[ddb.language]),
             // 调用该函数时，数据库路径不能以 / 结尾
             [this.database.path.slice(0, -1), this.name],
             connection.node_type === NodeType.controller ? { node: connection.datanode.name } : undefined)

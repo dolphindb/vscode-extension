@@ -134,7 +134,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
         try {
             await pconnect
         } catch (error) {
-            const { autologin, username, password, python, sql } = connection.options
+            const { autologin, username, password, python, kdb, sql } = connection.options
             
             const answer = await window.showErrorMessage<DdbMessageItem>(
                 error.message,
@@ -153,6 +153,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
                                     username,
                                     password,
                                     python,
+                                    kdb,
                                     sql
                                 },
                                 { colors: false, compact: true }
@@ -293,8 +294,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
         if ((languageId === 'dolphindb' && python) || (languageId === 'dolphindb-python' && !python))
             languages.setTextDocumentLanguage(
                 window.activeTextEditor.document,
-                python ? 'dolphindb-python' : 'dolphindb'
-            )
+                python ? 'dolphindb-python' : 'dolphindb')
     }
     
     refresh (database: boolean) {
@@ -501,19 +501,10 @@ export class DdbConnection extends TreeItem {
          append!(a, 1)  // error: append!(a, 1) => Read only object or object without ownership can't be applied to mutable function append!
          ``` */
     async update_vars () {
-        const objs = await this.ddb.call('objs', [true])
+        let { ddb } = this
         
-        const vars_data = objs.to_rows()
-            .map(({
-                name,
-                type,
-                form,
-                rows,
-                columns,
-                bytes,
-                shared,
-                extra,
-            }: {
+        const vars_data = (
+            await ddb.invoke<{
                 name: string
                 type: string
                 form: string
@@ -522,50 +513,63 @@ export class DdbConnection extends TreeItem {
                 bytes: bigint
                 shared: boolean
                 extra: string
-            }) => ({
-                node: this.name,
-                
-                connection: this,
-                
-                name,
-                
-                type: (() => {
-                    const _type = type.toLowerCase()
-                    return _type.endsWith('[]') ? DdbType[_type.slice(0, -2)] + 64 : DdbType[_type]
-                })(),
-                
-                form: (() => {
-                    const _form = form.toLowerCase()
-                    switch (_form) {
-                        case 'dictionary':
-                            return DdbForm.dict
+            }[]>('objs', [true])
+        ).map(({
+            name,
+            type,
+            form,
+            rows,
+            columns,
+            bytes,
+            shared,
+            extra,
+        }) => ({
+            node: this.name,
+            
+            connection: this,
+            
+            name,
+            
+            type: (() => {
+                const _type = type.toLowerCase()
+                return _type.endsWith('[]') ? DdbType[_type.slice(0, -2)] + 64 : DdbType[_type]
+            })(),
+            
+            form: (() => {
+                const _form = form.toLowerCase()
+                switch (_form) {
+                    case 'dictionary':
+                        return DdbForm.dict
+                    
+                    case 'sysobj':
+                        return DdbForm.object
                         
-                        case 'sysobj':
-                            return DdbForm.object
-                            
-                        default:
-                            return DdbForm[_form]
-                    }
-                })(),
-                
-                rows,
-                cols: columns,
-                bytes,
-                shared,
-                extra,
-                obj: undefined as DdbObj
-            })).filter(v => 
-                v.name !== 'pnode_run' && 
-                !(v.form === DdbForm.object && pyobjs.has(v.name))
-            )
+                    default:
+                        return DdbForm[_form]
+                }
+            })(),
+            
+            rows,
+            cols: columns,
+            bytes,
+            shared,
+            extra,
+            obj: undefined as DdbObj
+        })).filter(v =>
+            v.name !== 'pnode_run' && 
+            (!ddb.python || !(v.form === DdbForm.object && pyobjs.has(v.name))))
         
         let immutables = vars_data.filter(v => v.form === DdbForm.scalar || v.form === DdbForm.pair)
         
         if (immutables.length) {
-            const { value: values } = await this.ddb.eval<DdbObj<DdbObj[]>>(
-                `(${immutables.map(({ name }) => name).join(this.options.kdb ? '; ' : ', ')}, 0)${ this.options.python ? '.toddb()' : '' }`)
+            const { value: values } = await ddb.eval<DdbObj<DdbObj[]>>(
+                [
+                    ...immutables.select('name'), 
+                    ddb.kdb ? '()' : '0'  // 确保生成 any vector
+                ].join(ddb.kdb ? '; ' : ', ').bracket() + 
+                (ddb.python ? '.toddb()' : ''))
             
-            for (let i = 0, len = values.length - 1;  i < len;  i++) {
+            for (let i = 0, len = values.length - 1;  i < len;  ++i) {
                 immutables[i].obj = values[i]
                 
                 // 此处需要用变量值的类型来替换 objs(true) 中获取的变量的类型，因为当变量类型为 string 且变量值很长时，server 返回的变量值的类型是 blob

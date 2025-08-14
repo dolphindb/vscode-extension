@@ -394,7 +394,9 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
             return this.schema
         
         let { ddb } = this.connection
-        return this.schema = await ddb.call(funcdefs.load_table_variable_schema[ddb.language], [this.name])
+        return this.schema = await ddb.call(
+            await ddb.define(funcdefs.load_table_variable_schema[ddb.language]), 
+            [this.name])
     }
     
     
