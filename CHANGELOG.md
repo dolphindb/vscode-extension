@@ -1,5 +1,11 @@
 # Change Log (更新日志)
 
+## v3.0.400 - 2025.09.12
+#### 新功能 / New Features
+- settings.json 中新增配置 “kdb”，用于选择 KDB Parser 模式。
+- Added new configuration option "kdb" to settings.json to select the KDB Parser mode.
+
+
 ## v3.0.301 - 2025.07.17
 #### 缺陷修复 / Bug Fixes
 -   修复 VSCode 插件在 CentOS 7 上无法连接的问题，恢复对旧版 VSCode 和低版本 SSH 的兼容性支持。  
