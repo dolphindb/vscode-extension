@@ -920,6 +920,6 @@ export const funcdefs = {
             '    obj: $[(ty = `CHAR) or (ty = `STRING);get name_or_obj; name_or_obj];\n' +
             '    table_size: count obj;\n' +
             '    generateTextFromTable[(select[table_size] from obj); 0; table_size; 0; ",", 1b]\n' +
-            '}\n'
+            '    }\n'
     }
 } as const
