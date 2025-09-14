@@ -160,10 +160,10 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
                             ) + '\n' +
                             t('先尝试用浏览器访问对应的 server 地址，如: {{url}}\n', { url: connection.url.replace(/^ws(s?):\/\//, 'http$1://') }) +
                             t('如果可以打开网页且正常登录使用，再检查:\n') +
-                            t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
-                            t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n')) +
+                            t('如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接且能够连接到服务器，否则请在系统中关闭代理，\n') + 
+                            t('然后打开 vscode 设置，搜索 "代理" 或者 proxy，将扩展代理支持 (Http: Proxy Support) 关闭 (设置为 off)，设置后重启 VSCode 再次尝试\n')) +
                         t('调用栈:\n') +
-                        error.stack).truncate(600),
+                        error.stack).truncate(800, true),
                 },
                 {
                     title: t('确认'),
