@@ -1,5 +1,11 @@
 # Change Log (更新日志)
 
+## v3.0.403 - 2025.09.16
+#### 缺陷修复 / Bug Fixes
+- 修复在 settings.json 中设置 kdb: true 后，无法连接 KDB parser 的问题。
+- Fixed an issue where enabling kdb: true in settings.json failed to establish a connection to the KDB parser.
+
+
 ## v3.0.400 - 2025.09.12
 #### 新功能 / New Features
 - settings.json 中新增配置 “kdb”，用于选择 KDB Parser 模式。
