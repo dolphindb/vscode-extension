@@ -714,6 +714,7 @@ export const ddb_commands = [
                         await workspace.fs.writeFile(
                             uri, 
                             await ddb.invoke<Uint8Array>(
+                                // get_csv_content 返回的 ddb 类型为 char[]
                                 funcdefs.get_csv_content[ddb.language], 
                                 [lastvar.obj || lastvar.name], 
                                 { chars: 'binary' }))
