@@ -711,14 +711,12 @@ export const ddb_commands = [
                     async () => {
                         let { connection: { ddb } } = connector
                         
-                        const content = await ddb.invoke<string | Uint8Array>(
-                            funcdefs.get_csv_content[ddb.language], 
-                            [lastvar.obj || lastvar.name], 
-                            { blob: 'binary' })
-                        
                         await workspace.fs.writeFile(
                             uri, 
-                            typeof content === 'string' ? encode(content) : content)
+                            await ddb.invoke<Uint8Array>(
+                                funcdefs.get_csv_content[ddb.language], 
+                                [lastvar.obj || lastvar.name], 
+                                { chars: 'binary' }))
                         
                         window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
                     })
