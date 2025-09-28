@@ -721,7 +721,7 @@ export const ddb_commands = [
                         
                         window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
                     })
-        } catch (error) { 
+        } catch (error) {
             window.showErrorMessage(error.message)
             throw error
         }
