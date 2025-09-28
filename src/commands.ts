@@ -553,7 +553,7 @@ export const ddb_commands = [
     async function open_variable (ddbvar?: DdbVar) {
         ddbvar ||= lastvar
         console.log(t('在新窗口查看变量:'), ddbvar)
-        await ddbvar.inspect(true)
+        await ddbvar?.inspect(true)
     },
     
     
