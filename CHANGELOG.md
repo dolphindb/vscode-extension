@@ -1,5 +1,17 @@
 # Change Log (更新日志)
 
+## v3.0.404 - 2025.09.29
+#### 缺陷修复 / Bug Fixes
+-   修复表格数据导出结果为空的问题。此为 3.0.400 引入的问题。  
+    Fixed an issue where exporting table data resulted in empty output. This issue was introduced in version 3.0.400.
+
+-   修复点击“在新窗口中查看变量”时报错 Cannot read properties of undefined (reading 'inspect') 的问题。此为 3.0.400 引入的问题。  
+    Fixed an issue where clicking "View Variable in New Window" caused an error: Cannot read properties of undefined (reading 'inspect'). This issue was introduced in version 3.0.400.
+
+-   修复点击“在新窗口中查看变量”时报错 Cannot read properties of undefined (reading 'inspect') 的问题。此为 3.0.400 引入的问题。  
+    Fixed an issue where clicking "View Variable in New Window" caused an error: Cannot read properties of undefined (reading 'inspect'). This issue was introduced in version 3.0.400.
+
+
 ## v3.0.403 - 2025.09.16
 #### 缺陷修复 / Bug Fixes
 - 修复在 settings.json 中设置 kdb: true 后，无法连接 KDB parser 的问题。
