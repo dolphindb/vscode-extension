@@ -745,12 +745,23 @@ export const ddb_commands = [
             }
             
             const obj = await ddb.call('getVariable', [
-                new DdbInt((await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 })).stackFrames[0].id), // frameId
-                new DdbInt(variablesReference & 0xffff), // vid
-                name, 
-                new DdbLong(BigInt((await debug.activeDebugSession.customRequest('getCurrentSessionId'))[0])) // session_id
-            ])
+                // frame id
+                new DdbInt(
+                    (await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 }))
+                        .stackFrames[0]
+                        .id),
                 
+                // variable id
+                new DdbInt(variablesReference & 0xffff),
+                
+                name,
+                
+                // session_id
+                new DdbLong(
+                    (await debug.activeDebugSession.customRequest('getCurrentSessionId'))
+                        [0])
+            ])
+            
             lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection })
             await lastvar.inspect()
         } catch (error) {
