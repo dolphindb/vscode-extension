@@ -1926,16 +1926,18 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
         },
         legend: {
             data: col_labels.map(String),
+            top: 30,
+            right: 30,
             textStyle: {
                 color: 'var(--vscode-editor-foreground, #000000)'
             }
         },
         grid: {
-            top: 20,
-            bottom: 20,
-            left: 20,
-            right: 20,
-            containLabel: true
+            top: 10,
+            bottom: 0,
+            left: 10,
+            right: 10,
+            outerBoundsMode: 'same',
         },
         animation: false
     }
@@ -1954,14 +1956,14 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
             padding: [0, 10, 0, 10]  
         },
         nameLocation: 'middle' as const,  
-        nameGap: 30, 
+        nameGap: 10,
         axisTick: {
             show: true,
             alignWithLabel: true
         },
         axisLabel: {
             interval: 'auto',  
-            hideOverlap: true, 
+            hideOverlap: true,
             formatter (value, index) {
                 if (typeof value === 'string' && value.length > 10)
                     return value.truncate(10)
