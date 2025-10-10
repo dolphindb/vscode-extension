@@ -152,9 +152,13 @@ export async function activate (ctx: ExtensionContext) {
 }
 
 
-export function deactivate (ctx: ExtensionContext) {
+export async function deactivate (ctx: ExtensionContext) {
     server?.stop()
     
+    connector?.connections?.forEach(connection => {
+        connection.disconnect()
+    })
+    
     // 停止 Language Server 连接
-    ls_client?.stop()
+    await ls_client?.stop()
 }

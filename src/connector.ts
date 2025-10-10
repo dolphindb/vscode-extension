@@ -456,7 +456,7 @@ export class DdbConnection extends TreeItem {
     }
     
     
-    async disconnect () {
+    disconnect () {
         this.ddb.disconnect()
         this.logined = false
     }
