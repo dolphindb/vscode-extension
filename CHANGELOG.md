@@ -1,5 +1,21 @@
 # Change Log (更新日志)
 
+## v3.0.405 - 2025.10.10
+#### 功能优化 / Enhancement
+-   关闭 VS Code 时主动断开 WebSocket 连接，以便服务器及时释放资源。  
+    Optimized resource management by closing WebSocket connections when VS Code exits.
+
+#### 缺陷修复 / Bug Fixes
+-   修复查询表数据时，日期及时间类型的列显示为空的问题，此为 3.0.404 引入的问题。  
+    Fixed an issue where columns of TEMPORAL types were displayed as empty when querying a table, which was introduced in version 3.0.404.  
+    
+-   修复 VS Code 数据面板中 extra 字段被错误显示为 “null” 而非应显示为空的问题。  
+    Fixed an issue in the VS Code data panel where the extra field was displayed as “null” instead of appearing empty.  
+
+-   修复使用 plot 函数绘图时，底部图例与坐标轴刻度标签重叠的问题。  
+    Fixed an issue where the bottom legend overlapped with the axis tick labels when using the plot function.  
+
+
 ## v3.0.404 - 2025.09.29
 #### 缺陷修复 / Bug Fixes
 -   修复表格数据导出结果为空的问题。此为 3.0.400 引入的问题。  
