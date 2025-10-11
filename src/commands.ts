@@ -680,15 +680,13 @@ export const ddb_commands = [
             
             let { connection } = lastvar
             
-            let { ddb, version } = connection
-            
             if (lastvar.form !== DdbForm.table) { 
                 window.showWarningMessage(t('仅支持导出表格'))
                 return 
             }
             
             // 2.00.11 以上版本才能使用导出功能
-            if (vercmp(version, '2.00.11.0') < 0) { 
+            if (vercmp(connection.version, '2.00.11.0', true) < 0) { 
                 window.showWarningMessage(t('server 版本低于 2.00.11，请升级后再使用此功能'))
                 return
             }
@@ -730,21 +728,17 @@ export const ddb_commands = [
     
     async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
         try {
-            const { connection } = connector
+            let { connection } = connector
             
-            let { ddb } = connection
+            await connection.connect()
             
             // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
-            const valid_version = '2.00.11.2'
-            const version = await debug.activeDebugSession.customRequest('getVersion')
-            
-            // vercmp('2.00.11.2', '2.00.11.1') = 1
-            if (vercmp(version, valid_version, true) < 0) { 
+            if (vercmp(connection.version, '2.00.11.2', true) < 0) {
                 window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
                 return
             }
             
-            const obj = await ddb.call('getVariable', [
+            const obj = await connection.ddb.call('getVariable', [
                 // frame id
                 new DdbInt(
                     (await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 }))
@@ -756,10 +750,9 @@ export const ddb_commands = [
                 
                 name,
                 
-                // session_id
+                // session id
                 new DdbLong(
-                    (await debug.activeDebugSession.customRequest('getCurrentSessionId'))
-                        [0])
+                    await debug.activeDebugSession.customRequest('get_current_session_id'))
             ])
             
             lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection })

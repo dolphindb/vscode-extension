@@ -91,7 +91,7 @@ export class Remote {
         return this.websocket?.readyState === WebSocketOpen
     }
     
-    /** call之前将参数打包成DdbDist */
+    /** call之前将参数打包成 DdbDict */
     public pack (msg: SendMessage) {
         return json2ddbdict(msg).pack()
     }
@@ -260,7 +260,7 @@ export class Remote {
             try {
                 if (args !== undefined) 
                     await this.send({ id, func, data: args })
-                 else 
+                else
                     await this.send({ id, func })
                 
             } catch (error) {

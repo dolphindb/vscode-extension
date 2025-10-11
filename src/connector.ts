@@ -341,7 +341,7 @@ export class DdbConnection extends TreeItem {
     
     ddb: DDB
     
-    /** server 版本号, 格式为 x.x.x.x */
+    /** server 版本号 */
     version: string
     
     /** 和 ddb.connected 含义不同，这里表示是否连接成功过，用来区分错误提示 */
@@ -441,7 +441,7 @@ export class DdbConnection extends TreeItem {
             this.get_node_type(),
             this.get_node_alias(),
             this.get_controller_alias(),
-            this.get_formatted_version(),
+            this.get_version(),
             this.check_client_auth()
         ])
         
@@ -796,12 +796,9 @@ export class DdbConnection extends TreeItem {
     }
     
     
-    async get_formatted_version () {
-        const { value } = await this.ddb.call<DdbObj<string>>('version')
-        let version = value.split(' ')[0]
-        // 将 x.x.x 这样的三位版本号补全为 x.x.x.0 的四位版本号
-        version += '.0'.repeat(4 - version.split('.').length)
-        this.version = version
+    async get_version () {
+        this.version = (await this.ddb.invoke<string>('version'))
+            .slice_to(' ')
     }
     
     

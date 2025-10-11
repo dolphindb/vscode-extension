@@ -739,26 +739,14 @@ export class DdbDebugSession extends LoggingDebugSession {
     
     
     protected override async customRequest (command: string, response: DebugProtocol.Response, args: any, request?: DebugProtocol.Request): Promise<void> {
-        switch (command) {
-            // 用于获取调试 sessionId
-            case 'getCurrentSessionId': {
-                response.body = await this._remote.call('getCurrentSessionAndUser')
-                this.sendResponse(response)
-                break
-            }
-            
-            case 'getVersion': {
-                let version = (await this._remote.call('version')).split(' ')[0]
-                // 将 x.x.x 这样的三位版本号补全为 x.x.x.0 的四位版本号
-                version += '.0'.repeat(4 - version.split('.').length)
-                response.body = version
-                this.sendResponse(response)
-                break
-            }
-            
-            default:
-                this.sendResponse(response)
-                break
-        }
+        // 用于获取调试 session id
+        if (command === 'get_current_session_id')
+            // 直接调用 getCurrentSessionAndUser() 返回的 session id 是 ddb long (uint64)，由于传输协议为 json 在 server 序列化时会丢失精度
+            // 参考 network.ts handle 方法
+            // 只能先转为 string 再通过 json 传输
+            response.body = BigInt(
+                await this._remote.call('string{getCurrentSessionAndUser()[0]}'))
+        
+        this.sendResponse(response)
     }
 }
