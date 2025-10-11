@@ -18,7 +18,7 @@ import { delay } from 'xshell'
 import { t } from '../../i18n/index.ts'
 
 import { Remote } from './network.ts'
-import { normalizePathAndCasing, loadSource } from './utils.ts'
+import { normalize_path_and_casing, load_source } from './utils.ts'
 
 import { Sources } from './sources.ts'
 
@@ -242,12 +242,12 @@ export class DdbDebugSession extends LoggingDebugSession {
         this._launchArgs = args
         
         // 加载主文件资源
-        const fp_main = (this._entrySourcePath = normalizePathAndCasing(args.program))
+        const fp_main = (this._entrySourcePath = normalize_path_and_casing(args.program))
         
         
         ;(async () => {
             try {
-                const source = await loadSource(fp_main)
+                const source = await load_source(fp_main)
                 
                 const src = source.replace(/\r\n/g, '\n')
                 this._entrySourceRef = this._sources.add({
@@ -311,7 +311,7 @@ export class DdbDebugSession extends LoggingDebugSession {
             line,
             verified: false
         }))
-        const fp_src = normalizePathAndCasing(args.source.path!)
+        const fp_src = normalize_path_and_casing(args.source.path!)
         let moduleName = fp_src === this._entrySourcePath ? '' : args.source.name.endsWith('.dos') ? args.source.name.slice(0, -4) : args.source.name
         
         if (this._sources.hasModule(moduleName)) {
@@ -619,7 +619,7 @@ export class DdbDebugSession extends LoggingDebugSession {
         const bpCache = this._sources.getBreakpoints()
         // 重新读取最新的主模块内容，重开本地sources缓存
         const entryPath = this._sources.getSource(this._entrySourceRef).path!
-        const newSource = (await loadSource(entryPath)).replace(/\r\n/g, '\n')
+        const newSource = (await load_source(entryPath)).replace(/\r\n/g, '\n')
         this._sources = new Sources(this._remote)
         this._entrySourceRef = this._sources.add({
             name: '',
