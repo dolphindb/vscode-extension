@@ -136,7 +136,7 @@ export class DdbDebugSession extends LoggingDebugSession {
     // 不支持多线程，threadID固定为1
     private static readonly threadID = 1
     
-    // 与server交互的对象
+    // 与 server 交互的对象
     private _remote: Remote
     private _launchArgs: DdbLaunchRequestArguments
     
@@ -236,13 +236,13 @@ export class DdbDebugSession extends LoggingDebugSession {
     }
     
     protected override async launchRequest (response: DebugProtocol.LaunchResponse, args: DdbLaunchRequestArguments) {
-        // 传入用户名密码，发送消息发现未连接时建立连接，同时根据autologin决定是否登录
+        // 传入用户名密码，发送消息发现未连接时建立连接，同时根据 autologin 决定是否登录
         this._remote = new Remote(args.url, args.username, args.password, args.autologin, this.handleServerError.bind(this))
         this._sources = new Sources(this._remote)
         this._launchArgs = args
         
         // 加载主文件资源
-        const fp_main = (this._entrySourcePath = normalize_path_and_casing(args.program))
+        const fp_main = this._entrySourcePath = normalize_path_and_casing(args.program)
         
         
         ;(async () => {
@@ -277,7 +277,9 @@ export class DdbDebugSession extends LoggingDebugSession {
         
         this.registerEventHandlers()
         
-        await Promise.all([this._prerequisites.wait('scriptResolved'), this._prerequisites.wait('configurationDone')])
+        await Promise.all([
+            this._prerequisites.wait('scriptResolved'), 
+            this._prerequisites.wait('configurationDone')])
         
         this._remote.call('runScriptWithDebug')
         this.sendResponse(response)

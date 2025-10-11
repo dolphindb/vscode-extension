@@ -1,12 +1,11 @@
-import { type WebSocket, connect_websocket, inspect, WebSocketOpen } from 'xshell'
+import { type WebSocket, connect_websocket, decode, inspect, WebSocketOpen } from 'xshell'
 
 import { type DdbDict, DdbObj } from 'dolphindb'
 
-import { t } from '../../i18n/index.ts'
+import { t } from '@i18n'
 
 import { json2ddbdict } from './utils.ts'
 
-const decoder = new TextDecoder()
 
 /** 三种传输（client发送，server返回，server主动推送）中所用的message类型 */
 export interface Message {
@@ -109,7 +108,7 @@ export class Remote {
             let base_offset = 4 + json_length
             
             // TODO: 错误处理（是否需要对后端数据校验？）
-            let msg = JSON.parse(decoder.decode(buf.subarray(4, base_offset)))
+            let msg = JSON.parse(decode(buf.subarray(4, base_offset)))
             
             console.log(t('接收到消息:'), msg)
             
@@ -123,7 +122,6 @@ export class Remote {
                             item.binValue = buf.subarray(base_offset, base_offset + item.offset)
                             item.ddbValue = DdbObj.parse(item.binValue, true)
                             item.value = inspect(item.ddbValue)
-                            // item.value = item.value.replace(/\n/g, '');
                             base_offset += item.offset
                         }
                 })
@@ -201,8 +199,8 @@ export class Remote {
                     throw new Error(`"Unknown event from server": ${event}`)
             } else if (id !== undefined) {
                 const handler = this.handlers.get(id)
-                if (message.message !== 'OK') 
-                    // handler中mesaage不为OK时，一般认为是服务端/DA错误
+                if (message.message !== 'OK')
+                    // handler 中 mesaage 不为 OK 时，一般认为是服务端 / DA 错误
                     throw new Error(message.message)
                  else if (handler)
                      await handler(message)
@@ -225,7 +223,7 @@ export class Remote {
     
     /** 调用 server 侧函数 */
     public async call (func: string, args?: any) {
-        // 避免debug session未开启时发送其他请求
+        // 避免 debug session 未开启时发送其他请求
         if (this._terminated) 
             return
         

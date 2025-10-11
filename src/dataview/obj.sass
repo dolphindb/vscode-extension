@@ -89,7 +89,7 @@
                 
             .ant-tree-treenode:not(.ant-tree-treenode-disabled)
                 .ant-tree-node-content-wrapper:hover
-                    color: variables.$dropdown-selected-background-color
+                    color: variables.$tree-node-hover-color
                 
             .ant-tree-node-content-wrapper.ant-tree-node-selected
                 color: variables.$line-number-foreground-color
@@ -263,6 +263,10 @@
     &.themed
         .default-obj
             color: variables.$font-color
+            padding: 10px
+            font-size: 20px
+            word-wrap: break-word
+            
         
         .vector, .table, .matrix
             .row-head
