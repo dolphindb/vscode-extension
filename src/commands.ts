@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 
 import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri, FileType, debug } from 'vscode'
 
-import { path, Timer, delay, inspect, vercmp, encode } from 'xshell'
+import { path, Timer, delay, inspect, vercmp } from 'xshell'
 
 import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbInt, DdbLong } from 'dolphindb'
 
@@ -739,7 +739,7 @@ export const ddb_commands = [
             const version = await debug.activeDebugSession.customRequest('getVersion')
             
             // vercmp('2.00.11.2', '2.00.11.1') = 1
-            if (vercmp(version, valid_version) < 0) { 
+            if (vercmp(version, valid_version, true) < 0) { 
                 window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
                 return
             }

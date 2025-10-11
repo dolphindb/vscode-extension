@@ -15,7 +15,7 @@ import { documents } from './documents.ts'
 import { ddbModules } from './modules.ts'
 
 import { symbolService } from './symbols.ts'
-import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types.ts'
+import { type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types.ts'
 import { buildFunctionCommentDocs, createRegexForFunctionNames, extractFirstloadTableArgument, getLineContentsBeforePosition, isParenthesisBalanced } from './utils.ts'
 import { dbService } from './database.ts'
 import { getSqlCompletions } from './sql-completions.ts'

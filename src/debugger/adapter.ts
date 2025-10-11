@@ -737,10 +737,10 @@ export class DdbDebugSession extends LoggingDebugSession {
     
     
     protected override async customRequest (command: string, response: DebugProtocol.Response, args: any, request?: DebugProtocol.Request): Promise<void> {
-        switch (command) { 
+        switch (command) {
             // 用于获取调试 sessionId
             case 'getCurrentSessionId': {
-                response.body = await this._remote.call('getCurrentSessionAndUser', [ ])
+                response.body = await this._remote.call('getCurrentSessionAndUser')
                 this.sendResponse(response)
                 break
             }
