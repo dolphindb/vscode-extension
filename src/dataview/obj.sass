@@ -125,7 +125,7 @@
                 background: variables.$dropdown-active-background-color
     
         .tensor-elem-count
-            color: #000000
+            color: inherit
     
         .type-name
             color: #2d6ebe
@@ -267,6 +267,11 @@
             font-size: 20px
             word-wrap: break-word
             
+        
+        // Tensor view theming
+        .tensor
+            .tensor-elem-count
+                color: variables.$font-color !important
         
         .vector, .table, .matrix
             .row-head
