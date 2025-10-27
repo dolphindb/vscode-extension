@@ -25,7 +25,7 @@ import {
     type DdbVectorStringObj,
 } from 'dolphindb'
 
-import { t } from '../i18n/index.ts'
+import { t } from '@i18n'
 
 import { formatter } from './formatter.ts'
 import { server, start_server } from './server.ts'

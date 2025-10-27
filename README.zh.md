@@ -75,6 +75,9 @@ pnpm run scan
 # 再次运行扫描以更新词典文件 dict.json
 pnpm run scan
 
+# 运行测试
+pnpm run test
+
 # 构建
 # pnpm run build
 ```

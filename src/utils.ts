@@ -1,19 +1,13 @@
 import { type DDB, type DdbObj, type DdbStringObj } from 'dolphindb'
 import {
-    window,
-    Position,
-    Range,
-    ConfigurationTarget,
-    commands,
-    Uri,
-    workspace,
-    FileType
+    window, Position, Range, ConfigurationTarget, commands, Uri, workspace, FileType,
+    FileSystemError, type FileStat
 } from 'vscode'
 
 import { path, assert, decode } from 'xshell'
 
 
-import { t } from '../i18n/index.ts'
+import { t } from '@i18n'
 
 
 /** 获取选择区域的文本，若选择为空，则根据 selector 确定 (当前 | 全部文本 | 空) */
@@ -193,4 +187,17 @@ export async function fdmupload (uri: Uri, encrypt: boolean, ddb: DDB) {
                 (file_type === FileType.Directory ? fdmupload : fmupload)(Uri.file(uri.fsPath.fp + '/' + name), encrypt, ddb) 
         )
     )).flat()
+}
+
+
+/** 使用 vscode.workspace.fs 判断文件是否存在 */
+export async function fexists (fp: string): Promise<FileStat | null> {
+    try {
+        return await workspace.fs.stat(Uri.file(fp))
+    } catch (error) {
+        if (error instanceof FileSystemError && error.code === 'FileNotFound')
+            return null
+        else
+            throw error
+    }
 }

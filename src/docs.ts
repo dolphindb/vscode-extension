@@ -11,7 +11,7 @@ import { DocsProvider } from 'dolphindb/docs.js'
 
 import { fread_json } from 'xshell'
 
-import { language, t } from '../i18n/index.ts'
+import { language, t } from '@i18n'
 
 import { fpd_ext } from './index.ts'
 

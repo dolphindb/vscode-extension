@@ -31,11 +31,10 @@
 			],
 		},
         {
+            "name": "ddb.ls",
             "type": "node",
             "request": "attach",
-            "name": "ddb.ls",
-            "port": 6009,
-            "restart": true,
+            "port": 6009
         }
     ],
     "compounds": [

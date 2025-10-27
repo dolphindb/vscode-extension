@@ -6,8 +6,9 @@
         "vscode": ">=1.82.0"
     },
     "scripts": {
-        "dev": "node --experimental-transform-types ./dev.ts",
-        "build": "node --experimental-transform-types ./build.ts",
+        "dev": "node --experimental-transform-types ./commands.ts dev",
+        "build": "node --experimental-transform-types ./commands.ts build",
+        "test": "node --experimental-transform-types ./commands.ts test build",
         "scan": "i18n-scan --input \"**/*.{ts,tsx}\"",
         "lint": "eslint \"**/*.{ts,tsx}\"",
         "fix": "eslint --fix \"**/*.{ts,tsx}\""

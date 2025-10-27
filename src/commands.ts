@@ -9,7 +9,7 @@ import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions,
 
 import type { Variable } from '@vscode/debugadapter'
 
-import { i18n, t } from '../i18n/index.ts'
+import { i18n, t } from '@i18n'
 
 import { server } from './server.ts'
 import { statbar } from './statbar.ts'

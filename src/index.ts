@@ -1,29 +1,16 @@
 import util from 'util'
 
 import {
-    window,
-    workspace,
-    
-    commands,
-    
-    extensions, ExtensionMode,
-    
-    type ExtensionContext,
-    
-    type ProviderResult,
-    
-    ConfigurationTarget,
-    
-    debug, type DebugConfiguration,
-    
-    type MessageItem
+    window, workspace, commands, extensions, ExtensionMode, type ExtensionContext,
+    type ProviderResult, ConfigurationTarget, debug, type DebugConfiguration,
+    type MessageItem, Uri
 } from 'vscode'
 
 import 'xshell/polyfill.browser.js'
 import { set_inspect_options } from 'xshell'
 
 
-import { t } from '../i18n/index.ts'
+import { t } from '@i18n'
 
 import { ls_client, activate_ls } from './languageserver.ts'
 import { load_docs, register_docs } from './docs.ts'
@@ -37,6 +24,9 @@ import { connector, register_connector } from './connector.ts'
 import { register_variables } from './variables.ts'
 import { register_databases } from './databases.ts'
 import { register_settings } from './settings.ts'
+import { fexists } from './utils.ts'
+
+import { test } from '@test/index.ts'
 
 
 export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }
@@ -149,6 +139,13 @@ export async function activate (ctx: ExtensionContext) {
     await activate_ls(ctx)
     
     console.log(t('DolphinDB 插件初始化成功'))
+    
+    // 测试入口
+    const fp_test = `${fpd_ext}test-dolphindb-extension`
+    if (await fexists(fp_test)) {
+        await workspace.fs.delete(Uri.file(fp_test))
+        await test()
+    }
 }
 
 
@@ -160,5 +157,5 @@ export async function deactivate (ctx: ExtensionContext) {
     })
     
     // 停止 Language Server 连接
-    await ls_client?.stop()
+    await ls_client?.stop(200)
 }

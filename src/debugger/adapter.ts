@@ -15,7 +15,7 @@ import type { DdbObj } from 'dolphindb'
 
 import { delay } from 'xshell'
 
-import { t } from '../../i18n/index.ts'
+import { t } from '@i18n'
 
 import { Remote } from './network.ts'
 import { normalize_path_and_casing, load_source } from './utils.ts'

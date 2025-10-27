@@ -26,12 +26,11 @@ import {
     DdbType,
     type DdbOptions,
     type DdbTableObj,
-    type DdbVectorStringObj,
-    type DdbTableData,
+    type DdbVectorStringObj
 } from 'dolphindb'
 
 
-import { t } from '../i18n/index.ts'
+import { t } from '@i18n'
 
 import { statbar } from './statbar.ts'
 import { open_connection_settings } from './commands.ts'

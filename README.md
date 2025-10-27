@@ -74,6 +74,9 @@ pnpm run scan
 # Run scan again to update the dictionary file dict.json
 pnpm run scan
 
+# run test
+pnpm run test
+
 # Build
 # pnpm run build
 ```

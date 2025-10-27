@@ -10,7 +10,7 @@ import { assert } from 'xshell/utils.js'
 
 import { type DdbDictObj, type DdbVectorStringObj } from 'dolphindb'
 
-import { t } from '../i18n/index.ts'
+import { t } from '@i18n'
 
 
 import { NodeType } from './constant.ts'

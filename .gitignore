@@ -1,7 +1,7 @@
 node_modules/
 
+/local/
 /out/
-/test/
 
 /*.zip
 /*.vsix

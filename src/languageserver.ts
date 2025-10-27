@@ -7,7 +7,7 @@ import { LanguageClient, TransportKind } from 'vscode-languageclient/node.js'
 import { connector, type DdbConnection } from './connector.ts'
 
 
-export let ls_client: LanguageClient | undefined = undefined
+export let ls_client: LanguageClient | undefined
 
 
 /** 初始化 Language Server */
