@@ -144,7 +144,9 @@ export async function activate (ctx: ExtensionContext) {
     const fp_test = `${fpd_ext}test-dolphindb-extension`
     if (await fexists(fp_test)) {
         await workspace.fs.delete(Uri.file(fp_test))
-        await test()
+        
+        // 这里让扩展先激活，再启动测试
+        setTimeout(test)
     }
 }
 

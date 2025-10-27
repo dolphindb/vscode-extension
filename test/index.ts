@@ -2,10 +2,11 @@ import { deepEqual, deepStrictEqual } from 'node:assert/strict'
 
 import { commands, window } from 'vscode'
 
-import { check, request } from 'xshell'
+import { check, delay, request } from 'xshell'
 
 import { dev, fpd_ext } from '@/index.ts'
 import { connector } from '@/connector.ts'
+import { execute_with_progress } from '@/commands.ts'
 
 
 export async function test () {
@@ -15,19 +16,21 @@ export async function test () {
         repl ? 
             [test_repl]
         : [
-            test_connector,
-            
+            test_execute
         ]
     )
         await t()
     
     console.log('--- 测试通过 ---'.green)
     
-    window.showInformationMessage('测试通过')
+    window.showInformationMessage('测试通过', { modal: true })
     
     try {
         await request('http://localhost/api/test-dolphindb-extension')
     } catch { }
+    
+    // 看一眼测试结果
+    await delay(3000)
     
     await commands.executeCommand('workbench.action.closeWindow')
 }
@@ -40,7 +43,6 @@ async function test_repl () {
 }
 
 
-async function test_connector () {
-    check(connector.connections)
+async function test_execute () {
+    await execute_with_progress('defs()', 0)
 }
-

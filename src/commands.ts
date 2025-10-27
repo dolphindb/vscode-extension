@@ -134,7 +134,6 @@ async function execute (text: string, iline: number, testing = false) {
         await create_terminal()
     
     
-    let { ddb } = connection
     let { printer } = terminal
     
     timer.reset()
@@ -169,6 +168,8 @@ async function execute (text: string, iline: number, testing = false) {
             
             throw new Error(message)
         }
+        
+        let { ddb } = connection
         
         // TEST: 测试 RefId 错误链接
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
@@ -310,7 +311,7 @@ async function execute (text: string, iline: number, testing = false) {
 
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
-async function execute_with_progress (text: string, iline: number, testing?: boolean) {
+export async function execute_with_progress (text: string, iline: number, testing?: boolean) {
     let { connection } = connector
     
     let done = false
