@@ -21,10 +21,11 @@ export async function test () {
     for (const t of
         repl ? 
             [test_repl]
-        : [
-            test_execute,
-            test_export_csv
-        ]
+        :
+            [
+                test_execute,
+                test_export_csv
+            ]
     )
         await t()
     
