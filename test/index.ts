@@ -1,8 +1,8 @@
 import { deepEqual, deepStrictEqual } from 'node:assert/strict'
 
-import { window } from 'vscode'
+import { commands, window } from 'vscode'
 
-import { check } from 'xshell'
+import { check, request } from 'xshell'
 
 import { dev, fpd_ext } from '@/index.ts'
 import { connector } from '@/connector.ts'
@@ -24,6 +24,12 @@ export async function test () {
     console.log('--- 测试通过 ---'.green)
     
     window.showInformationMessage('测试通过')
+    
+    try {
+        await request('http://localhost/api/test-dolphindb-extension')
+    } catch { }
+    
+    await commands.executeCommand('workbench.action.closeWindow')
 }
 
 
