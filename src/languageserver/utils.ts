@@ -1,4 +1,4 @@
-import * as fsp from 'fs/promises'
+import fsp from 'node:fs/promises'
 
 import { MarkupKind, type MarkupContent, type Position } from 'vscode-languageserver/node'
 

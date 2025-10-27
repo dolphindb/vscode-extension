@@ -457,6 +457,64 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
 }
 
 
+export async function export_table (uri?: Uri) {
+    try {
+        // 当前数据面板无变量
+        if (!lastvar) { 
+            window.showErrorMessage(t('当前没有可导出的表格'))
+            return
+        }
+        
+        let { connection } = lastvar
+        
+        if (lastvar.form !== DdbForm.table) { 
+            window.showWarningMessage(t('仅支持导出表格'))
+            return 
+        }
+        
+        // 2.00.11 以上版本才能使用导出功能
+        if (vercmp(connection.version, '2.00.11.0', true) < 0) { 
+            window.showWarningMessage(t('server 版本低于 2.00.11，请升级后再使用此功能'))
+            return
+        }
+        
+        // 视图展示的变量非当前连接的变量，切换至变量所属连接
+        if (connector.connection !== connection) 
+            await connector.connect(connection) 
+        
+        uri ??= await window.showSaveDialog({
+            title: t('导出表格'),
+            defaultUri: Uri.file(`${workspace.workspaceFolders?.[0]?.uri.fsPath.fpd || '/'}${lastvar.name || 'table'}.csv`)
+        })
+        
+        if (!uri)
+            return
+        
+        await window.withProgress(
+            { 
+                title: t('正在导出 ···'),
+                location: ProgressLocation.Notification,
+            },
+            async () => {
+                let { connection: { ddb } } = connector
+                
+                await workspace.fs.writeFile(
+                    uri, 
+                    await ddb.invoke<Uint8Array>(
+                        // get_csv_content 返回的 ddb 类型为 char[]
+                        funcdefs.get_csv_content[ddb.language], 
+                        [lastvar.obj || lastvar.name], 
+                        { chars: 'binary' }))
+                
+                window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
+            })
+    } catch (error) {
+        window.showErrorMessage(error.message)
+        throw error
+    }
+}
+
+
 /** 和 webpack 中的 commands 定义需要一一对应 */
 export const ddb_commands = [
     async function execute () {
@@ -671,60 +729,7 @@ export const ddb_commands = [
     },
     
     
-    async function export_table () {
-        try {
-            // 当前数据面板无变量
-            if (!lastvar) { 
-                window.showErrorMessage(t('当前没有可导出的表格'))
-                return
-            }
-            
-            let { connection } = lastvar
-            
-            if (lastvar.form !== DdbForm.table) { 
-                window.showWarningMessage(t('仅支持导出表格'))
-                return 
-            }
-            
-            // 2.00.11 以上版本才能使用导出功能
-            if (vercmp(connection.version, '2.00.11.0', true) < 0) { 
-                window.showWarningMessage(t('server 版本低于 2.00.11，请升级后再使用此功能'))
-                return
-            }
-            
-            // 视图展示的变量非当前连接的变量，切换至变量所属连接
-            if (connector.connection !== connection) 
-                await connector.connect(connection) 
-            
-            const uri = await window.showSaveDialog({
-                title: t('导出表格'),
-                defaultUri: Uri.file(`${workspace.workspaceFolders?.[0]?.uri.fsPath.fpd || '/'}${lastvar.name || 'table'}.csv`)
-            })
-            
-            if (uri)  
-                window.withProgress(
-                    { 
-                        title: t('正在导出 ···'),
-                        location: ProgressLocation.Notification,
-                    },
-                    async () => {
-                        let { connection: { ddb } } = connector
-                        
-                        await workspace.fs.writeFile(
-                            uri, 
-                            await ddb.invoke<Uint8Array>(
-                                // get_csv_content 返回的 ddb 类型为 char[]
-                                funcdefs.get_csv_content[ddb.language], 
-                                [lastvar.obj || lastvar.name], 
-                                { chars: 'binary' }))
-                        
-                        window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
-                    })
-        } catch (error) {
-            window.showErrorMessage(error.message)
-            throw error
-        }
-    },
+    export_table,
     
     
     async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
