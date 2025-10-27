@@ -671,7 +671,7 @@ export const ddb_commands = [
     },
     
     
-    async function export_table () { 
+    async function export_table () {
         try {
             // 当前数据面板无变量
             if (!lastvar) { 

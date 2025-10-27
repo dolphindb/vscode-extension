@@ -469,7 +469,7 @@ let builder = {
                 title: {
                     zh: 'DolphinDB: 单元测试',
                     en: 'DolphinDB: Unit Test'
-                }  
+                }
             },
             {
                 command: 'set_decimals',
