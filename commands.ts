@@ -154,7 +154,7 @@ async function start_or_reload_vscode (test: boolean) {
         ].find(fp => fexists(fp, noprint)) || 
         (
             (await call('where', ['code.cmd']))
-                .stdout.trim().fdir + 'Code.exe'
+                .stdout.trim().fdir.fdir + 'Code.exe'
         )
     
     if (test)
