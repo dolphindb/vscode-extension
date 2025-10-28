@@ -4,7 +4,7 @@ import os from 'os'
 
 import {
     call, fexists, get_command, noprint, Remote, fdelete, fmkdir, fwrite, 
-    ramdisk, set_inspect_options
+    ramdisk, set_inspect_options, platform
 } from 'xshell'
 import { Git } from 'xshell/git.js'
 import { Bundler, type BundlerOptions } from 'xshell/builder.js'
@@ -142,6 +142,11 @@ async function dev () {
 let fp_vscode: string
 
 async function start_or_reload_vscode (test: boolean) {
+    if (platform !== 'win32') {
+        console.log('非 windows 系统请根据上面的命令手动打开 vscode')
+        return
+    }
+    
     fp_vscode ??=
         [
             'C:/Program Files/Microsoft VS Code/Code.exe' as const,
