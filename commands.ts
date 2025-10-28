@@ -142,10 +142,15 @@ async function dev () {
 let fp_vscode: string
 
 async function start_or_reload_vscode (test: boolean) {
-    fp_vscode ??= [
-        'C:/Program Files/Microsoft VS Code/Code.exe' as const,
-        `C:/Users/${os.userInfo().username}/AppData/Local/Programs/Microsoft VS Code/Code.exe`,
-    ].find(fp => fexists(fp, noprint))
+    fp_vscode ??=
+        [
+            'C:/Program Files/Microsoft VS Code/Code.exe' as const,
+            `C:/Users/${os.userInfo().username}/AppData/Local/Programs/Microsoft VS Code/Code.exe`,
+        ].find(fp => fexists(fp, noprint)) || 
+        (
+            (await call('where', ['code.cmd']))
+                .stdout.trim().fdir + 'Code.exe'
+        )
     
     if (test)
         await fwrite(`${fpd_out}test-dolphindb-extension`, '', noprint)
