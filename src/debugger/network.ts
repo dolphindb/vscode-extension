@@ -1,4 +1,4 @@
-import { connect_websocket, decode, inspect, WebSocketOpen } from 'xshell'
+import { connect_websocket, decode, inspect, MyProxy, ramdisk, WebSocketOpen } from 'xshell'
 
 import { type DdbDict, DdbObj } from 'dolphindb'
 
@@ -153,7 +153,8 @@ export class Remote {
             console.log(t('连接到:'), this.url)
             this.websocket = await connect_websocket(this.url, {
                 protocols: ['debug'],
-                on_message: this.handle.bind(this)
+                on_message: this.handle.bind(this),
+                proxy: ramdisk ? MyProxy.work : undefined
             })
             console.log(t('已连接到 server'))
             if (this.autologin) 
