@@ -1,4 +1,4 @@
-import { type WebSocket, connect_websocket, decode, inspect, WebSocketOpen } from 'xshell'
+import { connect_websocket, decode, inspect, WebSocketOpen } from 'xshell'
 
 import { type DdbDict, DdbObj } from 'dolphindb'
 
