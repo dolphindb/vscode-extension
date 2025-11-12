@@ -29,7 +29,7 @@
         "@vscode/debugprotocol": "^1.68.0",
         "antd": "^5.28.1",
         "dayjs": "^1.11.19",
-        "dolphindb": "^3.1.23",
+        "dolphindb": "^3.1.24",
         "echarts": "^6.0.0",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
