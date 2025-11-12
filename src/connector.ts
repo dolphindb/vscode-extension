@@ -16,7 +16,7 @@ import {
 
 import dayjs from 'dayjs'
 
-import { inspect, assert, delay, strcmp } from 'xshell'
+import { inspect, assert, delay, strcmp, ramdisk, MyProxy } from 'xshell'
 
 import {
     DDB,
@@ -333,7 +333,9 @@ export class DdbConnection extends TreeItem {
         
         verbose: false,
         
-        mappings: null
+        mappings: null,
+        
+        proxy: ramdisk ? MyProxy.work : undefined
     }
     
     // --- 状态
