@@ -20,15 +20,13 @@ set_inspect_options()
 
 const fpd_root = import.meta.dirname.fpd
 
-const fpd_ramdisk_root = 'T:/2/ddb/ext/' as const
-
-const fpd_out = `${ ramdisk ? fpd_ramdisk_root : fpd_root }out/`
+const fpd_out = `${fpd_root}out/`
 
 const fpd_out_dataview = `${fpd_out}dataview/`
 
 const vscode_args = [
     '--extensionDevelopmentPath', fpd_out,
-    `${fpd_root}${ramdisk ? 'local' : 'workspace'}/`
+    `${fpd_root}workspace/`
 ]
 
 
@@ -105,10 +103,7 @@ async function dev () {
         remote = new Remote({
             url: 'ws://localhost',
             
-            keeper: {
-                func: 'register',
-                args: ['ddb.ext'],
-            },
+            args: ['ddb.ext'],
             
             funcs: {
                 async recompile () {
@@ -211,7 +206,7 @@ let builder = {
                 'web',
                 fpd_root,
                 fpd_out_dataview,
-                ramdisk ? `${fpd_ramdisk_root}webpack/` : undefined,
+                undefined,
                 {
                     'index.js': './src/dataview/index.tsx',
                     'window.js': './src/dataview/window.tsx',
@@ -256,7 +251,7 @@ let builder = {
                 'nodejs',
                 fpd_root,
                 fpd_out,
-                ramdisk ? `${fpd_ramdisk_root}webpack/` : undefined,
+                undefined,
                 {
                     'index.cjs': './src/index.ts',
                     'debugger.cjs': './src/debugger/index.ts',
