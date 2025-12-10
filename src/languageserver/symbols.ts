@@ -1,7 +1,7 @@
 
 import { type TextDocument } from 'vscode-languageserver-textdocument'
 
-import { type Position, type Range, SymbolKind, type DocumentSymbol } from 'vscode-languageserver/node'
+import { SymbolKind, type Position, type Range, type DocumentSymbol } from 'vscode-languageserver/node'
 
 import { escapeRegExp, readFileByPath } from './utils.ts'
 
@@ -243,7 +243,9 @@ export function getFunctionSymbols (text: string, filePath: string, originalText
             const defLine = i
             const defColumn = line.indexOf(functionName, line.indexOf('def'))
             
-            const comments = originalText ? collectComments(originalText.split('\n'), defLine) : collectComments(lines, defLine)
+            const comments = collectComments(
+                originalText ? originalText.split('\n') : lines,
+                defLine)
             
             // 提取参数列表
             let paramsText = ''
@@ -465,7 +467,9 @@ export function getVariableSymbols (text: string, filePath: string, originalText
             const defLine = i
             const defColumn = line.indexOf(variableName)
             
-            const comments = originalText ? collectComments(originalText.split('\n'), defLine) : collectComments(lines, defLine)
+            const comments = collectComments(
+                originalText ? originalText.split('\n') : lines,
+                defLine)
             
             const innermostScope = findInnermostScope(defLine, defColumn, scopes)
             const scopeRange: [Position, Position] = innermostScope
@@ -507,8 +511,7 @@ export function getFileModule (raw_text: string): string | undefined {
     // module fileLog
     
     const text = raw_text.replaceAll('\r\n', '\n')
-    const filteredText = removeComments(text)
-    const lines = filteredText.split('\n')
+    const lines = removeComments(text).split('\n')
     
     for (const line of lines) {
         const trimmed = line.trim()
@@ -527,17 +530,13 @@ export function getFileUsedModule (text: string): string[] {
     // 正则表达式匹配 `use` 语句，捕获模块名部分
     const useRegex = /^use\s+([^;\/\/\s]+(?:\s*::\s*[^;\/\/\s]+)*);?/
     
-    const filteredText = removeComments(text)
-    
-    return filteredText
+    return removeComments(text)
         // 按照换行符分割文本，兼容不同的换行符
         .split(/\r?\n/)
         // 逐行处理
-        .map(line => {
+        .map(line =>
             // 去除行首尾空白字符
-            const trimmedLine = line.trim()
-            return trimmedLine
-        })
+            line.trim())
         // 过滤出以 `use` 开头的行，但排除 `use catalog` 
         .filter(line => line.startsWith('use') && !line.startsWith('use catalog'))
         // 使用正则表达式提取模块名
@@ -549,8 +548,8 @@ export function getFileUsedModule (text: string): string[] {
         .filter((moduleName): moduleName is string => moduleName !== null)
 }
 
-connection.onDocumentSymbol(params => {
 
+connection.onDocumentSymbol(params => {
     const filePath = params.textDocument.uri
     const symbols = symbolService.getSymbols(filePath)
     const result: DocumentSymbol[] = [ ]
