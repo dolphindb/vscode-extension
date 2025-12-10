@@ -1,12 +1,11 @@
-import { type WebSocket, connect_websocket, inspect, WebSocketOpen } from 'xshell'
+import { connect_websocket, decode, inspect, MyProxy, ramdisk, WebSocketOpen } from 'xshell'
 
 import { type DdbDict, DdbObj } from 'dolphindb'
 
-import { t } from '../../i18n/index.ts'
+import { t } from '@i18n'
 
-import { json2DdbDict } from './utils.ts'
+import { json2ddbdict } from './utils.ts'
 
-const decoder = new TextDecoder()
 
 /** 三种传输（client发送，server返回，server主动推送）中所用的message类型 */
 export interface Message {
@@ -92,26 +91,24 @@ export class Remote {
         return this.websocket?.readyState === WebSocketOpen
     }
     
-    /** call之前将参数打包成DdbDist */
+    /** call之前将参数打包成 DdbDict */
     public pack (msg: SendMessage) {
-        return json2DdbDict(msg).pack()
+        return json2ddbdict(msg).pack()
     }
     
-    /** 
-        接收服务端消息并处理，一般是4字节jsonLength + json
-        若为查看变量之类的消息，json中由offset标识ddb内置类型对应二进制位置
-        此时调用js-api中的方法解析这段二进制数据并inspect成可供用户查看的格式
-    */
+    /** 接收服务端消息并处理，一般是 4 字节 json_length + json  
+        若为查看变量之类的消息，json 中由 offset 标识 ddb 内置类型对应二进制位置  
+        此时调用 js api 中的方法解析这段二进制数据并 inspect 成可供用户查看的格式 */
     public parse (array_buffer: ArrayBuffer) {
         try {
             const buf = new Uint8Array(array_buffer)
             const dv = new DataView(array_buffer)
             
-            const jsonLength = dv.getUint32(0, true)
-            let baseOffset = 4 + jsonLength
+            const json_length = dv.getUint32(0, true)
+            let base_offset = 4 + json_length
             
             // TODO: 错误处理（是否需要对后端数据校验？）
-            let msg = JSON.parse(decoder.decode(buf.subarray(4, baseOffset)))
+            let msg = JSON.parse(decode(buf.subarray(4, base_offset)))
             
             console.log(t('接收到消息:'), msg)
             
@@ -121,23 +118,22 @@ export class Remote {
                     if (item?.offset) 
                         if (item.offset === -1) 
                             item.value = `${item.form}<${item.type}> Too large to display(${item.bytes} bytes)`
-                         else {
-                            item.binValue = buf.subarray(baseOffset, baseOffset + item.offset)
+                        else {
+                            item.binValue = buf.subarray(base_offset, base_offset + item.offset)
                             item.ddbValue = DdbObj.parse(item.binValue, true)
                             item.value = inspect(item.ddbValue)
-                            // item.value = item.value.replace(/\n/g, '');
-                            baseOffset += item.offset
+                            base_offset += item.offset
                         }
                 })
              else if (msg?.data?.offset) {
                 const item = msg.data
-                if (item.offset === -1) 
+                if (item.offset === -1)
                     item.value = `${item.form}<${item.type}> Too large to display(${item.bytes} bytes)`
-                 else {
-                    item.binValue = buf.subarray(baseOffset, baseOffset + item.offset)
+                else {
+                    item.binValue = buf.subarray(base_offset, base_offset + item.offset)
                     item.ddbValue = DdbObj.parse(item.binValue, true)
                     item.value = inspect(item.ddbValue)
-                    baseOffset += item.offset
+                    base_offset += item.offset
                 }
             }
             
@@ -157,7 +153,8 @@ export class Remote {
             console.log(t('连接到:'), this.url)
             this.websocket = await connect_websocket(this.url, {
                 protocols: ['debug'],
-                on_message: this.handle.bind(this)
+                on_message: this.handle.bind(this),
+                proxy: ramdisk ? MyProxy.work : undefined
             })
             console.log(t('已连接到 server'))
             if (this.autologin) 
@@ -203,8 +200,8 @@ export class Remote {
                     throw new Error(`"Unknown event from server": ${event}`)
             } else if (id !== undefined) {
                 const handler = this.handlers.get(id)
-                if (message.message !== 'OK') 
-                    // handler中mesaage不为OK时，一般认为是服务端/DA错误
+                if (message.message !== 'OK')
+                    // handler 中 mesaage 不为 OK 时，一般认为是服务端 / DA 错误
                     throw new Error(message.message)
                  else if (handler)
                      await handler(message)
@@ -227,7 +224,7 @@ export class Remote {
     
     /** 调用 server 侧函数 */
     public async call (func: string, args?: any) {
-        // 避免debug session未开启时发送其他请求
+        // 避免 debug session 未开启时发送其他请求
         if (this._terminated) 
             return
         
@@ -264,7 +261,7 @@ export class Remote {
             try {
                 if (args !== undefined) 
                     await this.send({ id, func, data: args })
-                 else 
+                else
                     await this.send({ id, func })
                 
             } catch (error) {

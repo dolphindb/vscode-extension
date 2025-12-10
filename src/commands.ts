@@ -2,14 +2,14 @@ import dayjs from 'dayjs'
 
 import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri, FileType, debug } from 'vscode'
 
-import { path, Timer, delay, inspect, vercmp, encode } from 'xshell'
+import { path, Timer, delay, inspect, vercmp } from 'xshell'
 
 import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbInt, DdbLong } from 'dolphindb'
 
 
 import type { Variable } from '@vscode/debugadapter'
 
-import { i18n, t } from '../i18n/index.ts'
+import { i18n, t } from '@i18n'
 
 import { server } from './server.ts'
 import { statbar } from './statbar.ts'
@@ -17,7 +17,7 @@ import { get_text, open_workbench_settings_ui, fdupload, fupload, fdmupload, fmu
 import { dataview } from './dataview/dataview.ts'
 import { formatter } from './formatter.ts'
 import { create_terminal, terminal } from './terminal.ts'
-import { type DdbConnection, connector } from './connector.ts'
+import { type DdbConnection, connector, funcdefs } from './connector.ts'
 import { DdbVar, variables } from './variables.ts'
 import { type DdbDatabase, databases, type DdbTable } from './databases.ts'
 
@@ -134,7 +134,6 @@ async function execute (text: string, iline: number, testing = false) {
         await create_terminal()
     
     
-    let { ddb } = connection
     let { printer } = terminal
     
     timer.reset()
@@ -169,6 +168,8 @@ async function execute (text: string, iline: number, testing = false) {
             
             throw new Error(message)
         }
+        
+        let { ddb } = connection
         
         // TEST: 测试 RefId 错误链接
         // throw new Error('xxxxx. RefId: S00001. xxxx RefId: S00002')
@@ -310,7 +311,7 @@ async function execute (text: string, iline: number, testing = false) {
 
 
 /** 执行代码后，如果超过 1s 还未完成，则显示进度 */
-async function execute_with_progress (text: string, iline: number, testing?: boolean) {
+export async function execute_with_progress (text: string, iline: number, testing?: boolean) {
     let { connection } = connector
     
     let done = false
@@ -456,6 +457,64 @@ export async function upload (uri: Uri, uris: Uri[], silent = false) {
 }
 
 
+export async function export_table (uri?: Uri) {
+    try {
+        // 当前数据面板无变量
+        if (!lastvar) { 
+            window.showErrorMessage(t('当前没有可导出的表格'))
+            return
+        }
+        
+        let { connection } = lastvar
+        
+        if (lastvar.form !== DdbForm.table) { 
+            window.showWarningMessage(t('仅支持导出表格'))
+            return 
+        }
+        
+        // 2.00.11 以上版本才能使用导出功能
+        if (vercmp(connection.version, '2.00.11.0', true) < 0) { 
+            window.showWarningMessage(t('server 版本低于 2.00.11，请升级后再使用此功能'))
+            return
+        }
+        
+        // 视图展示的变量非当前连接的变量，切换至变量所属连接
+        if (connector.connection !== connection) 
+            await connector.connect(connection) 
+        
+        uri ??= await window.showSaveDialog({
+            title: t('导出表格'),
+            defaultUri: Uri.file(`${workspace.workspaceFolders?.[0]?.uri.fsPath.fpd || '/'}${lastvar.name || 'table'}.csv`)
+        })
+        
+        if (!uri)
+            return
+        
+        await window.withProgress(
+            { 
+                title: t('正在导出 ···'),
+                location: ProgressLocation.Notification,
+            },
+            async () => {
+                let { connection: { ddb } } = connector
+                
+                await workspace.fs.writeFile(
+                    uri, 
+                    await ddb.invoke<Uint8Array>(
+                        // get_csv_content 返回的 ddb 类型为 char[]
+                        funcdefs.get_csv_content[ddb.language], 
+                        [lastvar.obj || lastvar.name], 
+                        { chars: 'binary' }))
+                
+                window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
+            })
+    } catch (error) {
+        window.showErrorMessage(error.message)
+        throw error
+    }
+}
+
+
 /** 和 webpack 中的 commands 定义需要一一对应 */
 export const ddb_commands = [
     async function execute () {
@@ -553,7 +612,7 @@ export const ddb_commands = [
     async function open_variable (ddbvar?: DdbVar) {
         ddbvar ||= lastvar
         console.log(t('在新窗口查看变量:'), ddbvar)
-        await ddbvar.inspect(true)
+        await ddbvar?.inspect(true)
     },
     
     
@@ -670,81 +729,38 @@ export const ddb_commands = [
     },
     
     
-    async function export_table () { 
-        try {
-            // 当前数据面板无变量
-            if (!lastvar) { 
-                window.showErrorMessage(t('当前没有可导出的表格'))
-                return
-            }
-            
-            let { connection } = lastvar
-            
-            let { ddb, version } = connection
-            
-            if (lastvar.form !== DdbForm.table) { 
-                window.showWarningMessage(t('仅支持导出表格'))
-                return 
-            }
-            
-            // 2.00.11 以上版本才能使用导出功能
-            if (vercmp(version, '2.00.11.0') < 0) { 
-                window.showWarningMessage(t('server 版本低于 2.00.11，请升级后再使用此功能'))
-                return
-            }
-            
-            // 视图展示的变量非当前连接的变量，切换至变量所属连接
-            if (connector.connection !== connection) 
-                await connector.connect(connection) 
-            
-            const uri = await window.showSaveDialog({
-                title: t('导出表格'),
-                defaultUri: Uri.file(`${workspace.workspaceFolders?.[0]?.uri.fsPath.fpd || '/'}${lastvar.name || 'table'}.csv`)
-            })
-            
-            if (uri)  
-                window.withProgress(
-                    { 
-                        title: t('正在导出 ···'),
-                        location: ProgressLocation.Notification,
-                    },
-                    async () => {
-                        await connector.connection.define_get_csv_content()
-                        const { value: content } = await ddb.call('get_csv_content', [lastvar.obj || lastvar.name])
-                        await workspace.fs.writeFile(uri, typeof content === 'string' ? encode(content) : content as Buffer)
-                        window.showInformationMessage(`${t('文件成功导出到 {{path}}', { path: uri.fsPath })}`)
-                    }
-                )
-        } catch (error) { 
-            window.showErrorMessage(error.message)
-            throw error
-        }
-    },
+    export_table,
     
     
     async function inspect_debug_variable ({ variable: { name, variablesReference } }: { variable: Variable }) {
         try {
-            const { connection } = connector
+            let { connection } = connector
             
-            let { ddb } = connection
+            await connection.connect()
             
             // 比较 server 版本，大于 2.00.11.2 版本的 server 才能使用查看变量功能
-            const valid_version = '2.00.11.2'
-            const version = await debug.activeDebugSession.customRequest('getVersion')
-            
-            // vercmp('2.00.11.2', '2.00.11.1') = 1
-            if (vercmp(version, valid_version) < 0) { 
+            if (vercmp(connection.version, '2.00.11.2', true) < 0) {
                 window.showWarningMessage(t('请将 server 版本升级至 2.00.11.2 及以上再使用此功能'))
                 return
             }
             
-            const obj = await ddb.call('getVariable', [
-                new DdbInt((await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 })).stackFrames[0].id), // frameId
-                new DdbInt(variablesReference & 0xffff), // vid
-                name, 
-                new DdbLong(BigInt((await debug.activeDebugSession.customRequest('getCurrentSessionId'))[0])) // session_id
-            ])
+            const obj = await connection.ddb.call('getVariable', [
+                // frame id
+                new DdbInt(
+                    (await debug.activeDebugSession.customRequest('stackTrace', { threadId: 1 }))
+                        .stackFrames[0]
+                        .id),
                 
+                // variable id
+                new DdbInt(variablesReference & 0xffff),
+                
+                name,
+                
+                // session id
+                new DdbLong(
+                    await debug.activeDebugSession.customRequest('get_current_session_id'))
+            ])
+            
             lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection })
             await lastvar.inspect()
         } catch (error) {

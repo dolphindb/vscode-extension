@@ -1,27 +1,175 @@
-import { fdelete, fmkdir, fwrite, ramdisk, set_inspect_options } from 'xshell'
-import { Git } from 'xshell/git.js'
-import { Bundler } from 'xshell/builder.js'
-import type { Item } from 'xshell/i18n/index.js'
+// 用法: node.exe commands.ts dev 或 build 或 test
 
+import os from 'os'
+
+import {
+    call, fexists, get_command, noprint, Remote, fdelete, fmkdir, fwrite, 
+    ramdisk, set_inspect_options, platform
+} from 'xshell'
+import { Git } from 'xshell/git.js'
+import { Bundler, type BundlerOptions } from 'xshell/builder.js'
+import type { Item } from 'xshell/i18n/index.js'
+import { setup_vscode_settings, process_stdin } from 'xshell/development.js'
 
 import { tm_language, tm_language_python } from 'dolphindb/language.js'
-
 
 import package_json from './package.json' with { type: 'json' }
 
 
 set_inspect_options()
 
-export const fpd_root = import.meta.dirname.fpd
+const fpd_root = import.meta.dirname.fpd
 
-const fpd_ramdisk_root = 'T:/2/ddb/ext/' as const
-
-export const fpd_out = `${ ramdisk ? fpd_ramdisk_root : fpd_root }out/`
+const fpd_out = `${fpd_root}out/`
 
 const fpd_out_dataview = `${fpd_out}dataview/`
 
+const vscode_args = [
+    '--extensionDevelopmentPath', fpd_out,
+    `${fpd_root}workspace/`
+]
 
-export let builder = {
+
+async function main () {
+    switch (process.argv[2]) {
+        case 'build':
+            await builder.build_and_close(true)
+            
+            break
+        
+        case 'dev':
+            await dev()
+            
+            break
+        
+        case 'test':
+            if (process.argv[3] === 'build')
+                await builder.build_and_close(false)
+            
+            console.log(
+                '开始测试插件:\n' +
+                get_command('code.exe', vscode_args).blue + '\n')
+            
+            await start_or_reload_vscode(true)
+            
+            break
+    }
+}
+
+
+async function dev () {
+    await setup_vscode_settings(fpd_root)
+    
+    await builder.build(false)
+    
+    
+    async function stop () {
+        await builder.close()
+        remote?.disconnect()
+    }
+    
+    
+    async function recompile () {
+        await builder.run()
+        await start_or_reload_vscode(false)
+    }
+    
+    
+    process_stdin(
+        async key => {
+            switch (key) {
+                case 'r':
+                    try {
+                        await recompile()
+                    } catch (error) {
+                        console.log(error)
+                        console.log('重新编译失败，请尝试按 x 退出后再启动')
+                    }
+                    
+                    break
+                    
+                case 'x':
+                    await stop()
+                    process.exit()
+            }
+        },
+        stop
+    )
+    
+    
+    let remote: Remote
+    
+    if (ramdisk) {
+        remote = new Remote({
+            url: 'ws://localhost',
+            
+            args: ['ddb.ext'],
+            
+            funcs: {
+                async recompile () {
+                    await recompile()
+                },
+                
+                async exit () {
+                    await stop()
+                    process.exit()
+                }
+            }
+        })
+        
+        await remote.connect()
+    }
+    
+    
+    console.log(
+        '\n' +
+        'extension 开发服务器启动成功\n'.green +
+        get_command('code.exe', vscode_args).blue + '\n' +
+        '终端快捷键:\n' +
+        'r: 重新编译，编译后会自动重新加载窗口，手动重新加载可用 ctrl + shift + p 选 reload window\n' +
+        'x: 退出开发服务器\n'
+    )
+    
+    await start_or_reload_vscode(false)
+}
+
+
+let fp_vscode: string
+
+async function start_or_reload_vscode (test: boolean) {
+    if (platform !== 'win32') {
+        console.log('非 windows 系统请根据上面的命令手动打开 vscode')
+        return
+    }
+    
+    fp_vscode ??=
+        [
+            'C:/Program Files/Microsoft VS Code/Code.exe' as const,
+            `C:/Users/${os.userInfo().username}/AppData/Local/Programs/Microsoft VS Code/Code.exe`,
+        ].find(fp => fexists(fp, noprint)) || 
+        (
+            (await call('where', ['code.cmd']))
+                .stdout.trim().fdir.fdir + 'Code.exe'
+        )
+    
+    if (test)
+        await fwrite(`${fpd_out}test-dolphindb-extension`, '', noprint)
+    
+    // 使用 launch 也无法控制 vscode 的子进程，算了
+    // 如果已有启动的进程，会自动 reload
+    await call(fp_vscode, vscode_args, {
+        cwd: fpd_root,
+        stdout: false,
+        window: true,
+        print: {
+            command: true,
+            code: false
+        }
+    })
+}
+
+
+let builder = {
     dataview: null as Bundler,
     
     cjs: null as Bundler,
@@ -40,6 +188,12 @@ export let builder = {
         
         let info = await git.get_version_info()
         
+        const resolve_alias: BundlerOptions['resolve_alias'] = {
+            '@i18n': `${fpd_root}i18n/index.ts`,
+            '@test': `${fpd_root}test`,
+            '@': `${fpd_root}src`
+        }
+        
         await Promise.all([
             this.build_package_json(),
             
@@ -52,16 +206,14 @@ export let builder = {
                 'web',
                 fpd_root,
                 fpd_out_dataview,
-                ramdisk ? `${fpd_ramdisk_root}webpack/` : undefined,
+                undefined,
                 {
                     'index.js': './src/dataview/index.tsx',
                     'window.js': './src/dataview/window.tsx',
                     'webview.js': './src/dataview/webview.tsx',
                 },
                 {
-                    resolve_alias: {
-                        '@i18n': `${fpd_root}i18n/index.ts`,
-                    },
+                    resolve_alias,
                     external_dayjs: true,
                     production,
                     license: production,
@@ -99,7 +251,7 @@ export let builder = {
                 'nodejs',
                 fpd_root,
                 fpd_out,
-                ramdisk ? `${fpd_ramdisk_root}webpack/` : undefined,
+                undefined,
                 {
                     'index.cjs': './src/index.ts',
                     'debugger.cjs': './src/debugger/index.ts',
@@ -114,9 +266,7 @@ export let builder = {
                         FPD_ROOT: fpd_root.quote(),
                         EXTENSION_VERSION: `${info.version} (${info.time} ${info.hash})`.quote(),
                     },
-                    resolve_alias: {
-                        '@i18n': `${fpd_root}i18n/index.ts`,
-                    },
+                    resolve_alias,
                     assets: {
                         productions: [
                             'README.md', 'README.zh.md', 'icons/', 'LICENSE.txt',
@@ -324,7 +474,7 @@ export let builder = {
                 title: {
                     zh: 'DolphinDB: 单元测试',
                     en: 'DolphinDB: Unit Test'
-                }  
+                }
             },
             {
                 command: 'set_decimals',
@@ -1020,6 +1170,12 @@ export let builder = {
             })
         ])
     },
+    
+    
+    async build_and_close (production: boolean) {
+        await this.build(production)
+        await this.close()
+    },
 }
 
 
@@ -1074,3 +1230,6 @@ interface Schema {
     enum?: string[]
     enumDescriptions?: string[]
 }
+
+
+await main()

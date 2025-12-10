@@ -50,15 +50,13 @@
     
     .chart
         .chart-title
-            margin-top: 8px
-            min-height: 0px
+            margin-top: 4px
             text-align: center
         
         .chart-body
             flex: 1
             min-height: 0px
-            overflow: auto
-            padding: 0px 16px 8px 16px
+            overflow: hidden
     
     
     .dict
@@ -91,7 +89,7 @@
                 
             .ant-tree-treenode:not(.ant-tree-treenode-disabled)
                 .ant-tree-node-content-wrapper:hover
-                    color: variables.$dropdown-selected-background-color
+                    color: variables.$tree-node-hover-color
                 
             .ant-tree-node-content-wrapper.ant-tree-node-selected
                 color: variables.$line-number-foreground-color
@@ -125,9 +123,6 @@
             height: 100%
             &:hover
                 background: variables.$dropdown-active-background-color
-    
-        .tensor-elem-count
-            color: #000000
     
         .type-name
             color: #2d6ebe
@@ -265,6 +260,14 @@
     &.themed
         .default-obj
             color: variables.$font-color
+            padding: 10px
+            font-size: 20px
+            word-wrap: break-word
+            
+        
+        .tensor
+            .tensor-elem-count
+                color: variables.$font-color !important
         
         .vector, .table, .matrix
             .row-head

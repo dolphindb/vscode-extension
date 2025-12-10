@@ -529,5 +529,14 @@
     },
     "{{parser}} parser 暂不支持调试功能": {
         "en": "{{parser}} parser does not currently support debugging"
+    },
+    "弹窗被浏览器拦截，请设置网页允许弹出式窗口和重定向": {
+        "en": "Pop-up windows are blocked by the browser. Please set the webpage to allow pop-up windows and redirects"
+    },
+    "如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接且能够连接到服务器，否则请在系统中关闭代理，\n": {
+        "en": "If a system proxy is configured, the proxy software and proxy server need to support WebSocket connections and be able to connect to the server. Otherwise, please turn off the proxy in the system,\n"
+    },
+    "然后打开 vscode 设置，搜索 \"代理\" 或者 proxy，将扩展代理支持 (Http: Proxy Support) 关闭 (设置为 off)，设置后重启 VSCode 再次尝试\n": {
+        "en": "Then open the vscode settings, search for\" proxy\"or proxy, turn off the extended proxy support (Http: Proxy Support)(set to off), restart the VSCode and try again\n"
     }
 }

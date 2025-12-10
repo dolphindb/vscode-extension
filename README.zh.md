@@ -43,8 +43,7 @@ DolphinDB 公司开发了这个针对 DolphinDB 数据库的 VS Code 插件，�
 ## 开发说明
 
 打开下面的链接，在机器上安装最新版的 node.js 及浏览器。  
-- windows: https://nodejs.org/en/download/prebuilt-installer/current
-- linux: https://github.com/nodesource/distributions?tab=readme-ov-file#debian-and-ubuntu-based-distributions  
+https://nodejs.org/en/download/current
 
 ```shell
 # 安装 pnpm 包管理器
@@ -75,6 +74,9 @@ pnpm run scan
 # 手动补全未翻译词条
 # 再次运行扫描以更新词典文件 dict.json
 pnpm run scan
+
+# 运行测试
+pnpm run test
 
 # 构建
 # pnpm run build

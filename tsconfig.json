@@ -2,9 +2,7 @@
     "include": [
         "./eslint.config.ts",
         
-        "./build.ts",
-        
-        "./dev.ts",
+        "./commands.ts",
         
         "./src/index.ts",
         
@@ -18,6 +16,8 @@
     "compilerOptions": {
         "paths": {
             "@i18n": ["./i18n/index.ts"],
+            "@test/*": ["./test/*"],
+            "@/*": ["./src/*"]
         },
         
         

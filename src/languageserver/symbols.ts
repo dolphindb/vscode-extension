@@ -538,8 +538,8 @@ export function getFileUsedModule (text: string): string[] {
             const trimmedLine = line.trim()
             return trimmedLine
         })
-        // 过滤出以 `use` 开头的行
-        .filter(line => line.startsWith('use'))
+        // 过滤出以 `use` 开头的行，但排除 `use catalog` 
+        .filter(line => line.startsWith('use') && !line.startsWith('use catalog'))
         // 使用正则表达式提取模块名
         .map(line => {
             const match = useRegex.exec(line)

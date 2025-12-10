@@ -1,16 +1,14 @@
 import { promises as fs } from 'fs'
 
 import { DdbObj, DdbDict, DdbString, DdbVectorString, DdbVectorInt, DdbVectorAny, DdbInt, DdbBool, DdbForm, DdbType, DdbVoid } from 'dolphindb'
+import { decode } from 'xshell'
+
 
 import { type Sources } from './sources.ts'
 
-// DDB数据类型转换相关
-/** 
-    基本数据类型到DdbObj的转换
-    @param value 数字、布尔、字符串
-    @returns DdbObj
-*/
-export function basicType2DdbObj (value: any): DdbObj {
+/** 基本数据类型到 DdbObj 的转换
+    @param value 数字、布尔、字符串 */
+export function basictype2ddbobj (value: any): DdbObj {
     if (typeof value === 'string') 
         return new DdbString(value)
      else if (typeof value === 'number')
@@ -22,12 +20,8 @@ export function basicType2DdbObj (value: any): DdbObj {
     
 }
 
-/** 
-    数组转换为DdbVector
-    @param arr 待转换数组
-    @returns DdbVectorAny
-*/
-export function array2DdbVector (arr: Array<any>): DdbVectorAny {
+/** 数组转换为DdbVector */
+export function array2ddbvector (arr: Array<any>): DdbVectorAny {
     const res: DdbObj[] = [ ]
     // 类型判断，全是数字传VectorInt，服务端说这样方便他们处理
     if (arr.every(item => typeof item === 'string')) 
@@ -37,33 +31,29 @@ export function array2DdbVector (arr: Array<any>): DdbVectorAny {
     
     arr.forEach(item => {
         if (item instanceof Array) 
-            res.push(array2DdbVector(item))
+            res.push(array2ddbvector(item))
          else if (typeof item === 'object')
-             res.push(json2DdbDict(item))
+             res.push(json2ddbdict(item))
          else
-             res.push(basicType2DdbObj(item))
-        
+             res.push(basictype2ddbobj(item))
     })
     return new DdbVectorAny(res)
 }
 
-/** 
-    json数据转换为DdbDict
-    @param data 支持嵌套json、数组、基本数据类型
-    @returns DdbDict
-*/
-export function json2DdbDict (data: Object): DdbDict {
+/** json 数据转换为 DdbDict
+    @param data 支持嵌套 json、数组、基本数据类型 */
+export function json2ddbdict (data: any): DdbDict {
     const keys: string[] = [ ],
         values: DdbObj[] = [ ]
         
     Object.entries(data).forEach(([key, value]) => {
         keys.push(key)
         if (value instanceof Array) 
-            values.push(array2DdbVector(value))
+            values.push(array2ddbvector(value))
          else if (typeof value === 'object')
-             values.push(json2DdbDict(value))
+             values.push(json2ddbdict(value))
          else
-             values.push(basicType2DdbObj(value))
+             values.push(basictype2ddbobj(value))
         
     })
     
@@ -79,55 +69,31 @@ export function json2DdbDict (data: Object): DdbDict {
     )
 }
 
-// 文件读写相关
-type FileAccessor = {
-    isWindows: boolean
-    readFile(path: string): Promise<Uint8Array>
-    writeFile(path: string, contents: Uint8Array): Promise<void>
-}
 
-const fsAccessor: FileAccessor = {
-    isWindows: process.platform === 'win32',
-    async readFile (path: string): Promise<Uint8Array> {
-        return fs.readFile(path)
-    },
-    async writeFile (path: string, contents: Uint8Array): Promise<void> {
-        return fs.writeFile(path, contents)
-    }
-}
-
-/** 
-    Normalize path casing and separators to match the casing and separators of the OS.
+/** Normalize path casing and separators to match the casing and separators of the OS.
     @param path path to normalize
-    @returns path with normalized casing and separators
-*/
-export function normalizePathAndCasing (path: string) {
-    if (fsAccessor.isWindows) 
+    @returns path with normalized casing and separators */
+export function normalize_path_and_casing (path: string) {
+    if (process.platform === 'win32') 
         return path.replace(/\//g, '\\').toLowerCase()
      else 
         return path.replace(/\\/g, '/')
-    
 }
 
-function initializeContents (memory: Uint8Array) {
-    return new TextDecoder().decode(memory)
-}
 
-/** 
-    Load the contents of a file.
+/** Load the contents of a file.
     @param path path to the file
-    @returns string contents of the file
-*/
-export async function loadSource (path: string) {
-    return initializeContents(await fsAccessor.readFile(path))
+    @returns string contents of the file */
+export async function load_source (path: string) {
+    return decode(await fs.readFile(path))
 }
 
-export async function checkFile (moduleName: string, localPath: string, sources: Sources): Promise<boolean> {
+export async function check_file (moduleName: string, localPath: string, sources: Sources): Promise<boolean> {
     if (sources.getIfSourceVerified(moduleName)) 
         return true
     
     
-    const [localFile, remoteFile] = await Promise.all([loadSource(localPath), sources.getContent(moduleName)])
+    const [localFile, remoteFile] = await Promise.all([load_source(localPath), sources.getContent(moduleName)])
     
     sources.setSourceVerified(moduleName, true)
     return localFile === remoteFile

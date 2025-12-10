@@ -7,7 +7,7 @@ import { Server } from 'xshell/server.js'
 
 import { type DDB, type DdbMessage, type InspectOptions } from 'dolphindb'
 
-import { t } from '../i18n/index.ts'
+import { t } from '@i18n'
 
 import { dataview } from './dataview/dataview.ts'
 import { type DdbVar } from './variables.ts'
@@ -64,11 +64,11 @@ export async function start_server () {
         
         
         funcs: {
-            async subscribe_repl ({ id }, websocket) {
+            async subscribe_repl ({ id }, remote) {
                 console.log(t('page 已订阅 repl'))
                 
                 function subscriber ({ type, data }: DdbMessage, ddb: DDB, options?: InspectOptions) {
-                    server.remote.send(
+                    remote.send(
                         {
                             id,
                             data: (() => {
@@ -81,8 +81,7 @@ export async function start_server () {
                                         return [type, data.pack(), data.le, options]
                                 }
                             })()
-                        },
-                        websocket
+                        }
                     )
                 }
                 
@@ -90,44 +89,43 @@ export async function start_server () {
                 
                 function on_close () {
                     console.log(t('page 的 repl 订阅被关闭，因为 websocket 连接被关闭'))
-                    websocket.removeEventListener('close', on_close)
+                    remote.lwebsocket.resource.removeEventListener('close', on_close)
                     server.subscribers_repl = server.subscribers_repl.filter(s => s !== subscriber)
                 }
                 
-                websocket.addEventListener('close', on_close)
+                remote.lwebsocket.resource.addEventListener('close', on_close)
             },
             
             
-            async subscribe_inspection ({ id }, websocket) {
+            async subscribe_inspection ({ id }, remote) {
                 console.log(t('page 已订阅 inspection'))
                 
                 function subscriber (ddbvar: Partial<DdbVar>, open: boolean, options: InspectOptions, buffer: Uint8Array | null, le: boolean) {
-                    server.remote.send({ id, data: [ddbvar, open, options, buffer, le] }, websocket)
+                    remote.send({ id, data: [ddbvar, open, options, buffer, le] })
                 }
                 
                 server.subscribers_inspection.push(subscriber)
                 
                 function on_close () {
                     console.log(t('page 的 inspection 订阅被关闭，因为 websocket 连接被关闭'))
-                    websocket.removeEventListener('close', on_close)
+                    remote.lwebsocket.resource.removeEventListener('close', on_close)
                     server.subscribers_inspection = server.subscribers_inspection.filter(s => s !== subscriber)
                 }
                 
-                websocket.addEventListener('close', on_close)
+                remote.lwebsocket.resource.addEventListener('close', on_close)
             },
             
             
-            async eval ({ data: [node, script] }: Message<[string, string]>, websocket) {
+            async eval ({ data: [node, script] }: Message<[string, string]>) {
                 let { ddb } = connector.connections.find(({ name }) => name === node)
                 const { buffer, le } = await ddb.eval(script, { parse_object: false })
                 return [buffer, le]
             },
             
             
-            ready (message, websocket) {
+            ready () {
                 console.log(t('page 已准备就绪'))
                 dataview.ppage.resolve()
-                return [ ]
             }
         },
         

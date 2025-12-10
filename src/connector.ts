@@ -16,7 +16,7 @@ import {
 
 import dayjs from 'dayjs'
 
-import { inspect, assert, delay, strcmp } from 'xshell'
+import { inspect, assert, delay, strcmp, ramdisk, MyProxy } from 'xshell'
 
 import {
     DDB,
@@ -26,12 +26,11 @@ import {
     DdbType,
     type DdbOptions,
     type DdbTableObj,
-    type DdbVectorStringObj,
-    type DdbTableData,
+    type DdbVectorStringObj
 } from 'dolphindb'
 
 
-import { t } from '../i18n/index.ts'
+import { t } from '@i18n'
 
 import { statbar } from './statbar.ts'
 import { open_connection_settings } from './commands.ts'
@@ -134,7 +133,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
         try {
             await pconnect
         } catch (error) {
-            const { autologin, username, password, python, sql } = connection.options
+            const { autologin, username, password, python, kdb, sql } = connection.options
             
             const answer = await window.showErrorMessage<DdbMessageItem>(
                 error.message,
@@ -153,16 +152,17 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
                                     username,
                                     password,
                                     python,
+                                    kdb,
                                     sql
                                 },
                                 { colors: false, compact: true }
                             ) + '\n' +
                             t('先尝试用浏览器访问对应的 server 地址，如: {{url}}\n', { url: connection.url.replace(/^ws(s?):\/\//, 'http$1://') }) +
                             t('如果可以打开网页且正常登录使用，再检查:\n') +
-                            t('- 执行 `version()` 函数，返回的 DolphinDB Server 版本应不低于 `1.30.16` 或 `2.00.4`\n') +
-                            t('- 如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接，否则请在系统中关闭代理，或者将 DolphinDB Server IP 添加到排除列表，然后重启 VSCode\n')) +
+                            t('如果有配置系统代理，则代理软件以及代理服务器需要支持 WebSocket 连接且能够连接到服务器，否则请在系统中关闭代理，\n') + 
+                            t('然后打开 vscode 设置，搜索 "代理" 或者 proxy，将扩展代理支持 (Http: Proxy Support) 关闭 (设置为 off)，设置后重启 VSCode 再次尝试\n')) +
                         t('调用栈:\n') +
-                        error.stack).truncate(600),
+                        error.stack).truncate(800, true),
                 },
                 {
                     title: t('确认'),
@@ -293,8 +293,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
         if ((languageId === 'dolphindb' && python) || (languageId === 'dolphindb-python' && !python))
             languages.setTextDocumentLanguage(
                 window.activeTextEditor.document,
-                python ? 'dolphindb-python' : 'dolphindb'
-            )
+                python ? 'dolphindb-python' : 'dolphindb')
     }
     
     refresh (database: boolean) {
@@ -334,14 +333,16 @@ export class DdbConnection extends TreeItem {
         
         verbose: false,
         
-        mappings: null
+        mappings: null,
+        
+        proxy: ramdisk ? MyProxy.work : undefined
     }
     
     // --- 状态
     
     ddb: DDB
     
-    /** server 版本号, 格式为 x.x.x.x */
+    /** server 版本号 */
     version: string
     
     /** 和 ddb.connected 含义不同，这里表示是否连接成功过，用来区分错误提示 */
@@ -365,16 +366,6 @@ export class DdbConnection extends TreeItem {
     mappings: Record<string, string>
     
     client_auth = false
-    
-    load_table_variable_schema_defined = false
-    
-    get_csv_content_defined = false
-    
-    load_table_schema_defined = false
-    
-    load_database_schema_defined = false
-    
-    peek_table_defined = false
     
     // --- 通过 getClusterPerf 拿到的集群节点信息
     nodes: DdbNode[]
@@ -451,7 +442,7 @@ export class DdbConnection extends TreeItem {
             this.get_node_type(),
             this.get_node_alias(),
             this.get_controller_alias(),
-            this.get_formatted_version(),
+            this.get_version(),
             this.check_client_auth()
         ])
         
@@ -466,7 +457,7 @@ export class DdbConnection extends TreeItem {
     }
     
     
-    async disconnect () {
+    disconnect () {
         this.ddb.disconnect()
         this.logined = false
     }
@@ -478,105 +469,6 @@ export class DdbConnection extends TreeItem {
             this.logined = (await this.ddb.call('getCurrentSessionAndUser')).value[1].value !== 'guest'
         else
             this.logined = false
-    }
-    
-    
-    async define_load_table_variable_schema () {
-        if (!this.load_table_variable_schema_defined) {
-            await this.ddb.eval(
-                this.options.python ?
-                    ('def load_table_variable_schema (table_name):\n' +
-                    '    return schema(objByName(table_name))\n')
-                :
-                    ('def load_table_variable_schema (table_name) {\n' +
-                    '    return schema(objByName(table_name))\n' +
-                    '}\n')
-            )
-            
-            this.load_table_variable_schema_defined = true
-        }
-    }
-    
-    
-    async define_peek_table () {
-        if (!this.peek_table_defined) {
-            await this.ddb.eval(
-                this.options.python ?
-                    ('def peek_table (db_path, tb_name):\n' +
-                    '    return select top 100 * from loadTable(db_path, tb_name)\n')
-                :
-                    ('def peek_table (db_path, tb_name) {\n' +
-                    '    return select top 100 * from loadTable(db_path, tb_name)\n' +
-                    '}\n')
-            )
-            
-            this.peek_table_defined = true
-        }
-    }
-        
-    
-    async define_load_table_schema () {
-        if (!this.load_table_schema_defined) {
-            await this.ddb.eval(
-                this.options.python ?
-                    ('def load_table_schema (db_path, tb_name):\n' +
-                    '    return schema(loadTable(db_path, tb_name))\n')
-                :
-                    ('def load_table_schema (db_path, tb_name) {\n' +
-                    '    return schema(loadTable(db_path, tb_name))\n' +
-                    '}\n')
-            )
-            
-            this.load_table_schema_defined = true
-        }
-    }
-    
-    
-    async define_load_database_schema () {
-        if (!this.load_database_schema_defined) {
-            await this.ddb.eval(
-                this.options.python ?
-                    'def load_database_schema (db_path):\n' +
-                    '    return schema(database(db_path))\n'
-                :
-                    'def load_database_schema (db_path) {\n' +
-                    '    return schema(database(db_path))\n' +
-                    '}\n'
-            )
-            
-            this.load_database_schema_defined = true
-        }
-    }
-    
-    
-    async define_get_csv_content () { 
-        if (!this.get_csv_content_defined) {
-            await this.ddb.eval(
-                this.options.python ?
-                    'def get_csv_content (name_or_obj):\n' +
-                    '    type = typestr(name_or_obj)\n' +
-                    "    if type == 'CHAR' or type == 'STRING':\n" +
-                    '        obj = objByName(name_or_obj)\n' +
-                    '    else:\n' +
-                    '        obj = name_or_obj\n' +
-                    '        \n' +
-                    '    table_size = size(obj)\n' +
-                    "    return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, char(','), True)\n"
-                :
-                    'def get_csv_content (name_or_obj) {\n' +
-                    '    type = typestr name_or_obj\n' +
-                    "    if (type =='CHAR' || type =='STRING')\n" +
-                    '        obj = objByName(name_or_obj)\n' +
-                    '    else\n' +
-                    '        obj = name_or_obj\n' +
-                    '        \n' +
-                    '    table_size = size obj\n' +
-                    "    return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, ',', true)\n" +
-                    '}\n'
-                )
-            
-            this.get_csv_content_defined = true
-        }  
     }
     
     
@@ -610,19 +502,10 @@ export class DdbConnection extends TreeItem {
          append!(a, 1)  // error: append!(a, 1) => Read only object or object without ownership can't be applied to mutable function append!
          ``` */
     async update_vars () {
-        const objs = await this.ddb.call('objs', [true])
+        let { ddb } = this
         
-        const vars_data = objs.to_rows()
-            .map(({
-                name,
-                type,
-                form,
-                rows,
-                columns,
-                bytes,
-                shared,
-                extra,
-            }: {
+        const vars_data = (
+            await ddb.invoke<{
                 name: string
                 type: string
                 form: string
@@ -631,57 +514,68 @@ export class DdbConnection extends TreeItem {
                 bytes: bigint
                 shared: boolean
                 extra: string
-            }) => ({
-                node: this.name,
-                
-                connection: this,
-                
-                name,
-                
-                type: (() => {
-                    const _type = type.toLowerCase()
-                    return _type.endsWith('[]') ? DdbType[_type.slice(0, -2)] + 64 : DdbType[_type]
-                })(),
-                
-                form: (() => {
-                    const _form = form.toLowerCase()
-                    switch (_form) {
-                        case 'dictionary':
-                            return DdbForm.dict
+            }[]>('objs', [true])
+        ).map(({
+            name,
+            type,
+            form,
+            rows,
+            columns,
+            bytes,
+            shared,
+            extra,
+        }) => ({
+            node: this.name,
+            
+            connection: this,
+            
+            name,
+            
+            type: (() => {
+                const _type = type.toLowerCase()
+                return _type.endsWith('[]') ? DdbType[_type.slice(0, -2)] + 64 : DdbType[_type]
+            })(),
+            
+            form: (() => {
+                const _form = form.toLowerCase()
+                switch (_form) {
+                    case 'dictionary':
+                        return DdbForm.dict
+                    
+                    case 'sysobj':
+                        return DdbForm.object
                         
-                        case 'sysobj':
-                            return DdbForm.object
-                            
-                        default:
-                            return DdbForm[_form]
-                    }
-                })(),
-                
-                rows,
-                cols: columns,
-                bytes,
-                shared,
-                extra,
-                obj: undefined as DdbObj
-            })).filter(v => 
-                v.name !== 'pnode_run' && 
-                !(v.form === DdbForm.object && pyobjs.has(v.name))
-            )
+                    default:
+                        return DdbForm[_form]
+                }
+            })(),
+            
+            rows,
+            cols: columns,
+            bytes,
+            shared,
+            extra,
+            obj: undefined as DdbObj
+        })).filter(v =>
+            v.name !== 'pnode_run' && 
+            (!ddb.python || !(v.form === DdbForm.object && pyobjs.has(v.name))))
         
         let immutables = vars_data.filter(v => v.form === DdbForm.scalar || v.form === DdbForm.pair)
         
         if (immutables.length) {
-            const { value: values } = await this.ddb.eval<DdbObj<DdbObj[]>>(
-                `(${immutables.map(({ name }) => name).join(', ')}, 0)${ this.options.python ? '.toddb()' : '' }`
-            )
+            const { value: values } = await ddb.eval<DdbObj<DdbObj[]>>(
+                [
+                    ...immutables.select('name'), 
+                    ddb.kdb ? '()' : '0'  // 确保生成 any vector
+                ].join(ddb.kdb ? '; ' : ', ').bracket() + 
+                (ddb.python ? '.toddb()' : ''))
             
-            for (let i = 0, len = values.length - 1;  i < len;  i++) {
+            for (let i = 0, len = values.length - 1;  i < len;  ++i) {
                 immutables[i].obj = values[i]
                 
                 // 此处需要用变量值的类型来替换 objs(true) 中获取的变量的类型，因为当变量类型为 string 且变量值很长时，server 返回的变量值的类型是 blob
                 immutables[i].type = values[i].type
             }
-                
         }
         
         this.vars = vars_data.map(data => new DdbVar(data))
@@ -768,7 +662,7 @@ export class DdbConnection extends TreeItem {
                     
                     ;(
                         await this.ddb.invoke('getSchemaByCatalog', [catalog])
-                    ).data
+                    )
                         // 图的情况下 dbUrl 为空字符串，比如现在用 demo.orca_graph.tmp 作为一个图的标识了，demo.orca_graph 不是表的概念了
                         .filter(({ dbUrl }) => dbUrl)
                         .sort((a, b) => strcmp(a.schema, b.schema))
@@ -871,14 +765,14 @@ export class DdbConnection extends TreeItem {
     Only master or single mode supports function getClusterPerf. */
     async get_cluster_perf () {
         const nodes = (
-            await this.ddb.invoke<DdbTableData<DdbNode>>('getClusterPerf', [true], {
+            await this.ddb.invoke<DdbNode[]>('getClusterPerf', [true], {
                 urgent: true,
                 
                 ... this.client_auth || (this.node_type === NodeType.controller || this.node_type === NodeType.single)
                     ? { }
                     : { node: this.controller_alias },
             })
-        ).data.sort((a, b) => strcmp(a.name, b.name))
+        ).sort((a, b) => strcmp(a.name, b.name))
         
         let node: DdbNode, controller: DdbNode, datanode: DdbNode
         
@@ -903,12 +797,9 @@ export class DdbConnection extends TreeItem {
     }
     
     
-    async get_formatted_version () {
-        const { value } = await this.ddb.call<DdbObj<string>>('version')
-        let version = value.split(' ')[0]
-        // 将 x.x.x 这样的三位版本号补全为 x.x.x.0 的四位版本号
-        version += '.0'.repeat(4 - version.split('.').length)
-        this.version = version
+    async get_version () {
+        this.version = (await this.ddb.invoke<string>('version'))
+            .slice_to(' ')
     }
     
     
@@ -942,3 +833,91 @@ export function register_connector () {
     connector.load_connections()
     connector.view = window.createTreeView('dolphindb.connector', { treeDataProvider: connector })
 }
+
+
+export const funcdefs = {
+    load_table_variable_schema: {
+        dolphindb: 
+            'def load_table_variable_schema (table_name) {\n' +
+            '    return schema(objByName(table_name))\n' +
+            '}\n',
+            
+        python: 
+            'def load_table_variable_schema (table_name):\n' +
+            '    return schema(objByName(table_name))\n',
+        
+        kdb: 'load_table_variable_schema: {[table_name] schema get table_name}\n'
+    },
+    
+    peek_table: {
+        dolphindb:
+            'def peek_table (db_path, tb_name) {\n' +
+            '    return select top 100 * from loadTable(db_path, tb_name)\n' +
+            '}\n',
+            
+        python:
+            'def peek_table (db_path, tb_name):\n' +
+            '    return select top 100 * from loadTable(db_path, tb_name)\n',
+            
+        kdb: 'peek_table: {[db_path; tb_name] select[100] from loadTable[db_path; tb_name]}'
+    },
+    
+    load_table_schema: {
+        dolphindb: 
+            'def load_table_schema (db_path, tb_name) {\n' +
+            '    return schema(loadTable(db_path, tb_name))\n' +
+            '}\n',
+            
+        python:
+            'def load_table_schema (db_path, tb_name):\n' +
+            '    return schema(loadTable(db_path, tb_name))\n',
+            
+        kdb: 'load_table_schema: {[db_path; tb_name] schema loadTable[db_path; tb_name]}'
+    },
+    
+    load_database_schema: {
+        dolphindb: 
+            'def load_database_schema (db_path) {\n' +
+            '    return schema(database(db_path))\n' +
+            '}\n',
+            
+        python:
+            'def load_database_schema (db_path):\n' +
+            '    return schema(database(db_path))\n',
+        
+        kdb: 'load_database_schema: {[db_path] schema database db_path}'
+    },
+    
+    get_csv_content: {
+        dolphindb:
+            'def get_csv_content (name_or_obj) {\n' +
+            '    type = typestr name_or_obj\n' +
+            "    if (type =='CHAR' || type =='STRING')\n" +
+            '        obj = objByName(name_or_obj)\n' +
+            '    else\n' +
+            '        obj = name_or_obj\n' +
+            '        \n' +
+            '    table_size = size obj\n' +
+            "    return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, ',', true)\n" +
+            '}\n',
+            
+        python:
+            'def get_csv_content (name_or_obj):\n' +
+            '    type = typestr(name_or_obj)\n' +
+            "    if type == 'CHAR' or type == 'STRING':\n" +
+            '        obj = objByName(name_or_obj)\n' +
+            '    else:\n' +
+            '        obj = name_or_obj\n' +
+            '        \n' +
+            '    table_size = size(obj)\n' +
+            "    return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, char(','), True)\n",
+            
+        kdb:
+            'get_csv_content: {[name_or_obj]\n' +
+            '    ty: typestr name_or_obj;\n' +
+            '    obj: $[(ty = `CHAR) or (ty = `STRING);get name_or_obj; name_or_obj];\n' +
+            '    table_size: count obj;\n' +
+            '    generateTextFromTable[(select[table_size] from obj); 0; table_size; 0; ",", 1b]\n' +
+            '    }\n'
+    }
+} as const

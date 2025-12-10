@@ -15,7 +15,7 @@ import { documents } from './documents.ts'
 import { ddbModules } from './modules.ts'
 
 import { symbolService } from './symbols.ts'
-import { type IFunctionMetadata, type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types.ts'
+import { type IParamMetadata, type ISymbol, type IVariableMetadata, SymbolType } from './types.ts'
 import { buildFunctionCommentDocs, createRegexForFunctionNames, extractFirstloadTableArgument, getLineContentsBeforePosition, isParenthesisBalanced } from './utils.ts'
 import { dbService } from './database.ts'
 import { getSqlCompletions } from './sql-completions.ts'
@@ -214,6 +214,11 @@ export class CompletionsService {
                 start: { line: position.position.line, character: 0 },
                 end: { line: position.position.line + 1, character: 0 }
             })
+            
+            // 如果当前行是 use catalog，则不提供模块补全
+            if (/^use\s+catalog/i.test(line.trim())) 
+                continue
+            
             const insertText = line.trim().startsWith('use') ? `${moduleName}` : `use ${moduleName}`
             items.push({
                 label: `use ${moduleName}`,

@@ -1,5 +1,64 @@
 # Change Log (更新日志)
 
+## v3.0.405 - 2025.10.10
+#### 功能优化 / Enhancement
+-   关闭 VS Code 时主动断开 WebSocket 连接，以便服务器及时释放资源。  
+    Optimized resource management by closing WebSocket connections when VS Code exits.
+
+#### 缺陷修复 / Bug Fixes
+-   修复查询表数据时，日期及时间类型的列显示为空的问题，此为 3.0.404 引入的问题。  
+    Fixed an issue where columns of TEMPORAL types were displayed as empty when querying a table, which was introduced in version 3.0.404.  
+    
+-   修复 VS Code 数据面板中 extra 字段被错误显示为 “null” 而非应显示为空的问题。  
+    Fixed an issue in the VS Code data panel where the extra field was displayed as “null” instead of appearing empty.  
+
+-   修复使用 plot 函数绘图时，底部图例与坐标轴刻度标签重叠的问题。  
+    Fixed an issue where the bottom legend overlapped with the axis tick labels when using the plot function.  
+
+
+## v3.0.404 - 2025.09.29
+#### 缺陷修复 / Bug Fixes
+-   修复表格数据导出结果为空的问题。此为 3.0.400 引入的问题。  
+    Fixed an issue where exporting table data resulted in empty output. This issue was introduced in version 3.0.400.
+
+-   修复点击“在新窗口中查看变量”时报错 Cannot read properties of undefined (reading 'inspect') 的问题。此为 3.0.400 引入的问题。  
+    Fixed an issue where clicking "View Variable in New Window" caused an error: Cannot read properties of undefined (reading 'inspect'). This issue was introduced in version 3.0.400.
+
+-   修复点击“在新窗口中查看变量”时报错 Cannot read properties of undefined (reading 'inspect') 的问题。此为 3.0.400 引入的问题。  
+    Fixed an issue where clicking "View Variable in New Window" caused an error: Cannot read properties of undefined (reading 'inspect'). This issue was introduced in version 3.0.400.
+
+
+## v3.0.403 - 2025.09.16
+#### 缺陷修复 / Bug Fixes
+- 修复在 settings.json 中设置 kdb: true 后，无法连接 KDB parser 的问题。
+- Fixed an issue where enabling kdb: true in settings.json failed to establish a connection to the KDB parser.
+
+
+## v3.0.400 - 2025.09.12
+#### 新功能 / New Features
+- settings.json 中新增配置 “kdb”，用于选择 KDB Parser 模式。
+- Added new configuration option "kdb" to settings.json to select the KDB Parser mode.
+
+
+## v3.0.301 - 2025.07.17
+#### 缺陷修复 / Bug Fixes
+-   修复 VSCode 插件在 CentOS 7 上无法连接的问题，恢复对旧版 VSCode 和低版本 SSH 的兼容性支持。  
+    Fixed an issue where the VSCode plugin could not connect on CentOS 7. Restored compatibility with older versions of VSCode and SSH.  
+
+
+## v3.0.300 - 2025.07.16
+#### 功能优化 / Enhancement
+-   优化代码提示逻辑，取消在输入逗号后自动补全函数的行为。  
+    Optimized code completion logic by disabling automatic function suggestions after typing a comma.  
+    
+-   优化文件编辑性能，避免自动触发不必要的操作。  
+    Optimized file editing performance by preventing automatic execution of unnecessary operations.  
+    
+#### 缺陷修复 / Bug Fixes
+-   修复在非 DolphinDB 调试场景下无法切换连接的问题。  
+    Fixed an issue where connection switching was blocked during non-DolphinDB debugging scenarios.
+
+
 ## v3.0.211 - 2025.04.27
 #### 新功能 / New Features
 -   新增对 dolphindb.connections 配置项的重名校验，存在同名连接时将会报错。  

@@ -7,7 +7,7 @@
 
 import { createServer, type Server, type Socket } from 'net'
 
-import { t } from '../../i18n/index.ts'
+import { t } from '@i18n'
 
 import { DdbDebugSession } from './adapter.ts'
 

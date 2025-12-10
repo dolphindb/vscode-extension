@@ -15,10 +15,10 @@ import type { DdbObj } from 'dolphindb'
 
 import { delay } from 'xshell'
 
-import { t } from '../../i18n/index.ts'
+import { t } from '@i18n'
 
 import { Remote } from './network.ts'
-import { normalizePathAndCasing, loadSource } from './utils.ts'
+import { normalize_path_and_casing, load_source } from './utils.ts'
 
 import { Sources } from './sources.ts'
 
@@ -136,7 +136,7 @@ export class DdbDebugSession extends LoggingDebugSession {
     // 不支持多线程，threadID固定为1
     private static readonly threadID = 1
     
-    // 与server交互的对象
+    // 与 server 交互的对象
     private _remote: Remote
     private _launchArgs: DdbLaunchRequestArguments
     
@@ -236,18 +236,18 @@ export class DdbDebugSession extends LoggingDebugSession {
     }
     
     protected override async launchRequest (response: DebugProtocol.LaunchResponse, args: DdbLaunchRequestArguments) {
-        // 传入用户名密码，发送消息发现未连接时建立连接，同时根据autologin决定是否登录
+        // 传入用户名密码，发送消息发现未连接时建立连接，同时根据 autologin 决定是否登录
         this._remote = new Remote(args.url, args.username, args.password, args.autologin, this.handleServerError.bind(this))
         this._sources = new Sources(this._remote)
         this._launchArgs = args
         
         // 加载主文件资源
-        const fp_main = (this._entrySourcePath = normalizePathAndCasing(args.program))
+        const fp_main = this._entrySourcePath = normalize_path_and_casing(args.program)
         
         
         ;(async () => {
             try {
-                const source = await loadSource(fp_main)
+                const source = await load_source(fp_main)
                 
                 const src = source.replace(/\r\n/g, '\n')
                 this._entrySourceRef = this._sources.add({
@@ -277,7 +277,9 @@ export class DdbDebugSession extends LoggingDebugSession {
         
         this.registerEventHandlers()
         
-        await Promise.all([this._prerequisites.wait('scriptResolved'), this._prerequisites.wait('configurationDone')])
+        await Promise.all([
+            this._prerequisites.wait('scriptResolved'), 
+            this._prerequisites.wait('configurationDone')])
         
         this._remote.call('runScriptWithDebug')
         this.sendResponse(response)
@@ -311,7 +313,7 @@ export class DdbDebugSession extends LoggingDebugSession {
             line,
             verified: false
         }))
-        const fp_src = normalizePathAndCasing(args.source.path!)
+        const fp_src = normalize_path_and_casing(args.source.path!)
         let moduleName = fp_src === this._entrySourcePath ? '' : args.source.name.endsWith('.dos') ? args.source.name.slice(0, -4) : args.source.name
         
         if (this._sources.hasModule(moduleName)) {
@@ -619,7 +621,7 @@ export class DdbDebugSession extends LoggingDebugSession {
         const bpCache = this._sources.getBreakpoints()
         // 重新读取最新的主模块内容，重开本地sources缓存
         const entryPath = this._sources.getSource(this._entrySourceRef).path!
-        const newSource = (await loadSource(entryPath)).replace(/\r\n/g, '\n')
+        const newSource = (await load_source(entryPath)).replace(/\r\n/g, '\n')
         this._sources = new Sources(this._remote)
         this._entrySourceRef = this._sources.add({
             name: '',
@@ -737,26 +739,14 @@ export class DdbDebugSession extends LoggingDebugSession {
     
     
     protected override async customRequest (command: string, response: DebugProtocol.Response, args: any, request?: DebugProtocol.Request): Promise<void> {
-        switch (command) { 
-            // 用于获取调试 sessionId
-            case 'getCurrentSessionId': {
-                response.body = await this._remote.call('getCurrentSessionAndUser', [ ])
-                this.sendResponse(response)
-                break
-            }
-            
-            case 'getVersion': {
-                let version = (await this._remote.call('version')).split(' ')[0]
-                // 将 x.x.x 这样的三位版本号补全为 x.x.x.0 的四位版本号
-                version += '.0'.repeat(4 - version.split('.').length)
-                response.body = version
-                this.sendResponse(response)
-                break
-            }
-            
-            default:
-                this.sendResponse(response)
-                break
-        }
+        // 用于获取调试 session id
+        if (command === 'get_current_session_id')
+            // 直接调用 getCurrentSessionAndUser() 返回的 session id 是 ddb long (uint64)，由于传输协议为 json 在 server 序列化时会丢失精度
+            // 参考 network.ts handle 方法
+            // 只能先转为 string 再通过 json 传输
+            response.body = BigInt(
+                await this._remote.call('string{getCurrentSessionAndUser()[0]}'))
+        
+        this.sendResponse(response)
     }
 }

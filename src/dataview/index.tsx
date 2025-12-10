@@ -72,7 +72,7 @@ class DataViewModel extends Model<DataViewModel> {
                         }
                     },
                     // error 可能会有，但在 dataview 里不关心
-                    { on_error: noop }
+                    noop
                 ),
                 
                 remote.subscribe<[any, boolean, InspectOptions?, Uint8Array?, boolean?]>(
@@ -118,7 +118,7 @@ class DataViewModel extends Model<DataViewModel> {
                         }
                     },
                     // error 可能会有，但在 dataview 里不关心
-                    { on_error: noop }
+                    noop
                 )
             ])
         )

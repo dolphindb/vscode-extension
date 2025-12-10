@@ -8,14 +8,14 @@ import {
 
 import { assert } from 'xshell/utils.js'
 
-import { type DdbDictObj, DdbFunctionType, type DdbVectorStringObj, type DdbObj } from 'dolphindb'
+import { type DdbDictObj, type DdbVectorStringObj } from 'dolphindb'
 
-import { t } from '../i18n/index.ts'
+import { t } from '@i18n'
 
 
 import { NodeType } from './constant.ts'
 
-import { connector, type DdbConnection } from './connector.ts'
+import { connector, funcdefs, type DdbConnection } from './connector.ts'
 
 import { fpd_ext } from './index.ts'
 
@@ -78,6 +78,7 @@ export class DdbDatabase extends TreeItem {
     
     path: string
     
+    
     constructor (path: string, connection: DdbConnection, title?: string) {
         super(title ?? path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
         assert(path.startsWith('dfs://'), t('数据库路径应该以 dfs:// 开头'))
@@ -88,15 +89,14 @@ export class DdbDatabase extends TreeItem {
     }
     
     async get_schema () {
-        await connector.connection.define_load_database_schema()
+        let { connection } = connector
+        let { ddb } = connection
         
-        return connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
-            // 这个函数在 define_load_database_schema 中已定义
-            'load_database_schema',
+        return ddb.call<DdbDictObj<DdbVectorStringObj>>(
+            await ddb.define(funcdefs.load_database_schema[ddb.language]),
             // 调用该函数时，数据库路径不能以 / 结尾
             [this.path.slice(0, -1)],
-            connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name } : { }
-        )
+            connection.node_type === NodeType.controller ? { node: connection.datanode.name } : { })
     }
 }
 
@@ -122,26 +122,26 @@ export class DdbTable extends TreeItem {
     
     
     async get_obj () {
-        await connector.connection.define_peek_table()
-        let obj = await connector.connection.ddb.call(
-            'peek_table',
+        let { connection } = connector
+        let { ddb } = connection
+        let obj = await ddb.call(
+            await ddb.define(funcdefs.peek_table[ddb.language]),
             [this.database.path.slice(0, -1), this.name],
-            connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name } : { }
-        )
+            connection.node_type === NodeType.controller ? { node: connection.datanode.name } : undefined)
         obj.name = `${this.name} (${t('前 100 行')})`
         return obj
     }
     
     
     async get_schema () {
-        await connector.connection.define_load_table_schema()
-        return connector.connection.ddb.call<DdbDictObj<DdbVectorStringObj>>(
-            // 这个函数在 define_load_table_schema 中已定义
-            'load_table_schema',
+        let { connection } = connector
+        let { ddb } = connection
+        
+        return ddb.call<DdbDictObj<DdbVectorStringObj>>(
+            await ddb.define(funcdefs.load_table_schema[ddb.language]),
             // 调用该函数时，数据库路径不能以 / 结尾
             [this.database.path.slice(0, -1), this.name],
-            connector.connection.node_type === NodeType.controller ? { node: connector.connection.datanode.name } : { }
-        )
+            connection.node_type === NodeType.controller ? { node: connection.datanode.name } : undefined)
     }
 }
 

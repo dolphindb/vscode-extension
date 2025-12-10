@@ -1926,16 +1926,18 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
         },
         legend: {
             data: col_labels.map(String),
+            top: 30,
+            right: 30,
             textStyle: {
                 color: 'var(--vscode-editor-foreground, #000000)'
             }
         },
         grid: {
-            top: 20,
-            bottom: 20,
-            left: 20,
-            right: 20,
-            containLabel: true
+            top: 10,
+            bottom: 0,
+            left: 10,
+            right: 10,
+            outerBoundsMode: 'same',
         },
         animation: false
     }
@@ -1954,14 +1956,14 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
             padding: [0, 10, 0, 10]  
         },
         nameLocation: 'middle' as const,  
-        nameGap: 30, 
+        nameGap: 10,
         axisTick: {
             show: true,
             alignWithLabel: true
         },
         axisLabel: {
             interval: 'auto',  
-            hideOverlap: true, 
+            hideOverlap: true,
             formatter (value, index) {
                 if (typeof value === 'string' && value.length > 10)
                     return value.truncate(10)
@@ -1982,7 +1984,7 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
                         ...axis_style
                     } as echarts.EChartsOption['xAxis'],
                     yAxis: {
-                        type: 'value',
+                        type: 'value' as any,
                         name: titles.y_axis,
                         ...axis_style
                     },
@@ -2043,7 +2045,7 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
                 } as echarts.EChartsOption['xAxis'],
                 yAxis: {
                     ...axis_style,
-                    type: 'value',
+                    type: 'value' as any,
                     name: titles.y_axis,
                 },
                 series: col_labels.map(label => ({
@@ -2059,7 +2061,7 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
                 ...base,
                 xAxis: {
                     ...axis_style,
-                    type: 'value',
+                    type: 'value' as any,
                     name: titles.y_axis,
                 },
                 yAxis: {
@@ -2107,7 +2109,7 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
                 },
                 yAxis: {
                     ...axis_style,
-                    type: 'value',
+                    type: 'value' as any,
                     name: titles.y_axis,
                 },
                 series: col_labels.map(label => ({
@@ -2134,12 +2136,12 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
                 },
                 xAxis: {
                     ...axis_style,
-                    type: 'value',
+                    type: 'value' as any,
                     name: titles.x_axis,
                 },
                 yAxis: {
                     ...axis_style,
-                    type: 'value',
+                    type: 'value' as any,
                     name: titles.y_axis,
                 },
                 series: col_labels.map(label => ({
@@ -2181,14 +2183,14 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
                 },
                 xAxis: {
                     ...axis_style,
-                    type: 'value',
+                    type: 'value' as any,
                     name: !titles.x_axis || titles.x_axis === '' ? t('区间') : titles.x_axis,
                     min: xMin,
                     max: xMax,
                 },
                 yAxis: {
                     ...axis_style,
-                    type: 'value',
+                    type: 'value' as any,
                     name: !titles.y_axis || titles.y_axis === '' ? t('频次') : titles.y_axis,
                 },
                 series: [{
@@ -2219,13 +2221,13 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
                 yAxis: [
                     {
                         ...axis_style,
-                        type: 'value',
+                        type: 'value' as any,
                         name: titles.y_axis,
                         scale: true,
-                    },
+                    } as any,
                     {
                         ...axis_style,
-                        type: 'value',
+                        type: 'value' as any,
                         name: t('成交量'),
                         scale: true,
                     }
