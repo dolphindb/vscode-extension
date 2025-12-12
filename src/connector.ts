@@ -19,14 +19,8 @@ import dayjs from 'dayjs'
 import { inspect, assert, delay, strcmp, ramdisk, MyProxy } from 'xshell'
 
 import {
-    DDB,
-    SqlStandard,
-    DdbForm,
-    type DdbObj,
-    DdbType,
-    type DdbOptions,
-    type DdbTableObj,
-    type DdbVectorStringObj
+    DDB, SqlStandard, DdbForm, type DdbObj, DdbType, type DdbOptions,
+    type DdbTableObj, type DdbVectorStringObj, urgent
 } from 'dolphindb'
 
 
@@ -740,21 +734,21 @@ export class DdbConnection extends TreeItem {
     
     
     async get_node_type () {
-        const { value: node_type } = await this.ddb.call<DdbObj<NodeType>>('getNodeType', [ ], { urgent: true })
+        const { value: node_type } = await this.ddb.call<DdbObj<NodeType>>('getNodeType', undefined, urgent)
         this.node_type = node_type
         return node_type
     }
     
     
     async get_node_alias () {
-        const { value: node_alias } = await this.ddb.call<DdbObj<string>>('getNodeAlias', [ ], { urgent: true })
+        const { value: node_alias } = await this.ddb.call<DdbObj<string>>('getNodeAlias', undefined, urgent)
         this.node_alias = node_alias
         return node_alias
     }
     
     
     async get_controller_alias () {
-        const { value: controller_alias } = await this.ddb.call<DdbObj<string>>('getControllerAlias', [ ], { urgent: true })
+        const { value: controller_alias } = await this.ddb.call<DdbObj<string>>('getControllerAlias', undefined, urgent)
         this.controller_alias = controller_alias
         return controller_alias
     }
@@ -815,7 +809,7 @@ export class DdbConnection extends TreeItem {
     
     async check_client_auth () {
         try {
-            const client_auth = await this.ddb.invoke<boolean>('isClientAuth', undefined, { urgent: true })
+            const client_auth = await this.ddb.invoke<boolean>('isClientAuth', undefined, urgent)
             console.log(t('客户端认证:'), client_auth)
             return this.client_auth = client_auth
         } catch {
