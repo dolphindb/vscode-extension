@@ -129,7 +129,7 @@ export let dataview = {
                         [
                             'dayjs/dayjs.min.js',
                             `react/react.${ dev ? 'development' : 'production' }.js`,
-                            `antd/dist/antd${ dev ? '' : '.min' }.js`,
+                            `antd/antd.${ dev ? 'development' : 'production' }.js`,
                             `@ant-design/icons/dist/index.umd${ dev ? '' : '.min' }.js`,
                             `echarts/dist/echarts${ dev ? '' : '.min' }.js`,
                         ].map(vendor => `        <script src='${webview.asWebviewUri(Uri.file(`${fpd_ext}dataview/vendors/${vendor}`))}' defer></script>\n`)
