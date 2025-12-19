@@ -24,6 +24,7 @@ import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
 import { language } from '@i18n'
 
 import { Obj, DdbObjRef } from './obj.tsx'
+import { light, dark } from './theme.ts'
 
 
 interface VSCodeWebview {
@@ -302,8 +303,10 @@ const locales = { zh, en, ja, ko }
 function Root () {
     return <ConfigProvider
         locale={locales[language] as any}
+        theme={document.body.classList.contains('vscode-dark') ? dark : light}
         button={{ autoInsertSpace: false }}
-        theme={{ hashed: false, token: { borderRadius: 0, motion: false, controlOutlineWidth: 0 } }}
+        modal={{ mask: false }}
+        renderEmpty={() => <div className='empty-placeholder' />}
     >
         <App className='app'>
             <DataView />

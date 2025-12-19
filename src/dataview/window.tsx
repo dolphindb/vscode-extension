@@ -22,6 +22,7 @@ import { delay } from 'xshell/utils.browser.js'
 import { language } from '@i18n'
 
 import { Obj, type DdbObjRef, type Remote } from './obj.tsx'
+import { light } from './theme.ts'
 
 
 const locales = { zh, en, ja, ko }
@@ -49,8 +50,10 @@ create_root(
 function Root () {
     return <ConfigProvider
         locale={locales[language] as any}
+        theme={light}
         button={{ autoInsertSpace: false }}
-        theme={{ hashed: false, token: { borderRadius: 0, motion: false } }}
+        modal={{ mask: false }}
+        renderEmpty={() => <div className='empty-placeholder' />}
     >
         <App className='app'>
             <DdbObjWindow />

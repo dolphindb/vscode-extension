@@ -27,6 +27,7 @@ import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
 import { language } from '@i18n'
 
 import { Obj, DdbObjRef, open_obj } from './obj.tsx'
+import { light } from './theme.ts'
 
 
 let remote = new Remote({ url: `ws://${location.host}` })
@@ -141,8 +142,10 @@ const locales = { zh, en, ja, ko }
 function Root () {
     return <ConfigProvider
         locale={locales[language] as any}
+        theme={light}
         button={{ autoInsertSpace: false }}
-        theme={{ hashed: false, token: { borderRadius: 0, motion: false, controlOutlineWidth: 0 } }}
+        modal={{ mask: false }}
+        renderEmpty={() => <div className='empty-placeholder' />}
     >
         <App>
             <DataView />
