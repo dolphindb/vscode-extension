@@ -51,9 +51,9 @@ import {
 
 import { t } from '@i18n'
 
-import SvgLink from './link.icon.svg'
+import SvgLink from './icons/link.icon.svg'
 
-import { type WindowModel } from './window.tsx'
+import type { WindowModel } from './window.tsx'
 
 
 const max_strlen = 10000
@@ -79,8 +79,15 @@ export interface Remote {
 }
 
 
-function truncate (str: string) {
-    return str.length >= max_strlen ? str.slice(0, max_strlen - 2) + '···' : str
+export interface ObjOptions <TDdbValue extends DdbValue = DdbValue> {
+    obj?: DdbObj<TDdbValue>
+    objref?: DdbObjRef<TDdbValue>
+    ctx?: Context
+    remote?: Remote
+    ddb?: DDB
+    options?: InspectOptions
+    product_name: string
+    ExportCsv?: React.FC<{ info: DdbTableObj | DdbObjRef<DdbObj<DdbVectorValue>[]> }>
 }
 
 
@@ -92,19 +99,12 @@ export function Obj ({
     ddb,
     ExportCsv,
     options,
-}: {
-    obj?: DdbObj
-    objref?: DdbObjRef
-    ctx?: Context
-    remote?: Remote
-    ddb?: DDB
-    ExportCsv?: React.FC<{ info: DdbTableObj | DdbObjRef<DdbObj<DdbVectorValue>[]> }>
-    options?: InspectOptions
-}) {
+    product_name
+}: ObjOptions) {
     const info = obj || objref
     const View = views[info.form] || Default
     
-    return <View obj={obj} objref={objref} ctx={ctx} remote={remote} ddb={ddb} options={options} ExportCsv={ExportCsv}/>
+    return <View obj={obj} objref={objref} ctx={ctx} remote={remote} ddb={ddb} options={options} ExportCsv={ExportCsv} product_name={product_name} />
 }
 
 
@@ -147,12 +147,14 @@ export async function open_obj ({
     remote,
     ddb,
     options,
+    product_name
 }: {
     obj?: DdbObj
     objref?: DdbObjRef
     remote?: Remote
     ddb?: DDB
     options?: InspectOptions
+    product_name: string
 }) {
     let win = window.open('./window.html', new Date().toString(), 'left=100,top=100,width=1000,height=640,popup')
     
@@ -169,11 +171,12 @@ export async function open_obj ({
         remote,
         ddb,
         options,
+        product_name
     })
 }
 
 
-function Default ({ obj, objref, options }: { obj?: DdbObj, objref?: DdbObjRef, options?: InspectOptions }) {
+function Default ({ obj, objref, options }: ObjOptions) {
     return <div className='default-obj'>{(obj || objref).toString(options)}</div>
 }
 
@@ -184,14 +187,7 @@ function Dict ({
     ddb,
     ctx,
     options,
-}: {
-    obj?: DdbDictObj
-    objref?: DdbObjRef<DdbDictObj['value']>
-    remote?: Remote
-    ddb?: DDB
-    ctx?: Context
-    options?: InspectOptions
-}) {
+}: ObjOptions<DdbDictObj['value']>) {
     const [page_size, set_page_size] = useState(100)
     const [page_index, set_page_index] = useState(0)
     
@@ -315,7 +311,7 @@ function build_tree_data_with_slice (
             }
         else
             return {
-                title: `${key}: ${truncate(formati(dict_value, ireal, options))}`,
+                title: `${key}: ${formati(dict_value, ireal, options).truncate(max_strlen, true)}`,
                 key: genid()
             }
     })
@@ -326,25 +322,15 @@ function Tensor ({
     objref,
     remote,
     ddb,
-    ctx,
-    options,
-}: {
-    obj?: DdbTensorObj
-    objref?: DdbObjRef<DdbTensorObj['value']>
-    remote?: Remote
-    ddb?: DDB
-    ctx?: Context
-    options?: InspectOptions
-}) {
-    const render = useState({ })[1]
+}: ObjOptions<DdbTensorObj['value']>) {
+    const render = use_rerender()
     
     const _obj = obj || objref.obj
     
     // 接下来开始写当前浏览状态的维护
-    const [currentDir, setCurrentDir] = useState<number[]>([ ])
-    const [pageSize, setPageSize] = useState(10)
-    const [page, setPage] = useState(1)
-    const [previewLimit, setPreviewLimit] = useState(10)
+    const [cwd, set_cwd] = useState<number[]>([ ])
+    const [page_size, set_page_size] = useState(10)
+    const [page, set_page] = useState(1)
     
     useEffect(() => {
         (async () => {
@@ -360,12 +346,12 @@ function Tensor ({
             :
                 DdbObj.parse(... await remote.call<[Uint8Array, boolean]>('eval', [node, name])) as DdbTensorObj
             
-            render({ })
+            render()
         })()
         
-        setCurrentDir([ ])
-        setPageSize(10)
-        setPage(1)
+        set_cwd([ ])
+        set_page_size(10)
+        set_page(1)
     }, [obj, objref])
     
     
@@ -380,23 +366,23 @@ function Tensor ({
     // 元素间跳字节
     const dataByte: number = ddb_tensor_bytes[_obj.value.data_type]
     
-    const typeName = DdbType[_obj.value.data_type]
+    const type_name = DdbType[_obj.value.data_type]
     
     const pageIndex = page - 1
-    const currentDim = currentDir.length
+    const currentDim = cwd.length
     const isLeaf = currentDim === _obj.value.dimensions - 1
     const thisDimSize = shape[currentDim]
-    const totalPageCount = Math.ceil(thisDimSize / pageSize)
+    const totalPageCount = Math.ceil(thisDimSize / page_size)
     const data = _obj.value.data
     
     function pushDimIndex (index: number) {
-        setCurrentDir([...currentDir, index])
-        setPage(1)
+        set_cwd([...cwd, index])
+        set_page(1)
     }
     
     function popDimIndexTo (index: number) {
-        setCurrentDir(currentDir.slice(0, index))
-        setPage(1)
+        set_cwd(cwd.slice(0, index))
+        set_page(1)
     }
     
     // 如果不是最高维，没有数据，比较简单
@@ -404,18 +390,18 @@ function Tensor ({
     const currentDimSize: number = _obj.value.shape[currentDim]
     // 搞这么多元素来
     const elems = [ ]
-    const offset = currentDir.reduce(
+    const offset = cwd.reduce(
         (prev, curr, index) =>
             prev + strides[index] * curr * dataByte,
         0)
     
-    let arrstrall = ''
+    let array_string = ''
     for (let j = 0;  j < _obj.value.dimensions;  j++) 
         // j 代表当前维度
-        arrstrall += `[${shape[j]}]`
+        array_string += `[${shape[j]}]`
     
     if (!isLeaf)
-        for (let i = pageIndex * pageSize;  i < pageIndex * pageSize + pageSize && i < thisDimSize;  i++) {
+        for (let i = pageIndex * page_size;  i < pageIndex * page_size + page_size && i < thisDimSize;  i++) {
             // 搞清楚后面的维度的 size
             let arrstr = ''
             for (let j = currentDim + 1;  j < _obj.value.dimensions;  j++)
@@ -433,7 +419,7 @@ function Tensor ({
                     const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
                     const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
                     previewStr += `${val}`
-                    if (k === previewLimit) {
+                    if (k === 10) {
                         previewStr += ', ...'
                         break
                     } else if (k !== shape[currentDim + 1] - 1)
@@ -447,21 +433,21 @@ function Tensor ({
             
             elems.push(
                 <div onClick={() => { pushDimIndex(i) }} className='tensor-elem' key={'dim' + `${i}`}>
-                    <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}{arrstr}</span> {previewStr}
+                    <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{type_name}{arrstr}</span> {previewStr}
                 </div>
             )
         } else
-        for (let i = pageIndex * pageSize;  i < pageIndex * pageSize + pageSize && i < thisDimSize;  i++) {
+        for (let i = pageIndex * page_size;  i < pageIndex * page_size + page_size && i < thisDimSize;  i++) {
             const offsetElem = offset + i * dataByte
             const targetArr = data.subarray(offsetElem, offsetElem + dataByte)
             const val = get_value_from_uint8_array(_obj.value.data_type, targetArr, _obj.le)
             elems.push(<div key={`tensor-elem-offset-${offsetElem}`} className='tensor-elem'>
-                <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{typeName}</span> {String(val)}
+                <span className='tensor-elem-count'>{i}</span>: <span className='type-name'>{type_name}</span> {String(val)}
             </div>)
         }
     
     
-    const navItems = currentDir.map((e, i) => 
+    const navItems = cwd.map((e, i) => 
         <div
             className='tensor-nav-elem'
             key={`tensor-index-${i}`}
@@ -473,22 +459,22 @@ function Tensor ({
     
     return <div className='tensor'>
         <div className='tensor-nav'>
-            <span className='tensor-title' onClick={() => { popDimIndexTo(0) }}>Tensor<RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></span>{navItems}
+            <span className='tensor-title' onClick={() => { popDimIndexTo(0) }}>{t('张量')}<RightOutlined style={{ transform: 'scale(0.8,0.8) translate(0,2px)' }}/></span>{navItems}
         </div>
         <div className='tensor-view'>
             {elems}
         </div>
         <div className='tensor-page'>
             <span className='tensor-desc'>
-                Tensor{`<${typeName}${arrstrall}>`}
+                {t('张量')} {type_name}{array_string}
             </span>
             {totalPageCount > 1 && <Pagination
                 current={page}
                 total={currentDimSize}
-                pageSize={pageSize}
+                pageSize={page_size}
                 onChange={(page, pageSize) => {
-                    setPage(page)
-                    setPageSize(pageSize)
+                    set_page(page)
+                    set_page_size(pageSize)
                 }}
                 showSizeChanger
             />}
@@ -539,14 +525,8 @@ function Vector ({
     remote,
     ddb,
     options,
-}: {
-    obj?: DdbVectorObj
-    objref?: DdbObjRef<DdbVectorValue>
-    ctx: Context
-    remote?: Remote
-    ddb?: DDB
-    options?: InspectOptions
-}) {
+    product_name
+}: ObjOptions<DdbVectorValue>) {
     const info = obj || objref
     
     const { type } = info
@@ -685,7 +665,7 @@ function Vector ({
                     title={t('在新窗口中打开')}
                     component={SvgLink}
                     onClick={async () => {
-                        await open_obj({ obj, objref, remote, ddb, options })
+                        await open_obj({ obj, objref, remote, ddb, options, product_name })
                     }}
                 />}
             </div>
@@ -715,9 +695,6 @@ class VectorColumn implements TableColumnType <number> {
         Object.assign(this, data)
         this.title = String(this.index)
         this.key = this.index
-        
-        const { type } = this.obj || this.objref
-        this.options = { ...this.options, grouping: !(64 <= type && type < 128) }
     }
     
     render = (value: any, row: number, index: number) => {
@@ -733,7 +710,7 @@ class VectorColumn implements TableColumnType <number> {
             this.index
         
         return index_ < obj.rows ?
-            truncate(formati(obj, index_, this.options))
+            formati(obj, index_, this.options).truncate(max_strlen, true)
         :
             null
     }
@@ -788,15 +765,9 @@ export function Table ({
     options,
     ExportCsv,
     show_bottom_bar = true,
+    product_name,
     ...others
-}: {
-    obj?: DdbTableObj
-    objref?: DdbObjRef<DdbObj<DdbVectorValue>[]>
-    ctx: Context
-    remote?: Remote
-    ddb?: DDB
-    options?: InspectOptions
-    ExportCsv?: React.FC<{ info: DdbTableObj | DdbObjRef<DdbObj<DdbVectorValue>[]> }>
+}: ObjOptions<DdbTableObj['value']> & {
     show_bottom_bar?: boolean
 } & TableProps<any>) {
     const info = obj || objref
@@ -907,7 +878,7 @@ export function Table ({
                         title={t('在新窗口中打开')}
                         component={SvgLink}
                         onClick={async () => {
-                            await open_obj({ obj, objref, remote, ddb, options })
+                            await open_obj({ obj, objref, remote, ddb, options, product_name })
                         }}
                     />
                     {ExportCsv && <ExportCsv info={info} />}
@@ -1017,7 +988,7 @@ export function StreamingTable ({
                 name='流表配置表单'
                 labelCol={{ span: label_span }}
                 wrapperCol={{ span: wrapper_span }}
-                initialValues={{ table: table }}
+                initialValues={{ table }}
                 autoComplete='off'
                 onFinish={async ({ table, column, expression }) => {
                     set_table(table)
@@ -1035,7 +1006,7 @@ export function StreamingTable ({
                         
                         ;(async () => {
                             try {
-                                let apiddb = rddbapi.current = new DDB(url)
+                                let apiddb = rddbapi.current = new DDB(url, { username, password })
                                 
                                 if (table === 'prices')
                                     await apiddb.eval(
@@ -1068,7 +1039,7 @@ export function StreamingTable ({
                                         table,
                                         filters: {
                                             ... column ? { column: await apiddb.eval(column) } : { },
-                                            expression: expression
+                                            expression
                                         },
                                         handler (message) {
                                             const { error } = message
@@ -1078,7 +1049,7 @@ export function StreamingTable ({
                                                 throw error
                                             }
                                             
-                                            const time = new Date().getTime()
+                                            const time = Date.now()
                                             
                                             rreceived.current += message.data.data.length
                                             
@@ -1219,7 +1190,7 @@ export function StreamingTable ({
             
             <div>接收到推送的 message 之后，才会在下面显示出表格</div>
         </div>
-    }, [table])
+    }, [ ])
     
     
     if (!rsddb.current || !rddbapi.current || !rmessage.current)
@@ -1450,8 +1421,6 @@ class TableColumn implements TableColumnType <number> {
             return
         
         this.col = obj.value[this.index]
-    
-        this.options = { ...this.options, grouping: !(64 <= this.col.type && this.col.type < 128) }
         
         this.title = <Tooltip
             title={
@@ -1476,7 +1445,7 @@ class TableColumn implements TableColumnType <number> {
             irow
         
         return index < obj.rows ?
-            truncate(formati(obj, index, this.options))
+            formati(obj, index, this.options).truncate(max_strlen, true)
         :
             null
     }
@@ -1490,14 +1459,8 @@ function Matrix ({
     remote,
     ddb,
     options,
-}: {
-    obj?: DdbMatrixObj
-    objref?: DdbObjRef<DdbMatrixValue>
-    ctx?: Context
-    remote?: Remote
-    ddb?: DDB
-    options?: InspectOptions
-}) {
+    product_name,
+}: ObjOptions<DdbMatrixValue>) {
     const info = obj || objref
     
     const ncols = info.cols
@@ -1615,7 +1578,7 @@ function Matrix ({
                     title={t('在新窗口中打开')}
                     component={SvgLink}
                     onClick={async () => {
-                        await open_obj({ obj, objref, remote, ddb, options })
+                        await open_obj({ obj, objref, remote, ddb, options, product_name })
                     }}
                 />}
             </div>
@@ -1734,14 +1697,8 @@ function Chart ({
     remote,
     ddb,
     options,
-}: {
-    obj?: DdbChartObj
-    objref?: DdbObjRef<DdbChartValue>
-    ctx?: Context
-    remote?: Remote
-    ddb?: DDB
-    options?: InspectOptions
-}) {
+    product_name
+}: ObjOptions<DdbChartValue>) {
     const [config, set_config] = useState<ChartConfig>({
         inited: false,
         charttype: DdbChartType.line,
@@ -1901,7 +1858,7 @@ function Chart ({
                     title={t('在新窗口中打开')}
                     component={SvgLink}
                     onClick={async () => {
-                        await open_obj({ obj, objref, remote, ddb })
+                        await open_obj({ obj, objref, remote, ddb, options, product_name })
                     }}
                 />}
             </div>
@@ -2090,7 +2047,7 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
                     })),
                     label: {
                         formatter (params) {
-                            return `${params.name}: ${params.percent.toFixed()}%`
+                            return `${params.name}: ${params.percent.toFixed(2)}%`
                         },
                         backgroundColor: 'transparent',
                         color: '#888888'
