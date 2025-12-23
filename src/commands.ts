@@ -20,7 +20,7 @@ import { create_terminal, terminal } from './terminal.ts'
 import { type DdbConnection, connector, funcdefs } from './connector.ts'
 import { DdbVar, variables } from './variables.ts'
 import { type DdbDatabase, databases, type DdbTable } from './databases.ts'
-
+import { table_actions } from './commons.ts'
 import type { DdbMessageItem } from './index.ts'
 
 
@@ -515,6 +515,36 @@ export async function export_table (uri?: Uri) {
 }
 
 
+async function table_action (table: DdbTable, action: (typeof table_actions)[number]) {
+    let editor = window.activeTextEditor
+    if (!editor)
+        return
+    
+    let { document, selection }  = editor
+    if (!document || !selection)
+        return
+    
+    const table_string = `loadTable('${table.database.path}', '${table.name}')`
+    
+    // 目前需求不需要复杂的 snippet
+    // editor.insertSnippet(new SnippetString())
+    
+    let str = ''
+    
+    if (action === 'load')
+        str = table_string
+    else if (action === 'truncate')
+        str = `truncate('${table.database.path}', '${table.name}')`
+    else if (action === 'schema')
+        str = `schema(${table_string})`
+    
+    
+    editor.edit(builder => {
+        builder.insert(selection.active, str)
+    })
+}
+
+
 /** 和 webpack 中的 commands 定义需要一一对应 */
 export const ddb_commands = [
     async function execute () {
@@ -767,5 +797,16 @@ export const ddb_commands = [
             window.showErrorMessage(error.message)
             throw error
         }
-    }
+    },
+    
+    
+    ... table_actions.map(action => {
+        // 让函数能推导出正确的 name
+        
+        const name = `${action}_table`
+        
+        return {
+            [name]: (table: DdbTable) => table_action(table, action)
+        }[name]
+    })
 ]

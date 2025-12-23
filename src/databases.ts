@@ -13,7 +13,7 @@ import { type DdbDictObj, type DdbVectorStringObj } from 'dolphindb'
 import { t } from '@i18n'
 
 
-import { NodeType } from './constant.ts'
+import { NodeType } from './commons.ts'
 
 import { connector, funcdefs, type DdbConnection } from './connector.ts'
 

@@ -12,7 +12,7 @@ export enum LicenseTypes {
     OnlineVerify = 2,
     
     /** LicenseServer 验证 */
-    LicenseServerVerify = 3,
+    LicenseServerVerify = 3
 }
 
 
@@ -35,13 +35,13 @@ export enum NodeType {
     agent = 1,
     controller = 2,
     single = 3,
-    computing = 4,
+    computing = 4
 }
 
 
 export enum DdbNodeState {
-    online = 1,
     offline = 0,
+    online = 1
 }
 
 
@@ -111,14 +111,4 @@ export interface DdbNode {
 }
 
 
-export declare enum DdbFunctionType {
-    SystemFunc = 0,
-    SystemProc = 1,
-    OperatorFunc = 2,
-    UserDefinedFunc = 3,
-    PartialFunc = 4,
-    DynamicFunc = 5,
-    PiecewiseFunc = 6,
-    JitFunc = 7,
-    JitPartialFunc = 8
-}
+export const table_actions = ['load', 'select', 'update', 'delete', 'truncate', 'schema'] as const

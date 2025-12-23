@@ -15,6 +15,8 @@ import { tm_language, tm_language_python } from 'dolphindb/language.js'
 
 import package_json from './package.json' with { type: 'json' }
 
+import { table_actions } from './src/commons.ts'
+
 
 set_inspect_options()
 
@@ -316,15 +318,15 @@ let builder = {
         }
         
         
-        function make (id: string, zh: string, en: string) {
-            let { zh: _zh, en: _en } = dict
-            _zh[id] = zh
-            _en[id] = en
+        function make (id: string, zh: string, en?: string) {
+            let { zh: zhs, en: ens } = dict
+            zhs[id] = zh
+            ens[id] = en || zh
             return id.surround('%')
         }
         
         
-        const ext_commands = [
+        const ext_commands: Command[] = [
             {
                 command: 'execute',
                 key: 'ctrl+e',
@@ -503,8 +505,10 @@ let builder = {
                 title: {
                     zh: '查看变量',
                     en: 'View Variable'
-                },
-            }
+                }
+            },
+            
+            ... table_actions_builder.get_commands()
         ]
         
         
@@ -908,61 +912,32 @@ let builder = {
                 ],
                 
                 menus: {
+                    // 用于在命令面板中隐藏命令
+                    // 仅用于右键菜单、TreeItem 命令、事件回调 的命令，都应通过 commandPalette + when: false 隐藏
+                    // 用户主动触发的通用功能 才应保留在命令面板中
                     commandPalette: [
-                        {
-                            command: 'dolphindb.connect',
-                            when: 'false',
-                        },
-                        {
-                            command: 'dolphindb.disconnect',
-                            when: 'false',
-                        },
-                        {
-                            command: 'dolphindb.reconnect',
-                            when: 'false',
-                        },
-                        {
-                            command: 'dolphindb.open_connection_settings',
-                            when: 'false',
-                        },
-                        {
-                            command: 'dolphindb.inspect_variable',
-                            when: 'false',
-                        },
-                        {
-                            command: 'dolphindb.inspect_table',
-                            when: 'false',
-                        },
-                        {
-                            command: 'dolphindb.inspect_table_schema',
-                            when: 'false',
-                        },
-                        {
-                            command: 'dolphindb.inspect_database_schema',
-                            when: 'false',
-                        },
-                        {
-                            command: 'dolphindb.open_variable',
-                            when: 'false',
-                        },
-                        {
-                            command: 'dolphindb.reload_databases',
-                            when: 'false',
-                        },
-                        {
-                            command: 'dolphindb.reload_dataview',
-                            when: 'false',
-                        },
-                        {
-                            command: 'dolphindb.reload_variables',
-                            when: 'false',
-                        },
-                    ],
+                        'connect',
+                        'disconnect',
+                        'reconnect',
+                        'open_connection_settings',
+                        'inspect_variable',
+                        'inspect_table',
+                        'inspect_table_schema',
+                        'inspect_database_schema',
+                        'open_variable',
+                        'reload_databases',
+                        'reload_dataview',
+                        'reload_variables',
+                        ... table_actions_builder.hide_commands()
+                    ].map(c => ({ command: `dolphindb.${c}`, when: 'false' })),
+                    
                     
                     'view/item/context': [
                         {
                             command: 'dolphindb.disconnect',
                             when: "view == dolphindb.connector && viewItem == 'connected'",
+                            
+                            // group 为 navigation 才会出现在右键菜单中，inline 则在尾部以图标的形式显示
                             group: 'inline',
                         },
                         {
@@ -984,7 +959,9 @@ let builder = {
                             command: 'dolphindb.open_variable',
                             when: "view == dolphindb.variables && viewItem == 'var' || view == dolphindb.variables && viewItem == 'table'",
                             group: 'inline',
-                        }
+                        },
+                        
+                        ... table_actions_builder.get_menus()
                     ],
                     
                     // webview 上方加刷新按钮
@@ -1182,6 +1159,32 @@ let builder = {
 const dependencies: Bundler['dependencies'] = ['antd-icons', 'echarts']
 
 
+const table_actions_builder = {
+    get_command_name: (a: string) => `${a}_table`,
+    
+    get_commands () {
+        return table_actions.map(a => ({
+            command: this.get_command_name(a),
+            title: { zh: a }
+        }))
+    },
+    
+    hide_commands () {
+        return table_actions.map(this.get_command_name)
+    },
+    
+    /** 数据表右键菜单，插入 select, update 等模板代码  
+        经测试不支持设置 title 属性，无法通过传递不同的 args 复用同一个 command */
+    get_menus () {
+        return table_actions.map(a => ({
+            command: `dolphindb.${this.get_command_name(a)}`,
+            when: "view == dolphindb.databases && viewItem == 'table'",
+            group: 'navigation'
+        }))
+    }
+}
+
+
 interface VSCodeConfiguration {
     title: string
     order?: number
@@ -1233,3 +1236,15 @@ interface Schema {
 
 
 await main()
+
+
+interface Command {
+    command: string
+    key?: string
+    when?: string
+    title: {
+        zh: string
+        en?: string
+    }
+    icon?: string
+}

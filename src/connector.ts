@@ -29,7 +29,7 @@ import { t } from '@i18n'
 import { statbar } from './statbar.ts'
 import { open_connection_settings } from './commands.ts'
 
-import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './constant.ts'
+import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './commons.ts'
 
 import { DdbVar, DdbVarLocation, variables } from './variables.ts'
 import { DdbCatalog, DdbDatabase, DdbGroup, DdbTable, databases } from './databases.ts'
