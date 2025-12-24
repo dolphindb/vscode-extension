@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 
 import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri, FileType, debug } from 'vscode'
 
-import { path, Timer, delay, inspect, vercmp } from 'xshell'
+import { path, Timer, delay, inspect, vercmp, map_keys } from 'xshell'
 
 import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbInt, DdbLong } from 'dolphindb'
 
@@ -537,11 +537,35 @@ async function table_action (table: DdbTable, action: (typeof table_actions)[num
         str = `truncate('${table.database.path}', '${table.name}')`
     else if (action === 'schema')
         str = `schema(${table_string})`
-    
+    else {
+        const { cols, pcols } = map_keys<{
+            cols: {
+                name: string
+                typeString: string
+            }[]
+            pcols: string | string[]
+        }>(
+            (await table.get_schema())
+                .data(),
+            { colDefs: 'cols', partitionColumnName: 'pcols' }) 
+        
+        str = action === 'select' || action === 'delete' ?
+            `select * from ${table_string} where ${get_clause(pcols, ' and ')}`
+        :  // action === 'update'
+            `update ${table_string} set ${get_clause(cols.select('name'), ', ')} where ${get_clause(pcols, ' and ')}`
+    }
     
     editor.edit(builder => {
         builder.insert(selection.active, str)
     })
+}
+
+
+function get_clause (pcols: string | string[], sep: string) {
+    if (typeof pcols === 'string')
+        pcols = [pcols]
+    
+    return pcols.map(c => `${c}=`).join(sep)
 }
 
 
