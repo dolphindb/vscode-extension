@@ -538,12 +538,15 @@ async function table_action (table: DdbTable, action: (typeof table_actions)[num
     else if (action === 'schema')
         str = `schema(${table_string})`
     else {
-        const { cols, pcols } = map_keys<{
+        const {
+            cols,
+            pcols = cols[0].name
+        } = map_keys<{
             cols: {
                 name: string
                 typeString: string
             }[]
-            pcols: string | string[]
+            pcols?: string | string[]
         }>(
             (await table.get_schema())
                 .data(),
