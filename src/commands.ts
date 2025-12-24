@@ -553,7 +553,7 @@ async function table_action (table: DdbTable, action: (typeof table_actions)[num
             { colDefs: 'cols', partitionColumnName: 'pcols' }) 
         
         str = action === 'select' || action === 'delete' ?
-            `select ${action} from ${table_string} where ${get_clause(pcols, ' and ')}`
+            `${action}${action === 'select' ? ' *' : ''} from ${table_string} where ${get_clause(pcols, ' and ')}`
         :  // action === 'update'
             `update ${table_string} set ${get_clause(cols.select('name'), ', ')} where ${get_clause(pcols, ' and ')}`
     }
