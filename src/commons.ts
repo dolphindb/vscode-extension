@@ -111,4 +111,4 @@ export interface DdbNode {
 }
 
 
-export const table_actions = ['load', 'select', 'update', 'delete', 'truncate', 'schema'] as const
+export const table_actions = ['select', 'update', 'delete', 'truncate', 'load', 'schema'] as const

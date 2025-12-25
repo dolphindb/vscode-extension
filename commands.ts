@@ -1176,10 +1176,10 @@ const table_actions_builder = {
     /** 数据表右键菜单，插入 select, update 等模板代码  
         经测试不支持设置 title 属性，无法通过传递不同的 args 复用同一个 command */
     get_menus () {
-        return table_actions.map(a => ({
+        return table_actions.map((a, i) => ({
             command: `dolphindb.${this.get_command_name(a)}`,
             when: "view == dolphindb.databases && viewItem == 'table'",
-            group: 'navigation'
+            group: `navigation@${i}`
         }))
     }
 }
