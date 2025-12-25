@@ -524,7 +524,9 @@ async function table_action (table: DdbTable, action: (typeof table_actions)[num
     if (!document || !selection)
         return
     
-    const table_string = `loadTable("${table.database.path}", "${table.name}")`
+    const dbpath = table.database.path.strip_end('/')
+    
+    const table_string = `loadTable("${dbpath}", "${table.name}")`
     
     // 目前需求不需要复杂的 snippet
     // editor.insertSnippet(new SnippetString())
@@ -534,7 +536,7 @@ async function table_action (table: DdbTable, action: (typeof table_actions)[num
     if (action === 'load')
         str = table_string
     else if (action === 'truncate')
-        str = `truncate("${table.database.path}", "${table.name}")`
+        str = `truncate("${dbpath}", "${table.name}")`
     else if (action === 'schema')
         str = `schema(${table_string})`
     else {
