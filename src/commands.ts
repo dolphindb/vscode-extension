@@ -720,7 +720,7 @@ export const ddb_commands = [
     },
     
     
-    async function unit_test (uri: Uri, uris: []) {
+    async function unit_test (uri: Uri, uris: Uri[]) {
         try {
             for (const fp of await upload(uri, uris, true))
                 await execute_with_progress(`test('${fp}')`, 0, true)
@@ -728,6 +728,9 @@ export const ddb_commands = [
             window.showErrorMessage(error.message)
             throw error
         }
+        
+        // 运行 test 函数之后，所有定义都会被清空，需要同步清空 api 侧缓存
+        connector.connection.ddb.reset_definitions()
     },
     
     
