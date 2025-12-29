@@ -551,7 +551,8 @@ export function getFileUsedModule (text: string): string[] {
 
 connection.onDocumentSymbol(params => {
     const filePath = params.textDocument.uri
-    const symbols = symbolService.getSymbols(filePath)
+    // Work on a copy to avoid mutating the cached symbols.
+    const symbols = symbolService.getSymbols(filePath).slice()
     const result: DocumentSymbol[] = [ ]
     // 先处理函数，对于每个函数，找到其参数，并将其添加到字节点，然后从 symbols 中删除
     const functionSymbols: ISymbol<SymbolType.Function>[] = symbols.filter(symbol => symbol.type === SymbolType.Function) as ISymbol<SymbolType.Function>[]
