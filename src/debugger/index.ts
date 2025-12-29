@@ -9,6 +9,7 @@ import { createServer, type Server, type Socket } from 'net'
 
 import { t } from '@i18n'
 
+import 'xshell/polyfill.browser.js'
 import { DdbDebugSession } from './adapter.ts'
 
 
