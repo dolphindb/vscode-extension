@@ -16,6 +16,7 @@ import type { NotificationInstance } from 'antd/es/notification/interface.d.ts'
 
 import { Model } from 'react-object-model'
 
+import 'xshell/polyfill.browser.js'
 import { noop, rethrow } from 'xshell/prototype.browser.js'
 import { check, genid, timeout } from 'xshell/utils.browser.js'
 import { message_symbol, pack, parse, type Message } from 'xshell/io.common.js'

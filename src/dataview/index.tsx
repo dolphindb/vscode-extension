@@ -19,6 +19,7 @@ import type { NotificationInstance } from 'antd/es/notification/interface.d.ts'
 
 import { Model } from 'react-object-model'
 
+import 'xshell/polyfill.browser.js'
 import { noop } from 'xshell/prototype.browser.js'
 import { timeout } from 'xshell/utils.browser.js'
 import { Remote } from 'xshell/net.browser.js'

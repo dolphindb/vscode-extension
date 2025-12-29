@@ -16,6 +16,7 @@ import ko from 'antd/locale/ko_KR.js'
 
 import { Model } from 'react-object-model'
 
+import 'xshell/polyfill.browser.js'
 import { DdbForm, type DDB, type DdbObj, type InspectOptions } from 'dolphindb/browser.js'
 import { delay } from 'xshell/utils.browser.js'
 
