@@ -19,7 +19,7 @@ import { formatter } from './formatter.ts'
 import { create_terminal, terminal } from './terminal.ts'
 import { type DdbConnection, connector, funcdefs } from './connector.ts'
 import { DdbVar, variables } from './variables.ts'
-import { type DdbDatabase, databases, type DdbTable } from './databases.ts'
+import { type Database, databases, OrcaTable, type Table } from './databases.ts'
 import { table_actions } from './commons.ts'
 import type { DdbMessageItem } from './index.ts'
 
@@ -515,7 +515,7 @@ export async function export_table (uri?: Uri) {
 }
 
 
-async function table_action (table: DdbTable, action: (typeof table_actions)[number]) {
+async function table_action (table: Table | OrcaTable, action: (typeof table_actions)[number]) {
     let editor = window.activeTextEditor
     if (!editor)
         return
@@ -524,21 +524,29 @@ async function table_action (table: DdbTable, action: (typeof table_actions)[num
     if (!document || !selection)
         return
     
-    const dbpath = table.database.path.strip_end('/')
+    const orca = table instanceof OrcaTable
     
-    const table_string = `loadTable("${dbpath}", "${table.name}")`
+    const dbpath = orca ? '' : table.database.path.strip_end('/')
+    
+    const table_string = orca ? table.fullname : `loadTable("${dbpath}", "${table.name}")`
     
     // 目前需求不需要复杂的 snippet
     // editor.insertSnippet(new SnippetString())
     
     let str = ''
     
+    // todo: 支持 kdb 模式
+    
+    // orca table 不会有 load 和 truncate 的 action
     if (action === 'load')
         str = table_string
     else if (action === 'truncate')
         str = `truncate("${dbpath}", "${table.name}")`
     else if (action === 'schema')
-        str = `schema(${table_string})`
+        str = orca ? 
+                `useOrcaStreamTable("${table_string}", schema)`
+            :
+                `schema(${table_string})`
     else {
         const {
             cols,
@@ -644,15 +652,15 @@ export const ddb_commands = [
     },
     
     
-    async function inspect_table (ddbtable: DdbTable) {  
+    async function inspect_table (ddbtable: Table | OrcaTable) {
         console.log(t('查看 dolphindb 表格:'), ddbtable)
-        const obj = await ddbtable.get_obj()      
+        const obj = await ddbtable.inspect()      
         lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection: connector.connection })
         await lastvar.inspect()
     },
     
     
-    async function inspect_table_schema (table: DdbTable | DdbVar) {  
+    async function inspect_table_schema (table: Table | OrcaTable | DdbVar) {
         console.log(t('查看 dolphindb 表结构:'), table)
         const obj = await table.get_schema()
         lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection: connector.connection })
@@ -660,7 +668,7 @@ export const ddb_commands = [
     },
     
     
-    async function inspect_database_schema (database: DdbDatabase) {  
+    async function inspect_database_schema (database: Database) {  
         console.log(t('查看 dolphindb 数据库结构:'), database)
         const obj = await database.get_schema()
         lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection: connector.connection })
@@ -838,7 +846,7 @@ export const ddb_commands = [
         const name = `${action}_table`
         
         return {
-            [name]: (table: DdbTable) => table_action(table, action)
+            [name]: (table: Table | OrcaTable) => table_action(table, action)
         }[name]
     })
 ]

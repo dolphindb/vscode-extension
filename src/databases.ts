@@ -1,14 +1,11 @@
 import {
-    window,
-    
-    EventEmitter, type Event,
-    
+    window, EventEmitter, type Event,
     type TreeView, TreeItem, TreeItemCollapsibleState, type TreeDataProvider
 } from 'vscode'
 
 import { assert } from 'xshell/utils.js'
 
-import { type DdbDictObj, type DdbVectorStringObj } from 'dolphindb'
+import { DdbFunction, DdbFunctionType, type DdbDictObj, type DdbVectorStringObj } from 'dolphindb'
 
 import { t } from '@i18n'
 
@@ -20,7 +17,7 @@ import { connector, funcdefs, type DdbConnection } from './connector.ts'
 import { fpd_ext } from './index.ts'
 
 
-export class DdbDatabases implements TreeDataProvider<TreeItem> {
+export class Databases implements TreeDataProvider<TreeItem> {
     view: TreeView<TreeItem>
     
     refresher: EventEmitter<TreeItem | undefined | void> = new EventEmitter<TreeItem | undefined | void>()
@@ -33,26 +30,20 @@ export class DdbDatabases implements TreeDataProvider<TreeItem> {
     }
     
     
-    getChildren (node?: TreeItem) {
-        switch (true) {
-            case !node: 
-                return connector.connection.children
-            
-            case (node instanceof DdbGroup || node instanceof DdbCatalog): 
-                return node.children
-            
-            case node instanceof DdbDatabase:
-                return node.tables
-        }
+    getChildren (node?: Catalog | DatabaseGroup | Database) {
+        if (!node)
+            return connector.connection.children
+        
+        return node.children
     }
 }
 
 
-export let databases: DdbDatabases
+export let databases: Databases
 
 
-export class DdbCatalog extends TreeItem {
-    children: DdbDatabase[] = [ ]
+export class Catalog extends TreeItem {
+    children: (Database | OrcaTable)[] = [ ]
     
     constructor (title: string) {
         super(title, TreeItemCollapsibleState.Collapsed)
@@ -61,8 +52,8 @@ export class DdbCatalog extends TreeItem {
 }
 
 
-export class DdbGroup extends TreeItem {
-    children: (DdbGroup | DdbDatabase)[] = [ ]
+export class DatabaseGroup extends TreeItem {
+    children: (DatabaseGroup | Database)[] = [ ]
     
     constructor (path: string) {
         super(path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
@@ -71,22 +62,25 @@ export class DdbGroup extends TreeItem {
 }
 
 
-export class DdbDatabase extends TreeItem {
+export class Database extends TreeItem {
     connection: DdbConnection
     
-    tables: DdbTable[] = [ ]
+    children: Table[] = [ ]
     
     path: string
     
     
-    constructor (path: string, connection: DdbConnection, title?: string) {
+    constructor (connection: DdbConnection, path: string, title?: string) {
         super(title ?? path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
+        
         assert(path.startsWith('dfs://'), t('数据库路径应该以 dfs:// 开头'))
+        
         this.connection = connection
         this.path = path
         this.contextValue = 'database'
         this.iconPath = `${fpd_ext}icons/database.svg`
     }
+    
     
     async get_schema () {
         let { connection } = connector
@@ -101,27 +95,32 @@ export class DdbDatabase extends TreeItem {
 }
 
 
-export class DdbTable extends TreeItem {
-    database: DdbDatabase
+export class Table extends TreeItem {
+    database: Database
     
     name: string
     
-    constructor (database: DdbDatabase, path: string) {
+    override contextValue = 'table'
+    
+    override iconPath = `${fpd_ext}icons/table.svg`
+    
+    
+    constructor (database: Database, path: string) {
         const name = path.slice(database.path.length, -1)
-        super(name, TreeItemCollapsibleState.None)
+        
+        super(name)
+        
         this.database = database
-        this.iconPath = `${fpd_ext}icons/table.svg`
-        this.contextValue = 'table'
         this.name = name
         this.command = {
             title: 'dolphindb.inspect_table',
             command: 'dolphindb.inspect_table',
-            arguments: [this],
+            arguments: [this]
         }
     }
     
     
-    async get_obj () {
+    async inspect () {
         let { connection } = connector
         let { ddb } = connection
         let obj = await ddb.call(
@@ -146,8 +145,71 @@ export class DdbTable extends TreeItem {
 }
 
 
+export class OrcaTable extends TreeItem {
+    name: string
+    
+    fullname: string
+    
+    meta: TableMeta
+    
+    /** 和 table 的 contextValue 不同，作区分，目前右键菜单不同 */
+    override contextValue = 'orca_table'
+    
+    override iconPath = `${fpd_ext}icons/table.svg`
+    
+    
+    constructor (meta: TableMeta) {
+        const name = meta.name.slice_from('.')
+        
+        super(name)
+        
+        this.meta = meta
+        
+        this.name = name
+        this.fullname = meta.fullname
+        
+        this.command = {
+            title: 'dolphindb.inspect_table',
+            command: 'dolphindb.inspect_table',
+            arguments: [this]
+        }
+    }
+    
+    
+    async inspect () {
+        let { connection } = connector
+        let { ddb } = connection
+        let obj = await ddb.eval(`select top 100 * from ${this.fullname}`)
+        obj.name = `${this.name} (${t('前 100 行')})`
+        return obj
+    }
+    
+    
+    async get_schema () {
+        let { connection } = connector
+        let { ddb } = connection
+        
+        return ddb.call<DdbDictObj<DdbVectorStringObj>>(
+            'useOrcaStreamTable',
+            // 调用该函数时，数据库路径不能以 / 结尾
+            [this.fullname, new DdbFunction('schema', DdbFunctionType.SystemFunc)])
+    }
+}
+
+
+export interface TableMeta {
+    name: string
+    
+    fullname: string
+    
+    id: string
+    
+    graph_refs: string[]
+}
+
+
 export function register_databases () {
-    databases = new DdbDatabases()
+    databases = new Databases()
     databases.view = window.createTreeView('dolphindb.databases', { treeDataProvider: databases })
     databases.view.message = t('请选择连接并登录后查看')
 }

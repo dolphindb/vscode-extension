@@ -27,7 +27,7 @@
         "@ant-design/icons": "^6.1.0",
         "@vscode/debugadapter": "^1.68.0",
         "@vscode/debugprotocol": "^1.68.0",
-        "antd": "^6.1.2",
+        "antd": "^6.1.3",
         "dayjs": "^1.11.19",
         "dolphindb": "^3.1.33",
         "echarts": "^6.0.0",
@@ -39,6 +39,6 @@
         "vscode-languageserver": "^9.0.1",
         "vscode-languageserver-textdocument": "^1.0.12",
         "ws": "^8.18.3",
-        "xshell": "^1.3.24"
+        "xshell": "^1.3.27"
     }
 }

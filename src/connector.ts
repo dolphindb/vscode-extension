@@ -16,11 +16,11 @@ import {
 
 import dayjs from 'dayjs'
 
-import { inspect, assert, delay, strcmp, ramdisk, MyProxy } from 'xshell'
+import { inspect, assert, delay, strcmp, ramdisk, MyProxy, map_keys, select } from 'xshell'
 
 import {
-    DDB, SqlStandard, DdbForm, type DdbObj, DdbType, type DdbOptions,
-    type DdbTableObj, type DdbVectorStringObj, urgent
+    DDB, SqlStandard, DdbForm, type DdbObj, DdbType, type DdbOptions, type DdbTableObj,
+    urgent, DdbFunction, DdbFunctionType
 } from 'dolphindb'
 
 
@@ -32,7 +32,7 @@ import { open_connection_settings } from './commands.ts'
 import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './commons.ts'
 
 import { DdbVar, DdbVarLocation, variables } from './variables.ts'
-import { DdbCatalog, DdbDatabase, DdbGroup, DdbTable, databases } from './databases.ts'
+import { Catalog, Database, DatabaseGroup, OrcaTable, Table, databases, type TableMeta } from './databases.ts'
 
 import { fpd_ext, type DdbMessageItem } from './index.ts'
 
@@ -345,7 +345,7 @@ export class DdbConnection extends TreeItem {
     /** 是否调用了 connection.disconnect */
     disconnected = false
     
-    children: Array<DdbCatalog | DdbGroup | DdbDatabase> = [ ]
+    children: Array<Catalog | DatabaseGroup | Database> = [ ]
     
     vars: DdbVar[]
     
@@ -612,15 +612,29 @@ export class DdbConnection extends TreeItem {
         // 但对于无数据表的数据库，仍然需要通过 getClusterDFSDatabases 来获取。因此要组合使用
         const v3 = this.version.startsWith('3.')
         
-        const [{ value: table_paths }, { value: db_paths }, ...rest] = await Promise.all([
-            this.ddb.call<DdbVectorStringObj>('getClusterDFSTables'),
+        const { ddb } = this
+        
+        const hidable = await this.can_hide_sysdb()
+        
+        // ['dfs://数据库路径(可能包含/)/表名', ...]
+        // 不能直接使用 getClusterDFSDatabases, 因为新的数据库权限版本 (2.00.9) 之后，用户如果只有表的权限，调用 getClusterDFSDatabases 无法拿到该表对应的数据库
+        // 但对于无数据表的数据库，仍然需要通过 getClusterDFSDatabases 来获取。因此要组合使用
+        const [table_paths, db_paths, catalog_names, orca_tables] = (await Promise.all([
+            ddb.invoke<string[]>('getClusterDFSTables', hidable ? [false] : undefined),
             // 可能因为用户没有数据库的权限报错，单独 catch 并返回空数组
-            this.ddb.call<DdbVectorStringObj>('getClusterDFSDatabases').catch(() => {
-                console.error('load_dbs: getClusterDFSDatabases error')
-                return { value: [ ] }
-            }),
-            ...v3 ? [this.ddb.call<DdbVectorStringObj>('getAllCatalogs')] : [ ]
-        ])
+            ddb.invoke<string[]>('getClusterDFSDatabases', hidable ? [false] : undefined)
+                .catch(() => {
+                    console.log('load_dbs: getClusterDFSDatabases 错误，可能没有权限')
+                    return [ ]
+                }),
+            ...v3 ? [
+                ddb.invoke<string[]>('getAllCatalogs'),
+                this.get_orca_tables().catch(() => {
+                    console.log('getOrcaStreamTableMeta 错误，忽略')
+                    return [ ]
+                })
+            ] : [ ]
+        ])) as [string[], string[], string[]?, TableMeta[]?]
         
         // const db_paths = [
         //     'dfs://db1',
@@ -643,46 +657,60 @@ export class DdbConnection extends TreeItem {
         //     'dfs://group_with_slash/g1.sg1.db1/tb1'
         // ]
         
-        // 将 db_paths 和 table_paths 合并到 merged_paths 中。db_paths 内可能存在 table_paths 中没有的 db，例如能查到无表的库
-        // 需要手动为 db_paths 中的每个路径加上斜杠结尾
-        const merged_paths = db_paths.map((path: string) => `${path}/`).concat(table_paths).sort()
         
         // 假定所有的 table_name 值都不会以 / 结尾
         // 库和表之间以最后一个 / 隔开。表名不可能有 /
         // 全路径中可能没有组（也就是没有点号），但一定有库和表
-        let hash_map = new Map<string, DdbGroup | DdbDatabase>()
-        let catalog_map = new Map<string, DdbDatabase>()
+        let hash_map = new Map<string, Database | DatabaseGroup>()
+        let catalog_databases = new Map<string, Database>()
+        let catalogs = new Map<string, Catalog>()
+        let root: (Catalog | Database | DatabaseGroup)[] = [ ]
         
-        this.children = [ ]
+        if (v3) {
+            await Promise.all(
+                catalog_names.sort()
+                    .map(async catalog_name => {
+                        let catalog = new Catalog(catalog_name)
+                        catalogs.set(catalog_name, catalog)
+                        root.push(catalog)
+                        
+                        ;(await ddb.invoke<{ schema: string, dbUrl: string }[]>('getSchemaByCatalog', [catalog_name]))
+                            // 图的情况下 dbUrl 为空字符串，比如现在用 demo.orca_graph.tmp 作为一个图的标识了，demo.orca_graph 不是表的概念了
+                            .filter(select('dbUrl'))
+                            .sort((a, b) => strcmp(a.schema, b.schema))
+                            .forEach(({ schema, dbUrl }) => {
+                                const db_path = `${dbUrl}/`
+                                const database = new Database(this, db_path, schema)
+                                catalog_databases.set(db_path, database)
+                                catalog.children.push(database)
+                            })
+                    }))
+            
+            orca_tables?.forEach(meta => {
+                catalogs.get(meta.name.slice_to('.'))
+                    ?.children
+                    .push(new OrcaTable(meta))
+            })
+        }
         
-        if (v3) 
-            await Promise.all(rest[0].value.sort().map(async catalog => {
-                let catalog_node = new DdbCatalog(catalog)
-                this.children.push(catalog_node)
-                
-                ;(await this.ddb.invoke('getSchemaByCatalog', [catalog]))
-                    // 图的情况下 dbUrl 为空字符串，比如现在用 demo.orca_graph.tmp 作为一个图的标识了，demo.orca_graph 不是表的概念了
-                    .filter(({ dbUrl }) => dbUrl)
-                    .sort((a, b) => strcmp(a.schema, b.schema))
-                    .map(({ schema, dbUrl }) => {
-                        const db_path = `${dbUrl}/`
-                        const database = new DdbDatabase(db_path, this, schema)
-                        catalog_map.set(db_path, database)
-                        catalog_node.children.push(database)
-                    })
-            }))
-        
-        for (const path of merged_paths) {
+        // 将 db_paths 和 table_paths 合并到 merged_paths 中。db_paths 内可能存在 table_paths 中没有的 db，例如能查到无表的库
+        // 需要手动为 db_paths 中的每个路径加上斜杠结尾
+        for (
+            const path of [
+                ...db_paths.map(path => `${path}/`),
+                ... table_paths
+            ].sort()
+        ) {
             // 找到数据库最后一个斜杠位置，截取前面部分的字符串作为库名
             const index_slash = path.lastIndexOf('/')
             
             const db_path = `${path.slice(0, index_slash)}/`
             const table_name = path.slice(index_slash + 1)
             
-            let parent: DdbConnection | DdbGroup | DdbDatabase = this
+            let parent: Catalog | Database | DatabaseGroup | { children: (Catalog | Database | DatabaseGroup)[] } = { children: root }
             
-            if (catalog_map.has(db_path)) 
-                parent = catalog_map.get(db_path)
+            if (catalog_databases.has(db_path)) 
+                parent = catalog_databases.get(db_path)
             else {
                 // for 循环用来处理 database group
                 for (let index = 0;  index = db_path.indexOf('.', index) + 1;  ) {
@@ -691,20 +719,20 @@ export class DdbConnection extends TreeItem {
                     if (group)
                         parent = group
                     else {
-                        const group = new DdbGroup(group_key)
-                        ;(parent as DdbConnection | DdbGroup).children.push(group)
+                        const group = new DatabaseGroup(group_key)
+                        ;(parent as DatabaseGroup).children.push(group)
                         hash_map.set(group_key, group)
                         parent = group
                     }
                 }
                 
                 // 处理 database
-                const db = hash_map.get(db_path) as DdbDatabase
+                const db = hash_map.get(db_path) as Database
                 if (db)
                     parent = db
                 else {
-                    const db = new DdbDatabase(db_path, this)
-                    ;(parent as DdbConnection | DdbGroup).children.push(db)
+                    const db = new Database(this, db_path)
+                    ;(parent as DatabaseGroup).children.push(db)
                     hash_map.set(db_path, db)
                     parent = db
                 }
@@ -712,8 +740,8 @@ export class DdbConnection extends TreeItem {
             
             // 处理 table，如果 table_name 为空表明当前路径是 db_path 则不处理
             if (table_name) {
-                const table = new DdbTable(parent as DdbDatabase, `${path}/`)
-                ;(parent as DdbDatabase).tables.push(table)
+                const table = new Table(parent as Database, `${path}/`)
+                ;(parent as Database).children.push(table)
             }
         }
         
@@ -725,6 +753,8 @@ export class DdbConnection extends TreeItem {
         //         dbs.set(path, new DdbEntity({ path ,tables}))
         //     }
         //  }
+        
+        this.children = root
     }
     
     
@@ -818,6 +848,35 @@ export class DdbConnection extends TreeItem {
         } catch {
             return false
         }
+    }
+    
+    
+    _can_hide_sysdb?: boolean
+    
+    async can_hide_sysdb () {
+        return this._can_hide_sysdb ??= (
+            await this.ddb.invoke<string>(
+                'syntax', 
+                [new DdbFunction('getClusterDFSTables', DdbFunctionType.SystemFunc)])
+        ).includes('([includeSysTable=')
+    }
+    
+    
+    /** 同 web 中的 LineageModel.get_tables  */
+    async get_orca_tables () {
+        return ((await this.ddb.invoke<any[]>('getOrcaStreamTableMeta'))
+            .filter(({ fqn }) => fqn)
+            .map(o => 
+                map_keys(
+                    o, 
+                    undefined, 
+                    ({ fqn, graph_refs }) => ({
+                        name: fqn.replace('.orca_table', ''),
+                        fullname: fqn,
+                        graph_refs: graph_refs.split(',')
+                    }))
+            ) as TableMeta[])
+            .sort((l, r) => strcmp(l.name, r.name))
     }
 }
 

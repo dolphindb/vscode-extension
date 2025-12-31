@@ -15,7 +15,7 @@ import { tm_language, tm_language_python } from 'dolphindb/language.js'
 
 import package_json from './package.json' with { type: 'json' }
 
-import { table_actions } from './src/commons.ts'
+import { orca_table_actions, table_actions } from './src/commons.ts'
 
 
 set_inspect_options()
@@ -938,30 +938,36 @@ let builder = {
                             when: "view == dolphindb.connector && viewItem == 'connected'",
                             
                             // group 为 navigation 才会出现在右键菜单中，inline 则在尾部以图标的形式显示
-                            group: 'inline',
+                            group: 'inline'
                         },
                         {
                             command: 'dolphindb.inspect_table_schema',
                             when: "view == dolphindb.variables && viewItem == 'table'",
-                            group: 'inline',
+                            group: 'inline'
                         },
                         {
                             command: 'dolphindb.inspect_table_schema',
                             when: "view == dolphindb.databases && viewItem == 'table'",
-                            group: 'inline',
+                            group: 'inline'
+                        },
+                        {
+                            command: 'dolphindb.inspect_table_schema',
+                            when: "view == dolphindb.databases && viewItem == 'orca_table'",
+                            group: 'inline'
                         },
                         {
                             command: 'dolphindb.inspect_database_schema',
                             when: "view == dolphindb.databases && viewItem == 'database'",
-                            group: 'inline',
+                            group: 'inline'
                         },
                         {
                             command: 'dolphindb.open_variable',
                             when: "view == dolphindb.variables && viewItem == 'var' || view == dolphindb.variables && viewItem == 'table'",
-                            group: 'inline',
+                            group: 'inline'
                         },
                         
-                        ... table_actions_builder.get_menus()
+                        ... table_actions_builder.get_menus(false),
+                        ... table_actions_builder.get_menus(true)
                     ],
                     
                     // webview 上方加刷新按钮
@@ -1175,10 +1181,10 @@ const table_actions_builder = {
     
     /** 数据表右键菜单，插入 select, update 等模板代码  
         经测试不支持设置 title 属性，无法通过传递不同的 args 复用同一个 command */
-    get_menus () {
-        return table_actions.map((a, i) => ({
+    get_menus (orca: boolean) {
+        return (orca ? orca_table_actions : table_actions).map((a: string, i: number) => ({
             command: `dolphindb.${this.get_command_name(a)}`,
-            when: "view == dolphindb.databases && viewItem == 'table'",
+            when: `view == dolphindb.databases && viewItem == '${orca ? 'orca_table' : 'table'}'`,
             group: `navigation@${i}`
         }))
     }
