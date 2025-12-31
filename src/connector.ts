@@ -623,14 +623,15 @@ export class DdbConnection extends TreeItem {
             ddb.invoke<string[]>('getClusterDFSTables', hidable ? [false] : undefined),
             // 可能因为用户没有数据库的权限报错，单独 catch 并返回空数组
             ddb.invoke<string[]>('getClusterDFSDatabases', hidable ? [false] : undefined)
-                .catch(() => {
-                    console.log('load_dbs: getClusterDFSDatabases 错误，可能没有权限')
+                .catch((error) => {
+                    console.log('load_dbs: getClusterDFSDatabases 错误，可能没有权限，忽略:', error.message)
                     return [ ]
+
                 }),
             ...v3 ? [
                 ddb.invoke<string[]>('getAllCatalogs'),
-                this.get_orca_tables().catch(() => {
-                    console.log('getOrcaStreamTableMeta 错误，忽略')
+                this.get_orca_tables().catch((error) => {
+                    console.log('getOrcaStreamTableMeta 错误，忽略:', error.message)
                     return [ ]
                 })
             ] : [ ]
@@ -697,7 +698,7 @@ export class DdbConnection extends TreeItem {
         // 需要手动为 db_paths 中的每个路径加上斜杠结尾
         for (
             const path of [
-                ...db_paths.map(path => `${path}/`),
+                ... db_paths.map(path => `${path}/`),
                 ... table_paths
             ].sort()
         ) {
@@ -761,7 +762,7 @@ export class DdbConnection extends TreeItem {
     async update (database: boolean) {
         await Promise.all([
             this.update_vars(), 
-            ...(database ? [this.update_databases()] : [ ])
+            database && this.update_databases()
         ])
     }
     

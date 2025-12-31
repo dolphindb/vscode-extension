@@ -185,7 +185,7 @@ export class OrcaTable extends TreeItem {
     }
     
     
-    async get_schema () {
+    get_schema () {
         let { connection } = connector
         let { ddb } = connection
         
