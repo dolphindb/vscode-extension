@@ -19,7 +19,7 @@ import { formatter } from './formatter.ts'
 import { create_terminal, terminal } from './terminal.ts'
 import { type DdbConnection, connector, funcdefs } from './connector.ts'
 import { DdbVar, variables } from './variables.ts'
-import { type Database, databases, OrcaTable, type Table } from './databases.ts'
+import { type Catalog, type Database, databases, OrcaTable, type Table } from './databases.ts'
 import { table_actions } from './commons.ts'
 import type { DdbMessageItem } from './index.ts'
 
@@ -526,9 +526,21 @@ async function table_action (table: Table | OrcaTable, action: (typeof table_act
     
     const orca = table instanceof OrcaTable
     
-    const dbpath = orca ? '' : table.database.path.strip_end('/')
+    // 非 orca 才有 database, catalog
+    let database: Database | undefined, 
+        catalog: Catalog | undefined
     
-    const table_string = orca ? table.fullname : `loadTable("${dbpath}", "${table.name}")`
+    if (!orca) {
+        ({ database } = table)
+        ;({ catalog } = database)
+    }
+    
+    const dbpath = orca ? '' : database.path.strip_end('/')
+    
+    let table_string = orca ? 
+        table.fullname
+    :
+        `loadTable("${dbpath}", "${table.name}")`
     
     // 目前需求不需要复杂的 snippet
     // editor.insertSnippet(new SnippetString())
@@ -547,7 +559,11 @@ async function table_action (table: Table | OrcaTable, action: (typeof table_act
                 `useOrcaStreamTable("${table_string}", schema)`
             :
                 `schema(${table_string})`
-    else {
+    else {  // sql
+        // catalog table 的 sql 中 table_string 用 catalog.database.table 的形式
+        if (catalog)
+            table_string = [catalog.name, database.name, table.name].join('.')
+        
         const {
             cols,
             pcols = cols[0].name

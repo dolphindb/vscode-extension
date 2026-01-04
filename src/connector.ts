@@ -681,7 +681,7 @@ export class DdbConnection extends TreeItem {
                             .sort((a, b) => strcmp(a.schema, b.schema))
                             .forEach(({ schema, dbUrl }) => {
                                 const db_path = `${dbUrl}/`
-                                const database = new Database(this, db_path, schema)
+                                const database = new Database(this, db_path, schema, catalog)
                                 catalog_databases.set(db_path, database)
                                 catalog.children.push(database)
                             })

@@ -43,11 +43,15 @@ export let databases: Databases
 
 
 export class Catalog extends TreeItem {
+    override iconPath = `${fpd_ext}icons/catalog.svg`
+    
+    name: string
+    
     children: (Database | OrcaTable)[] = [ ]
     
-    constructor (title: string) {
-        super(title, TreeItemCollapsibleState.Collapsed)
-        this.iconPath = `${fpd_ext}icons/catalog.svg`
+    constructor (name: string) {
+        super(name, TreeItemCollapsibleState.Collapsed)
+        this.name = name
     }
 }
 
@@ -56,29 +60,45 @@ export class DatabaseGroup extends TreeItem {
     children: (DatabaseGroup | Database)[] = [ ]
     
     constructor (path: string) {
-        super(path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
+        super(
+            path.slice('dfs://'.length, -1).slice_from('.', { last: true }), 
+            TreeItemCollapsibleState.Collapsed)
+        
         this.iconPath = `${fpd_ext}icons/database-group.svg`
     }
 }
 
 
 export class Database extends TreeItem {
+    override contextValue = 'database'
+    
+    override iconPath = `${fpd_ext}icons/database.svg`
+    
     connection: DdbConnection
     
     children: Table[] = [ ]
     
     path: string
     
+    name: string
     
-    constructor (connection: DdbConnection, path: string, title?: string) {
-        super(title ?? path.slice('dfs://'.length, -1).split('.').at(-1), TreeItemCollapsibleState.Collapsed)
-        
+    catalog?: Catalog
+    
+    
+    constructor (
+        connection: DdbConnection, 
+        path: string, 
+        name = path.slice('dfs://'.length, -1).slice_from('.', { last: true }),
+        catalog?: Catalog
+    ) {
         assert(path.startsWith('dfs://'), t('数据库路径应该以 dfs:// 开头'))
         
+        super(name, TreeItemCollapsibleState.Collapsed)
+        
+        this.name = name
         this.connection = connection
         this.path = path
-        this.contextValue = 'database'
-        this.iconPath = `${fpd_ext}icons/database.svg`
+        this.catalog = catalog
     }
     
     
@@ -110,8 +130,8 @@ export class Table extends TreeItem {
         
         super(name)
         
-        this.database = database
         this.name = name
+        this.database = database
         this.command = {
             title: 'dolphindb.inspect_table',
             command: 'dolphindb.inspect_table',
