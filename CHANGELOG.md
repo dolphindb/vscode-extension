@@ -1,5 +1,36 @@
 # Change Log (更新日志)
 
+## v3.0.410 - 2026.01.04
+#### 新功能 / New Features
+-   新增支持代码大纲（OUTLINE）。  
+    Added support for Outline view.
+
+-   支持在数据库浏览器中，基于选中的表对象一键生成常用操作模板，包括 select、update、delete、truncate、load 和 schema 等操作。  
+    Added support for one-click generation of common SQL templates based on the selected table, including select, update, delete, truncate, load, and schema.
+    
+-   新增支持展示 Orca 中的流表。   
+    Added support for displaying stream tables in Orca.
+    
+#### 功能优化 / Enhancement
+-   新增对 OUTER JOIN 关键字的高亮支持。  
+    Added syntax highlighting support for the OUTER JOIN keyword.
+    
+-   优化变量数据面板中 Tensor 变量的行颜色显示。  
+    Improved row color display for Tensor variables in the variable data panel.
+    
+#### 缺陷修复 / Bug Fixes
+-   修复了调试模式下无法通过右键查看变量的问题。  
+    Fixed an issue where variables could not be viewed via the right-click context menu in debug mode.
+    
+-   修复了连接在执行长时间任务时会断开的问题。  
+    Fixed an issue where the connection was disconnected during long-running tasks.
+    
+-   修复了在使用 plot 绘制饼图时总和没有精确到 100% 的问题。  
+    Fixed an issue where pie chart totals were not accurately displayed as 100% when using plot.
+
+-   修复了在使用 test 执行单元测试后查看表出现报错的问题。  
+    Fixed an issue where viewing table after using test to run unit tests caused an error.
+
 ## v3.0.405 - 2025.10.10
 #### 功能优化 / Enhancement
 -   关闭 VS Code 时主动断开 WebSocket 连接，以便服务器及时释放资源。  
