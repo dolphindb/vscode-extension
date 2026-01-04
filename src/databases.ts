@@ -61,7 +61,7 @@ export class DatabaseGroup extends TreeItem {
     
     constructor (path: string) {
         super(
-            path.slice('dfs://'.length, -1).slice_from('.', { last: true }), 
+            path.slice('dfs://'.length, -1).slice_from('.', { last: true, optional: true }), 
             TreeItemCollapsibleState.Collapsed)
         
         this.iconPath = `${fpd_ext}icons/database-group.svg`
@@ -88,7 +88,7 @@ export class Database extends TreeItem {
     constructor (
         connection: DdbConnection, 
         path: string, 
-        name = path.slice('dfs://'.length, -1).slice_from('.', { last: true }),
+        name = path.slice('dfs://'.length, -1).slice_from('.', { last: true, optional: true }),
         catalog?: Catalog
     ) {
         assert(path.startsWith('dfs://'), t('数据库路径应该以 dfs:// 开头'))
