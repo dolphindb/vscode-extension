@@ -112,4 +112,4 @@ export interface DdbNode {
 
 
 export const table_actions = ['select', 'update', 'delete', 'truncate', 'load', 'schema'] as const
-export const orca_table_actions = ['select', 'update', 'delete', 'schema'] as const
+export const orca_table_actions = ['select', 'schema'] as const
