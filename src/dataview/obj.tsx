@@ -2110,8 +2110,8 @@ function get_chart_option (config: ChartConfig): echarts.EChartsOption {
             
         case DdbChartType.histogram:
             const values = data.map(d => d.value)
-            const minValue = config.bin_start ? Number(config.bin_start.value) : Math.min(...values)
-            const maxValue = config.bin_end ? Number(config.bin_end.value) : Math.max(...values)
+            const minValue = config.bin_start ? Number(config.bin_start.value) : values.min()
+            const maxValue = config.bin_end ? Number(config.bin_end.value) : values.max()
             const xMin = Math.floor(minValue)
             const xMax = Math.ceil(maxValue)
             const binCount = config.bin_count ? Number(config.bin_count.value) : 30
