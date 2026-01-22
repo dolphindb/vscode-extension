@@ -3,6 +3,8 @@ import { theme, type ThemeConfig } from 'antd'
 
 export const primary_color = '#6774bd' as const
 
+export const dark_background = '#282828' as const
+
 const common_config: ThemeConfig = {
     hashed: false
 }
@@ -58,7 +60,7 @@ export const dark: ThemeConfig = {
     token: {
         ...common_tokens,
         colorPrimary: primary_color,
-        colorBgContainer: '#282828',
+        colorBgContainer: dark_background,
         colorBgElevated: '#555555',
         colorInfoActive: '#4093d3',
         colorBgLayout: '#313131',

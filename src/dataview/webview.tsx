@@ -299,12 +299,14 @@ createRoot(
 ).render(<Root />)
 
 
+const dark_theme = document.body.classList.contains('vscode-dark')
+
 const locales = { zh, en, ja, ko }
 
 function Root () {
     return <ConfigProvider
         locale={locales[language] as any}
-        theme={document.body.classList.contains('vscode-dark') ? dark : light}
+        theme={dark_theme ? dark : light}
         button={{ autoInsertSpace: false }}
         modal={{ mask: false }}
         renderEmpty={() => <div className='empty-placeholder' />}
@@ -332,10 +334,13 @@ function DataView () {
     const { type, data } = result
     
     return <div className='obj-result themed webview'>
-        <Obj 
+        <Obj
             remote={remote} 
             ctx='webview' 
             options={options} 
+            assets_root='/'
+            product_name='DolphinDB'
+            dark={dark_theme}
             {...type === 'object' ? { obj: data } : { objref: data }}
         />
     </div>

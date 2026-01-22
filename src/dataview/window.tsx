@@ -38,6 +38,10 @@ export class WindowModel extends Model<WindowModel> {
     ddb?: DDB
     
     options?: InspectOptions
+    
+    product_name?: string
+    
+    assets_root?: string
 }
 
 let model = window.model = new WindowModel()
@@ -64,7 +68,8 @@ function Root () {
 
 
 function DdbObjWindow () {
-    const { obj, objref, remote, ddb, options } = model.use(['obj', 'objref', 'remote', 'ddb', 'options'])
+    const { obj, objref, remote, ddb, options, product_name, assets_root } = model.use(
+        ['obj', 'objref', 'remote', 'ddb', 'options', 'product_name', 'assets_root'])
     
     // App 组件通过 Context 提供上下文方法调用，因而 useApp 需要作为子组件才能使用
     Object.assign(model, App.useApp())
@@ -108,7 +113,16 @@ function DdbObjWindow () {
         return <div>DolphinDB Window</div>
     
     return <div className='obj-result themed window'>
-        <Obj obj={obj} objref={objref} ctx='window' remote={remote} ddb={ddb} options={options} />
+        <Obj
+            obj={obj}
+            objref={objref}
+            ctx='window'
+            remote={remote}
+            ddb={ddb}
+            options={options}
+            assets_root={assets_root}
+            product_name={product_name}
+            dark={false} />
     </div>
 }
 

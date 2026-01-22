@@ -124,6 +124,7 @@ export let dataview = {
                         "        <meta charset='utf-8' />\n" +
                         '        <script>\n' +
                         `            window.language = '${language}'\n` +
+                        // `            window.plotlyjs = '${webview.asWebviewUri(Uri.file(`${fpd_ext}dataview/vendors/plotly.js-dist-min/plotly.min.js`))}'\n` +
                         '        </script>\n' +
                         
                         [

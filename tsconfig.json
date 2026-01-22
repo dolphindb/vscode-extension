@@ -16,6 +16,8 @@
     "compilerOptions": {
         "paths": {
             "@i18n": ["./i18n/index.ts"],
+            "@theme": ["./src/dataview/theme.ts"],
+            "@components/*": ["./src/dataview/components/*"],
             "@test/*": ["./test/*"],
             "@/*": ["./src/*"]
         },

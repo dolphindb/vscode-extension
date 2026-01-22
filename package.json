@@ -15,8 +15,9 @@
     },
     "devDependencies": {
         "@types/koa": "^3.0.1",
-        "@types/node": "^25.0.8",
-        "@types/react": "^19.2.8",
+        "@types/node": "^25.0.10",
+        "@types/plotly.js-dist-min": "^2.3.4",
+        "@types/react": "^19.2.9",
         "@types/react-dom": "^19.2.3",
         "@types/vscode": "^1.108.1",
         "@types/ws": "^8.18.1",
@@ -27,18 +28,19 @@
         "@ant-design/icons": "^6.1.0",
         "@vscode/debugadapter": "^1.68.0",
         "@vscode/debugprotocol": "^1.68.0",
-        "antd": "^6.2.0",
+        "antd": "^6.2.1",
         "dayjs": "^1.11.19",
-        "dolphindb": "^3.1.33",
+        "dolphindb": "^3.1.34",
         "echarts": "^6.0.0",
+        "plotly.js-dist-min": "^3.3.1",
         "react": "^19.2.3",
         "react-dom": "^19.2.3",
-        "react-object-model": "^1.2.27",
+        "react-object-model": "^1.2.28",
         "tslib": "^2.8.1",
         "vscode-languageclient": "^9.0.1",
         "vscode-languageserver": "^9.0.1",
         "vscode-languageserver-textdocument": "^1.0.12",
         "ws": "^8.19.0",
-        "xshell": "^1.3.30"
+        "xshell": "^1.3.32"
     }
 }

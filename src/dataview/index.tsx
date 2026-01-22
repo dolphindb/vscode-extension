@@ -23,7 +23,7 @@ import 'xshell/polyfill.browser.js'
 import { noop } from 'xshell/prototype.browser.js'
 import { timeout } from 'xshell/utils.browser.js'
 import { Remote } from 'xshell/net.browser.js'
-import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
+import { DdbObj, DdbForm, type InspectOptions, type DdbValue } from 'dolphindb/browser.js'
 
 import { language } from '@i18n'
 
@@ -95,7 +95,9 @@ class DataViewModel extends Model<DataViewModel> {
                                         obj: ddbvar.obj,
                                         objref: null, 
                                         remote, 
-                                        options
+                                        options,
+                                        product_name,
+                                        assets_root
                                     })
                                 else
                                     this.set({ result: { type: 'object', data: ddbvar.obj }, options })
@@ -106,7 +108,9 @@ class DataViewModel extends Model<DataViewModel> {
                                         obj: null,
                                         objref: objref,
                                         remote,
-                                        options
+                                        options,
+                                        product_name,
+                                        assets_root
                                     })
                                 else
                                     this.set({ result: { type: 'objref', data: objref }, options })
@@ -170,11 +174,24 @@ function DataView () {
     
     const { type, data } = result
     
-    return <div className='obj-result themed page'>{
-        type === 'object' ?
-            <Obj obj={data} remote={remote} ctx='page' options={options} />
-        :
-            <Obj objref={data} remote={remote} ctx='page' options={options} />
-    }</div>
+    return <div className='obj-result themed page'>
+        <Obj
+            remote={remote}
+            ctx='page'
+            options={options}
+            product_name={product_name}
+            assets_root={assets_root}
+            dark={false}
+            {...type === 'object' ?
+                { obj: data as DdbObj<DdbValue> }
+            :
+                { objref: data as DdbObjRef<DdbValue> }}
+        />
+    </div>
 }
+
+
+const product_name = 'DolphinDB'
+
+const assets_root = '/'
 
