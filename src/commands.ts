@@ -271,7 +271,7 @@ async function execute (text: string, iline: number, testing = false) {
         return
     }
     
-    let to_inspect = false
+    let show = false
     let objstr: string
     
     switch (obj.form) {
@@ -283,7 +283,7 @@ async function execute (text: string, iline: number, testing = false) {
         case DdbForm.tensor:
         case DdbForm.dict:
             lastvar = new DdbVar({ ...obj, obj, bytes: 0n, connection })
-            to_inspect = true
+            show = true
             objstr = obj.inspect_type().replaceAll('\n', '\r\n').blue + '\r\n'
             break
         
@@ -298,7 +298,7 @@ async function execute (text: string, iline: number, testing = false) {
     
     printer.fire(objstr + get_execution_end())
     
-    if (to_inspect) {
+    if (show) {
         const options: InspectOptions = { decimals: formatter.decimals }
         const message: DdbMessage = { type: 'object', data: obj }
         const { ddb } = connection
