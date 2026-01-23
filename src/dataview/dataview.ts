@@ -1,4 +1,4 @@
-import { window, type WebviewView, Uri } from 'vscode'
+import { window, type WebviewView, Uri, workspace } from 'vscode'
 
 import { type Message, genid, assert, defer, pack, parse, message_symbol, check } from 'xshell'
 
@@ -116,6 +116,12 @@ export let dataview = {
                         }
                     )
                     
+                    const assets_root = webview.asWebviewUri(
+                        Uri.file(`${fpd_ext}dataview/`))
+                        
+                    const font = JSON.stringify(
+                        workspace.getConfiguration('editor').get('fontFamily'))
+                    
                     webview.html = 
                         '<!doctype html>\n' +
                         '<html>\n' +
@@ -124,7 +130,8 @@ export let dataview = {
                         "        <meta charset='utf-8' />\n" +
                         '        <script>\n' +
                         `            window.language = '${language}'\n` +
-                        // `            window.plotlyjs = '${webview.asWebviewUri(Uri.file(`${fpd_ext}dataview/vendors/plotly.js-dist-min/plotly.min.js`))}'\n` +
+                        `            window.assets_root = '${assets_root}'\n` +
+                        `            window.font = ${font}\n` +
                         '        </script>\n' +
                         
                         [

@@ -20,7 +20,7 @@ import 'xshell/polyfill.browser.js'
 import { noop, rethrow } from 'xshell/prototype.browser.js'
 import { check, genid, timeout } from 'xshell/utils.browser.js'
 import { message_symbol, pack, parse, type Message } from 'xshell/io.common.js'
-import { DdbObj, DdbForm, type InspectOptions } from 'dolphindb/browser.js'
+import { DdbObj, type InspectOptions } from 'dolphindb/browser.js'
 
 import { language } from '@i18n'
 
@@ -243,14 +243,16 @@ class DataViewModel extends Model<DataViewModel> {
                         
                         data = DdbObj.parse(data, le)
                         
-                        switch ((data as DdbObj).form) {
-                            case DdbForm.scalar:
-                            case DdbForm.pair:
-                                break
-                            
-                            default:
-                                this.set({ result: { type, data }, options: options === null ? undefined : options })
-                        }
+                        // local
+                        // if ((data as DdbObj).form === DdbForm.chart) {
+                        //     let v = (data as DdbObj).value as DdbChartValue
+                        //     v.type = DdbChartType.surface
+                        // }
+                        
+                        this.set({
+                            result: { type, data },
+                            options: options === null ? undefined : options
+                        })
                     },
                     // error 可能会有，但在 webview 里不关心
                     { on_error: noop }
@@ -338,9 +340,10 @@ function DataView () {
             remote={remote} 
             ctx='webview' 
             options={options} 
-            assets_root='/'
+            assets_root={window.assets_root}
             product_name='DolphinDB'
             dark={dark_theme}
+            font={window.font}
             {...type === 'object' ? { obj: data } : { objref: data }}
         />
     </div>

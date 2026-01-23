@@ -30,7 +30,7 @@
         "@vscode/debugprotocol": "^1.68.0",
         "antd": "^6.2.1",
         "dayjs": "^1.11.19",
-        "dolphindb": "^3.1.34",
+        "dolphindb": "^3.1.35",
         "echarts": "^6.0.0",
         "plotly.js-dist-min": "^3.3.1",
         "react": "^19.2.3",

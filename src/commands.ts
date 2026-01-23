@@ -4,7 +4,7 @@ import { window, workspace, commands, ConfigurationTarget, ProgressLocation, Uri
 
 import { path, Timer, delay, inspect, vercmp, map_keys } from 'xshell'
 
-import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbInt, DdbLong } from 'dolphindb'
+import { DdbConnectionError, DdbForm, type DdbObj, DdbType, type InspectOptions, DdbInt, DdbLong, type DdbMessage } from 'dolphindb'
 
 
 import type { Variable } from '@vscode/debugadapter'
@@ -185,13 +185,6 @@ async function execute (text: string, iline: number, testing = false) {
                     const { type, data } = message
                     if (type === 'print')
                         printer.fire(data.replace(/\n/g, '\r\n') + '\r\n')
-                    
-                    for (const subscriber of dataview.subscribers_repl)
-                        subscriber(message, ddb, { decimals: formatter.decimals })
-                    
-                    if (server)
-                        for (const subscriber of server.subscribers_repl)
-                            subscriber(message, ddb, { decimals: formatter.decimals })
                 }
             }
         )
@@ -305,8 +298,18 @@ async function execute (text: string, iline: number, testing = false) {
     
     printer.fire(objstr + get_execution_end())
     
-    if (to_inspect)
-        await lastvar.inspect()
+    if (to_inspect) {
+        const options: InspectOptions = { decimals: formatter.decimals }
+        const message: DdbMessage = { type: 'object', data: obj }
+        const { ddb } = connection
+        
+        for (const subscriber of dataview.subscribers_repl)
+            subscriber(message, ddb, options)
+        
+        if (server)
+            for (const subscriber of server.subscribers_repl)
+                subscriber(message, ddb, options)
+    }
 }
 
 

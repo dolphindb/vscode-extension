@@ -14,6 +14,12 @@ declare module '*.svg' {
 
 interface Window {
     model?: import('react-object-model').Model<any>
+    
+    /** dataview.ts 中注入到 webview window */
+    assets_root: string
+    
+    /** dataview.ts 中注入到 webview window */
+    font: string
 }
 
 declare const EXTENSION_VERSION: string
