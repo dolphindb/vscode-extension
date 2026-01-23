@@ -118,7 +118,7 @@ export let dataview = {
                     
                     const assets_root = webview.asWebviewUri(
                         Uri.file(`${fpd_ext}dataview/`))
-                        
+                    
                     const font = JSON.stringify(
                         workspace.getConfiguration('editor').get('fontFamily'))
                     
@@ -140,10 +140,10 @@ export let dataview = {
                             `antd/antd.${ dev ? 'development' : 'production' }.js`,
                             `@ant-design/icons/dist/index.umd${ dev ? '' : '.min' }.js`,
                             `echarts/dist/echarts${ dev ? '' : '.min' }.js`,
-                        ].map(vendor => `        <script src='${webview.asWebviewUri(Uri.file(`${fpd_ext}dataview/vendors/${vendor}`))}' defer></script>\n`)
+                        ].map(vendor => `        <script src='${`${assets_root}vendors/${vendor}`}' defer></script>\n`)
                             .join_lines() +
                         
-                        `        <script src='${webview.asWebviewUri(Uri.file(`${fpd_ext}dataview/webview.js`))}' type='module'></script>\n` +
+                        `        <script src='${`${assets_root}webview.js`}' type='module'></script>\n` +
                         '    </head>\n' +
                         '    <body>\n' +
                         "        <div class='root'></div>\n" +
