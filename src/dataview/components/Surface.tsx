@@ -82,7 +82,7 @@ function get_layout (
     { width, height }: { width: number, height: number },
     options: SurfaceOptions
 ): Partial<Plotly.Layout> {
-    const { title, title_size, font, dark } = options
+    const { title, title_size = 16, font, dark } = options
     
     return {
         width,
@@ -94,7 +94,7 @@ function get_layout (
             text: title,
             font: {
                 color: dark ? '#ffffff' : undefined,
-                size: title_size || 16,
+                size: title_size,
             }
         },
         
@@ -112,7 +112,7 @@ function get_layout (
             l: 0,
             r: 0,
             b: 0,
-            t: title ? 35 : 0
+            t: title ? title_size + 20 : 0
         },
         
         ... dark ? {
