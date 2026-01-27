@@ -51,7 +51,7 @@ import {
 
 import { t } from '@i18n'
 
-import { axises, Surface } from '@components/Surface.tsx'
+import { axises, Surface, type SurfaceData } from '@components/Surface.tsx'
 
 import SvgLink from './icons/link.icon.svg'
 
@@ -1743,6 +1743,9 @@ function Chart ({
         font
     })
     
+    let [surface_data, set_surface_data] = useState<SurfaceData>(undefined)
+    
+    
     useEffect(() => {
         (async () => {
             const {
@@ -1842,10 +1845,13 @@ function Chart ({
                     break
                 
                 case DdbChartType.surface:
-                    // 将 data 转换为 data_ 的 number[][] 以便作为 Surface 的 data 参数传入
-                    data_ = seq(rows, i => 
-                        seq(cols, j => 
-                            to_chart_data(data[i + j * rows], datatype)))
+                    set_surface_data({
+                        x: rows_?.data(options),
+                        y: cols_?.data(options),
+                        z: seq(rows, i =>
+                            seq(cols, j =>
+                                to_chart_data(data[i + j * rows], datatype)))
+                    })
                     
                     break
                 
@@ -1892,7 +1898,7 @@ function Chart ({
     return <div className='chart'>
         { config.charttype === DdbChartType.surface ?
              <Surface
-                data={config.data}
+                data={surface_data}
                 options={{
                     font,
                     dark,

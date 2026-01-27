@@ -18,7 +18,7 @@ export function Surface ({
     assets_root
 }: {
     // 每个子数组 y 不同，x 相同 (行优先)
-    data: number[][]
+    data: SurfaceData
     options: SurfaceOptions
     assets_root: string
 }) {
@@ -70,11 +70,18 @@ export function Surface ({
 }
 
 
-function get_data (data: any) {
+function get_data ({ x, y, z }: SurfaceData) {
     return [{
         type: 'surface',
-        z: data
+        x: x?.map(bigint2number),
+        y: y?.map(bigint2number),
+        z
     }] satisfies Plotly.Data[]
+}
+
+
+function bigint2number (x: any) {
+    return typeof x === 'bigint' ? Number(x) : x
 }
 
 
@@ -125,6 +132,13 @@ function get_layout (
             family: font || undefined
         }
     }
+}
+
+
+export interface SurfaceData {
+    x?: (number | bigint)[]
+    y?: (number | bigint)[]
+    z: number[][]
 }
 
 
