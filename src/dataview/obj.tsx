@@ -1846,8 +1846,8 @@ function Chart ({
                 
                 case DdbChartType.surface:
                     set_surface_data({
-                        x: rows_?.data(options),
-                        y: cols_?.data(options),
+                        x: cols_?.data(options),
+                        y: rows_?.data(options),
                         z: seq(rows, i =>
                             seq(cols, j =>
                                 to_chart_data(data[i + j * rows], datatype)))
