@@ -414,15 +414,8 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
                 
                 await dataview.ppage
             }
-        } else {
-            // 遇到 dataview 还未加载时，先等待其加载，再 inspect 变量
-            if (!dataview.view)
-                await commands.executeCommand('workbench.view.extension.ddbpanel')
-            
-            await dataview.pwebview
-            
-            dataview.view.show(true)
-        }
+        } else
+            await dataview.show()
         
         let obj = this.obj
         

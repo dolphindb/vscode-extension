@@ -1,6 +1,6 @@
-import { window, type WebviewView, Uri, workspace } from 'vscode'
+import { window, type WebviewView, Uri, workspace, commands } from 'vscode'
 
-import { type Message, genid, assert, defer, pack, parse, message_symbol, check } from 'xshell'
+import { type Message, genid, assert, defer, pack, parse, message_symbol, check, timeout } from 'xshell'
 
 import type { DDB, DdbMessage, InspectOptions } from 'dolphindb'
 
@@ -153,6 +153,17 @@ export let dataview = {
             },
             { webviewOptions: { retainContextWhenHidden: true } }
         )
+    },
+    
+    
+    /** 切换到 dataview 面板，遇到 dataview 还未加载时，先等待其加载 */
+    async show () {
+        if (!this.view)
+            await commands.executeCommand('workbench.view.extension.ddbpanel')
+        
+        await timeout(3000, this.pwebview, t('DolphinDB: 数据视图 加载超时'))
+        
+        this.view.show(true)
     },
     
     

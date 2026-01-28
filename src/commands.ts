@@ -265,8 +265,7 @@ async function execute (text: string, iline: number, testing = false) {
     if (testing) {
         printer.fire(
             (obj.data<string | null>()?.replaceAll('\n', '\r\n').blue || '') +
-            get_execution_end()
-        )
+            get_execution_end())
         
         return
     }
@@ -302,6 +301,8 @@ async function execute (text: string, iline: number, testing = false) {
         const options: InspectOptions = { decimals: formatter.decimals }
         const message: DdbMessage = { type: 'object', data: obj }
         const { ddb } = connection
+        
+        await dataview.show()
         
         for (const subscriber of dataview.subscribers_repl)
             subscriber(message, ddb, options)

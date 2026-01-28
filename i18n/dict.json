@@ -538,5 +538,8 @@
     },
     "然后打开 vscode 设置，搜索 \"代理\" 或者 proxy，将扩展代理支持 (Http: Proxy Support) 关闭 (设置为 off)，设置后重启 VSCode 再次尝试\n": {
         "en": "Then open the vscode settings, search for\" proxy\"or proxy, turn off the extended proxy support (Http: Proxy Support)(set to off), restart the VSCode and try again\n"
+    },
+    "DolphinDB: 数据视图 加载超时": {
+        "en": "DolphinDB: DataView load timed out"
     }
 }
