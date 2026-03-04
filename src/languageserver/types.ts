@@ -1,15 +1,17 @@
+import type { ValueOf } from 'xshell'
+
 import type { Position, Range } from 'vscode-languageserver/node'
 
 // symbols
-export enum SymbolType {
-    Function,
-    Table,
-    FieldName,
-    Database,
-    Variable,
-    Param,
-    File
-}
+export const SymbolType = {
+    Function: 0,
+    Table: 1,
+    FieldName: 2,
+    Database: 3,
+    Variable: 4,
+    Param: 5,
+    File: 6,
+} as const
 
 export interface IFunctionMetadata {
     argnames: string[]
@@ -36,7 +38,7 @@ export type SymbolMetadataMap = {
     [SymbolType.Param]: IParamMetadata
 }
 
-export interface ISymbol<T extends SymbolType = SymbolType> {
+export interface ISymbol<T extends ValueOf<typeof SymbolType> = ValueOf<typeof SymbolType>> {
     name: string
     type: T
     position: Position

@@ -1,24 +1,26 @@
+import type { ValueOf } from 'xshell/prototype.common.js'
+
 export const pyobjs = new Set(['list', 'tuple', 'dict', 'set', '_ddb', 'Exception', 'AssertRaise', 'PyBox'])
 
 
-export enum LicenseTypes {
+export const LicenseTypes = {
     /** 其他方式 */
-    Other = 0,
+    Other: 0,
     
     /** 机器指纹绑定 */
-    MachineFingerprintBind = 1,
+    MachineFingerprintBind: 1,
     
     /** 在线验证 */
-    OnlineVerify = 2,
+    OnlineVerify: 2,
     
     /** LicenseServer 验证 */
-    LicenseServerVerify = 3
-}
+    LicenseServerVerify: 3,
+} as const
 
 
 export interface DdbLicense {
     authorization: string
-    licenseType: LicenseTypes
+    licenseType: ValueOf<typeof LicenseTypes>
     maxMemoryPerNode: number
     maxCoresPerNode: number
     clientName: string
@@ -30,25 +32,25 @@ export interface DdbLicense {
 }
 
 
-export enum NodeType {
-    data = 0,
-    agent = 1,
-    controller = 2,
-    single = 3,
-    computing = 4
-}
+export const NodeType = {
+    data: 0,
+    agent: 1,
+    controller: 2,
+    single: 3,
+    computing: 4,
+} as const
 
 
-export enum DdbNodeState {
-    offline = 0,
-    online = 1
-}
+export const DdbNodeState = {
+    offline: 0,
+    online: 1,
+} as const
 
 
 export interface DdbNode {
     name: string
-    state: DdbNodeState
-    mode: NodeType
+    state: ValueOf<typeof DdbNodeState>
+    mode: ValueOf<typeof NodeType>
     host: string
     port: number
     site: string

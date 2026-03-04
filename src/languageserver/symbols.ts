@@ -555,12 +555,12 @@ connection.onDocumentSymbol(params => {
     const symbols = symbolService.getSymbols(filePath).slice()
     const result: DocumentSymbol[] = [ ]
     // 先处理函数，对于每个函数，找到其参数，并将其添加到字节点，然后从 symbols 中删除
-    const functionSymbols: ISymbol<SymbolType.Function>[] = symbols.filter(symbol => symbol.type === SymbolType.Function) as ISymbol<SymbolType.Function>[]
+    const functionSymbols: ISymbol<typeof SymbolType.Function>[] = symbols.filter(symbol => symbol.type === SymbolType.Function) as ISymbol<typeof SymbolType.Function>[]
     for (const funcSymbol of functionSymbols) {
         // 查找相关的 Params
         const relatedParams = symbols.filter(symbol =>
             symbol.type === SymbolType.Param &&
-            (symbol as ISymbol<SymbolType.Param>).metadata?.funcname === funcSymbol.name)
+            (symbol as ISymbol<typeof SymbolType.Param>).metadata?.funcname === funcSymbol.name)
         const item: DocumentSymbol = {
             name: funcSymbol.name,
             kind: SymbolKind.Function,

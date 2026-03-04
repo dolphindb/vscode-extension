@@ -54,6 +54,7 @@
         "inlineSources": false,
         
         // --- features
+        "erasableSyntaxOnly": true,
         "preserveSymlinks": false,
         "jsx": "react-jsx",
         "removeComments": false,

@@ -74,18 +74,31 @@ export class Remote {
     
     /** debug 会话不在开启状态时禁止发送请求 */
     private _terminated = false
+    
+    private url: string
+    private username: string
+    private password: string
+    private autologin: boolean
+    private errorHandler: (error: Error) => void
+    
     public terminate () {
         this._terminated = true
         this.websocket?.close()
     }
     
     constructor (
-        private url: string,
-        private username: string,
-        private password: string,
-        private autologin: boolean,
-        private errorHandler: (error: Error) => void
-    ) { }
+        url: string,
+        username: string,
+        password: string,
+        autologin: boolean,
+        errorHandler: (error: Error) => void
+    ) {
+        this.url = url
+        this.username = username
+        this.password = password
+        this.autologin = autologin
+        this.errorHandler = errorHandler
+    }
     
     get connected () {
         return this.websocket?.readyState === WebSocketOpen
