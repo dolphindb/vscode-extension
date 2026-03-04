@@ -119,6 +119,7 @@ function DdbObjWindow () {
             ctx='window'
             remote={remote}
             ddb={ddb}
+            ddb_language={ddb?.language || objref?.ddb_language || 'dolphindb'}
             options={options}
             assets_root={assets_root}
             product_name={product_name}

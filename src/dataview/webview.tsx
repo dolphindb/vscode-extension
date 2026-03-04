@@ -271,7 +271,7 @@ class DataViewModel extends Model<DataViewModel> {
                         
                         if (ddbvar.obj)
                             if (open)
-                                { } 
+                                { }
                             else
                                 this.set({ result: { type: 'object', data: ddbvar.obj }, options })
                         else {
@@ -337,9 +337,10 @@ function DataView () {
     
     return <div className='obj-result themed webview'>
         <Obj
-            remote={remote} 
-            ctx='webview' 
-            options={options} 
+            remote={remote}
+            ctx='webview'
+            ddb_language={type === 'objref' ? data.ddb_language : 'dolphindb'}
+            options={options}
             assets_root={window.assets_root}
             product_name='DolphinDB'
             dark={dark_theme}

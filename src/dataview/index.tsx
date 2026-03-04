@@ -93,8 +93,8 @@ class DataViewModel extends Model<DataViewModel> {
                                 if (open)
                                     await open_obj({
                                         obj: ddbvar.obj,
-                                        objref: null, 
-                                        remote, 
+                                        objref: null,
+                                        remote,
                                         options,
                                         product_name,
                                         assets_root
@@ -178,6 +178,7 @@ function DataView () {
         <Obj
             remote={remote}
             ctx='page'
+            ddb_language={type === 'objref' ? data.ddb_language : 'dolphindb'}
             options={options}
             product_name={product_name}
             assets_root={assets_root}

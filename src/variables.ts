@@ -422,6 +422,7 @@ export class DdbVar <TObj extends DdbObj = DdbObj> extends TreeItem {
         const args = [
             {
                 node: this.node,
+                ddb_language: this.connection.ddb.language,
                 name: this.name,
                 form: this.form,
                 type: this.type,
