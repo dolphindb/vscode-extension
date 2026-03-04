@@ -549,19 +549,21 @@ export class DdbConnection extends TreeItem {
             bytes,
             shared,
             extra,
-            obj: undefined as DdbObj
-        })).filter(v =>
-            v.name !== 'pnode_run' && 
-            (!ddb.python || !(v.form === DdbForm.object && pyobjs.has(v.name))))
+            obj: undefined as DdbObj,
+        })).filter(v => !(
+            v.name === 'pnode_run' ||
+            ddb.python && v.form === DdbForm.object && pyobjs.has(v.name) ||
+            ddb.kdb && (v.name === 'Q' || v.name === 'ddb')
+        ))
         
         let immutables = vars_data.filter(v => v.form === DdbForm.scalar || v.form === DdbForm.pair)
         
         if (immutables.length) {
             const { value: values } = await ddb.eval<DdbObj<DdbObj[]>>(
                 [
-                    ...immutables.select('name'), 
+                    ...immutables.select('name'),
                     ddb.kdb ? '()' : '0'  // 确保生成 any vector
-                ].join(ddb.kdb ? '; ' : ', ').bracket() + 
+                ].join(ddb.kdb ? '; ' : ', ').bracket() +
                 (ddb.python ? '.toddb()' : ''))
             
             for (let i = 0, len = values.length - 1;  i < len;  ++i) {
