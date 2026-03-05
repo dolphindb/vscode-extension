@@ -309,7 +309,8 @@ export class DdbConnection extends TreeItem {
     
     url: string
     
-    /** 这里设置的值为默认值，需要和 webpack 中的属性默认值保持一致 */
+    /** settings 中的连接选项  
+        这里设置的值为默认值，需要和 webpack 中的属性默认值保持一致 */
     options: DdbOptions & {
         mappings: Record<string, string>
     } = {
