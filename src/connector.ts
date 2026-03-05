@@ -29,7 +29,7 @@ import { t } from '@i18n'
 import { statbar } from './statbar.ts'
 import { open_connection_settings } from './commands.ts'
 
-import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState } from './commons.ts'
+import { type DdbNode, NodeType, type DdbLicense, pyobjs, DdbNodeState, type TNodeType } from './commons.ts'
 
 import { DdbVar, DdbVarLocation, variables } from './variables.ts'
 import { Catalog, Database, DatabaseGroup, OrcaTable, Table, databases, type TableMeta } from './databases.ts'
@@ -373,7 +373,7 @@ export class DdbConnection extends TreeItem {
     /** 通过 getClusterPerf 取集群中的某个数据节点，方便后续 rpc 到数据节点执行操作 */
     datanode: DdbNode
     
-    node_type: NodeType
+    node_type: TNodeType
     
     /** 通过 getControllerAlias 得到 */
     controller_alias: string
@@ -771,7 +771,7 @@ export class DdbConnection extends TreeItem {
     
     
     async get_node_type () {
-        const { value: node_type } = await this.ddb.call<DdbObj<NodeType>>('getNodeType', undefined, urgent)
+        const { value: node_type } = await this.ddb.call<DdbObj<TNodeType>>('getNodeType', undefined, urgent)
         this.node_type = node_type
         return node_type
     }

@@ -154,7 +154,7 @@ async function getSymbolsAtPosition (documentUri: string, position: Position): P
                 foundSymbols = moduleSymbols.filter(
                     s => s.type === SymbolType.Function
                         && s.name === splitByLastDoubleColon(word).suffix
-                        && (s as ISymbol<SymbolType.Function>).metadata.top_level
+                        && (s as ISymbol<typeof SymbolType.Function>).metadata.top_level
                 )
             }
         } else

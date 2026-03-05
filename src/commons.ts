@@ -40,6 +40,8 @@ export const NodeType = {
     computing: 4,
 } as const
 
+export type TNodeType = ValueOf<typeof NodeType>
+
 
 export const DdbNodeState = {
     offline: 0,

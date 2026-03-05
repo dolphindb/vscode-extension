@@ -120,7 +120,7 @@ export class CompletionsService {
     
     getFunctionSnippets (position: TextDocumentPositionParams): DdbCompletionItem[] {
         const symbols = symbolService.getSymbols(position.textDocument.uri)
-        const functionSymbols: ISymbol<SymbolType.Function>[] = symbols.filter(s => s.type === SymbolType.Function) as ISymbol<SymbolType.Function>[]
+        const functionSymbols: ISymbol<typeof SymbolType.Function>[] = symbols.filter(s => s.type === SymbolType.Function) as ISymbol<typeof SymbolType.Function>[]
         const functionCompletions: CompletionItem[] = functionSymbols.map(s => ({
                 label: s.name,
                 kind: CompletionItemKind.Function,
@@ -242,7 +242,7 @@ export class CompletionsService {
             .filter(module => module.moduleName !== currentPisitionModuleName)
         for (const mod of allModules) {
             const modulePath = mod.filePath
-            const symbolsInPath = symbolService.getSymbols(modulePath).filter(s => s.type === SymbolType.Function) as ISymbol<SymbolType.Function>[]
+            const symbolsInPath = symbolService.getSymbols(modulePath).filter(s => s.type === SymbolType.Function) as ISymbol<typeof SymbolType.Function>[]
             for (const s of symbolsInPath) {
                 const top_level = s.metadata.top_level
                 if (top_level) {
