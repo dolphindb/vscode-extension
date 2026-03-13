@@ -190,14 +190,6 @@ let builder = {
         
         let info = await git.get_version_info()
         
-        const resolve_alias: BundlerOptions['resolve_alias'] = {
-            '@i18n': `${fpd_root}i18n/index.ts`,
-            '@theme': `${fpd_root}src/dataview/theme.ts`,
-            '@components/*': `${fpd_root}src/dataview/components/*`,
-            '@test': `${fpd_root}test`,
-            '@': `${fpd_root}src`
-        }
-        
         await Promise.all([
             this.build_package_json(),
             
@@ -217,7 +209,6 @@ let builder = {
                     'webview.js': './src/dataview/webview.tsx',
                 },
                 {
-                    resolve_alias,
                     external_dayjs: true,
                     production,
                     license: production,
@@ -270,7 +261,6 @@ let builder = {
                         FPD_ROOT: fpd_root.quote(),
                         EXTENSION_VERSION: `${info.version} (${info.time} ${info.hash})`.quote(),
                     },
-                    resolve_alias,
                     assets: {
                         productions: [
                             'README.md', 'README.zh.md', 'icons/', 'LICENSE.txt',
