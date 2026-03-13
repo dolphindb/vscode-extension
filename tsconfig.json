@@ -10,7 +10,7 @@
         
         "./src/dataview/",
         
-        "./src/languageserver/",
+        "./src/languageserver/"
     ],
     
     "compilerOptions": {
@@ -18,13 +18,13 @@
             "@i18n": ["./i18n/index.ts"],
             "@theme": ["./src/dataview/theme.ts"],
             "@components/*": ["./src/dataview/components/*"],
-            "@test/*": ["./test/*"],
-            "@/*": ["./src/*"]
+            "@/*": ["./src/*"],
+            "@test/*": ["./test/*"]
         },
         
         
         // --- module
-        "module": "ESNext", // none, CommonJS, amd, system, umd, es6, es2015, ESNext
+        "module": "ESNext",
         "moduleResolution": "Bundler",
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": false,
@@ -72,7 +72,7 @@
         "noImplicitOverride": true,
         "noUnusedLocals": false,
         "noUnusedParameters": false,
-        "skipLibCheck": true,
+        "skipLibCheck": true
     }
 }
 

@@ -15,7 +15,7 @@
     },
     "devDependencies": {
         "@types/koa": "^3.0.1",
-        "@types/node": "^25.4.0",
+        "@types/node": "^25.5.0",
         "@types/plotly.js-dist-min": "^2.3.4",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
@@ -29,7 +29,7 @@
         "@vscode/debugadapter": "^1.68.0",
         "@vscode/debugprotocol": "^1.68.0",
         "antd": "^6.3.2",
-        "dayjs": "^1.11.19",
+        "dayjs": "^1.11.20",
         "dolphindb": "^3.1.39",
         "echarts": "^6.0.0",
         "plotly.js-dist-min": "^3.4.0",
