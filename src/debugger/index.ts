@@ -5,11 +5,12 @@
 // 4. 在 debugSession 中，vscode 会依次调用 initialize 、 launch 、 setBreakpoints 、 configurationDone 等，
 //     这个过程中会连接服务端，并把用户脚本和断点情况发送过去，服务端验证断点返回，执行到第一个断点处，vscode 等待用户下一步操作
 
-import { createServer, type Server, type Socket } from 'net'
+import { createServer, type Server, type Socket } from 'node:net'
+
+import 'xshell/polyfill.browser.js'
 
 import { t } from '@i18n'
 
-import 'xshell/polyfill.browser.js'
 import { DdbDebugSession } from './adapter.ts'
 
 

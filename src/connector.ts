@@ -626,14 +626,13 @@ export class DdbConnection extends TreeItem {
             ddb.invoke<string[]>('getClusterDFSTables', hidable ? [false] : undefined),
             // 可能因为用户没有数据库的权限报错，单独 catch 并返回空数组
             ddb.invoke<string[]>('getClusterDFSDatabases', hidable ? [false] : undefined)
-                .catch((error) => {
+                .catch(error => {
                     console.log('load_dbs: getClusterDFSDatabases 错误，可能没有权限，忽略:', error.message)
                     return [ ]
-
                 }),
             ...v3 ? [
                 ddb.invoke<string[]>('getAllCatalogs'),
-                this.get_orca_tables().catch((error) => {
+                this.get_orca_tables().catch(error => {
                     console.log('getOrcaStreamTableMeta 错误，忽略:', error.message)
                     return [ ]
                 })

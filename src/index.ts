@@ -1,4 +1,4 @@
-import util from 'util'
+import util from 'node:util'
 
 import {
     window, workspace, commands, extensions, ExtensionMode, type ExtensionContext,
@@ -8,7 +8,6 @@ import {
 
 import 'xshell/polyfill.browser.js'
 import { set_inspect_options } from 'xshell'
-
 
 import { t } from '@i18n'
 
@@ -25,8 +24,6 @@ import { register_variables } from './variables.ts'
 import { register_databases } from './databases.ts'
 import { register_settings } from './settings.ts'
 import { fexists } from './utils.ts'
-
-import { test } from '@test/index.ts'
 
 
 export type DdbMessageItem = MessageItem & { action?: () => void | Promise<void> }
@@ -146,6 +143,7 @@ export async function activate (ctx: ExtensionContext) {
         await workspace.fs.delete(Uri.file(fp_test))
         
         // 这里让扩展先激活，再启动测试
+        const { test } = await import('@test/index.ts')
         setTimeout(test)
     }
 }

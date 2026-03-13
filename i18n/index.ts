@@ -1,4 +1,4 @@
-import process from 'process'
+import process from 'node:process'
 
 import { I18N, type Language } from 'xshell/i18n/index.js'
 

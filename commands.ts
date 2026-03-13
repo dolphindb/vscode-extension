@@ -1,6 +1,6 @@
 // 用法: node.exe commands.ts dev 或 build 或 test
 
-import os from 'os'
+import os from 'node:os'
 
 import {
     call, fexists, get_command, noprint, Remote, fdelete, fmkdir, fwrite, 

@@ -7,9 +7,9 @@ import type { DDB, DdbMessage, InspectOptions } from 'dolphindb'
 
 import { language, t } from '@i18n'
 
-import { dev, fpd_ext } from '../index.ts'
-import { type DdbVar } from '../variables.ts'
-import { connector } from '../connector.ts'
+import { dev, fpd_ext } from '@/index.ts'
+import { type DdbVar } from '@/variables.ts'
+import { connector } from '@/connector.ts'
 
 
 type ViewMessageHandler <TData extends any[] = any[]> = (message: Message<TData>, view: WebviewView) => void | any[] | Promise<void | any[]>

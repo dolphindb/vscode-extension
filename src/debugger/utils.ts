@@ -1,10 +1,10 @@
-import { promises as fs } from 'fs'
+import fsp from 'node:fs/promises'
 
-import { DdbObj, DdbDict, DdbString, DdbVectorString, DdbVectorInt, DdbVectorAny, DdbInt, DdbBool, DdbForm, DdbType, DdbVoid } from 'dolphindb'
 import { decode } from 'xshell'
+import { DdbObj, DdbDict, DdbString, DdbVectorString, DdbVectorInt, DdbVectorAny, DdbInt, DdbBool, DdbForm, DdbType, DdbVoid } from 'dolphindb'
 
+import type { Sources } from './sources.ts'
 
-import { type Sources } from './sources.ts'
 
 /** 基本数据类型到 DdbObj 的转换
     @param value 数字、布尔、字符串 */
@@ -85,7 +85,7 @@ export function normalize_path_and_casing (path: string) {
     @param path path to the file
     @returns string contents of the file */
 export async function load_source (path: string) {
-    return decode(await fs.readFile(path))
+    return decode(await fsp.readFile(path))
 }
 
 export async function check_file (moduleName: string, localPath: string, sources: Sources): Promise<boolean> {
