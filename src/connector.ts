@@ -127,7 +127,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
         try {
             await pconnect
         } catch (error) {
-            const { autologin, username, password, python, kdb, sql } = connection.options
+            const { autologin, username, password, python, q, sql } = connection.options
             
             const answer = await window.showErrorMessage<DdbMessageItem>(
                 error.message,
@@ -146,7 +146,7 @@ export class DdbConnector implements TreeDataProvider<TreeItem> {
                                     username,
                                     password,
                                     python,
-                                    kdb,
+                                    q,
                                     sql
                                 },
                                 { colors: false, compact: true }
@@ -322,7 +322,7 @@ export class DdbConnection extends TreeItem {
         
         python: false,
         
-        kdb: false,
+        q: false,
         
         sql: SqlStandard.DolphinDB,
         
@@ -554,7 +554,7 @@ export class DdbConnection extends TreeItem {
         })).filter(v => !(
             v.name === 'pnode_run' ||
             ddb.python && v.form === DdbForm.object && pyobjs.has(v.name) ||
-            ddb.kdb && (v.name === 'Q' || v.name === 'ddb')
+            ddb.q && (v.name === 'Q' || v.name === 'ddb')
         ))
         
         let immutables = vars_data.filter(v => v.form === DdbForm.scalar || v.form === DdbForm.pair)
@@ -563,8 +563,8 @@ export class DdbConnection extends TreeItem {
             const { value: values } = await ddb.eval<DdbObj<DdbObj[]>>(
                 [
                     ...immutables.select('name'),
-                    ddb.kdb ? '()' : '0'  // 确保生成 any vector
-                ].join(ddb.kdb ? '; ' : ', ').bracket() +
+                    ddb.q ? '()' : '0'  // 确保生成 any vector
+                ].join(ddb.q ? '; ' : ', ').bracket() +
                 (ddb.python ? '.toddb()' : ''))
             
             for (let i = 0, len = values.length - 1;  i < len;  ++i) {
@@ -905,7 +905,7 @@ export const funcdefs = {
             'def load_table_variable_schema (table_name):\n' +
             '    return schema(objByName(table_name))\n',
         
-        kdb: 'load_table_variable_schema: {[table_name] schema get table_name}\n'
+        q: 'load_table_variable_schema: {[table_name] schema get table_name}\n'
     },
     
     peek_table: {
@@ -918,7 +918,7 @@ export const funcdefs = {
             'def peek_table (db_path, tb_name):\n' +
             '    return select top 100 * from loadTable(db_path, tb_name)\n',
             
-        kdb: 'peek_table: {[db_path; tb_name] select[100] from loadTable[db_path; tb_name]}'
+        q: 'peek_table: {[db_path; tb_name] select[100] from loadTable[db_path; tb_name]}'
     },
     
     load_table_schema: {
@@ -931,7 +931,7 @@ export const funcdefs = {
             'def load_table_schema (db_path, tb_name):\n' +
             '    return schema(loadTable(db_path, tb_name))\n',
             
-        kdb: 'load_table_schema: {[db_path; tb_name] schema loadTable[db_path; tb_name]}'
+        q: 'load_table_schema: {[db_path; tb_name] schema loadTable[db_path; tb_name]}'
     },
     
     load_database_schema: {
@@ -944,7 +944,7 @@ export const funcdefs = {
             'def load_database_schema (db_path):\n' +
             '    return schema(database(db_path))\n',
         
-        kdb: 'load_database_schema: {[db_path] schema database db_path}'
+        q: 'load_database_schema: {[db_path] schema database db_path}'
     },
     
     get_csv_content: {
@@ -971,7 +971,7 @@ export const funcdefs = {
             '    table_size = size(obj)\n' +
             "    return generateTextFromTable((select * from obj limit table_size), 0, table_size, 0, char(','), True)\n",
             
-        kdb:
+        q:
             'get_csv_content: {[name_or_obj]\n' +
             '    ty: typestr name_or_obj;\n' +
             '    obj: $[(ty = `CHAR) or (ty = `STRING);get name_or_obj; name_or_obj];\n' +

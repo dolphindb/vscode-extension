@@ -588,12 +588,12 @@ function Vector ({
                 offset < rows
             ) {
                 const script = (form === DdbForm.set || rows === 0) ?
-                    name
-                :
-                    ddb_language === 'kdb' ? 
-                        `(${offset};${page_size}) sublist ${name}`
+                        name
                     :
-                        `${name}[${offset}..${Math.min(offset + page_size, rows) - 1}]`
+                        ddb_language === 'q' ?
+                            `(${offset};${page_size}) sublist ${name}`
+                        :
+                            `${name}[${offset}..${Math.min(offset + page_size, rows) - 1}]`
                 
                 console.log(`${DdbForm[form]}.fetch:`, script)
             
@@ -636,7 +636,7 @@ function Vector ({
                         obj,
                         objref,
                         index,
-                        form: info.form as (DdbForm.set | DdbForm.vector),
+                        form: info.form as (typeof DdbForm.set | typeof DdbForm.vector),
                         ncols,
                         page_index,
                         page_size,
@@ -692,7 +692,7 @@ function Vector ({
 class VectorColumn implements TableColumnType <number> {
     index: number
     
-    form: DdbForm.vector | DdbForm.set
+    form: typeof DdbForm.vector | typeof DdbForm.set
     
     obj?: DdbVectorObj
     objref?: DdbObjRef<DdbVectorValue>
@@ -820,7 +820,7 @@ export function Table ({
                 rows === 0 && offset === 0 ||
                 offset < rows
             ) {
-                const script = ddb_language === 'kdb' ?
+                const script = ddb_language === 'q' ?
                     `(${offset};${page_size}) sublist ${name}`
                 :
                     `select * from ${name} limit ${offset}, ${page_size}`
@@ -1405,7 +1405,7 @@ class StreamingTableColumn implements TableColumnType <number> {
 
 
 class TableColumn implements TableColumnType <number> {
-    static left_align_types = new Set([
+    static left_align_types: Set<DdbType> = new Set([
         DdbType.symbol,
         DdbType.symbol_extended,
         DdbType.string,

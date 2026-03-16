@@ -696,12 +696,12 @@ let builder = {
                                             },
                                         },
                                         {
-                                            name: 'kdb',
+                                            name: 'q',
                                             type: 'boolean',
                                             default: false,
                                             description: {
-                                                zh: '(需要 v3.00.4 以上的 DolphinDB Server) 使用 kdb parser 来解释执行脚本, 默认 false',
-                                                en: '(DolphinDB Server version must be above v3.00.4) Use kdb parser to interpret and execute scripts, the default is false'
+                                                zh: '(需要 v3.00.4 以上的 DolphinDB Server) 使用 q parser 来解释执行脚本, 默认 false',
+                                                en: '(DolphinDB Server version must be above v3.00.4) Use q parser to interpret and execute scripts, the default is false'
                                             },
                                         },
                                         {

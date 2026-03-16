@@ -61,14 +61,14 @@
 
 ## v3.0.403 - 2025.09.16
 #### 缺陷修复 / Bug Fixes
-- 修复在 settings.json 中设置 kdb: true 后，无法连接 KDB parser 的问题。
-- Fixed an issue where enabling kdb: true in settings.json failed to establish a connection to the KDB parser.
+- 修复在 settings.json 中设置 q: true 后，无法连接 q parser 的问题。
+- Fixed an issue where enabling q: true in settings.json failed to establish a connection to the q parser.
 
 
 ## v3.0.400 - 2025.09.12
 #### 新功能 / New Features
-- settings.json 中新增配置 “kdb”，用于选择 KDB Parser 模式。
-- Added new configuration option "kdb" to settings.json to select the KDB Parser mode.
+- settings.json 中新增配置 “q”，用于选择 q Parser 模式。
+- Added new configuration option "q" to settings.json to select the q Parser mode.
 
 
 ## v3.0.301 - 2025.07.17

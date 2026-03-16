@@ -551,7 +551,7 @@ async function table_action (table: Table | OrcaTable, action: (typeof table_act
     
     let str = ''
     
-    // todo: 支持 kdb 模式
+    // todo: 支持 q 模式
     
     // orca table 不会有 load 和 truncate 的 action
     if (action === 'load')
@@ -754,7 +754,7 @@ export const ddb_commands = [
         try {
             for (const fp of await upload(uri, uris, true))
                 await execute_with_progress(
-                    options.kdb ? `test[ddbStr["${fp}"]]` : `test("${fp}")`,
+                    options.q ? `test[ddbStr["${fp}"]]` : `test("${fp}")`,
                     0,
                     true)
         } catch (error) {
